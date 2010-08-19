@@ -219,38 +219,28 @@ http://dl.openhandhelds.org/cgi-bin/gp2x.cgi?0,0,0,0,5,2512
 
 - Port to GP2X and WIZ by Franxis (fjmar@hotmail.com) based on source code MAME 0.37b5 (dated on july 2000).
 
-- TheGrimReaper (m_acky@hotmail.com) has colaborated with a lot of
-  things since GP32 MAME 1.3, i.e. Vector graphics support, high scores,
-  general frontend, frontend improvements, bugfixes, etc. Thank you!!!
+- TheGrimReaper (m_acky@hotmail.com) has colaborated with a lot of things since GP32 MAME 1.3, i.e. Vector graphics support, high scores, general frontend, frontend improvements, bugfixes, etc. Thank you!!!
   
-- Pepe_Faruk (joserod@ya.com) has colaborated with new screen centering
-  code. Also he has added some new supported games. Thank you!!!
+- Pepe_Faruk (joserod@ya.com) has colaborated with new screen centering code. Also he has added some new supported games. Thank you!!!
 
-- Reesy (drsms_reesy@yahoo.co.uk) has developed DrZ80 (Z80 ASM ARM core) and has helped
-  a lot with core integration into MAME. He has also done several fixes to the Cyclone core.
-  You are the best!!!
+- Reesy (drsms_reesy@yahoo.co.uk) has developed DrZ80 (Z80 ASM ARM core) and has helped a lot with core integration into MAME. He has also done several fixes to the Cyclone core. You are the best!!!
   
-- Flubba (flubba@i-solutions.se) has done some optimizations and improvements to the DrZ80
-  core. Thank you!!!
+- Flubba (flubba@i-solutions.se) has done some optimizations and improvements to the DrZ80 core. Thank you!!!
 
 - Dave (dev@finalburn.com) has developed Cyclone (M68000 ASM ARM core). Big thanks to him.
 
 - Notaz (notasas@gmail.com) have fixed some bugs in the Cyclone source code. He has also contributed with several useful code to the GP2X scene. Thanks!!!
-  http://uosis.mif.vu.lt/~grig2790/Cyclone/
-  http://notaz.gp2x.de/
+  http://uosis.mif.vu.lt/~grig2790/Cyclone/ http://notaz.gp2x.de/
 
-- Chui (sdl_gp32@yahoo.es) has developed MAME4ALL, the MAME GP2X port for Dreamcast, Windows and Linux. Also he has done several optimizations aplicable to all targets.
-  http://chui.dcemu.co.uk/mame4all.html
+- Chui (sdl_gp32@yahoo.es) has developed MAME4ALL, the MAME GP2X port for Dreamcast, Windows and Linux. Also he has done several optimizations aplicable to all targets. http://chui.dcemu.co.uk/mame4all.html
 
-- Slaanesh (astaude@hotmail.com) has continued my work on MAME GP32 and he has done several improvements aplicable to all targets.
-  http://users.bigpond.net.au/mame/gp32/
+- Slaanesh (astaude@hotmail.com) has continued my work on MAME GP32 and he has done several improvements aplicable to all targets. http://users.bigpond.net.au/mame/gp32/
 
 - GnoStiC (mustafa.tufan@gmail.com) has done the USB Joypad support using the library created by Puck2099.
   
 - Sean Poyser (seanpoyser@gmail.com) has done interesting improvements in some drivers. For example the use of diagonals in Q*Bert or the use of the shoulder buttons in Tron.
 
-- TTYman (ttyman@free.fr) has done the MAME GP2X port for the PSP portable console.
-  http://ttyman.free.fr/
+- TTYman (ttyman@free.fr) has done the MAME GP2X port for the PSP portable console. http://ttyman.free.fr/
 
 - Headoverheels (davega@euskalnet.net) has added some new games to MAME4ALL, and he has also done some optimizations to existing games.
 
