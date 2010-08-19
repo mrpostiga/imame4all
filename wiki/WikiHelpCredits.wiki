@@ -29,7 +29,7 @@ To see MAME license see the end of this document
 * CONTROLS *
 
 The emulator controls are the next ones:
-- Virtual pad: Movement in pad, mouse and analog control of the four players. 
+- Virtual pad: Movement in pad, mouse and analog control of the four players.
 - Buttons B,X,A,Y,L,R: Buttons A,B,C,D,E,F.
 - Button SELECT (1): Insert credits (UP+SELECT = 2P credits, RIGHT+SELECT = 3P credits, DOWN+SELECT = 4P credits).
 - Button START (2): start (UP+START = 2P start, RIGHT+START = 3P start, DOWN+START = 4P start).
@@ -201,8 +201,7 @@ http://dl.openhandhelds.org/cgi-bin/gp2x.cgi?0,0,0,0,5,2512
 
 - TMS5220 emulator by Frank Palazzolo.
 
-- AY-3-8910 emulation based on various code snippets by Ville Hallik, Michael Cuddy,
-  Tatsuyuki Satoh, Fabrice Frances, Nicola Salmoria.
+- AY-3-8910 emulation based on various code snippets by Ville Hallik, Michael Cuddy, Tatsuyuki Satoh, Fabrice Frances, Nicola Salmoria.
 
 - YM-2203, YM-2151, YM3812 emulation by Tatsuyuki Satoh.
 
