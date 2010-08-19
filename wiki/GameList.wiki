@@ -2,8 +2,6 @@
 * MAME4ALL GAME LIST (2270 romsets) *
 
 
-* Name:     Description: *
-
 88games   "'88 Games"
 
 99lstwra  "'99 The Last War (alternate)"
