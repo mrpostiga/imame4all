@@ -26,8 +26,7 @@ http://code.google.com/p/imame4all/
 
 To see MAME license see the end of this document
 
-CONTROLS
------------
+* CONTROLS *
 
 The emulator controls are the next ones:
 - Virtual pad: Movement in pad, mouse and analog control of the four players. 
@@ -42,8 +41,7 @@ The emulator controls are the next ones:
 
 NOTE: To type OK when MAME requires it, press LEFT and then RIGHT.
 
-EMULATION OPTIONS
---------------------
+* EMULATION OPTIONS *
 
 After selecting a game on the list next configuration options are available:
 
@@ -88,8 +86,7 @@ To access the auto-fire configuration, during game press SELECT+START and enter 
 
 - Press B to play the selected game or X to go back to game selection menu.
 
-GLOBAL OPTIONS
-----------------
+* GLOBAL OPTIONS *
 
 -Smoothed image. Enable to apply a smoothing image filter over the emulator screen.
 
@@ -113,8 +110,7 @@ GLOBAL OPTIONS
 
 -Show FPS: Shows ON/OFF fps.
 
-INSTALLATION
----------------
+* INSTALLATION *
 
 cheat.dat   -> Cheats definition file
 hiscore.dat -> High Scores definition file
@@ -132,15 +128,13 @@ snap/       -> Screen snapshots directory
 sta/        -> Save states directory
 
 
-SUPPORTED GAMES
-------------------
+* SUPPORTED GAMES *
 
 There are 2270 different supported romsets.
 Games have to be copied into the roms/ folder.
 
 
-ROM NAMES
-------------
+* ROM NAMES *
 
 Folder names or ZIP file names are listed on "gamelist.txt" file.
 Romsets have to be MAME 0.37b5 ones (July 2000).
@@ -155,8 +149,7 @@ NOTE: File and directory names in Linux are case-sensitive. Put all file and dir
 using low case!.
 
 
-SOUND SAMPLES
-----------------
+* SOUND SAMPLES *
 
 The sound samples are used to get complete sound in some of the oldest games.
 They are placed into the 'samples' directory compressed into ZIP files.
@@ -168,15 +161,13 @@ http://dl.openhandhelds.org/cgi-bin/gp2x.cgi?0,0,0,0,5,2511
 You can also use "clrmame.dat" file with ClrMAME Pro utility to get the samples pack.
 
 
-ARTWORK
-----------
+* ARTWORK *
 
 Artwork is used to improve the visualization for some of the oldest games. Download it here:
 http://dl.openhandhelds.org/cgi-bin/gp2x.cgi?0,0,0,0,5,2512
 
 
-ORIGINAL CREDITS
--------------------
+* ORIGINAL CREDITS *
 
 - MAME 0.37b5 original version by Nicola Salmoria and the MAME Team (http://www.mame.net).
 
@@ -222,8 +213,8 @@ ORIGINAL CREDITS
 - YM2610 emulation by Hiromitsu Shioya.
 
 
-PORT CREDITS
-----------------
+* PORT CREDITS *
+
 - Port to iOS by David Valdeita (Seleuco)
 
 - Port to GP2X and WIZ by Franxis (fjmar@hotmail.com) based on source code MAME 0.37b5 (dated on july 2000).
@@ -244,34 +235,27 @@ PORT CREDITS
 
 - Dave (dev@finalburn.com) has developed Cyclone (M68000 ASM ARM core). Big thanks to him.
 
-- Notaz (notasas@gmail.com) have fixed some bugs in the Cyclone source code. He has also
-  contributed with several useful code to the GP2X scene. Thanks!!!
+- Notaz (notasas@gmail.com) have fixed some bugs in the Cyclone source code. He has also contributed with several useful code to the GP2X scene. Thanks!!!
   http://uosis.mif.vu.lt/~grig2790/Cyclone/
   http://notaz.gp2x.de/
 
-- Chui (sdl_gp32@yahoo.es) has developed MAME4ALL, the MAME GP2X port for Dreamcast, Windows
-  and Linux. Also he has done several optimizations aplicable to all targets.
+- Chui (sdl_gp32@yahoo.es) has developed MAME4ALL, the MAME GP2X port for Dreamcast, Windows and Linux. Also he has done several optimizations aplicable to all targets.
   http://chui.dcemu.co.uk/mame4all.html
 
-- Slaanesh (astaude@hotmail.com) has continued my work on MAME GP32 and he has done several
-  improvements aplicable to all targets.
+- Slaanesh (astaude@hotmail.com) has continued my work on MAME GP32 and he has done several improvements aplicable to all targets.
   http://users.bigpond.net.au/mame/gp32/
 
-- GnoStiC (mustafa.tufan@gmail.com) has done the USB Joypad support using the library created
-  by Puck2099.
+- GnoStiC (mustafa.tufan@gmail.com) has done the USB Joypad support using the library created by Puck2099.
   
-- Sean Poyser (seanpoyser@gmail.com) has done interesting improvements in some drivers.
-  For example the use of diagonals in Q*Bert or the use of the shoulder buttons in Tron.
+- Sean Poyser (seanpoyser@gmail.com) has done interesting improvements in some drivers. For example the use of diagonals in Q*Bert or the use of the shoulder buttons in Tron.
 
 - TTYman (ttyman@free.fr) has done the MAME GP2X port for the PSP portable console.
   http://ttyman.free.fr/
 
-- Headoverheels (davega@euskalnet.net) has added some new games to MAME4ALL, and he has also
-  done some optimizations to existing games.
+- Headoverheels (davega@euskalnet.net) has added some new games to MAME4ALL, and he has also done some optimizations to existing games.
 
 
-DEVELOPMENT
----------------
+* DEVELOPMENT *
 
 August 18, 2010:
 - Version 1.0. First version.
@@ -285,15 +269,13 @@ August 18, 2010:
 - Memory leaks. In case of errors, reset iOS and try again please ;-).
 
 
-INTERESTING WEBPAGES ABOUT MAME
------------------------------------
+* INTERESTING WEBPAGES ABOUT MAME *
 
 - http://www.mame.net/
 - http://www.mameworld.net/
 - http://www.marcianitos.org/
 
-ART
----------
+* ART *
 
 Thanks to: Zenzuke, Chipan, Dokesman, Enkonsierto, Quest, Sttraping, Sike, Danibat, Pedator,
 Antiriad and Slaanesh. Thanks to everybody !.
