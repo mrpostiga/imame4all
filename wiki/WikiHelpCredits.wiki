@@ -29,14 +29,23 @@ To see MAME license see the end of this document
 * CONTROLS *
 
 The emulator controls are the next ones:
+
 - Virtual pad: Movement in pad, mouse and analog control of the four players.
+
 - Buttons B,X,A,Y,L,R: Buttons A,B,C,D,E,F.
+
 - Button SELECT (1): Insert credits (UP+SELECT = 2P credits, RIGHT+SELECT = 3P credits, DOWN+SELECT = 4P credits).
+
 - Button START (2): start (UP+START = 2P start, RIGHT+START = 3P start, DOWN+START = 4P start).
+
 - Button L1+R1: Pause.
+
 - Buttons L2: Exit to selection menu to select another game.
+
 - Buttons L1+START simultaneously: Show profiler.
+
 - Buttons START+SELECT simultaneously: Access to the MAME menu.
+
 - Button R2: Open help & global options.
 
 NOTE: To type OK when MAME requires it, press LEFT and then RIGHT.
@@ -113,18 +122,31 @@ To access the auto-fire configuration, during game press SELECT+START and enter 
 * INSTALLATION *
 
 cheat.dat   -> Cheats definition file
+
 hiscore.dat -> High Scores definition file
+
 artwork/    -> Artwork directory
+
 cfg/        -> MAME configuration files directory
+
 frontend/   -> Frontend configuration files
+
 hi/         -> High Scores directory
+
 inp/        -> Game recordings directory
+
 memcard/    -> Memory card files directory
+
 nvram/      -> NVRAM files directory
+
 roms/       -> ROMs directory
+
 samples/    -> Samples directory
+
 skins/      -> Frontend skins directory
+
 snap/       -> Screen snapshots directory
+
 sta/        -> Save states directory
 
 
@@ -228,8 +250,7 @@ http://dl.openhandhelds.org/cgi-bin/gp2x.cgi?0,0,0,0,5,2512
 
 - Dave (dev@finalburn.com) has developed Cyclone (M68000 ASM ARM core). Big thanks to him.
 
-- Notaz (notasas@gmail.com) have fixed some bugs in the Cyclone source code. He has also contributed with several useful code to the GP2X scene. Thanks!!!
-  http://uosis.mif.vu.lt/~grig2790/Cyclone/ http://notaz.gp2x.de/
+- Notaz (notasas@gmail.com) have fixed some bugs in the Cyclone source code. He has also contributed with several useful code to the GP2X scene. Thanks!!!http://uosis.mif.vu.lt/~grig2790/Cyclone/ http://notaz.gp2x.de/
 
 - Chui (sdl_gp32@yahoo.es) has developed MAME4ALL, the MAME GP2X port for Dreamcast, Windows and Linux. Also he has done several optimizations aplicable to all targets. http://chui.dcemu.co.uk/mame4all.html
 
@@ -261,8 +282,11 @@ August 18, 2010:
 * INTERESTING WEBPAGES ABOUT MAME *
 
 - http://www.mame.net/
+
 - http://www.mameworld.net/
+
 - http://www.marcianitos.org/
+
 
 * ART *
 
