@@ -1,8 +1,9 @@
 Package: com.seleuco.imame4all
 Name: iMAME4all
-Version: 1.0.0-0
+Version: 1.1.0-1
 Architecture: iphoneos-arm
 Description: Multiple Arcade Machine Emulator.
+ V1.1: Added WiiMote. Fixed samples,artworks,cheats,hiscores...
  iMAME4all is a iOS universal app done by David Valdeita (Seleuco), port of MAME 0.37b5 emulator by Nicola Salmoria for all iOS devices (iPad HD, iPhone 4G , iPod touch and older) and it is based on GP2X, WIZ MAME4ALL 2.5 by Franxis. 
  It emulates arcade games supported by original MAME 0.37b5 plus some additional games from newer MAME versions.
  This version emulates over 2000 different romsets. (see at the end of document for a list of games that could work). 
@@ -28,3 +29,5 @@ Homepage: http://code.google.com/p/imame4all
 Maintainer: seleuco.nicator@gmail.com 
 Author: David Valdeita (Seleuco)
 Section: Games 
+Depends: ch.ringwald.btstack (>= 0.2)
+
