@@ -116,8 +116,8 @@ To access the auto-fire configuration, during game press SELECT+START and enter 
 
 -Show FPS: Shows ON/OFF fps.
 
-WIIMOTE
--------
+* WIIMOTE *
+
 iMAME4all lets you use a WiiMote over bluetooth to play.
 
 iMAME4all uses btstack project to support WiiMote:
