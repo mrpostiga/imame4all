@@ -131,11 +131,17 @@ Lanscape touch DPad is hidden when you use WiiMote. You can play with aspect vie
 Buttons mapping:
 
 2 = B
+
 1 = X
+
 + = START
+
 - = SELECT
+
 B = L
+
 A = A
+
 home: exit game
 
 In landscape mode touch on anywhere of the screen to show the emulator options.
@@ -290,6 +296,7 @@ http://dl.openhandhelds.org/cgi-bin/gp2x.cgi?0,0,0,0,5,2512
 
 August 22, 2010:
 - Version 1.1. Added WiiMote. Fixed cheats,samples,artwork,hiscores.
+
 August 18, 2010:
 - Version 1.0. First version.
 
