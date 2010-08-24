@@ -1,0 +1,33 @@
+Package: com.seleuco.imame4all
+Name: iMAME4all
+Version: 1.1.0-1
+Architecture: iphoneos-arm
+Description: Multiple Arcade Machine Emulator.
+ V1.1: Added WiiMote. Fixed samples,artworks,cheats,hiscores...
+ iMAME4all is a iOS universal app done by David Valdeita (Seleuco), port of MAME 0.37b5 emulator by Nicola Salmoria for all iOS devices (iPad HD, iPhone 4G , iPod touch and older) and it is based on GP2X, WIZ MAME4ALL 2.5 by Franxis. 
+ It emulates arcade games supported by original MAME 0.37b5 plus some additional games from newer MAME versions.
+ This version emulates over 2000 different romsets. (see at the end of document for a list of games that could work). 
+ Please, try to understand that that with that amount of games, some will run better than others and some might not even run with iMAME4all. 
+ Please, don't email me asking for a specific game to run.
+ Although the performance is very good with modern devices (all games I tested on iPad run practically perfect), owners of older devices should not expect a good performance; please turn off sound because that's very helpful.
+ After installing, place your MAME-titled zipped roms in /var/mobile/Media/ROMs/iMAME4all/roms folder.
+ Please use "clrmame.dat" file included in /var/mobile/Media/ROMs/iMAME4all to convert romsets from other MAME versions to the ones used by this version, using ClrMAME Pro utility, available in next webpage:
+ http://mamedev.emulab.it/clrmamepro/ 
+ Features:
+ Full speed on iPad HD. Almost perfect on iPhone 4.
+ Autorotate.
+ Smoothed image.
+ Scanline & TV Filter.
+ Full screen, windowed.
+ Animated touch DPad.
+ 2/4 buttons selectable.
+ Low latency audio.
+ Video Aspect Normal, Rotate, Rotate controls.
+ Adjustable CPU, Audio clock.
+ ... and more. 
+Homepage: http://code.google.com/p/imame4all
+Maintainer: seleuco.nicator@gmail.com 
+Author: David Valdeita (Seleuco)
+Section: Games 
+Depends: ch.ringwald.btstack (>= 0.2)
+
