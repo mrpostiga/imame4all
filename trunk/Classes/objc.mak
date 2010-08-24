@@ -6,8 +6,9 @@ OSOBJS =  $(OBJ)/Classes/iph_main.o \
 	$(OBJ)/Classes/OptionsController.o \
 	$(OBJ)/Classes/DonateController.o \
 	$(OBJ)/Classes/Helper.o \
-	$(OBJ)/Classes/DView.o
-	
+	$(OBJ)/Classes/DView.o \
+	$(OBJ)/Classes/BTDevice.o \
+	$(OBJ)/Classes/BTInquiryViewController.o 
 
 	
 

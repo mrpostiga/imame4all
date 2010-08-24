@@ -324,7 +324,7 @@ void *osd_fopen (const char *game, const char *filename, int filetype, int _writ
 	struct stat stat_buffer;
 	FakeFileHandle *f;
 	int pathc;
-	char * pathv[1];
+	char **pathv;
 
 
 	f = (FakeFileHandle *) malloc(sizeof (FakeFileHandle));
@@ -340,9 +340,8 @@ void *osd_fopen (const char *game, const char *filename, int filetype, int _writ
 	/* Support "-romdir" yuck. */
 	if( alternate_name )
 	{
-		//fprintf(stderr, "osd_fopen: -romdir overrides '%s' by '%s'\n", gamename, alternate_name);
-		//LOG(("osd_fopen: -romdir overrides '%s' by '%s'\n", gamename, alternate_name));
-        //gamename = alternate_name;
+		LOG(("osd_fopen: -romdir overrides '%s' by '%s'\n", gamename, alternate_name));
+        gamename = alternate_name;
 	}
 
 	switch( filetype )
@@ -360,14 +359,14 @@ void *osd_fopen (const char *game, const char *filename, int filetype, int _writ
 		if( filetype == OSD_FILETYPE_SAMPLE )
 		{
 			LOG(("osd_fopen: using samplepath\n"));
-            pathc = 1; //samplepathc;
-            pathv[0] = alternate_name; // samplepathv;
+            pathc = samplepathc;
+            pathv = samplepathv;
         }
 		else
 		{
 			LOG(("osd_fopen: using rompath\n"));
-            pathc = 1; //samplepathc;
-            pathv[0] = alternate_name; // samplepathv;
+            pathc = rompathc;
+            pathv = rompathv;
 		}
 
 		for( indx = 0; indx < pathc && !found; ++indx )
@@ -458,8 +457,8 @@ void *osd_fopen (const char *game, const char *filename, int filetype, int _writ
         else
 		{
 			LOG(("osd_fopen: using rompath\n"));
-            pathc = 1; //samplepathc;
-            pathv[0] = alternate_name; // samplepathv;
+            pathc = rompathc;
+            pathv = rompathv;
 		}
 
 		LOG(("Open IMAGE_R '%s' for %s\n", filename, game));
@@ -951,6 +950,7 @@ void *osd_fopen (const char *game, const char *filename, int filetype, int _writ
 	case OSD_FILETYPE_HIGHSCORE_DB:
 	case OSD_FILETYPE_HISTORY:
 		/* only for reading */
+		sprintf (name, "/var/mobile/Media/ROMs/iMAME4all/%s", filename);//FIX Seleuco
 		if( _write )
 		{
 			logerror("osd_fopen: type %02x write not supported\n",filetype);
@@ -958,7 +958,7 @@ void *osd_fopen (const char *game, const char *filename, int filetype, int _writ
 		}
 		f->type = kPlainFile;
 		/* open as ASCII files, not binary like the others */
-		f->file = fopen (filename, _write ? "w" : "r");
+		f->file = fopen (name/*filename*/, _write ? "w" : "r");//FIX Seleuco
 		found = f->file != 0;
         break;
 
@@ -967,7 +967,7 @@ void *osd_fopen (const char *game, const char *filename, int filetype, int _writ
 		sprintf (name, "%s/%s", cheatdir, filename);
 		f->type = kPlainFile;
 		/* open as ASCII files, not binary like the others */
-		f->file = fopen (filename, _write ? "a" : "r");
+		f->file = fopen (/*filename*/name, _write ? "a" : "r");//FIX Seleuco
 		found = f->file != 0;
         break;
 

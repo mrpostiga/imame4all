@@ -46,7 +46,7 @@ CFLAGS += -fsigned-char $(DEVLIBS) \
 	-Wall -Wno-sign-compare -Wunused -Wpointer-arith -Wcast-align -Waggregate-return -Wshadow
 
 
-CFLAGS += -Isrc -Isrc/$(MAMEOS) -Isrc/zlib
+CFLAGS += -Isrc -Isrc/$(MAMEOS) -Isrc/zlib -IClasses/btstack
 CFLAGS += -O3 -ffast-math 
 CFLAGS += -I/home/david/Projects/iphone/toolchain/sdks/iPhoneOS3.1.2.sdk/usr/include
 	
@@ -62,13 +62,17 @@ CFLAGS += -F/home/david/Projects/iphone/toolchain/sdks/iPhoneOS3.1.2.sdk/System/
 LDFLAGS +=  $(CFLAGS) -static -s
 #LDFLAGS = $(CFLAGS) -s -static
 LDFLAGS = -lobjc -lpthread -bind_at_load 
+
+LDFLAGS += -L/home/david/Projects/iphone/toolchain/apps/mame4iphone/lib
+LDFLAGS += -lBTstack
+
 LDFLAGS += -framework Foundation -framework CoreFoundation -framework CoreSurface -framework UIKit -framework QuartzCore -framework CoreGraphics -framework AudioToolbox    
 LDFLAGS += -lm -lc  -lz 
 LDFLAGS += -F$(BASE_DEV)/System/Library/Frameworks
 LDFLAGS += -F$(BASE_DEV)/System/Library/PrivateFrameworks
-lDFLAGS += -L$(BASE_DEV)/usr/lib 
+LDFLAGS += -L$(BASE_DEV)/usr/lib 
 
-LIBS = -lm -lpthread
+LIBS = -lm -lpthread 
 
 OBJ = obj_$(TARGET)_$(MAMEOS)
 OBJDIRS = $(OBJ) $(OBJ)/cpu $(OBJ)/sound $(OBJ)/$(MAMEOS) \

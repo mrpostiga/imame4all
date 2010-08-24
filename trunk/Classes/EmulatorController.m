@@ -31,6 +31,7 @@
 //http://code.google.com/p/metasyntactic/source/browse/trunk/MetasyntacticShared/Classes/ImageUtilities.m?r=4217
 
 #import "Helper.h"
+#import "ScreenView.h"
 #import "EmulatorController.h"
 #import "HelpController.h"
 #import "OptionsController.h"
@@ -45,6 +46,7 @@
 #define IPHONE_MENU_OPTIONS             6
 #define IPHONE_MENU_DONATE              9
 #define IPHONE_MENU_DOWNLOAD           11
+#define IPHONE_MENU_WIIMOTE            12
 
 #define IPHONE_MENU_QUIT                7
 #define IPHONE_MENU_MAIN_LOAD           8
@@ -58,6 +60,7 @@
 
 extern CGRect drects[100];
 extern int ndrects;
+extern btUsed;
 
 extern CGRect rEmulatorFrame;
 static CGRect rPortraitViewFrame;
@@ -103,12 +106,7 @@ int global_low_latency_sound = 0;
 int iOS_animated_DPad = 0;
 int iOS_4buttonsLand = 0;
 int iOS_full_screen_land = 0;
-
-
-enum  { GP2X_UP=0x1,       GP2X_LEFT=0x4,       GP2X_DOWN=0x10,  GP2X_RIGHT=0x40,
-	    GP2X_START=1<<8,   GP2X_SELECT=1<<9,    GP2X_L=1<<10,    GP2X_R=1<<11,
-	    GP2X_A=1<<12,      GP2X_B=1<<13,        GP2X_X=1<<14,    GP2X_Y=1<<15,
-        GP2X_VOL_UP=1<<23, GP2X_VOL_DOWN=1<<22, GP2X_PUSH=1<<27 };
+        
         
 enum { DPAD_NONE=0,DPAD_UP=1,DPAD_DOWN=2,DPAD_LEFT=3,DPAD_RIGHT=4,DPAD_UP_LEFT=5,DPAD_UP_RIGHT=6,DPAD_DOWN_LEFT=7,DPAD_DOWN_RIGHT=8};    
 
@@ -122,8 +120,6 @@ static int old_dpad_state;
 
 static int btnStates[NUM_BUTTONS];
 static int old_btnStates[NUM_BUTTONS];
-
-extern unsigned long gp2x_pad_status;
 
 extern pthread_t main_tid;
 
@@ -168,10 +164,16 @@ void* app_Thread_Start(void* args)
 	    {
            iphone_menu = IPHONE_MENU_OPTIONS;
 	    }
+	    /*
 	    else if(buttonIndex == 2)    
 	    {
            iphone_menu = IPHONE_MENU_DONATE;
 	    }
+	    */
+	    else if(buttonIndex == 2 && !btUsed)    
+	    {
+           iphone_menu = IPHONE_MENU_WIIMOTE;
+	    }	    
 	    else	    
 	    {
            iphone_menu = IPHONE_MENU_DISABLED;
@@ -210,6 +212,13 @@ void* app_Thread_Start(void* args)
            [self presentModalViewController:addController animated:YES];
 
            [addController release];
+	  }
+	  
+	  if(iphone_menu == IPHONE_MENU_WIIMOTE)
+	  {
+    
+           [Helper startwiimote:self]; 
+                                                
 	  }
 	  
 	}
@@ -310,6 +319,8 @@ void* app_Thread_Start(void* args)
    app_DemuteSound();
    iOS_exitPause = 1;
   __emulation_paused = 0;  
+   if(iphone_is_landscape && btUsed)
+      [self removeDPadView];
   [pool release];
 }
 
@@ -317,9 +328,15 @@ void* app_Thread_Start(void* args)
 {
 
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	UIActionSheet *alert = [[UIActionSheet alloc] initWithTitle:
+	UIActionSheet *alert;
+	if(btUsed)
+	 alert = [[UIActionSheet alloc] initWithTitle:
 	   @"Choose an option from the menu. Press cancel to go back." delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil 
-	   otherButtonTitles:@"Help",@"Options",@"Donate",@"Cancel", nil];
+	   otherButtonTitles: @"Help",@"Options",@"Cancel" , nil];
+	else
+	 alert = [[UIActionSheet alloc] initWithTitle:
+	   @"Choose an option from the menu. Press cancel to go back." delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil 
+	   otherButtonTitles:@"Help",@"Options",@"WiiMote",@"Cancel", nil];	   
 	/*   
 	if(isIpad)
 	  //[alert showInView:imageBack];
@@ -363,7 +380,7 @@ void* app_Thread_Start(void* args)
     [op release];
     		
     [self buildPortrait];
-				
+    				
     pthread_create(&main_tid, NULL, app_Thread_Start, NULL);
 		
 	struct sched_param param;
@@ -371,12 +388,11 @@ void* app_Thread_Start(void* args)
     //param.sched_priority = 63;
     param.sched_priority = 46;  
     //param.sched_priority = 100;
+     
            
-    if(pthread_setschedparam(main_tid, /*SCHED_RR*/ SCHED_OTHER, &param) != 0)
-    {
+    if(pthread_setschedparam(main_tid, /*SCHED_RR*/ SCHED_OTHER, &param) != 0)    
              fprintf(stderr, "Error setting pthread priority\n");
-    }
-	
+    	
 }
 
 - (void)loadView {
@@ -538,6 +554,9 @@ void* app_Thread_Start(void* args)
    
    
    [self removeDPadView];
+   
+   if(btUsed && iphone_is_landscape)
+     return;
    
    //dpad
    dpadView = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:nameImgDPad[DPAD_NONE]]];
@@ -915,7 +934,21 @@ void* app_Thread_Start(void* args)
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {	       
-    [self touchesController:touches withEvent:event];
+    if(btUsed && iphone_is_landscape)
+    {
+        NSSet *allTouches = [event allTouches];
+        UITouch *touch = [[allTouches allObjects] objectAtIndex:0];
+        
+        if(touch.phase == UITouchPhaseBegan || touch.phase == UITouchPhaseStationary)
+		{
+			if(__emulation_run)
+		    {
+                        [NSThread detachNewThreadSelector:@selector(runMenu) toTarget:self withObject:nil];
+			}					
+	    }
+    }
+    else
+      [self touchesController:touches withEvent:event];
 }
 
 
@@ -1107,15 +1140,7 @@ void* app_Thread_Start(void* args)
 
 			}
 			else if (MyCGRectContainsPoint(rShowKeyboard, point)) {
-			   /*
-               controller = 0;
-               [imageBack removeFromSuperview];
-               [imageBack release];
-               if(iphone_is_landscape)
-                 [self buildLandscapeimageBack]; 
-               else
-                 [self buildPortraitimageBack];
-              */   
+  
 			}	
 			
 		}

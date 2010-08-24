@@ -48,6 +48,8 @@ int isIpad = 0;
 	//mkdir("/var/mobile/Media/ROMs/iXpectrum/downloads", 0755);
 	
 	mkdir(get_documents_path("iOS"), 0755);
+	mkdir(get_documents_path("cfg"), 0755);
+	mkdir(get_documents_path("hi"), 0755);
 
     [[UIApplication sharedApplication] setStatusBarHidden:YES animated:NO];
     
@@ -76,6 +78,19 @@ int isIpad = 0;
 		
 	[hrViewController startEmulation];
 
+}
+
+- (void)applicationWillTerminate:(UIApplication *)application {
+//TODO???.
+/*
+    // disconnect
+    if (wiiMoteConHandle) {
+          bt_send_cmd(&hci_disconnect, wiiMoteConHandle, 0x13); // remote closed connection
+    }
+    // bt_send_cmd(&btstack_set_power_mode, HCI_POWER_OFF );
+
+    bt_close();
+ */   
 }
 
 -(void)dealloc {

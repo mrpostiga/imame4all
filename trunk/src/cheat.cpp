@@ -627,7 +627,9 @@ void LoadCheatFile (int merge, char *filename)
 		LoadedCheatTotal = 0;
 	}
 
+	//printf("abro fichero cheats\n");
 	if (!f) return;
+	//printf("OK\n");
 
 	name_length = strlen (Machine->gamedrv->name);
 
@@ -798,6 +800,8 @@ void LoadCheatFile (int merge, char *filename)
 			/* Allocate storage and copy the comment */
 			CheatTable[LoadedCheatTotal].comment = (char*)malloc(strlen (ptr) + 1);
 			strcpy(CheatTable[LoadedCheatTotal].comment,ptr);
+
+			printf("Cheat %s\n",ptr);
 
 			/* Strip line-ending if needed */
 			if (strstr(CheatTable[LoadedCheatTotal].comment,"\n") != NULL)

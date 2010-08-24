@@ -40,28 +40,6 @@
 #import <unistd.h>
 #import <sys/time.h>
 
-@interface ScreenLayer : CALayer {
-	CoreSurfaceBufferRef _screenSurface;
-	CGAffineTransform rotateTransform;
-	CGContextRef bitmapContext;
-}
-
-- (void) orientationChanged:(NSNotification *)notification;
-
-@end
-
-@interface ScreenView : UIView
-{
-
-}
-
-- (id)initWithFrame:(CGRect)frame;
-- (void)drawRect:(CGRect)rect;
-- (void)updateScreen;
-
-
-@end
-
 #define NUM_BUTTONS 10
 
 @interface EmulatorController : UIViewController <UIActionSheetDelegate>

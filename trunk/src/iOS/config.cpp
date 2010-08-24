@@ -9,6 +9,7 @@
 #include "driver.h"
 #include <ctype.h>
 #include "allegro.h"
+#include "shared.h"
 
 /* from video.c */
 extern int frameskip,autoframeskip;
@@ -200,8 +201,8 @@ void get_rom_sample_path (int argc, char **argv, int game_index)
 	mame_argv = argv;
 	game = game_index;
 
-	rompath    = get_string ("directory", "rompath",    NULL, ".;roms");
-	samplepath = get_string ("directory", "samplepath", NULL, ".;samples");
+	rompath    = get_string ("directory", "rompath",    NULL, "/var/mobile/Media/ROMs/iMAME4all/.;/var/mobile/Media/ROMs/iMAME4all/roms");
+	samplepath = get_string ("directory", "samplepath", NULL, "/var/mobile/Media/ROMs/iMAME4all/.;/var/mobile/Media/ROMs/iMAME4all/samples");
 
 	/* handle '-romdir' hack. We should get rid of this BW */
 	alternate_name = 0;
@@ -309,17 +310,19 @@ void parse_cmdline (int argc, char **argv, int game_index)
 	resolution  = get_string ("config", "resolution", NULL, "auto");
 
 	/* set default subdirectories */
-	nvdir      = get_string ("directory", "nvram",   NULL, "/var/mobile/Media/ROMs/MAME/nvram");
-	hidir      = get_string ("directory", "hi",      NULL, "/var/mobile/Media/ROMs/MAME/hi");
-	cfgdir     = get_string ("directory", "cfg",     NULL, "/var/mobile/Media/ROMs/MAME/cfg");
-	screenshotdir = get_string ("directory", "snap",     NULL, "/var/mobile/Media/ROMs/MAME/snap");
-	memcarddir = get_string ("directory", "memcard", NULL, "/var/mobile/Media/ROMs/MAME/memcard");
-	stadir     = get_string ("directory", "sta",     NULL, "/var/mobile/Media/ROMs/MAME/sta");
-	artworkdir = get_string ("directory", "artwork", NULL, "/var/mobile/Media/ROMs/MAME/artwork");
-
-	cheatdir = get_string ("directory", "cheat", NULL, "/var/mobile/Media/ROMs/MAME/.");
+	nvdir      = get_string ("directory", "nvram",   NULL, "/var/mobile/Media/ROMs/iMAME4all/nvram" );
+	hidir      = get_string ("directory", "hi",      NULL, "/var/mobile/Media/ROMs/iMAME4all/hi");
+	cfgdir     = get_string ("directory", "cfg",     NULL, "/var/mobile/Media/ROMs/iMAME4all/cfg");
+	screenshotdir = get_string ("directory", "snap",     NULL, "/var/mobile/Media/ROMs/iMAME4all/snap");
+	memcarddir = get_string ("directory", "memcard", NULL, "/var/mobile/Media/ROMs/iMAME4all/memcard");
+	stadir     = get_string ("directory", "sta",     NULL, "/var/mobile/Media/ROMs/iMAME4all/sta");
+	artworkdir = get_string ("directory", "artwork", NULL, "/var/mobile/Media/ROMs/iMAME4all/artwork");
+	cheatdir = get_string ("directory", "cheat", NULL, "/var/mobile/Media/ROMs/iMAME4all");
 
 	logerror("cheatfile = %s - cheatdir = %s\n",cheatfile,cheatdir);
+
+	//printf("cheatfile = %s - cheatdir = %s\n",cheatfile,cheatdir);
+	//printf("cfgdir = %s\n",cfgdir);
 
 	tmpstr = get_string ("config", "language", NULL, "english");
 	options.language_file = osd_fopen(0,tmpstr,OSD_FILETYPE_LANGUAGE,0);
