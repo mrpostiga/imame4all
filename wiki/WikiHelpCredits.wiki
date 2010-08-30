@@ -49,11 +49,19 @@ NOTE: To type OK when MAME requires it, press LEFT and then RIGHT.
 
 * EMULATION OPTIONS *
 
-After selecting a game on the list next configuration options are available:
+After selecting a game on the list, the following configuration options are available:
 
 - Video Aspect:
-The video aspect is configured with the following combination of options:
-Normal: Nominal emulated video resolution (320x240).
+The video aspect can be configured with the following combination of options:
+Original: Original game driver resolution scaled to window keeping aspect ratio.
+Ratio Not Kept: Original game driver resolution scaled to window without keeping aspect ratio.
+With Cropping: Original game driver resolution scaled to window with cropping.
+Fixed 320x240: Nominal emulated video resolution scaled to fixed 320x240.
+NOTE:If "Not Safe Render Path" is active, only fixed 320x240 is available.
+
+- Video Rotate:
+The video Rotate is configured with the following combination of options:
+Normal: Nominal emulated video resolution.
 Rotate: The window is rotated.
 TATE: The window and controls are rotated. (it may help to play some landscape games)
 
