@@ -147,7 +147,7 @@ Buttons mapping:
 
 - = SELECT
 
-B = L
+B = Y
 
 A = A
 
