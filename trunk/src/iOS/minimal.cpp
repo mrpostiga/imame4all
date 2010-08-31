@@ -31,8 +31,12 @@
 extern "C" void app_MuteSound(void);
 extern "C" void app_DemuteSound(void);
 extern "C" void iphone_UpdateScreen(void);
+extern "C" void iphone_Reset_Views(void);
 
 int num_of_joys = 0;
+
+int iOS_video_width = 320;
+int iOS_video_height = 240;
 
 typedef struct AQCallbackStruct {
     AudioQueueRef queue;
@@ -180,7 +184,16 @@ void gp2x_set_clock(int mhz)
 
 void gp2x_set_video_mode(int bpp,int width,int height)
 {
-  	memset(gp2x_screen15, 0, 320*240*2);
+
+	//if(iOS_video_width!=width || iOS_video_height!=height)
+	//{
+	  iOS_video_width = width;
+	  iOS_video_height = height;
+
+	  iphone_Reset_Views();
+	//}
+
+	memset(gp2x_screen15, 0, iOS_video_width*iOS_video_height*2);
 
   	gp2x_video_flip();
 

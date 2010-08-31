@@ -5,6 +5,9 @@
 #include "artwork.h"
 #include "port_wrapper.h"
 
+extern int safe_render_path;
+extern int iOS_320x240;
+
 static struct RunningMachine machine;
 struct RunningMachine *Machine = &machine;
 static const struct GameDriver *gamedrv;
@@ -58,11 +61,17 @@ int run_game(int game)
 	else
 		Machine->color_depth = 8;
 
-	//if (options.vector_width == 0) options.vector_width = 640;
-	//if (options.vector_height == 0) options.vector_height = 480;
-	if (options.vector_width == 0) options.vector_width = 320;
-	if (options.vector_height == 0) options.vector_height = 240;
 
+    if(safe_render_path && !iOS_320x240)
+    {
+	  if (options.vector_width == 0) options.vector_width = 640;
+	  if (options.vector_height == 0) options.vector_height = 480;
+    }
+    else
+    {
+	  if (options.vector_width == 0) options.vector_width = 320;
+	  if (options.vector_height == 0) options.vector_height = 240;
+    }
 	Machine->sample_rate = options.samplerate;
 
 	/* get orientation right */

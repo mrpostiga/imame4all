@@ -1,6 +1,6 @@
 
 ===========================================================
-iMAME4ALL 1.0 (August 18, 2010) by David Valdeita (Seleuco)
+iMAME4ALL 1.2 (August 29, 2010) by David Valdeita (Seleuco)
 ===========================================================
 
 
@@ -24,7 +24,7 @@ Please use "clrmame.dat" file included in /var/mobile/Media/ROMs/iMAME4all to co
 
 http://mamedev.emulab.it/clrmamepro/ 
 
-Official web page for news, source code, additional information and donations:
+Official web page for news, source code && additional information:
 http://code.google.com/p/imame4all/
 
 To see MAME license see the end of this document
@@ -38,10 +38,11 @@ Smoothed image.
 Scanline & TV Filter.
 Full screen, windowed.
 Animated touch DPad.
-2/4 buttons selectable.
+1/4 buttons selectable.
 Low latency audio.
 Video Aspect Normal, Rotate, Rotate controls.
 Adjustable CPU, Audio clock.
+WiiMote control thanks to BTstack.
 
 ... and more. 
 
@@ -57,18 +58,26 @@ The emulator controls are the next ones:
 - Buttons L2: Exit to selection menu to select another game.
 - Buttons L1+START simultaneously: Show profiler.
 - Buttons START+SELECT simultaneously: Access to the MAME menu.
-- Button R2: Open help & global options.
+- Button R2: Open help , global options, WiiMote searcher.
 
 NOTE: To type OK when MAME requires it, press LEFT and then RIGHT.
 
 EMULATION OPTIONS
 --------------------
 
-After selecting a game on the list next configuration options are available:
+After selecting a game on the list, the following configuration options are available:
 
 - Video Aspect:
-The video aspect is configured with the following combination of options:
-Normal: Nominal emulated video resolution (320x240).
+The video aspect can be configured with the following combination of options:
+Original: Original game driver resolution scaled to window keeping aspect ratio.
+Ratio Not Kept: Original game driver resolution scaled to window without keeping aspect ratio.
+With Cropping: Original game driver resolution scaled to window with cropping.
+Fixed 320x240: Nominal emulated video resolution scaled to fixed 320x240.
+NOTE:If "Not Safe Render Path" is active, only fixed 320x240 is available.
+
+- Video Rotate:
+The video Rotate is configured with the following combination of options:
+Normal: Nominal emulated video resolution.
 Rotate: The window is rotated.
 TATE: The window and controls are rotated. (it may help to play some landscape games)
 
@@ -86,6 +95,9 @@ The sound options are the following ones:
 ON: The sound is activated. 11, 22, 33 and 44 KHz sound mixing rates are available in both mono and stereo.
 OFF: The sound is disabled.
 Fast sound: Some tweaks are done to improve the performance (but with a bit worse sound quality).
+
+-Landscape 1-4 Buttons.
+Show 1-4 Buttons: Hide/show Y/A/X buttons if needed.
 
 - CPU Clock:
 The clock of the CPUs can be adjusted from 50% to 200%. The nominal value is 100% and the CPU is emulated accurately.
@@ -122,8 +134,6 @@ GLOBAL OPTIONS
 
 -Safe Render Path (iPhone only). Enable at the expenses of performance for maximun compability. Slow in 3G (not recomended unless you find any problem).
 
--Show 4 Buttons (Landscape): Hide/show Y/A buttons if needed.
-
 -Full Screen (Landscape); Uses all avalible screen or shows the emulator windowed.
 
 -Animted DPad. Animates ON/OFF DPad. Disable to gain performance.
@@ -131,6 +141,30 @@ GLOBAL OPTIONS
 -Low Latency Sound. More accurate sound. Expensive.(keep enabled on iPad)
 
 -Show FPS: Shows ON/OFF fps.
+
+WIIMOTE
+-------
+iMAME4all lets you use a WiiMote over bluetooth to play.
+
+iMAME4all uses btstack project to support WiiMote:
+
+http://code.google.com/p/btstack/
+
+To use WiiMote you have to first launch iMAME4all menu pressing R2 button, and select WiiMote option. Then, make your WiiMote discoverable by pressing the 1+2 buttons at the same time. 
+
+Lanscape touch DPad is hidden when you use WiiMote. You can play with aspect view (Rotation, TATE) and lock phisical rotation to play portrait-landscape games better.
+
+Buttons mapping:
+
+2 = B
+1 = X
++ = START
+- = SELECT
+B = Y
+A = A
+home: exit game
+
+In landscape mode touch on anywhere of the screen to show the emulator options.
 
 INSTALLATION
 ---------------
@@ -293,13 +327,15 @@ PORT CREDITS
 DEVELOPMENT
 ---------------
 
+August 29, 2010:
+- Version 1.2 Added 4 new Video Aspect modes: Original View Aspect (fix cropping bug)+(Ratio Not Kept,With Cropping,fixed 320x240),1-4 Buttons selectable from game launcher,Improved WiiMote,Vector games at 640x480.
+August 22, 2010:
+- Version 1.1. Added WiiMote. Fixed cheats,samples,artwork,hiscores.
 August 18, 2010:
 - Version 1.0. First version.
 
 KNOWN PROBLEMS
 ------------------
-
-- Only uses 320x240 emulated screen size. Some games are centered nd does not show the whole game.
 
 - Not perfect sound or incomplete in some games.
 

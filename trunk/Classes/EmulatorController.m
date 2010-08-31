@@ -57,6 +57,8 @@
 		(point.y >= rect.origin.y) &&							\
 		(point.x <= rect.origin.x + rect.size.width) &&			\
 		(point.y <= rect.origin.y + rect.size.height)) ? 1 : 0)  
+		
+	
 
 extern CGRect drects[100];
 extern int ndrects;
@@ -106,6 +108,7 @@ int global_low_latency_sound = 0;
 int iOS_animated_DPad = 0;
 int iOS_4buttonsLand = 0;
 int iOS_full_screen_land = 0;
+extern iOS_landscape_buttons;
         
         
 enum { DPAD_NONE=0,DPAD_UP=1,DPAD_DOWN=2,DPAD_LEFT=3,DPAD_RIGHT=4,DPAD_UP_LEFT=5,DPAD_UP_RIGHT=6,DPAD_DOWN_LEFT=7,DPAD_DOWN_RIGHT=8};    
@@ -134,6 +137,18 @@ pthread_t	main_tid;
 int			__emulation_run = 0;
 int        __emulation_paused = 0;
 
+static EmulatorController *sharedInstance = nil;
+
+extern void reset_video(void);	
+
+void iphone_Reset_Views()
+{
+
+   if(sharedInstance==nil) return;
+    
+   //[sharedInstance changeUI];  
+   [sharedInstance performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];  
+}
 
 void* app_Thread_Start(void* args)
 {
@@ -353,6 +368,8 @@ void* app_Thread_Start(void* args)
 
 
 - (void)startEmulation{
+    
+    sharedInstance = self;
 	 
     iphone_menu = IPHONE_MENU_DISABLED;
 		
@@ -487,11 +504,21 @@ void* app_Thread_Start(void* args)
 	return YES;
 }
 
+
+
 -(void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
    
+    [self changeUI];
+    
+}
+
+- (void)changeUI{
    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
    
   __emulation_paused = 1;
+  
+  //reset_video(); 
+  
   //if(!safe_render_path)
       usleep(150000);//ensure some frames displayed
         
@@ -568,8 +595,16 @@ void* app_Thread_Start(void* args)
    
    for(i=0; i<NUM_BUTTONS;i++)
    {
-      if((i==BTN_Y || i==BTN_A) && !iOS_4buttonsLand && iphone_is_landscape)
-         continue;
+
+      if(iphone_is_landscape)
+      {
+          if(i==BTN_Y && iOS_landscape_buttons < 4)continue;
+          if(i==BTN_A && iOS_landscape_buttons < 3)continue;
+          if(i==BTN_X && iOS_landscape_buttons < 2)continue;      
+      }
+   
+      //if((i==BTN_Y || i==BTN_A) && !iOS_4buttonsLand && iphone_is_landscape)
+         //continue;
          
       buttonViews[i] = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:nameImgButton_NotPress[i]]];
       buttonViews[i].frame = rButton_image[i];
@@ -1196,6 +1231,12 @@ void* app_Thread_Start(void* args)
 				result = strtok(NULL, ",");
 				i2++;
 			}
+			
+			/*
+			if(isIpad && orientation==1)
+			{
+			     coords[1] =  coords[1] - 100;
+			}*/
 			
 			switch(i)
 			{

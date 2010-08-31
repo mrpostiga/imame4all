@@ -36,9 +36,12 @@
 
 static ScreenView *sharedInstance = nil;
 
-static unsigned short img_buffer [320 * 240 * 4];//[512 * 480 * 4];
+static unsigned short img_buffer //[320 * 240 * 4];
+                                 [640 * 480 * 4];//max driver res? STANDARD VGA!
 
 extern int safe_render_path;
+extern int iOS_video_width;
+extern int iOS_video_height;
 
 CGRect rEmulatorFrame;
 //CGRect rPortraitViewFrame;
@@ -62,6 +65,10 @@ extern int __emulation_paused;
 extern unsigned char  *gp2x_screen8;
 extern unsigned short *gp2x_screen15;
 
+
+void reset_video(){
+   gp2x_screen8 = gp2x_screen15  = img_buffer;
+}
 
 void iphone_UpdateScreen()
 {
@@ -103,10 +110,10 @@ void iphone_UpdateScreen()
 	       CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();    
            bitmapContext = CGBitmapContextCreate(
              img_buffer,
-             320,//512,//320,
-             240,//480,//240,
+             iOS_video_width,//512,//320,
+             iOS_video_height,//480,//240,
              /*8*/5, // bitsPerComponent
-             2*320,//2*512,///*4*320*/2*320, // bytesPerRow
+             2*iOS_video_width,//2*512,///*4*320*/2*320, // bytesPerRow
              colorSpace,
              kCGImageAlphaNoneSkipFirst  | kCGBitmapByteOrder16Little/*kCGImageAlphaNoneSkipLast */);
 
@@ -115,9 +122,10 @@ void iphone_UpdateScreen()
         }
         else
         {	   
+		    //TODO:
 		    CFMutableDictionaryRef dict;
-			int w = rEmulatorFrame.size.width;
-			int h = rEmulatorFrame.size.height;
+			int w = iOS_video_width;//rEmulatorFrame.size.width;
+			int h = iOS_video_height;//rEmulatorFrame.size.height;
 			
 	    	int pitch = w * 2, allocSize = 2 * w * h;
 	    	char *pixelFormat = "565L";
@@ -205,7 +213,7 @@ void iphone_UpdateScreen()
 	     self.affineTransform = rotateTransform;
 	    self.contents = (id)_screenSurface;
 	    		
-	    CoreSurfaceBufferUnlock(_screenSurface);
+	    CoreSurfaceBufferUnlock(_screenSurface); 
     }   
     
 }
@@ -222,6 +230,8 @@ void iphone_UpdateScreen()
     
     if(_screenSurface!=nil)
     {
+
+      
       //CoreSurfaceBufferLock(_screenSurface, 3);
       CFRelease(_screenSurface);
       //CoreSurfaceBufferUnlock(_screenSurface);
@@ -249,7 +259,7 @@ void iphone_UpdateScreen()
        self.clearsContextBeforeDrawing = NO;
        self.multipleTouchEnabled = NO;
 	   self.userInteractionEnabled = NO;
-        
+              
        sharedInstance = self;				
 	}
         	

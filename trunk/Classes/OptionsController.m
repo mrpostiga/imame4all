@@ -67,7 +67,7 @@ extern int isIpad;
 - (void)loadOptions
 {
 	
-	NSString *path=[NSString stringWithCString:get_documents_path("iOS/options.bin")];
+	NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v2.bin")];
 	
 	NSData *plistData;
 	id plist;
@@ -95,11 +95,12 @@ extern int isIpad;
 		smoothedLand=isIpad?1:0;
 		
 		//todos menos iPad, iPhone4=iPhone3,1
-		safeRenderPath = ![[Helper machine] isEqualToString: @"iPhone1,1"] 
+		safeRenderPath = 
+		                 ![[Helper machine] isEqualToString: @"iPhone1,1"] 
 		              && ![[Helper machine] isEqualToString: @"iPhone1,2"]
-		              && ![[Helper machine] isEqualToString: @"iPhone2,1"] 		               
+		              //&& ![[Helper machine] isEqualToString: @"iPhone2,1"] 		               
 		              && ![[Helper machine] isEqualToString: @"iPod1,1"]
-                      && ![[Helper machine] isEqualToString: @"iPod2,1"]		              
+                      //&& ![[Helper machine] isEqualToString: @"iPod2,1"]		              
 		              ;
 		  
 		
@@ -172,8 +173,7 @@ extern int isIpad;
 							 nil]];	
 
 	
-    //NSString *path= @"/var/mobile/Media/ROMs/iXpectrum/savesRR/options_v3.bin";
-    NSString *path=[NSString stringWithCString:get_documents_path("iOS/options.bin")];
+    NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v2.bin")];
 	
 	NSData *plistData;
 	
@@ -379,6 +379,7 @@ extern int isIpad;
                    [switchScanlineFilterLand addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
                    break;
                }
+               /*
                case 3:
                {
                    cell.text  = @"Show 4 Buttons";
@@ -388,7 +389,8 @@ extern int isIpad;
                    [switch4buttonsLand addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
                    break;
                }
-               case 4:
+               */
+               case 3:
                {
                    cell.text  = @"Full Screen";
                    switchfullLand  = [[UISwitch alloc] initWithFrame:CGRectZero];                
@@ -397,7 +399,7 @@ extern int isIpad;
                    [switchfullLand addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
                    break;
                }               
-               case 5:
+               case 4:
                {
                    if(!isIpad)
                    {
@@ -481,7 +483,7 @@ extern int isIpad;
       switch (section)
       {
           case 0: return isIpad ? 4 : 3;
-          case 1: return isIpad ? 5 : 7;
+          case 1: return isIpad ? 4 : 5;
           case 2: return isIpad ? 3 : 4;
       }
 }

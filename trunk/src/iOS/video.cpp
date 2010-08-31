@@ -4,7 +4,12 @@
 #include "dirty.h"
 
 extern int  global_fps;
+extern int isIpad;
+extern "C" int safe_render_path;
 int iOS_exitPause = 0;
+int iOS_cropVideo = 0;
+int iOS_aspectRatio = 0;
+int iOS_320x240 = 0;
 
 dirtygrid grid1;
 dirtygrid grid2;
@@ -165,7 +170,6 @@ void osd_clearbitmap(struct osd_bitmap *bitmap)
 			memset(bitmap->line[i],0,bitmap->width);
 	}
 
-
 	if (bitmap == Machine->scrbitmap)
 	{
 		extern int bitmap_dirty;        /* in mame.c */
@@ -241,10 +245,73 @@ static void select_display_mode(int width,int height,int depth,int attributes,in
 		logerror("Game needs %d-bit colors.\n",depth);
 	}
 
-	if (!gfx_width && !gfx_height)
+	if (!gfx_width && !gfx_height)//no aspect ratio
 	{
-		gfx_width = 320;//512;//320;
-		gfx_height = 240;//480;//240;
+		gfx_width = width;
+		gfx_height = height;
+	}
+
+	if(iOS_320x240)
+	{
+		gfx_width = 320;
+		gfx_height = 240;
+	}
+
+	if(iOS_cropVideo)
+	{
+
+		gfx_width = width;
+		gfx_height = height;
+
+		//double ratio = 4.0/3.0;
+		//printf("%d %d %f\n",width,height,ratio);
+
+		int new_width = //gfx_height * ratio;
+		            ((((gfx_height*4)/3)+7)&~7);
+
+		if(new_width>gfx_width)
+		{
+			gfx_height = //gfx_width / ratio;
+					((((gfx_width*3)/4)+7)&~7);
+		}
+		else
+ 		    gfx_width = new_width;
+
+		//printf("%d %d\n",gfx_width,gfx_height);
+	}
+
+	if(iOS_aspectRatio)//aspect ratio
+	{
+
+		gfx_width = width;
+		gfx_height = height;
+
+		double ratio = 4.0/3.0;//isIpad ? 1024.0/768.0 :480.0/320.0;
+
+		//printf("%d %d %f\n",width,height,ratio);
+
+		int done = 0;
+
+		// Try adjusting width to be proportional to height
+		int newWidth = //(int) (ratio * gfx_height);
+				((((gfx_height*4)/3)+7)&~7);
+
+		if (newWidth >= gfx_width) {
+			gfx_width = newWidth;
+			done = 1;
+		}
+
+		// Try adjusting height to be proportional to width
+		if (!done) {
+			int newHeight = //(int) (gfx_width / ratio);
+					((((gfx_width*3)/4)+7)&~7);
+
+			if (newHeight >= gfx_height) {
+				gfx_height = newHeight;
+			}
+		}
+
+		//printf("%d %d\n",gfx_width,gfx_height);
 	}
 
 	/* Video hardware scaling */
@@ -254,38 +321,22 @@ static void select_display_mode(int width,int height,int depth,int attributes,in
 		gfx_height=height;
 	}
 
-	/* Force 4:3 aspect ratio */
-	if (video_aspect)
+	/* vector games use 640x480 as default */
+	if (vector_game)
 	{
-		if (gfx_width<gfx_height)
-			gfx_width=((((gfx_height*4)/3)+7)&~7);
-		/*
+		if(safe_render_path && !iOS_320x240)
+		{
+		   gfx_width = 640;
+		   gfx_height = 480;
+		}
 		else
-			gfx_height=((((gfx_width*3)/4)+7)&~7);
-		*/
-	}
-	
-	/* Border TV-Out */
-	if (video_border)
-	{
-		gfx_width=(((gfx_width+((gfx_width*6)/100))+7)&~7);
-		gfx_height=(((gfx_height+((gfx_height*8)/100))+7)&~7);
+		{
+		   gfx_width = 320;
+		   gfx_height = 240;
+		}
 	}
 
-	/* vector games use 640x480 as default */
-#ifndef GP2X
-	if (vector_game)
-	{
-		gfx_width = 640;
-		gfx_height = 480;
-	}
-#else
-	if (vector_game)
-	{
-		gfx_width = 320;
-		gfx_height = 240;
-	}
-#endif
+	gp2x_set_video_mode(16,gfx_width,gfx_height);
 }
 
 

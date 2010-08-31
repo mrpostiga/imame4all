@@ -253,7 +253,7 @@ void parse_cmdline (int argc, char **argv, int game_index)
 
 	skiplines   = get_int    ("config", "skiplines",    NULL, 0);
 	skipcolumns = get_int    ("config", "skipcolumns",  NULL, 0);
-	f_beam      = get_float  ("config", "beam",         NULL, 1.0);
+	f_beam      = get_float  ("config", "beam",         NULL, 1.5);//TODO
 	if (f_beam < 1.0) f_beam = 1.0;
 	if (f_beam > 16.0) f_beam = 16.0;
 	f_flicker   = get_float  ("config", "flicker",      NULL, 0.0);

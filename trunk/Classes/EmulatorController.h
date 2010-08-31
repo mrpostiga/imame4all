@@ -106,6 +106,8 @@
 - (void)removeDPadView;
 - (void)buildDPadView;
 
+- (void)changeUI;
+
 - (void)buildPortraitImageBack;
 - (void)buildPortraitImageOverlay;
 - (void)buildPortrait;

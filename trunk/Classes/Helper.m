@@ -56,7 +56,7 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
         switch (packet_type) {
 
                 case L2CAP_DATA_PACKET:
-                        if (packet[0] == 0xa1 && packet[1] == 0x31)
+                        if (packet[0] == 0xa1 && packet[1] == 0x30/*0x31*/)
                         {
 /*
   0 	 0x01 	 D-Pad Left 	 Two
@@ -107,14 +107,14 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
                             
                                 if(packet[3] & 0x04)
                                 {
-                                  gp2x_pad_status |= GP2X_R;                                
-                                  //NSLog(@"Wii_L");
+                                  gp2x_pad_status |= GP2X_Y;                                
+                                  //NSLog(@"Wii_Y");
                                 }
                                 if(packet[3] & 0x08)
                                 {
                                   gp2x_pad_status |= GP2X_A;
                                   //gp2x_pad_status |= GP2X_R;
-                                  //NSLog(@"Wii_R");                                  
+                                  //NSLog(@"Wii_A");                                  
                                 }
                                 if(packet[3] & 0x10)
                                 {
@@ -159,8 +159,11 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
                                                 } else {
 
                                                         // request acceleration data.. probably has to be sent to control channel 0x11 instead of 0x13
-                                                        uint8_t setMode31[] = { 0x52, 0x12, 0x00, 0x31 };
-                                                        bt_send_l2cap( source_cid, setMode31, sizeof(setMode31));
+                                                        //uint8_t setMode31[] = { 0x52, 0x12, 0x00, 0x31 };
+                                                        //bt_send_l2cap( source_cid, setMode31, sizeof(setMode31));
+                                                        //solo botones
+                                                        uint8_t setMode30[] = { 0x52, 0x12, 0x00, 0x30 };
+                                                        bt_send_l2cap( source_cid, setMode30, sizeof(setMode30));
                                                         uint8_t setLEDs[] = { 0x52, 0x11, 0x10 };
                                                         bt_send_l2cap( source_cid, setLEDs, sizeof(setLEDs));
 

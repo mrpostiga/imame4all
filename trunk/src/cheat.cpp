@@ -801,8 +801,6 @@ void LoadCheatFile (int merge, char *filename)
 			CheatTable[LoadedCheatTotal].comment = (char*)malloc(strlen (ptr) + 1);
 			strcpy(CheatTable[LoadedCheatTotal].comment,ptr);
 
-			printf("Cheat %s\n",ptr);
-
 			/* Strip line-ending if needed */
 			if (strstr(CheatTable[LoadedCheatTotal].comment,"\n") != NULL)
 				CheatTable[LoadedCheatTotal].comment[strlen(CheatTable[LoadedCheatTotal].comment)-1] = 0;
