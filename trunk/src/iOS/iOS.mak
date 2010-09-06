@@ -12,7 +12,7 @@ OBJC = $(OBJ)/iOS/minimal.o \
 	$(OBJ)/iOS/iOS.o $(OBJ)/iOS/video.o $(OBJ)/iOS/blit.o \
 	$(OBJ)/iOS/sound.o $(OBJ)/iOS/input.o $(OBJ)/iOS/fileio.o \
 	$(OBJ)/iOS/config.o $(OBJ)/iOS/fronthlp.o \
-	$(OBJ)/iOS/shared.o $(OBJ)/iOS/iOS_frontend.o
+	$(OBJ)/iOS/shared.o $(OBJ)/iOS/iOS_frontend.o $(OBJ)/iOS/wiimote.o
 	
 
 	

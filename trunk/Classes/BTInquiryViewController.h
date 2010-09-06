@@ -38,6 +38,7 @@
 #import <UIKit/UIKit.h>
 
 #include <btstack/hci_cmds.h> // for HCI_STATE
+#include <btstack/utils.h>
 
 @class BTDevice;
 @protocol BTInquiryDelegate;
@@ -76,6 +77,8 @@ typedef enum {
 - (void) showConnecting:(BTDevice *) device;
 - (void) showConnected:(BTDevice *) device;
 
+- (void) removeDeviceForAddress:(bd_addr_t *)addr;
+
 @property (nonatomic, assign) bool allowSelection;
 @property (nonatomic, assign) bool showIcons;
 @property (nonatomic, retain) NSMutableArray *devices;
@@ -83,8 +86,8 @@ typedef enum {
 @end
 
 @protocol BTInquiryDelegate
-- (void) deviceChoosen:(BTInquiryViewController *) inqView device:(BTDevice*) device;
-- (void) deviceDetected:(BTInquiryViewController *) inqView device:(BTDevice*) device;
-- (void) disconnectDevice:(BTInquiryViewController *) inqView device:(BTDevice*) device;
-- (void) inquiryStopped;
++ (void) deviceChoosen:(BTInquiryViewController *) inqView device:(BTDevice*) device;
++ (void) deviceDetected:(BTInquiryViewController *) inqView device:(BTDevice*) device;
++ (void) disconnectDevice:(BTInquiryViewController *) inqView device:(BTDevice*) device;
++ (void) inquiryStopped;
 @end

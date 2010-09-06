@@ -539,9 +539,9 @@ int osd_is_joy_pressed(int joycode)
 
 static void poll_joystick(void)
 {
-	//extern int num_of_joys;
+	extern int num_of_joys;
 
-	switch (0) //num_of_joys)
+	switch (num_of_joys)
 	{
 		case 4: ExKey4=gp2x_joystick_read(3);
 		case 3: ExKey3=gp2x_joystick_read(2);

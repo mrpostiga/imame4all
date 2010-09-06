@@ -1,6 +1,6 @@
 
 ===========================================================
-iMAME4ALL 1.2 (August 29, 2010) by David Valdeita (Seleuco)
+iMAME4ALL 1.3 (September 5, 2010) by David Valdeita (Seleuco)
 ===========================================================
 
 
@@ -42,7 +42,8 @@ Animated touch DPad.
 Low latency audio.
 Video Aspect Normal, Rotate, Rotate controls.
 Adjustable CPU, Audio clock.
-WiiMote control thanks to BTstack.
+WiiMote\WiiClassic control thanks to BTstack.
+Support for up to 4 WiiMotes/Classic (multiplayer).
 
 ... and more. 
 
@@ -144,15 +145,17 @@ GLOBAL OPTIONS
 
 WIIMOTE
 -------
-iMAME4all lets you use a WiiMote over bluetooth to play.
+iMAME4all lets you use up to 4 WiiMotes or Wii Classic controllers over bluetooth to play (multiplayer). 
 
 iMAME4all uses btstack project to support WiiMote:
 
 http://code.google.com/p/btstack/
 
-To use WiiMote you have to first launch iMAME4all menu pressing R2 button, and select WiiMote option. Then, make your WiiMote discoverable by pressing the 1+2 buttons at the same time. 
+To use WiiMote you have to first launch iMAME4all menu pressing R2 button, and select WiiMote option. Then, press to find first WiiMote and make your WiiMote discoverable by pressing the 1+2 buttons at the same time. 
 
 Lanscape touch DPad is hidden when you use WiiMote. You can play with aspect view (Rotation, TATE) and lock phisical rotation to play portrait-landscape games better.
+
+You can add new WiiMote anytime, selecting WiiMote option again. If a WiiMote is disconnected (battery drained) you can reconnect it or connect another WiiMote and continue playing.
 
 Buttons mapping:
 
@@ -327,6 +330,8 @@ PORT CREDITS
 DEVELOPMENT
 ---------------
 
+September 5,2010
+- Version 1.3: Added Wii Classic Controller support. Added support for up to 4 WiiMotes/Classic (multiplayer).
 August 29, 2010:
 - Version 1.2 Added 4 new Video Aspect modes: Original View Aspect (fix cropping bug)+(Ratio Not Kept,With Cropping,fixed 320x240),1-4 Buttons selectable from game launcher,Improved WiiMote,Vector games at 640x480.
 August 22, 2010:
@@ -337,9 +342,15 @@ August 18, 2010:
 KNOWN PROBLEMS
 ------------------
 
+- Preferences couldn't be saved. Check for write permissions. chmod 777 if needed:
+  Just go to imame4all.app file in your iDevice directory and set the permissions to 777.
+  also needs to be on the iMAME4ALL folder under /var/mobile/Media/ROMS. (recursive)
+ 
 - Not perfect sound or incomplete in some games.
 
 - Memory leaks. In case of errors, reset iOS and try again please ;-).
+
+- Some games listed could not work well. The MAME team could do any game not work between versions.
 
 
 INTERESTING WEBPAGES ABOUT MAME

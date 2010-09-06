@@ -14,7 +14,9 @@
 
 */
 
+
 #include "minimal.h"
+#include "wiimote.h"
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -32,8 +34,6 @@ extern "C" void app_MuteSound(void);
 extern "C" void app_DemuteSound(void);
 extern "C" void iphone_UpdateScreen(void);
 extern "C" void iphone_Reset_Views(void);
-
-int num_of_joys = 0;
 
 int iOS_video_width = 320;
 int iOS_video_height = 240;
@@ -106,6 +106,13 @@ unsigned long gp2x_joystick_read(int n)
 	/* GP2X F200 Push Button */
 	if ((res & GP2X_VOL_UP) && (res & GP2X_VOL_DOWN))
 	  		res |= GP2X_PUSH;
+
+	if (num_of_joys>n)
+	{
+	  	/* Check USB Joypad */
+		//printf("%d %d\n",num_of_joys,n);
+		res |= iOS_wiimote_check(&joys[n]);
+	}
   	
 	return res;
 }

@@ -40,6 +40,7 @@
 #import <UIKit/UIToolbar.h>
 
 #include <btstack/btstack.h>
+#include "wiimote.h"
 
 #define INQUIRY_INTERVAL 3
 
@@ -61,6 +62,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 }
 
 @implementation BTInquiryViewController
+
 
 @synthesize devices;
 @synthesize delegate;
@@ -120,9 +122,11 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 					[[self tableView] reloadData];
 					
 					// set BT state
+/*					
 					if (bluetoothState == HCI_STATE_WORKING) {
 						[self myStartInquiry];
 					}
+*/					
 					break;
 					
 				case BTSTACK_EVENT_POWERON_FAILED:
@@ -243,6 +247,21 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 	return nil;
 }
 
+
+- (void) removeDeviceForAddress:(bd_addr_t *)addr {
+	uint8_t j;
+	for (j=0; j<[devices count]; j++){
+		BTDevice *dev = [devices objectAtIndex:j];
+		if (BD_ADDR_CMP(addr, [dev address]) == 0){
+		    NSLog(@"--> removed %@", [dev toString] );
+			[devices removeObject:dev];
+			[[self tableView] reloadData];
+			return;
+		}
+	}
+	
+}
+
 - (void) getNextRemoteName{
 	
 	// stopped?
@@ -283,6 +302,10 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 }
 
 - (void) startInquiry {
+   static int b = 0;
+   if(!b)
+   {
+	 b=1;
 	// put into loop
 
 	// @TODO: cannot be called a second time!
@@ -295,6 +318,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 	restartInquiry = true;
 	
 	bt_send_cmd(&btstack_set_power_mode, HCI_POWER_ON );
+	}
 }
 
 - (void) stopInquiry {
@@ -456,15 +480,20 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 			} else {
 				switch (inquiryState){
 					case kInquiryInactive:
-						if ([devices count] > 0){
-							label = @"Find more devices...";
+					    if (num_of_joys==4)
+					    {
+					       label = @"Maximun devices connected!";
+					    }
+						else if ([devices count] > 0){
+							label = @"Press here to find more devices...";
 						} else {
-							label = @"Find devices...";
+							label = @"Press here to find first device...";
 						}
 						cell.accessoryView = nil;
 						break;
 					case kInquiryActive:
-						label = @"Searching...";
+						//label = @"Searching...";
+						label = @"Press 1 and 2 on the WiiMote to sync";
 						cell.accessoryView = bluetoothActivity;
 						break;
 					case kInquiryRemoteName:
@@ -519,16 +548,20 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 	// [anotherViewController release];
 	
 	// valid selection?
+	
+	
 	int idx = [indexPath indexAtPosition:1];
+	//printf("sleccion %d\n",idx);
 	if (bluetoothState == HCI_STATE_WORKING) {
 		if (delegate) {
 			if (idx < [devices count]){
 				[delegate deviceChoosen:self device:[devices objectAtIndex:idx]];
 			} else if (idx == [devices count]) {
+			    //printf("seleccionado %d %d\n",idx,connectedDevice);
 				if (connectedDevice) {
 					// DISCONNECT button 
 					[delegate disconnectDevice:self device:connectedDevice];
-				} else {
+				} else if (num_of_joys<4){
 					// Find more devices
 					[self myStartInquiry];
 				}

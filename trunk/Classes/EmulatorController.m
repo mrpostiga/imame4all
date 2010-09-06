@@ -30,6 +30,7 @@
 
 //http://code.google.com/p/metasyntactic/source/browse/trunk/MetasyntacticShared/Classes/ImageUtilities.m?r=4217
 
+#include "minimal.h"
 #import "Helper.h"
 #import "ScreenView.h"
 #import "EmulatorController.h"
@@ -60,9 +61,13 @@
 		
 	
 
+extern unsigned long gp2x_pad_status;
+extern int num_of_joys;
+
 extern CGRect drects[100];
 extern int ndrects;
-extern btUsed;
+//extern btUsed;
+unsigned long btUsed = 0;
 
 extern CGRect rEmulatorFrame;
 static CGRect rPortraitViewFrame;
@@ -108,7 +113,7 @@ int global_low_latency_sound = 0;
 int iOS_animated_DPad = 0;
 int iOS_4buttonsLand = 0;
 int iOS_full_screen_land = 0;
-extern iOS_landscape_buttons;
+extern int iOS_landscape_buttons;
         
         
 enum { DPAD_NONE=0,DPAD_UP=1,DPAD_DOWN=2,DPAD_LEFT=3,DPAD_RIGHT=4,DPAD_UP_LEFT=5,DPAD_UP_RIGHT=6,DPAD_DOWN_LEFT=7,DPAD_DOWN_RIGHT=8};    
@@ -130,6 +135,8 @@ extern int iphone_main (int argc, char **argv);
 extern int iOS_inGame;
 extern int iOS_exitGame;
 extern int iOS_exitPause;
+
+int actionPending=0;
 
 
 //SHARED y GLOBALES!
@@ -185,7 +192,7 @@ void* app_Thread_Start(void* args)
            iphone_menu = IPHONE_MENU_DONATE;
 	    }
 	    */
-	    else if(buttonIndex == 2 && !btUsed)    
+	    else if(buttonIndex == 2 )    
 	    {
            iphone_menu = IPHONE_MENU_WIIMOTE;
 	    }	    
@@ -314,6 +321,8 @@ void* app_Thread_Start(void* args)
 {
     
   if(__emulation_paused)return;
+  //btUsed = num_of_joys!=0;
+  
   app_MuteSound();
   NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
   __emulation_paused = 1;
@@ -330,12 +339,21 @@ void* app_Thread_Start(void* args)
       usleep(1000000);
     }
   }
+
    usleep(100000);
    app_DemuteSound();
    iOS_exitPause = 1;
   __emulation_paused = 0;  
-   if(iphone_is_landscape && btUsed)
+  
+  int old = btUsed;
+  btUsed = num_of_joys!=0;
+  actionPending=0;
+  
+  if(iphone_is_landscape && btUsed && old!=btUsed)
       [self removeDPadView];
+  if(iphone_is_landscape && !btUsed && old!=btUsed) 
+      [self buildDPadView];
+      
   [pool release];
 }
 
@@ -344,11 +362,6 @@ void* app_Thread_Start(void* args)
 
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	UIActionSheet *alert;
-	if(btUsed)
-	 alert = [[UIActionSheet alloc] initWithTitle:
-	   @"Choose an option from the menu. Press cancel to go back." delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil 
-	   otherButtonTitles: @"Help",@"Options",@"Cancel" , nil];
-	else
 	 alert = [[UIActionSheet alloc] initWithTitle:
 	   @"Choose an option from the menu. Press cancel to go back." delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil 
 	   otherButtonTitles:@"Help",@"Options",@"WiiMote",@"Cancel", nil];	   
@@ -581,6 +594,8 @@ void* app_Thread_Start(void* args)
    
    
    [self removeDPadView];
+   
+   btUsed = num_of_joys!=0; 
    
    if(btUsed && iphone_is_landscape)
      return;
@@ -978,7 +993,7 @@ void* app_Thread_Start(void* args)
 		{
 			if(__emulation_run)
 		    {
-                        [NSThread detachNewThreadSelector:@selector(runMenu) toTarget:self withObject:nil];
+                [NSThread detachNewThreadSelector:@selector(runMenu) toTarget:self withObject:nil];
 			}					
 	    }
     }
@@ -996,6 +1011,7 @@ void* app_Thread_Start(void* args)
   {
      iOS_exitGame = 1;
   }
+  actionPending=0;
 }
 
 - (void)touchesController:(NSSet *)touches withEvent:(UIEvent *)event {	
@@ -1143,8 +1159,10 @@ void* app_Thread_Start(void* args)
 				//gp2x_pad_status |= GP2X_VOL_DOWN;
 				btnStates[BTN_L2] = BUTTON_PRESS;
 				
-				if(iOS_inGame)
+				if(iOS_inGame && !actionPending)
 				{				  				
+		            
+		            actionPending=1;
 		            iOS_exitGame = 0;	
 		            usleep(100000);	            
 		            __emulation_paused = 1;
@@ -1162,13 +1180,14 @@ void* app_Thread_Start(void* args)
 				//gp2x_pad_status |= GP2X_VOL_UP;
 				btnStates[BTN_R2] = BUTTON_PRESS;
 				
-				if(touch.phase == UITouchPhaseBegan || touch.phase == UITouchPhaseStationary)
-				{
-					if(__emulation_run)
+				//if(touch.phase == UITouchPhaseBegan || touch.phase == UITouchPhaseStationary)
+				//{
+					if(__emulation_run && !actionPending)
 					{
+                        actionPending=1;
                         [NSThread detachNewThreadSelector:@selector(runMenu) toTarget:self withObject:nil];
 					}					
-				}
+				//}
 				
 			}			
 			else if (MyCGRectContainsPoint(Menu, point)) {
