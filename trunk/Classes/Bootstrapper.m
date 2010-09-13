@@ -30,11 +30,17 @@
 
 #import "Bootstrapper.h"
 #import "Helper.h"
+#import <UIKit/UIKit.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include "shared.h"
 
+
 int isIpad = 0;
+extern __emulation_run; 
+//extern int iOS_external_width;
+//extern int iOS_external_height;
+CGRect rExternal;
 
 @implementation Bootstrapper
 
@@ -70,15 +76,29 @@ int isIpad = 0;
 
 	hrViewController = [[EmulatorController alloc] init];
 	
-	window = [[UIWindow alloc] initWithFrame:rect];
-	window.backgroundColor = [UIColor redColor];
-	[window addSubview: hrViewController.view ];
+	deviceWindow = [[UIWindow alloc] initWithFrame:rect];
+	deviceWindow.backgroundColor = [UIColor redColor];
+	[deviceWindow addSubview: hrViewController.view ];
 	
-	[window makeKeyAndVisible];
+	[deviceWindow makeKeyAndVisible];
+	 
+	externalWindow = [[UIWindow alloc] initWithFrame:CGRectZero];
+	externalWindow.hidden = YES;
+	 	
+	[[NSNotificationCenter defaultCenter] addObserver:self 
+												 selector:@selector(prepareScreen) 
+													 name:@"UIScreenDidConnectNotification"
+												   object:nil];
+        
 		
-	[hrViewController startEmulation];
-
+    [[NSNotificationCenter defaultCenter] addObserver:self 
+												 selector:@selector(prepareScreen) 
+													 name:@"UIScreenDidDisconnectNotification" 
+												   object:nil];
+    [self prepareScreen];
+	
 }
+
 
 - (void)applicationWillTerminate:(UIApplication *)application {
 //TODO???.
@@ -93,9 +113,101 @@ int isIpad = 0;
  */   
 }
 
+- (void)prepareScreen
+{
+	 @try
+    {												   										       
+	    if ([[UIScreen screens] count] > 1) {
+	    											 	        	   					
+			// Internal display is 0, external is 1.
+			externalScreen = [[[UIScreen screens] objectAtIndex:1] retain];			
+			screenModes =  [[externalScreen availableModes] retain];
+					
+			// Allow user to choose from available screen-modes (pixel-sizes).
+			UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:@"External Display Detected!" 
+															 message:@"Choose a size for the external display." 
+															delegate:self 
+												   cancelButtonTitle:nil 
+												   otherButtonTitles:nil] autorelease];
+			for (UIScreenMode *mode in screenModes) {
+				CGSize modeScreenSize = mode.size;
+				[alert addButtonWithTitle:[NSString stringWithFormat:@"%.0f x %.0f pixels", modeScreenSize.width, modeScreenSize.height]];
+			}
+			[alert show];
+			
+		} else {
+		     if(!__emulation_run)
+		     {
+		        [hrViewController startEmulation];
+		     }   
+		     else
+		     {
+		        [hrViewController setExternalView:nil];
+		        externalWindow.hidden = YES;
+		        [hrViewController changeUI];
+		     }   
+		    	
+		}
+	}
+	 @catch(NSException* ex)
+    {
+        NSLog(@"Not supported tv out API!");
+        if(!__emulation_run)
+          [hrViewController startEmulation];
+    }	
+}
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+	//UIScreenMode *desiredMode = [screenModes objectAtIndex:buttonIndex];
+	
+	[externalScreen setCurrentMode:[screenModes objectAtIndex:buttonIndex]];
+	[externalWindow setScreen:externalScreen];
+	
+	CGRect rect = CGRectZero;
+/*	
+	rect.size = desiredMode.size;
+	rect.size.width =desiredMode.size.width;
+	rect.size.height =desiredMode.size.height;
+*/	 
+	
+	rect = externalScreen.bounds;
+	externalWindow.frame = rect;
+	externalWindow.clipsToBounds = YES;
+	
+	int  external_width = externalWindow.frame.size.width;
+	int  external_height = externalWindow.frame.size.height;
+	
+	int width = (int)(external_width * 0.90);//overscan
+    int height = (int)((width * 3) / 4);
+      
+    rExternal = CGRectMake( (external_width - width)/2, (external_height - height)/2, width, height);
+    
+    for (UIView *view in [externalWindow subviews]) {
+       [view removeFromSuperview];
+    }
+    
+    UIView *view= [[UIView alloc] initWithFrame:rect];
+    view.backgroundColor = [UIColor blackColor];
+    [externalWindow addSubview:view];
+    [view release];
+		
+	[hrViewController setExternalView:view];
+	externalWindow.hidden = NO;
+	//[externalWindow makeKeyAndVisible];
+	if(__emulation_run)
+	    [hrViewController changeUI];
+	else
+	    [hrViewController startEmulation];
+	    
+    [screenModes release];
+	[externalScreen release];
+}
+
 -(void)dealloc {
     [hrViewController release];
-	[window dealloc];
+	[deviceWindow dealloc];	
+	[externalWindow dealloc];
 	[super dealloc];
 }
 

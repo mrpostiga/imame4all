@@ -12,6 +12,14 @@ unsigned long ExKey2=0;
 unsigned long ExKey3=0;
 unsigned long ExKey4=0;
 int num_joysticks=4;
+
+float joy_analog_x[4];
+float joy_analog_y[4];
+
+int analog_read[4];
+
+
+
 #include "minimal.h"
 
 static struct KeyboardInfo keylist[] =
@@ -409,10 +417,23 @@ static int is_joy_button_pressed (int button, int ExKey)
 	return 0; 
 }
 
-#define JOY_LEFT_PRESSED is_joy_axis_pressed(0,1,ExKey1)
-#define JOY_RIGHT_PRESSED is_joy_axis_pressed(0,2,ExKey1)
-#define JOY_UP_PRESSED is_joy_axis_pressed(1,1,ExKey1)
-#define JOY_DOWN_PRESSED is_joy_axis_pressed(1,2,ExKey1)
+
+#define JOY_LEFT_PRESSED(x)(is_joy_axis_pressed(0,1, (x==0?ExKey1:(x==1?ExKey2:(x==2?ExKey3:ExKey4)))))
+#define JOY_RIGHT_PRESSED(x)( is_joy_axis_pressed(0,2, (x==0?ExKey1:(x==1?ExKey2:(x==2?ExKey3:ExKey4)))))
+#define JOY_UP_PRESSED(x)( is_joy_axis_pressed(1,1, (x==0?ExKey1:(x==1?ExKey2:(x==2?ExKey3:ExKey4)))))
+#define JOY_DOWN_PRESSED(x)( is_joy_axis_pressed(1,2, (x==0?ExKey1:(x==1?ExKey2:(x==2?ExKey3:ExKey4)))))
+
+/*
+#define JOY_LEFT_PRESSED(x) is_joy_axis_pressed(0,1,ExKey1)
+#define JOY_RIGHT_PRESSED(x) is_joy_axis_pressed(0,2,ExKey1)
+#define JOY_UP_PRESSED(x) is_joy_axis_pressed(1,1,ExKey1)
+#define JOY_DOWN_PRESSED(x) is_joy_axis_pressed(1,2,ExKey1)
+*/
+
+#define JOY_LEFT_PRESSED2 is_joy_axis_pressed(0,1,ExKey1)
+#define JOY_RIGHT_PRESSED2 is_joy_axis_pressed(0,2,ExKey1)
+#define JOY_UP_PRESSED2 is_joy_axis_pressed(1,1,ExKey1)
+#define JOY_DOWN_PRESSED2 is_joy_axis_pressed(1,2,ExKey1)
 
 static int is_joy_axis_pressed (int axis, int dir, int ExKey)
 {
@@ -568,38 +589,60 @@ void osd_poll_joysticks(void)
 		poll_joystick();
 }
 
-int pos_analog_x=0;
-int pos_analog_y=0;
+short pos_analog_x[4];
+short pos_analog_y[4];
 
 /* return a value in the range -128 .. 128 (yes, 128, not 127) */
 void osd_analogjoy_read(int player,int *analog_x, int *analog_y)
 {
 	*analog_x = *analog_y = 0;
+	short joy_analog_x_128 = joy_analog_x[player] * 128.0;
+	short joy_analog_y_128 = joy_analog_y[player] * -128.0 ;
 
 	/* is there an analog joystick at all? */
 	if (player+1 > num_joysticks || joystick == JOY_TYPE_NONE)
 		return;
 
-	if( (!(JOY_LEFT_PRESSED)) && (!(JOY_RIGHT_PRESSED)) ) {
-		pos_analog_x=0;
+	if( (!(JOY_LEFT_PRESSED(player))) && (!(JOY_RIGHT_PRESSED(player))) ) {
+		pos_analog_x[player]=0;
 	} else {
-		if(JOY_LEFT_PRESSED) pos_analog_x-=5;
-		if(JOY_RIGHT_PRESSED) pos_analog_x+=5;
+		if(JOY_LEFT_PRESSED(player))
+		{
+			if(joy_analog_x[player]!=0){ pos_analog_x[player]=joy_analog_x_128; analog_read[player]=1;}else
+			{pos_analog_x[player]-=5;analog_read[player]=0;}
+		}
+		if(JOY_RIGHT_PRESSED(player))
+		{
+			if(joy_analog_x[player]!=0) {pos_analog_x[player]=joy_analog_x_128; analog_read[player]=1;}else
+			{pos_analog_x[player]+=5;analog_read[player]=0;}
+		}
 	}
-	if( (!(JOY_UP_PRESSED)) && (!(JOY_DOWN_PRESSED)) ) {
-		pos_analog_y=0;
+	if( (!(JOY_UP_PRESSED(player))) && (!(JOY_DOWN_PRESSED(player))) ) {
+		pos_analog_y[player]=0;
 	} else {
-		if(JOY_UP_PRESSED) pos_analog_y-=5; 
-		if(JOY_DOWN_PRESSED) pos_analog_y+=5;
+		if(JOY_UP_PRESSED(player))
+		{
+			if(joy_analog_y[player]!=0) {pos_analog_y[player]=joy_analog_y_128;analog_read[player]=1;} else
+			{pos_analog_y[player]-=5;analog_read[player]=0;}
+		}
+		if(JOY_DOWN_PRESSED(player))
+		{
+			if(joy_analog_y[player]!=0){ pos_analog_y[player]=joy_analog_y_128;analog_read[player]=1;} else
+			{pos_analog_y[player]+=5;analog_read[player]=0;}
+		}
 	 }
 	
-	if (pos_analog_x<-128) pos_analog_x=-128;
-	if (pos_analog_x>128) pos_analog_x=128;
-	if (pos_analog_y<-128) pos_analog_y=-128;
-	if (pos_analog_y>128) pos_analog_y=128;
+	if (pos_analog_x[player]<-128) pos_analog_x[player]=-128;
+	if (pos_analog_x[player]>128) pos_analog_x[player]=128;
+	if (pos_analog_y[player]<-128) pos_analog_y[player]=-128;
+	if (pos_analog_y[player]>128) pos_analog_y[player]=128;
 	
-	*analog_x = pos_analog_x;
-	*analog_y = pos_analog_y;
+	//printf("ANALOG %d %d\n",pos_analog_x,pos_analog_y);
+
+	*analog_x = pos_analog_x[player];
+	*analog_y = pos_analog_y[player];
+
+	//printf("Pregunta JOY %d %d %d %d",num_joysticks,player,pos_analog_x[player],pos_analog_y[player]);
 }
 
 
@@ -628,16 +671,56 @@ void osd_joystick_end_calibration (void)
 
 void osd_trak_read(int player,int *deltax,int *deltay)
 {
-	if (player != 0 || use_mouse == 0)
+	if (player != 0 || use_mouse == 0 )
 		*deltax = *deltay = 0;
 	else
 	{
 		*deltax = *deltay = 0;
-		if(JOY_LEFT_PRESSED) *deltax=-5;
-	  	if(JOY_RIGHT_PRESSED) *deltax=5;
-	  	if(JOY_UP_PRESSED) *deltay=5; 
-	 	if(JOY_DOWN_PRESSED) *deltay=-5;
+		short x_value = joy_analog_x[player] * 30;
+		short y_value = joy_analog_y[player] * -30;
+
+		if(JOY_LEFT_PRESSED(player))
+		{
+			if(x_value!=0){
+				*deltax=x_value;
+				analog_read[player]=1;
+			} else {
+				*deltax=-5;
+				analog_read[player]=0;
+			}
+		}
+	  	if(JOY_RIGHT_PRESSED(player))
+	  	{
+	  		if(x_value!=0){
+	  			*deltax=x_value;
+	  			analog_read[player]=1;
+	  		} else {
+	  			*deltax=5;
+	  	        analog_read[player]=0;
+	  		}
+	  	}
+	  	if(JOY_UP_PRESSED(player))
+	  	{
+	  	    if(y_value!=0){
+	  	    	*deltay=y_value;
+	  	    	analog_read[player]=1;
+	  	    } else {
+	  	    	*deltay=5;
+	  	    	analog_read[player]=0;
+	  	    }
+	  	}
+	 	if(JOY_DOWN_PRESSED(player))
+	 	{
+	 		if(y_value!=0){
+	 			*deltay=y_value;
+	 			analog_read[player]=1;
+	 		} else {
+	 			*deltay=-5;
+	 			analog_read[player]=0;
+	 		}
+	 	}
 	}
+	//printf("Pregunta track %d %d %d ",*deltax,*deltay,analog_read[player]);
 }
 
 

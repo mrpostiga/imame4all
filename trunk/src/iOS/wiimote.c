@@ -267,9 +267,17 @@ int wiimote_handshake(struct wiimote_t* wm,  byte event, byte* data, unsigned sh
 						WIIMOTE_ENABLE_STATE(wm, WIIMOTE_STATE_HANDSHAKE);//forzamos un handshake por si venimos de un hanshake completo
 					}
 
-					byte buf = 0x00;
-					//initialize the extension was by writing the single encryption byte 0x00 to 0x(4)A40040
-					wiimote_write_data(wm, WM_EXP_MEM_ENABLE, &buf, 1);
+					byte buf;
+					//Old way. initialize the extension was by writing the single encryption byte 0x00 to 0x(4)A40040
+					//buf = 0x00;
+					//wiimote_write_data(wm, WM_EXP_MEM_ENABLE, &buf, 1);
+
+					//NEW WAY 0x55 to 0x(4)A400F0, then writing 0x00 to 0x(4)A400FB. (support clones)
+					buf = 0x55;
+					wiimote_write_data(wm, 0x04A400F0, &buf, 1);
+					usleep(100000);
+					buf = 0x00;
+					wiimote_write_data(wm, 0x04A400FB, &buf, 1);
 
 					//check extension type!
 					usleep(100000);
@@ -323,7 +331,7 @@ int wiimote_handshake(struct wiimote_t* wm,  byte event, byte* data, unsigned sh
 
 				if(WIIMOTE_DBG)printf("Expansion id=0x%04x\n",id);
 
-				if(id!=EXP_ID_CODE_CLASSIC_CONTROLLER)
+				if(id!=/*EXP_ID_CODE_CLASSIC_CONTROLLER*/0xa4200101)
 				{
 					wm->handshake_state = 2;
 					//WIIMOTE_DISABLE_STATE(wm, WIIMOTE_STATE_EXP);
@@ -503,8 +511,10 @@ int classic_ctrl_handshake(struct wiimote_t* wm, struct classic_ctrl_t* cc, byte
 	cc->l_shoulder = 0;
 
 	/* decrypt data */
+	/*
 	for (i = 0; i < len; ++i)
 		data[i] = (data[i] ^ 0x17) + 0x17;
+	*/
 
 	if(WIIMOTE_DBG)
 	{
@@ -540,11 +550,11 @@ int classic_ctrl_handshake(struct wiimote_t* wm, struct classic_ctrl_t* cc, byte
 	}
 	else
 	{
-		cc->ljs.max.x = 60;
-		cc->ljs.min.x = 0;
+		cc->ljs.max.x = 55;
+		cc->ljs.min.x = 5;
 		cc->ljs.center.x = 30;
-		cc->ljs.max.y = 60;
-		cc->ljs.min.y = 0;
+		cc->ljs.max.y = 55;
+		cc->ljs.min.y = 5;
 		cc->ljs.center.y = 30;
 
 		cc->rjs.max.x = 30;
@@ -572,8 +582,10 @@ void classic_ctrl_event(struct classic_ctrl_t* cc, byte* msg) {
 	byte l, r;
 
 	/* decrypt data */
+	/*
 	for (i = 0; i < 6; ++i)
 		msg[i] = (msg[i] ^ 0x17) + 0x17;
+    */
 
 	classic_ctrl_pressed_buttons(cc, BIG_ENDIAN_SHORT(*(short*)(msg + 4)));
 
@@ -594,7 +606,8 @@ void classic_ctrl_event(struct classic_ctrl_t* cc, byte* msg) {
 	rx = ((msg[0] & 0xC0) >> 3) | ((msg[1] & 0xC0) >> 5) | ((msg[2] & 0x80) >> 7);
 	ry = (msg[2] & 0x1F);
 
-	if(WIIMOTE_DBG)printf("%d %d %d %d\n",lx,ly,rx,ry);
+	if(WIIMOTE_DBG)
+		printf("%d %d %d %d\n",lx,ly,rx,ry);
 
 	calc_joystick_state(&cc->ljs, lx, ly);
 	calc_joystick_state(&cc->rjs, rx, ry);
@@ -671,14 +684,20 @@ void calc_joystick_state(struct joystick_t* js, float x, float y) {
 		ang -= 180.0f;
 	js->ang = absf(ang);
 	js->mag = (float) sqrt((rx * rx) + (ry * ry));
+	js->rx = rx;
+	js->ry = ry;
 
 }
 
 ////////////////////////////////////////////////////////////
 
+extern float joy_analog_x[4];
+extern float joy_analog_y[4];
 
 int iOS_wiimote_check (struct  wiimote_t  *wm){
 	 //printf("check %d\n",wm->unid);
+	 joy_analog_x[wm->unid]=0.0f;
+	 joy_analog_y[wm->unid]=0.0f;
 	 int joyExKey = 0;
 	 if (1) {
 
@@ -717,8 +736,11 @@ int iOS_wiimote_check (struct  wiimote_t  *wm){
 					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_PLUS))		joyExKey |= GP2X_START;
 					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_FULL_R))		joyExKey |= GP2X_R;
 
-					if(cc->ljs.mag >= 0.3)
+					if(cc->ljs.mag >= 0.15)
 					{
+						joy_analog_x[wm->unid] = cc->ljs.rx;
+						joy_analog_y[wm->unid] = cc->ljs.ry;
+
 						float v = cc->ljs.ang;
 
 						if( v >= 330 || v < 30){
@@ -756,7 +778,7 @@ int iOS_wiimote_check (struct  wiimote_t  *wm){
 						}
 					}
 
-					if(cc->rjs.mag >= 0.3)
+					if(cc->rjs.mag >= 0.2)
 					{
 						float v = cc->rjs.ang;
 

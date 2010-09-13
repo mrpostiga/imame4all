@@ -204,6 +204,7 @@ extern "C" {
 
 		float ang;						/**< angle the joystick is being held		*/
 		float mag;						/**< magnitude of the joystick (range 0-1)	*/
+		float rx, ry;
 	} joystick_t;
 
 	/**

@@ -1074,6 +1074,9 @@ InputSeq* input_port_seq(const struct InputPort *in)
 		return &inputport_defaults[i].seq;
 }
 
+
+extern int analog_read[4];
+
 void update_analog_port(int port)
 {
 	struct InputPort *in;
@@ -1087,6 +1090,14 @@ void update_analog_port(int port)
 	/* get input definition */
 	in = input_analog[port];
 
+	switch (in->type & IPF_PLAYERMASK)
+	{
+		case IPF_PLAYER2:          player = 1; break;
+		case IPF_PLAYER3:          player = 2; break;
+		case IPF_PLAYER4:          player = 3; break;
+		case IPF_PLAYER1: default: player = 0; break;
+	}
+
 	/* if we're not cheating and this is a cheat-only port, bail */
 	if (!options.cheat && (in->type & IPF_CHEAT)) return;
 	type=(in->type & ~IPF_MASK);
@@ -1095,6 +1106,8 @@ void update_analog_port(int port)
 	incseq = input_port_seq(in+1);
 
 	keydelta = IP_GET_DELTA(in);
+
+	if(analog_read[player])keydelta=0;
 
 	switch (type)
 	{
@@ -1124,6 +1137,9 @@ void update_analog_port(int port)
 
 
 	sensitivity = IP_GET_SENSITIVITY(in);
+
+	//if(analog_read[player])sensitivity=(sensitivity/4);
+
 	min = IP_GET_MIN(in);
 	max = IP_GET_MAX(in);
 	default_value = in->default_value * 100 / sensitivity;
@@ -1133,7 +1149,6 @@ void update_analog_port(int port)
 		if (in->mask > 0xff) min = min - 0x10000;
 		else min = min - 0x100;
 	}
-
 
 	input_analog_previous_value[port] = input_analog_current_value[port];
 
@@ -1146,18 +1161,13 @@ void update_analog_port(int port)
 
 	delta = 0;
 
-	switch (in->type & IPF_PLAYERMASK)
+	if (!is_stick)
 	{
-		case IPF_PLAYER2:          player = 1; break;
-		case IPF_PLAYER3:          player = 2; break;
-		case IPF_PLAYER4:          player = 3; break;
-		case IPF_PLAYER1: default: player = 0; break;
+		if (axis == X_AXIS)
+			delta = mouse_delta_x[player];
+		else
+			delta = mouse_delta_y[player];
 	}
-
-	if (axis == X_AXIS)
-		delta = mouse_delta_x[player];
-	else
-		delta = mouse_delta_y[player];
 
 	if (seq_pressed(decseq)) delta -= keydelta;
 
@@ -1253,6 +1263,7 @@ void update_analog_port(int port)
 	}
 
 	input_analog_current_value[port] = current;
+    //printf("input_analog_current_value %d %d %d %d ",port,current,sensitivity,keydelta);
 }
 
 static void scale_analog_port(int port)

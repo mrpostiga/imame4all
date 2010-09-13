@@ -1,6 +1,6 @@
 
 ===========================================================
-iMAME4ALL 1.3 (September 5, 2010) by David Valdeita (Seleuco)
+iMAME4ALL 1.4 (September 12, 2010) by David Valdeita (Seleuco)
 ===========================================================
 
 
@@ -44,6 +44,7 @@ Video Aspect Normal, Rotate, Rotate controls.
 Adjustable CPU, Audio clock.
 WiiMote\WiiClassic control thanks to BTstack.
 Support for up to 4 WiiMotes/Classic (multiplayer).
+Native TV-Out for firmware >= 3.2.
 
 ... and more. 
 
@@ -145,6 +146,7 @@ GLOBAL OPTIONS
 
 WIIMOTE
 -------
+
 iMAME4all lets you use up to 4 WiiMotes or Wii Classic controllers over bluetooth to play (multiplayer). 
 
 iMAME4all uses btstack project to support WiiMote:
@@ -168,6 +170,18 @@ A = A
 home: exit game
 
 In landscape mode touch on anywhere of the screen to show the emulator options.
+
+TV-OUT
+-------
+
+To connect an iPad ot iPhone to your TV or a projector, you can either use the Apple Component AV Cable, Apple Composite AV Cable, Apple Dock Connector to VGA Adapter, or other compatible cable.
+
+Use TV Out settings to set up how iPad or iPhone plays videos on your TV.
+
+When the cable is connected to a TV or projector, iMAME4all will automatically use it when playing a game.
+
+Set the TV signal to NTSC or PAL: Choose Video > TV Signal and select NTSC or PAL. NTSC and PAL are TV broadcast standards, used in different regions. If you are in the Americas, NTSC is probably the correct choice. Elsewhere, try PAL. If you’re not sure, check the documentation that came with your TV or projector.
+
 
 INSTALLATION
 ---------------
@@ -329,8 +343,9 @@ PORT CREDITS
 
 DEVELOPMENT
 ---------------
-
-September 5,2010
+September 12,2010:
+- V1.4: Added Native TV-Out for firmware >=3.2. Added Wii classic analog support. Added support for Wii classics clones.
+September 5,2010:
 - Version 1.3: Added Wii Classic Controller support. Added support for up to 4 WiiMotes/Classic (multiplayer).
 August 29, 2010:
 - Version 1.2 Added 4 new Video Aspect modes: Original View Aspect (fix cropping bug)+(Ratio Not Kept,With Cropping,fixed 320x240),1-4 Buttons selectable from game launcher,Improved WiiMote,Vector games at 640x480.
@@ -383,7 +398,7 @@ MAME LICENSE
 http://www.mame.net
 http://www.mamedev.com
 
-Copyright � 1997-2009, Nicola Salmoria and the MAME team. All rights reserved. 
+Copyright © 1997-2009, Nicola Salmoria and the MAME team. All rights reserved. 
 
 Redistribution and use of this code or any derivative works are permitted provided
 that the following conditions are met: 

@@ -82,10 +82,10 @@ static CGRect rLandscapeViewFrameNotFull;
 static CGRect rLandscapeImageOverlayFrame;
 static CGRect rLandscapeImageBackFrame;
 
-
-
 static CGRect rLoopImageMask;
 static CGRect rShowKeyboard;
+
+extern CGRect rExternal;
 
 int iphone_menu = IPHONE_MENU_DISABLED;
 
@@ -112,7 +112,9 @@ int global_fps = 0;
 int global_low_latency_sound = 0;
 int iOS_animated_DPad = 0;
 int iOS_4buttonsLand = 0;
-int iOS_full_screen_land = 0;
+int iOS_full_screen_land = 1;
+//int iOS_external_width = 0;
+//int iOS_external_height = 0;
 extern int iOS_landscape_buttons;
         
         
@@ -170,6 +172,8 @@ void* app_Thread_Start(void* args)
 }
 
 @implementation EmulatorController
+
+@synthesize externalView;
 
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
 {
@@ -383,33 +387,8 @@ void* app_Thread_Start(void* args)
 - (void)startEmulation{
     
     sharedInstance = self;
-	 
-    iphone_menu = IPHONE_MENU_DISABLED;
-		
-	//self.view.frame = [[UIScreen mainScreen] bounds];//rMainViewFrame;
-		
-	Options *op = [[Options alloc] init];
-	        
-    iphone_keep_aspect_ratio = [op keepAspectRatio];
-    iphone_smooth_land = [op smoothedLand];
-    iphone_smooth_port = [op smoothedPort];
-    safe_render_path = [op safeRenderPath];
-                    
-    tv_filter_land = [op tvFilterLand];
-    tv_filter_port = [op tvFilterPort];
-        
-    scanline_filter_land = [op scanlineFilterLand];
-    scanline_filter_port = [op scanlineFilterPort];
-    
-    global_fps = [op showFPS];
-    global_low_latency_sound  = [op lowlatencySound];
-    iOS_animated_DPad  = [op animatedButtons];
-    iOS_4buttonsLand  = [op fourButtonsLand];
-    iOS_full_screen_land  = [op fullLand];
-        
-    [op release];
-    		
-    [self buildPortrait];
+	     		
+    //[self buildPortrait];
     				
     pthread_create(&main_tid, NULL, app_Thread_Start, NULL);
 		
@@ -433,6 +412,7 @@ void* app_Thread_Start(void* args)
 	self.view = view;
 	[view release];
      self.view.backgroundColor = [UIColor blackColor];	
+    externalView = nil;    
 }
 
 -(void)viewDidLoad{	
@@ -500,10 +480,36 @@ void* app_Thread_Start(void* args)
 	
 	//[[self.view layer] setMagnificationFilter:kCAFilterNearest];
 	//[[self.view layer] setMinificationFilter:kCAFilterNearest];
-	
+
 	//kito
 	[NSThread setThreadPriority:1.0];
-
+	
+	iphone_menu = IPHONE_MENU_DISABLED;
+		
+	//self.view.frame = [[UIScreen mainScreen] bounds];//rMainViewFrame;
+		
+	Options *op = [[Options alloc] init];
+	        
+    iphone_keep_aspect_ratio = [op keepAspectRatio];
+    iphone_smooth_land = [op smoothedLand];
+    iphone_smooth_port = [op smoothedPort];
+    safe_render_path = [op safeRenderPath];
+                    
+    tv_filter_land = [op tvFilterLand];
+    tv_filter_port = [op tvFilterPort];
+        
+    scanline_filter_land = [op scanlineFilterLand];
+    scanline_filter_port = [op scanlineFilterPort];
+    
+    global_fps = [op showFPS];
+    global_low_latency_sound  = [op lowlatencySound];
+    iOS_animated_DPad  = [op animatedButtons];
+    iOS_4buttonsLand  = [op fourButtonsLand];
+    iOS_full_screen_land  = [op fullLand];
+        
+    [op release];
+    
+    [self changeUI];
 	
 }
 
@@ -527,6 +533,8 @@ void* app_Thread_Start(void* args)
 
 - (void)changeUI{
    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+   
+  int prev_emulation_paused = __emulation_paused;
    
   __emulation_paused = 1;
   
@@ -561,7 +569,9 @@ void* app_Thread_Start(void* args)
    }
 	
 	iOS_exitPause = 1;
-	__emulation_paused = 0;
+	
+	if(prev_emulation_paused!=1)
+	   __emulation_paused = 0;
 		
 	[pool release];
 }
@@ -722,8 +732,17 @@ void* app_Thread_Start(void* args)
        imageOverlay = [ [ UIImageView alloc ] initWithImage: finishedImage];
          
        imageOverlay.frame = rPortraitImageOverlayFrame;
-              
-       [self.view addSubview: imageOverlay];                        
+       
+       if(externalView==nil)
+       {             		    			
+           [self.view addSubview: imageOverlay];
+       }  
+       else
+       {   
+           screenView.frame = rExternal;
+           [externalView addSubview: imageOverlay];
+       } 
+                                    
    }  
 
   //DPAD---   
@@ -774,7 +793,15 @@ void* app_Thread_Start(void* args)
    else
         screenView = [ [ScreenView alloc] initWithFrame: rPortraitViewFrame];
                
-   [self.view addSubview: screenView];
+   if(externalView==nil)
+   {             		    			
+      [self.view addSubview: screenView];
+   }  
+   else
+   {   
+      screenView.frame = rExternal;
+      [externalView addSubview: screenView];
+   }  
    
    [self buildPortraitImageOverlay];
      
@@ -881,8 +908,16 @@ void* app_Thread_Start(void* args)
         imageOverlay.clearsContextBeforeDrawing = NO;
    
         //[imageBack setOpaque:YES];
-
-         [self.view addSubview: imageOverlay]; // Draw the image in self.view.
+         
+         if(externalView==nil)
+		 {             		    			
+		      [self.view addSubview: imageOverlay];
+		 }  
+		 else
+		 {   
+		      screenView.frame = rExternal;
+		      [externalView addSubview: imageOverlay];
+		 }  
          //[UIView commitAnimations];	    
     }
    
@@ -925,9 +960,17 @@ void* app_Thread_Start(void* args)
         screenView = [ [ScreenView alloc] initWithFrame: rLandscapeViewFrame];
    else
         screenView = [ [ScreenView alloc] initWithFrame: rLandscapeViewFrameNotFull];
-         		    			
-   [self.view addSubview: screenView];
-   
+        
+   if(externalView==nil)
+   {             		    			
+      [self.view addSubview: screenView];
+   }  
+   else
+   {               
+      screenView.frame = rExternal;
+      [externalView addSubview: screenView];
+   }   
+      
    [self buildLandscapeImageOverlay];
 	
 }

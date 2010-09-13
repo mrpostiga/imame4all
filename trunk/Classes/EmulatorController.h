@@ -50,6 +50,7 @@
   UIImageView	    * imageOverlay;
   DView             * dview;
   //NSTimer           * touchTimer;
+  @public UIView	*externalView;
 
   UIImageView	    * dpadView;
   UIImageView	    * buttonViews[NUM_BUTTONS];
@@ -118,5 +119,7 @@
 - (void)handle_DPAD;
 
 - (void)touchesController:(NSSet *)touches withEvent:(UIEvent *)event;
+
+@property (readwrite,assign)   UIView	 *externalView;
 
 @end
