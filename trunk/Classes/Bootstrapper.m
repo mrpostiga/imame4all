@@ -159,7 +159,7 @@ CGRect rExternal;
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-	//UIScreenMode *desiredMode = [screenModes objectAtIndex:buttonIndex];
+	UIScreenMode *desiredMode = [screenModes objectAtIndex:buttonIndex];
 	
 	[externalScreen setCurrentMode:[screenModes objectAtIndex:buttonIndex]];
 	[externalWindow setScreen:externalScreen];
@@ -178,7 +178,9 @@ CGRect rExternal;
 	int  external_width = externalWindow.frame.size.width;
 	int  external_height = externalWindow.frame.size.height;
 	
-	int width = (int)(external_width * 0.90);//overscan
+	float overscan = (desiredMode.size.width== 720) ? 0.92f : 1.0f;
+	
+	int width = (int)(external_width * overscan);//overscan
     int height = (int)((width * 3) / 4);
       
     rExternal = CGRectMake( (external_width - width)/2, (external_height - height)/2, width, height);

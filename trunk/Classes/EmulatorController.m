@@ -708,7 +708,7 @@ void* app_Thread_Start(void* args)
           CGImageRelease(tile);       
        }
      
-       if(isIpad /*|| 1*/)
+       if(isIpad && externalView==nil /*|| 1*/)
        {
           UIImage *image1;
           if(isIpad)          
