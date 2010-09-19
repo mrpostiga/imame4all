@@ -35,8 +35,9 @@ extern int safe_render_path;
 #define gp2x_video_color8(C,R,G,B) gp2x_palette[C]=gp2x_video_color15(R,G,B,0)
 //#define gp2x_video_color15(R,G,B,A) ((((R)&0xF8)<<8)|(((G)&0xF8)<<3)|(((B)&0xF8)>>3)|((A)<<5))
 //#define gp2x_video_color15(R,G,B,A)  ((R >> 3) << 10) | (( G >> 3) << 5 ) | (( B >> 3 ) << 0 )
+//#define gp2x_video_color15(R,G,B,A)  ((R >> 3) << 11) | (( G >> 2) << 5 ) | (( B >> 3 ) << 0 )
 
-#define gp2x_video_color15(R,G,B,A) (safe_render_path ? ((R >> 3) << 10) | (( G >> 3) << 5 ) | (( B >> 3 ) << 0 ) : ((R >> 3) << 11) | (( G >> 2) << 5 ) | (( B >> 3 ) << 0 ))
+#define gp2x_video_color15(R,G,B,A) (safe_render_path  ? ((R >> 3) << 10) | (( G >> 3) << 5 ) | (( B >> 3 ) << 0 ) : ((R >> 3) << 11) | (( G >> 2) << 5 ) | (( B >> 3 ) << 0 ))
 
 #define RGB2565L(R, G, B) ((R >> 3) << 11) | (( G >> 2) << 5 ) | (( B >> 3 ) << 0 )
 #define RGBA5551(R, G, B) ((R >> 3) << 10) | (( G >> 3) << 5 ) | (( B >> 3 ) << 0 )

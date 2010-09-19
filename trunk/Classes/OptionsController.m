@@ -53,6 +53,11 @@ extern int isIpad;
 @synthesize fourButtonsLand;
 @synthesize fullLand;
 
+@synthesize skin;
+
+@synthesize deadZoneValue;
+@synthesize touchDeadZone;
+
 
 - (id)init {
 
@@ -67,7 +72,7 @@ extern int isIpad;
 - (void)loadOptions
 {
 	
-	NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v2.bin")];
+	NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v3.bin")];
 	
 	NSData *plistData;
 	id plist;
@@ -120,6 +125,10 @@ extern int isIpad;
 		              ;
 		              
         fullLand = animatedButtons;
+        
+        skin = isIpad ? 2 : 1;
+        deadZoneValue = 2;
+        touchDeadZone = 1;
 		
 		//[self saveOptions];
 	}
@@ -144,6 +153,11 @@ extern int isIpad;
         lowlatencySound =  [[[optionsArray objectAtIndex:0] objectForKey:@"lowlatencySound"] intValue];
         animatedButtons =  [[[optionsArray objectAtIndex:0] objectForKey:@"animatedButtons"] intValue];	
         fullLand =  [[[optionsArray objectAtIndex:0] objectForKey:@"fullLand"] intValue];
+        
+        skin =  [[[optionsArray objectAtIndex:0] objectForKey:@"skin"] intValue];
+        
+        deadZoneValue =  [[[optionsArray objectAtIndex:0] objectForKey:@"deadZoneValue"] intValue];
+        touchDeadZone =  [[[optionsArray objectAtIndex:0] objectForKey:@"touchDeadZone"] intValue];
         		
 	}
 			
@@ -170,10 +184,15 @@ extern int isIpad;
 							 [NSString stringWithFormat:@"%d", lowlatencySound], @"lowlatencySound",							 
 							 [NSString stringWithFormat:@"%d", animatedButtons], @"animatedButtons",							 							 							 											 
 							 [NSString stringWithFormat:@"%d", fullLand], @"fullLand",
+							 
+							 [NSString stringWithFormat:@"%d", skin], @"skin",
+							  
+							 [NSString stringWithFormat:@"%d", deadZoneValue], @"deadZoneValue",
+							 [NSString stringWithFormat:@"%d", touchDeadZone], @"touchDeadZone",
 							 nil]];	
 
 	
-    NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v2.bin")];
+    NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v3.bin")];
 	
 	NSData *plistData;
 	
@@ -240,6 +259,11 @@ extern int isIpad;
    	   switchLowlatencySound=nil;
 	   switch4buttonsLand=nil;
 	   switchfullLand=nil;
+	   
+	   segmentedSkin= nil;
+	   
+	   segmentedDeadZoneValue = nil;
+	   switchTouchDeadZone = nil;
 
     }
 
@@ -398,7 +422,8 @@ extern int isIpad;
                    [switchfullLand setOn:[op fullLand] animated:NO];
                    [switchfullLand addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
                    break;
-               }               
+               }
+
                case 4:
                {
                    if(!isIpad)
@@ -445,7 +470,46 @@ extern int isIpad;
                    [switchShowFPS addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
                    break;
                }
-               case 3:
+              case 3:
+               {
+                   cell.text  = @"Touch DeadZone";
+                   switchTouchDeadZone  = [[UISwitch alloc] initWithFrame:CGRectZero];                
+                   cell.accessoryView = switchTouchDeadZone ;
+                   [switchTouchDeadZone setOn:[op touchDeadZone] animated:NO];
+                   [switchTouchDeadZone addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
+                   break;
+               }               
+               case 4:
+               {                                      
+                   cell.text  = @"DeadZone Value";
+                   
+                    segmentedDeadZoneValue = [[UISegmentedControl alloc] initWithItems:
+                       [NSArray arrayWithObjects: @"1", @"2", @"3",@"4", @"5", @"6", nil]];
+                    //segmentedDeadZoneValue.frame = CGRectMake(145, 5, 150, 35);
+                    segmentedDeadZoneValue.selectedSegmentIndex = [op deadZoneValue];
+                    //actionControl.tag = 3;
+                    [segmentedDeadZoneValue addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                    segmentedDeadZoneValue.segmentedControlStyle = UISegmentedControlStyleBar;
+                    //[cell addSubview:segmentedDeadZoneValue];
+                     cell.accessoryView = segmentedDeadZoneValue;
+
+                   break;
+               }
+               case 5:
+               {
+                   cell.text  = @"Skin";                   
+                   segmentedSkin = [[UISegmentedControl alloc] initWithItems:
+                   [NSArray arrayWithObjects: @"A", @"B", @"B retina", nil]];
+                    //segmentedDeadZoneValue.frame = CGRectMake(145, 5, 150, 35);
+                   segmentedSkin.selectedSegmentIndex = [op skin];
+                    //actionControl.tag = 3;
+                   [segmentedSkin addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                   segmentedSkin.segmentedControlStyle = UISegmentedControlStyleBar;
+                   //[cell addSubview:segmentedDeadZoneValue];
+                   cell.accessoryView = segmentedSkin;
+                   break;
+               }               
+               case 6:
                {
                    cell.text  = @"Safe Render Path";
                    switchSafeRender  = [[UISwitch alloc] initWithFrame:CGRectZero];                
@@ -484,7 +548,7 @@ extern int isIpad;
       {
           case 0: return isIpad ? 4 : 3;
           case 1: return isIpad ? 4 : 5;
-          case 2: return isIpad ? 3 : 4;
+          case 2: return isIpad ? 6 : 7;
       }
 }
 
@@ -530,6 +594,15 @@ extern int isIpad;
      [switch4buttonsLand release];
    if(switchfullLand!=nil)
      [switchfullLand release];      
+     
+   if(segmentedSkin!=nil)
+     [segmentedSkin release];  
+     
+   if(segmentedDeadZoneValue!=nil)
+    [segmentedDeadZoneValue release];
+    
+   if(switchTouchDeadZone!=nil)
+     [switchTouchDeadZone release];
      
    [super dealloc];
 }
@@ -582,6 +655,15 @@ extern int isIpad;
 	
 	if(sender == switchfullLand) 
 	   op.fullLand =  [switchfullLand isOn];
+	   
+    if(sender == segmentedSkin) 
+	   op.skin =  [segmentedSkin selectedSegmentIndex];   
+	   
+	if(sender == segmentedDeadZoneValue)
+	   op.deadZoneValue = [segmentedDeadZoneValue selectedSegmentIndex];   
+	   
+	if(sender == switchTouchDeadZone)
+	  op.touchDeadZone = [switchTouchDeadZone isOn];
 	   
 	[op saveOptions];
 		

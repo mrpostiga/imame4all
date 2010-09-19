@@ -50,6 +50,11 @@
    @public  int fourButtonsLand;
    @public  int fullLand;
 
+   @public  int skin;
+
+   @public  int deadZoneValue;
+   @public  int touchDeadZone;
+
 
 }
 
@@ -72,6 +77,11 @@
 @property (readwrite,assign) int lowlatencySound;
 @property (readwrite,assign) int fourButtonsLand;
 @property (readwrite,assign) int fullLand;
+
+@property (readwrite,assign) int skin;
+
+@property (readwrite,assign) int deadZoneValue;
+@property (readwrite,assign) int touchDeadZone;
 
 @end
 
@@ -97,6 +107,10 @@
    UISwitch*		  switch4buttonsLand;
    UISwitch*		  switchfullLand;
 
+   UISegmentedControl *segmentedDeadZoneValue;
+
+   UISegmentedControl*		  segmentedSkin;
+   UISwitch*		  switchTouchDeadZone;
 }
 
 - (void)optionChanged:(id)sender;

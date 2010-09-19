@@ -21,6 +21,7 @@ int iOS_exitGame=0;
 int iOS_video_aspect=0;
 int iOS_video_rotate=0;
 int iOS_video_sync=0;
+int iOS_video_depth=8;
 int iOS_frameskip=-1;
 int iOS_sound = 4;
 int iOS_clock_cpu= 80;
@@ -177,7 +178,7 @@ static void game_list_view(int *pos) {
 		gp2x_gamelist_text_out(35, 110, "NO AVAILABLE GAMES FOUND");
 	}
 
-	gp2x_gamelist_text_out( 8*6, (29*8)-6,"iMAME4all v1.4 by D.Valdeita");
+	gp2x_gamelist_text_out( 8*6, (29*8)-6,"iMAME4all v1.5 by D.Valdeita");
 }
 
 static void game_list_select (int index, char *game, char *emu) {
@@ -219,7 +220,7 @@ static int show_options(char *game)
 	int selected_option=0;
 	int x_Pos = 41;
 	int y_Pos = 58;
-	int options_count = 9;
+	int options_count = 10;
 	char text[256];
 	FILE *f;
 	int i=0;
@@ -228,11 +229,11 @@ static int show_options(char *game)
 	  while(ExKey=gp2x_joystick_read(0)&0x8c0ff55){};
 
 	/* Read game configuration */
-	sprintf(text,get_documents_path("iOS/%s_v2.cfg"),game);
+	sprintf(text,get_documents_path("iOS/%s_v21.cfg"),game);
 	f=fopen(text,"r");
 	if (f) {
-		fscanf(f,"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",&iOS_video_aspect,&iOS_video_rotate,&iOS_video_sync,
-		&iOS_frameskip,&iOS_sound,&iOS_landscape_buttons,&iOS_clock_cpu,&iOS_clock_sound,&i,&iOS_cheat);
+		fscanf(f,"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",&iOS_video_aspect,&iOS_video_rotate,&iOS_video_sync,
+		&iOS_frameskip,&iOS_sound,&iOS_landscape_buttons,&iOS_clock_cpu,&iOS_clock_sound,&i,&iOS_cheat,&iOS_video_depth);
 		fclose(f);
 	}
 
@@ -269,65 +270,73 @@ static int show_options(char *game)
 			case 2: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+40,"Video Rotate  TATE"); break;
 		}
 		
-		/* (3) Video Sync */
+		/* (3) Video Depth */
+		switch (iOS_video_depth)
+		{
+			case -1: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+50,"Video Depth   Auto"); break;
+			case 8:  gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+50,"Video Depth   8 bit"); break;
+			case 16: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+50,"Video Depth   16 bit"); break;
+		}
+
+		/* (4) Video Sync */
 		switch (iOS_video_sync)
 		{
-			case 0: gp2x_gamelist_text_out(x_Pos,y_Pos+50, "Video Sync    Normal"); break;
-			case 1: gp2x_gamelist_text_out(x_Pos,y_Pos+50, "Video Sync    DblBuf"); break;
-			case -1: gp2x_gamelist_text_out(x_Pos,y_Pos+50,"Video Sync    OFF"); break;
+			case 0: gp2x_gamelist_text_out(x_Pos,y_Pos+60, "Video Sync    Normal"); break;
+			case 1: gp2x_gamelist_text_out(x_Pos,y_Pos+60, "Video Sync    DblBuf"); break;
+			case -1: gp2x_gamelist_text_out(x_Pos,y_Pos+60,"Video Sync    OFF"); break;
 		}
 		
-		/* (4) Frame-Skip */
+		/* (5) Frame-Skip */
 		if(iOS_frameskip==-1) {
-			gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+60, "Frame-Skip    Auto");
+			gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+70, "Frame-Skip    Auto");
 		}
 		else{
-			gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+60,"Frame-Skip    %d",iOS_frameskip);
+			gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+70,"Frame-Skip    %d",iOS_frameskip);
 		}
 
-		/* (5) Sound */
+		/* (6) Sound */
 		switch(iOS_sound)
 		{
-			case 0: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+70,"Sound         %s","OFF"); break;
+			case 0: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+80,"Sound         %s","OFF"); break;
 
-			case 1: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+70,"Sound         %s","ON (11 KHz fast)"); break;
-			case 2: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+70,"Sound         %s","ON (22 KHz fast)"); break;
-			case 3: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+70,"Sound         %s","ON (33 KHz fast)"); break;
-			case 4: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+70,"Sound         %s","ON (44 KHz fast)"); break;
+			case 1: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+80,"Sound         %s","ON (11 KHz fast)"); break;
+			case 2: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+80,"Sound         %s","ON (22 KHz fast)"); break;
+			case 3: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+80,"Sound         %s","ON (33 KHz fast)"); break;
+			case 4: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+80,"Sound         %s","ON (44 KHz fast)"); break;
 
-			case 5: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+70,"Sound         %s","ON (11 KHz)"); break;
-			case 6: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+70,"Sound         %s","ON (22 KHz)"); break;
-			case 7: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+70,"Sound         %s","ON (33 KHz)"); break;
-			case 8: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+70,"Sound         %s","ON (44 KHz)"); break;
+			case 5: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+80,"Sound         %s","ON (11 KHz)"); break;
+			case 6: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+80,"Sound         %s","ON (22 KHz)"); break;
+			case 7: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+80,"Sound         %s","ON (33 KHz)"); break;
+			case 8: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+80,"Sound         %s","ON (44 KHz)"); break;
 
-			case 9: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+70,"Sound         %s","ON (11 KHz stereo)"); break;
-			case 10: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+70,"Sound         %s","ON (22 KHz stereo)"); break;
-			case 11: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+70,"Sound         %s","ON (33 KHz stereo)"); break;
-			case 12: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+70,"Sound         %s","ON (44 KHz stereo)"); break;
+			case 9: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+80,"Sound         %s","ON (11 KHz stereo)"); break;
+			case 10: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+80,"Sound         %s","ON (22 KHz stereo)"); break;
+			case 11: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+80,"Sound         %s","ON (33 KHz stereo)"); break;
+			case 12: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+80,"Sound         %s","ON (44 KHz stereo)"); break;
 
 		}
 
-		/* (6) Landscape Num Buttons */
+		/* (7) Landscape Num Buttons */
 		switch (iOS_landscape_buttons)
 		{
-			case 1: gp2x_gamelist_text_out(x_Pos,y_Pos+80, "Landscape     1 Button"); break;
-			case 2: gp2x_gamelist_text_out(x_Pos,y_Pos+80, "Landscape     2 Buttons"); break;
-			case 3: gp2x_gamelist_text_out(x_Pos,y_Pos+80, "Landscape     3 Buttons"); break;
-			case 4: gp2x_gamelist_text_out(x_Pos,y_Pos+80, "Landscape     4 Buttons"); break;
+			case 1: gp2x_gamelist_text_out(x_Pos,y_Pos+90, "Landscape     1 Button"); break;
+			case 2: gp2x_gamelist_text_out(x_Pos,y_Pos+90, "Landscape     2 Buttons"); break;
+			case 3: gp2x_gamelist_text_out(x_Pos,y_Pos+90, "Landscape     3 Buttons"); break;
+			case 4: gp2x_gamelist_text_out(x_Pos,y_Pos+90, "Landscape     4 Buttons"); break;
 		}
 
-		/* (7) CPU Clock */
-		gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+90,"CPU Clock     %d%%",iOS_clock_cpu);
+		/* (8) CPU Clock */
+		gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+100,"CPU Clock     %d%%",iOS_clock_cpu);
 
-		/* (8) Audio Clock */
-		gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+100,"Audio Clock   %d%%",iOS_clock_sound);
+		/* (9) Audio Clock */
+		gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+110,"Audio Clock   %d%%",iOS_clock_sound);
 
 
-		/* (9) Cheats */
+		/* (10) Cheats */
 		if (iOS_cheat)
-			gp2x_gamelist_text_out(x_Pos,y_Pos+110,"Cheats        ON");
+			gp2x_gamelist_text_out(x_Pos,y_Pos+120,"Cheats        ON");
 		else
-			gp2x_gamelist_text_out(x_Pos,y_Pos+110,"Cheats        OFF");
+			gp2x_gamelist_text_out(x_Pos,y_Pos+120,"Cheats        OFF");
 	
 		gp2x_gamelist_text_out(x_Pos,y_Pos+140,"Press B to confirm, X to return\0");
 
@@ -395,11 +404,19 @@ static int show_options(char *game)
 				}
 				break;
 			case 2:
+				switch (iOS_video_depth)
+				{
+					case -1: iOS_video_depth=8; break;
+					case 8: iOS_video_depth=16; break;
+					case 16: iOS_video_depth=-1; break;
+				}
+				break;
+			case 3:
 				iOS_video_sync=iOS_video_sync+1;
 				if (iOS_video_sync>1)
 					iOS_video_sync=-1;
 				break;
-			case 3:
+			case 4:
 				/* "Frame-Skip" */
 				if(ExKey & GP2X_R || ExKey & GP2X_RIGHT )
 				{
@@ -414,7 +431,7 @@ static int show_options(char *game)
 						iOS_frameskip=11;
 				}
 				break;
-			case 4:
+			case 5:
 				if(ExKey & GP2X_R || ExKey & GP2X_RIGHT)
 				{
 					iOS_sound ++;
@@ -428,7 +445,7 @@ static int show_options(char *game)
 						iOS_sound=12;
 				}
 				break;
-			case 5:
+			case 6:
 				if(ExKey & GP2X_R || ExKey & GP2X_RIGHT)
 				{
 					iOS_landscape_buttons ++;
@@ -442,7 +459,7 @@ static int show_options(char *game)
 						iOS_landscape_buttons=4;
 				}
 				break;
-			case 6:
+			case 7:
 				/* "CPU Clock" */
 				if(ExKey & GP2X_R || ExKey & GP2X_RIGHT)
 				{
@@ -457,7 +474,7 @@ static int show_options(char *game)
 						iOS_clock_cpu = 10;
 				}
 				break;
-			case 7:
+			case 8:
 				/* "Audio Clock" */
 				if(ExKey & GP2X_R || ExKey & GP2X_RIGHT)
 				{
@@ -471,7 +488,7 @@ static int show_options(char *game)
 						iOS_clock_sound = 10;
 				}
 				break;
-			case 8:
+			case 9:
 				iOS_cheat=!iOS_cheat;
 				break;
 			}
@@ -480,11 +497,11 @@ static int show_options(char *game)
 		if ((ExKey & GP2X_A) || (ExKey & GP2X_B) || (ExKey & GP2X_PUSH) || (ExKey & GP2X_START))
 		{
 			/* Write game configuration */
-			sprintf(text,get_documents_path("iOS/%s_v2.cfg"),game);
+			sprintf(text,get_documents_path("iOS/%s_v21.cfg"),game);
 			f=fopen(text,"w");
 			if (f) {
-				fprintf(f,"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",iOS_video_aspect,iOS_video_rotate,iOS_video_sync,
-				iOS_frameskip,iOS_sound,iOS_landscape_buttons,iOS_clock_cpu,iOS_clock_sound,i,iOS_cheat);
+				fprintf(f,"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",iOS_video_aspect,iOS_video_rotate,iOS_video_sync,
+				iOS_frameskip,iOS_sound,iOS_landscape_buttons,iOS_clock_cpu,iOS_clock_sound,i,iOS_cheat,iOS_video_depth);
 				fclose(f);
 				sync();
 			}
@@ -560,9 +577,15 @@ static void select_game(char *emu, char *game)
 			iOS_cheat=0;
 
 			if(!safe_render_path)
+			{
 				iOS_sound = 1;
+				iOS_video_depth=8;
+			}
 			else
+			{
 				iOS_sound = 4;
+				iOS_video_depth=-1;
+			}
 			if(isIpad)
 			{
 				iOS_clock_cpu= 100;
@@ -597,13 +620,26 @@ void execute_game (char *playemu, char *playgame)
 
 	/* playgame */
 	args[n]=playgame; n++;
-
+/*
 	args[n]="-depth"; n++;
 	if(!safe_render_path)
 		args[n]="8";
 	else
 		args[n]="16";
 	n++;
+	*/
+
+	/* gp2x_video_depth */
+	if (iOS_video_depth==8)
+	{
+		args[n]="-depth"; n++;
+		args[n]="8"; n++;
+	}
+	if (iOS_video_depth==16)
+	{
+		args[n]="-depth"; n++;
+		args[n]="16"; n++;
+	}
 
 	/* iOS_video_aspect */
 	iOS_aspectRatio = iOS_cropVideo = iOS_320x240 = 0;
@@ -747,10 +783,12 @@ extern "C" int mimain (int argc, char **argv)
 	if(!safe_render_path)
 	{
 		iOS_sound = 1;
+		iOS_video_depth = 8;
 	}
 	else
 	{
 		iOS_sound = 4;
+		iOS_video_depth = -1;
 	}
 
 	if(isIpad)

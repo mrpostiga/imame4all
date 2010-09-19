@@ -1,6 +1,6 @@
 
 ===========================================================
-iMAME4ALL 1.4 (September 12, 2010) by David Valdeita (Seleuco)
+iMAME4ALL 1.5 (September 19, 2010) by David Valdeita (Seleuco)
 ===========================================================
 
 
@@ -83,6 +83,11 @@ Normal: Nominal emulated video resolution.
 Rotate: The window is rotated.
 TATE: The window and controls are rotated. (it may help to play some landscape games)
 
+- Video Depth:
+The video Rotate is configured with the following combination of options:
+8 bit /16 bit /Auto
+Try different video depth if you have glitches with current game, but leave it in auto.
+
 - Video Sync:
 Normal: Single buffer and dirty buffer is used.
 DblBuf: Double buffer without dirty buffer.
@@ -144,6 +149,12 @@ GLOBAL OPTIONS
 
 -Show FPS: Shows ON/OFF fps.
 
+-Touch DeadZone: Enable/Disable a deadzone on DPAD touch center. It could be better for some games. Disable if you don't like it.
+
+-DeadZone Value: Wii classic stick deadzone selector. Upper if you have problems with stick (controller going crazy). Lower to gets more sensitivity.
+
+-Skin: Let's you select skin (retina or not). Retina skin looks better but needs more resources.
+
 WIIMOTE
 -------
 
@@ -181,6 +192,8 @@ Use TV Out settings to set up how iPad or iPhone plays videos on your TV.
 When the cable is connected to a TV or projector, iMAME4all will automatically use it when playing a game.
 
 Set the TV signal to NTSC or PAL: Choose Video > TV Signal and select NTSC or PAL. NTSC and PAL are TV broadcast standards, used in different regions. If you are in the Americas, NTSC is probably the correct choice. Elsewhere, try PAL. If you’re not sure, check the documentation that came with your TV or projector.
+
+Note: TV-Out needs firmaware >= 3.2
 
 
 INSTALLATION
@@ -344,7 +357,9 @@ PORT CREDITS
 DEVELOPMENT
 ---------------
 September 12,2010:
-- V1.4: Added Native TV-Out for firmware >=3.2. Added Wii classic analog support. Added support for Wii classics clones.
+- Version 1.5: Added new skin (retina) and touch control layout. Added touch deadzone. Added Wii classic stick deadzone selector. Added 8/16/auto color depth (fixes ZeroWing like games missing sprites)
+September 12,2010:
+- Version 1.4: Added Native TV-Out for firmware >=3.2. Added Wii classic analog support. Added support for Wii classics clones.
 September 5,2010:
 - Version 1.3: Added Wii Classic Controller support. Added support for up to 4 WiiMotes/Classic (multiplayer).
 August 29, 2010:
@@ -378,7 +393,11 @@ INTERESTING WEBPAGES ABOUT MAME
 ART
 ---------
 
-Thanks to: Zenzuke, Chipan, Dokesman, Enkonsierto, Quest, Sttraping, Sike, Danibat, Pedator,
+Retina skin and touch control layout thanks to Bryn Thompson. 
+
+Thanks to: 
+
+Zenzuke, Chipan, Dokesman, Enkonsierto, Quest, Sttraping, Sike, Danibat, Pedator,
 Antiriad and Slaanesh. Thanks to everybody !.
 
 iMAME4all LICENSE

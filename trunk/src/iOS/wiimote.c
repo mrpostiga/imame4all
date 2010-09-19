@@ -49,6 +49,7 @@
 int num_of_joys = 0;
 struct wiimote_t joys[4];
 extern int iOS_exitGame;
+extern int iOS_deadZoneValue;
 
 int wiimote_send(struct wiimote_t* wm, byte report_type, byte* msg, int len);
 int wiimote_read_data(struct wiimote_t* wm, unsigned int addr, unsigned short len);
@@ -718,6 +719,20 @@ int iOS_wiimote_check (struct  wiimote_t  *wm){
 
 			 if (wm->exp.type == EXP_CLASSIC) {
 
+				    float deadZone;
+
+				    switch(iOS_deadZoneValue)
+				    {
+				      case 0: deadZone = 0.12f;break;
+				      case 1: deadZone = 0.15f;break;
+				      case 2: deadZone = 0.17f;break;
+				      case 3: deadZone = 0.2f;break;
+				      case 4: deadZone = 0.3f;break;
+				      case 5: deadZone = 0.4f;break;
+				    }
+
+				    //printf("deadzone %f\n",deadZone);
+
 					struct classic_ctrl_t* cc = (classic_ctrl_t*)&wm->exp.classic;
 
 					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_ZL))			joyExKey |= GP2X_R;
@@ -736,7 +751,7 @@ int iOS_wiimote_check (struct  wiimote_t  *wm){
 					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_PLUS))		joyExKey |= GP2X_START;
 					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_FULL_R))		joyExKey |= GP2X_R;
 
-					if(cc->ljs.mag >= 0.15)
+					if(cc->ljs.mag >= deadZone)
 					{
 						joy_analog_x[wm->unid] = cc->ljs.rx;
 						joy_analog_y[wm->unid] = cc->ljs.ry;
@@ -778,7 +793,7 @@ int iOS_wiimote_check (struct  wiimote_t  *wm){
 						}
 					}
 
-					if(cc->rjs.mag >= 0.2)
+					if(cc->rjs.mag >= deadZone)
 					{
 						float v = cc->rjs.ang;
 

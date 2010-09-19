@@ -113,9 +113,10 @@ int global_low_latency_sound = 0;
 int iOS_animated_DPad = 0;
 int iOS_4buttonsLand = 0;
 int iOS_full_screen_land = 1;
-//int iOS_external_width = 0;
-//int iOS_external_height = 0;
 extern int iOS_landscape_buttons;
+int iOS_skin = 1;
+int iOS_deadZoneValue = 2;
+int iOS_touchDeadZone = 1;
         
         
 enum { DPAD_NONE=0,DPAD_UP=1,DPAD_DOWN=2,DPAD_LEFT=3,DPAD_RIGHT=4,DPAD_UP_LEFT=5,DPAD_UP_RIGHT=6,DPAD_DOWN_LEFT=7,DPAD_DOWN_RIGHT=8};    
@@ -270,6 +271,9 @@ void* app_Thread_Start(void* args)
         || iOS_animated_DPad  != [op animatedButtons]
         || iOS_4buttonsLand  != [op fourButtonsLand]
         || iOS_full_screen_land  != [op fullLand]
+        || iOS_skin != ([op skin]+1)
+        || iOS_deadZoneValue != [op deadZoneValue]
+        || iOS_touchDeadZone != [op touchDeadZone]
         )
     {
         iphone_keep_aspect_ratio = [op keepAspectRatio];
@@ -288,7 +292,14 @@ void* app_Thread_Start(void* args)
        iOS_animated_DPad  = [op animatedButtons];
        iOS_4buttonsLand  = [op fourButtonsLand];
        iOS_full_screen_land  = [op fullLand];
-             
+       
+       iOS_skin = [op skin]+1;
+       iOS_deadZoneValue = [op deadZoneValue];
+       iOS_touchDeadZone = [op touchDeadZone];
+       
+       [self changeUI];
+       
+       /*      
        [screenView removeFromSuperview];
        [screenView release];
        
@@ -310,7 +321,8 @@ void* app_Thread_Start(void* args)
        if(iphone_is_landscape)
          [self buildLandscape];       
        else
-         [self buildPortrait];  
+         [self buildPortrait];
+       */    
     }
     
     
@@ -506,6 +518,10 @@ void* app_Thread_Start(void* args)
     iOS_animated_DPad  = [op animatedButtons];
     iOS_4buttonsLand  = [op fourButtonsLand];
     iOS_full_screen_land  = [op fullLand];
+    
+    iOS_skin = [op skin]+1;
+    iOS_deadZoneValue = [op deadZoneValue];
+    iOS_touchDeadZone = [op touchDeadZone];
         
     [op release];
     
@@ -611,7 +627,8 @@ void* app_Thread_Start(void* args)
      return;
    
    //dpad
-   dpadView = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:nameImgDPad[DPAD_NONE]]];
+   NSString *name = [NSString stringWithFormat:@"./SKIN_%d/%@",iOS_skin,nameImgDPad[DPAD_NONE]];
+   dpadView = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:name]];
    dpadView.frame = rDPad_image;
    if(iphone_is_landscape && iOS_full_screen_land)
          [dpadView setAlpha:((float)iphone_controller_opacity / 100.0f)];  
@@ -630,8 +647,8 @@ void* app_Thread_Start(void* args)
    
       //if((i==BTN_Y || i==BTN_A) && !iOS_4buttonsLand && iphone_is_landscape)
          //continue;
-         
-      buttonViews[i] = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:nameImgButton_NotPress[i]]];
+      name = [NSString stringWithFormat:@"./SKIN_%d/%@",iOS_skin,nameImgButton_NotPress[i]];   
+      buttonViews[i] = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:name]];
       buttonViews[i].frame = rButton_image[i];
       if(iphone_is_landscape && (iOS_full_screen_land || i==BTN_Y))      
          [buttonViews[i] setAlpha:((float)iphone_controller_opacity / 100.0f)];   
@@ -649,9 +666,9 @@ void* app_Thread_Start(void* args)
    */
 
    if(isIpad)
-     imageBack = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:[NSString stringWithFormat:@"back_portrait_iPad.png"]]];
+     imageBack = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:[NSString stringWithFormat:@"./SKIN_%d/back_portrait_iPad.png",iOS_skin]]];
    else
-     imageBack = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:[NSString stringWithFormat:@"back_portrait_iPhone.png"]]];
+     imageBack = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:[NSString stringWithFormat:@"./SKIN_%d/back_portrait_iPhone.png",iOS_skin]]];
    
    imageBack.frame = rPortraitImageBackFrame; // Set the frame in which the UIImage should be drawn in.
    
@@ -817,9 +834,9 @@ void* app_Thread_Start(void* args)
    if(!iOS_full_screen_land)
    {
 	   if(isIpad)
-	     imageBack = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:[NSString stringWithFormat:@"back_landscape_iPad.png"]]];
+	     imageBack = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:[NSString stringWithFormat:@"./SKIN_%d/back_landscape_iPad.png",iOS_skin]]];
 	   else
-	     imageBack = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:[NSString stringWithFormat:@"back_landscape_iPhone.png"]]];
+	     imageBack = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:[NSString stringWithFormat:@"./SKIN_%d/back_landscape_iPhone.png",iOS_skin]]];
 	   
 	   imageBack.frame = rLandscapeImageBackFrame; // Set the frame in which the UIImage should be drawn in.
 	   
@@ -989,7 +1006,9 @@ void* app_Thread_Start(void* args)
        imgName = nameImgDPad[dpad_state];
        if(imgName!=nil)
        {  
-         UIImage *img = [UIImage imageNamed:imgName]; 
+         NSString *name = [NSString stringWithFormat:@"./SKIN_%d/%@",iOS_skin,imgName];   
+         //printf("%s\n",[name UTF8String]);
+         UIImage *img = [UIImage imageNamed:name]; 
          [dpadView setImage:img];
          [dpadView setNeedsDisplay];
        }           
@@ -1012,7 +1031,8 @@ void* app_Thread_Start(void* args)
            } 
            if(imgName!=nil)
            {  
-              UIImage *img = [UIImage imageNamed:imgName]; 
+              NSString *name = [NSString stringWithFormat:@"./SKIN_%d/%@",iOS_skin,imgName];
+              UIImage *img = [UIImage imageNamed:name]; 
               [buttonViews[i] setImage:img];
               [buttonViews[i] setNeedsDisplay];              
            }
@@ -1234,7 +1254,10 @@ void* app_Thread_Start(void* args)
 				
 			}			
 			else if (MyCGRectContainsPoint(Menu, point)) {
-
+				gp2x_pad_status |= GP2X_SELECT;				
+                btnStates[BTN_SELECT] = BUTTON_PRESS;
+				gp2x_pad_status |= GP2X_START;
+			    btnStates[BTN_START] = BUTTON_PRESS;
 			}
 			else if (MyCGRectContainsPoint(rShowKeyboard, point)) {
   
@@ -1266,16 +1289,16 @@ void* app_Thread_Start(void* args)
 	if(!orientation)
 	{
 		if(isIpad)
-		  fp = fopen([[NSString stringWithFormat:@"%scontroller_portrait_iPad.txt", get_resource_path("/")] UTF8String], "r");
+		  fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_portrait_iPad.txt",  get_resource_path("/"), iOS_skin] UTF8String], "r");
 		else
-		  fp = fopen([[NSString stringWithFormat:@"%scontroller_portrait_iPhone.txt", get_resource_path("/")] UTF8String], "r");
+		  fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_portrait_iPhone.txt", get_resource_path("/"),  iOS_skin] UTF8String], "r");
     }
 	else
 	{
 		if(isIpad)
-		   fp = fopen([[NSString stringWithFormat:@"%scontroller_landscape_iPad.txt", get_resource_path("/")] UTF8String], "r");
+		   fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_landscape_iPad.txt", get_resource_path("/"), iOS_skin ] UTF8String], "r");
 		else
-		   fp = fopen([[NSString stringWithFormat:@"%scontroller_landscape_iPhone.txt", get_resource_path("/")] UTF8String], "r");
+		   fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_landscape_iPhone.txt", get_resource_path("/"), iOS_skin] UTF8String], "r");
 	}
 	
 	if (fp) 
@@ -1343,6 +1366,41 @@ void* app_Thread_Start(void* args)
       i++;
     }
     fclose(fp);
+    
+    if(iOS_touchDeadZone)
+    {
+        //ajustamos
+        if(!isIpad)
+        {
+           if(!orientation)
+           {
+             Left.size.width -= 17;//Left.size.width * 0.2;
+             Right.origin.x += 17;//Right.size.width * 0.2;
+             Right.size.width -= 17;//Right.size.width * 0.2;
+           }
+           else
+           {
+             Left.size.width -= 14;
+             Right.origin.x += 12;
+             Right.size.width -= 12;
+           }
+        }
+        else
+        {
+           if(!orientation)
+           {
+             Left.size.width -= 22;//Left.size.width * 0.2;
+             Right.origin.x += 22;//Right.size.width * 0.2;
+             Right.size.width -= 22;//Right.size.width * 0.2;
+           }
+           else
+           {
+             Left.size.width -= 22;
+             Right.origin.x += 22;
+             Right.size.width -= 22;
+           }
+        }    
+    }
   }
 }
 
