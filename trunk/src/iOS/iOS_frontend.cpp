@@ -35,6 +35,7 @@ extern int iOS_320x240;
 
 extern int safe_render_path;
 extern int isIpad;
+extern int iOS_hide_LR;
 
 int _master_volume = 100;
 
@@ -323,6 +324,7 @@ static int show_options(char *game)
 			case 2: gp2x_gamelist_text_out(x_Pos,y_Pos+90, "Landscape     2 Buttons"); break;
 			case 3: gp2x_gamelist_text_out(x_Pos,y_Pos+90, "Landscape     3 Buttons"); break;
 			case 4: gp2x_gamelist_text_out(x_Pos,y_Pos+90, "Landscape     4 Buttons"); break;
+			case 5: gp2x_gamelist_text_out(x_Pos,y_Pos+90, "Landscape     All Buttons"); break;
 		}
 
 		/* (8) CPU Clock */
@@ -449,14 +451,14 @@ static int show_options(char *game)
 				if(ExKey & GP2X_R || ExKey & GP2X_RIGHT)
 				{
 					iOS_landscape_buttons ++;
-					if (iOS_landscape_buttons>4)
+					if (iOS_landscape_buttons>5)
 						iOS_landscape_buttons=1;
 				}
 				else
 				{
 					iOS_landscape_buttons--;
 					if (iOS_landscape_buttons<1)
-						iOS_landscape_buttons=4;
+						iOS_landscape_buttons=5;
 				}
 				break;
 			case 7:
@@ -584,7 +586,7 @@ static void select_game(char *emu, char *game)
 			else
 			{
 				iOS_sound = 4;
-				iOS_video_depth=-1;
+				iOS_video_depth=16;
 			}
 			if(isIpad)
 			{
@@ -756,16 +758,20 @@ void execute_game (char *playemu, char *playgame)
 	
 	iOS_inGame = 1;
 	iOS_exitGame=0;
+	iOS_hide_LR = iOS_landscape_buttons!=5;
 	//gp2x_set_video_mode(16,320,240);
 	iphone_main(n, args);
-	gp2x_set_video_mode(16,320,240);
+
 	if(isIpad)
 		iOS_landscape_buttons=2;
 	else
 		iOS_landscape_buttons=2;
 
+	iOS_hide_LR = 0;
+
 	iOS_exitGame=0;
 	iOS_inGame = 0;
+	gp2x_set_video_mode(16,320,240);
 
 }
 
@@ -788,7 +794,7 @@ extern "C" int mimain (int argc, char **argv)
 	else
 	{
 		iOS_sound = 4;
-		iOS_video_depth = -1;
+		iOS_video_depth = 16;
 	}
 
 	if(isIpad)

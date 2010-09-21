@@ -34,6 +34,7 @@
 #include "shared.h"
 
 extern int isIpad;
+extern int isIphone4;
 
 @implementation Options
 
@@ -140,7 +141,7 @@ extern int isIpad;
 		keepAspectRatio = [[[optionsArray objectAtIndex:0] objectForKey:@"KeepAspect"] intValue];
 		smoothedLand = [[[optionsArray objectAtIndex:0] objectForKey:@"SmoothedLand"] intValue];
 		smoothedPort = [[[optionsArray objectAtIndex:0] objectForKey:@"SmoothedPort"] intValue];	
-		safeRenderPath =  isIpad?1:[[[optionsArray objectAtIndex:0] objectForKey:@"safeRenderPath"] intValue];
+		safeRenderPath =  (isIpad || isIphone4)?1:[[[optionsArray objectAtIndex:0] objectForKey:@"safeRenderPath"] intValue];
 		
 	    tvFilterPort = [[[optionsArray objectAtIndex:0] objectForKey:@"TvFilterPort"] intValue];
         tvFilterLand =  [[[optionsArray objectAtIndex:0] objectForKey:@"TvFilterLand"] intValue];
@@ -481,7 +482,7 @@ extern int isIpad;
                }               
                case 4:
                {                                      
-                   cell.text  = @"DeadZone Value";
+                   cell.text  = @"Wii Classic DZ";
                    
                     segmentedDeadZoneValue = [[UISegmentedControl alloc] initWithItems:
                        [NSArray arrayWithObjects: @"1", @"2", @"3",@"4", @"5", @"6", nil]];
@@ -499,7 +500,7 @@ extern int isIpad;
                {
                    cell.text  = @"Skin";                   
                    segmentedSkin = [[UISegmentedControl alloc] initWithItems:
-                   [NSArray arrayWithObjects: @"A", @"B", @"B retina", nil]];
+                   [NSArray arrayWithObjects: @"A", @"B", @"B+Retina", nil]];
                     //segmentedDeadZoneValue.frame = CGRectMake(145, 5, 150, 35);
                    segmentedSkin.selectedSegmentIndex = [op skin];
                     //actionControl.tag = 3;
@@ -548,7 +549,7 @@ extern int isIpad;
       {
           case 0: return isIpad ? 4 : 3;
           case 1: return isIpad ? 4 : 5;
-          case 2: return isIpad ? 6 : 7;
+          case 2: return (isIpad | isIphone4) ? 6 : 7;
       }
 }
 

@@ -37,6 +37,7 @@
 
 
 int isIpad = 0;
+int isIphone4 = 0;
 extern __emulation_run; 
 //extern int iOS_external_width;
 //extern int iOS_external_height;
@@ -72,6 +73,7 @@ CGRect rExternal;
 	*/
 	
 	isIpad = [[Helper machine] rangeOfString:@"iPad"].location != NSNotFound;
+	isIphone4 = [[Helper machine] rangeOfString:@"iPhone3"].location != NSNotFound;
 	//isIpad = 1;
 
 	hrViewController = [[EmulatorController alloc] init];

@@ -114,6 +114,7 @@ int iOS_animated_DPad = 0;
 int iOS_4buttonsLand = 0;
 int iOS_full_screen_land = 1;
 extern int iOS_landscape_buttons;
+int iOS_hide_LR=0;
 int iOS_skin = 1;
 int iOS_deadZoneValue = 2;
 int iOS_touchDeadZone = 1;
@@ -643,6 +644,9 @@ void* app_Thread_Start(void* args)
           if(i==BTN_Y && iOS_landscape_buttons < 4)continue;
           if(i==BTN_A && iOS_landscape_buttons < 3)continue;
           if(i==BTN_X && iOS_landscape_buttons < 2)continue;      
+          
+          if(i==BTN_L1 && iOS_hide_LR)continue;
+          if(i==BTN_R1 && iOS_hide_LR)continue;
       }
    
       //if((i==BTN_Y || i==BTN_A) && !iOS_4buttonsLand && iphone_is_landscape)
@@ -650,7 +654,7 @@ void* app_Thread_Start(void* args)
       name = [NSString stringWithFormat:@"./SKIN_%d/%@",iOS_skin,nameImgButton_NotPress[i]];   
       buttonViews[i] = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:name]];
       buttonViews[i].frame = rButton_image[i];
-      if(iphone_is_landscape && (iOS_full_screen_land || i==BTN_Y))      
+      if(iphone_is_landscape && (iOS_full_screen_land || i==BTN_Y || i==BTN_A))      
          [buttonViews[i] setAlpha:((float)iphone_controller_opacity / 100.0f)];   
       [self.view addSubview: buttonViews[i]];
       btnStates[i] = old_btnStates[i] = BUTTON_NO_PRESS; 

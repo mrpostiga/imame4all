@@ -12,10 +12,10 @@
 401,85,83,79//rpad
 0,0,0,0//menu (select+ start) YO b + up
 341,243,28,77//button down left X + A
-369,254,63,66//buttondown  --> X
+369,254,78,66//buttondown  --> X
 432,254,48,66//button down right X + B
 285,243,56,77//buton left  --> A
-414,181,66,73//button right -> B
+400,181,80,73//button right -> B
 256,243,29,77//button up left --> Y + A
 200,243,56,77//button up --> Y
 0,0,0,0//button up right Y + B

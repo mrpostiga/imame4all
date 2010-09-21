@@ -32,10 +32,6 @@
 
 #import <UIKit/UIScreen.h>
 
-//UIKIT_EXTERN NSString *const UIScreenDidConnectNotification;    // object is the UIScreen that represents the new screen. connection notifications are not sent for screens present when the application is first launched
-//UIKIT_EXTERN NSString *const UIScreenDidDisconnectNotification; // object is the UIScreen that represented the disconnected screen
-//UIKIT_EXTERN NSString *const UIScreenModeDidChangeNotification; // object is the UIScreen. [object currentMode] is the new UIScreenMode
-
 UIKIT_EXTERN_CLASS @interface UIScreenMode : NSObject {
   @private
     id _mode;
@@ -45,16 +41,7 @@ UIKIT_EXTERN_CLASS @interface UIScreenMode : NSObject {
 @property(readonly,nonatomic) CGFloat pixelAspectRatio; // The aspect ratio of a single pixel. The ratio is defined as X/Y.
 
 @end
-/*
-@interface UIScreenMode : NSObject {
-	   @public  CGFloat pixelAspectRatio;
-	   @public  CGSize size;
-}
-	@property(readonly,nonatomic) CGFloat pixelAspectRatio;
-    @property(readonly,nonatomic) CGSize  size;
 
-@end
-*/
 @interface Bootstrapper : UIApplication  {
 	
 	UIWindow		    *deviceWindow;

@@ -86,7 +86,7 @@ TATE: The window and controls are rotated. (it may help to play some landscape g
 - Video Depth:
 The video Rotate is configured with the following combination of options:
 8 bit /16 bit /Auto
-Try different video depth if you have glitches with current game, but leave it in auto.
+Try different video depth if you have glitches with current game.
 
 - Video Sync:
 Normal: Single buffer and dirty buffer is used.
@@ -143,7 +143,7 @@ GLOBAL OPTIONS
 
 -Full Screen (Landscape); Uses all avalible screen or shows the emulator windowed.
 
--Animted DPad. Animates ON/OFF DPad. Disable to gain performance.
+-Animated DPad. Animates ON/OFF DPad. Disable to gain performance.
 
 -Low Latency Sound. More accurate sound. Expensive.(keep enabled on iPad)
 
@@ -151,7 +151,7 @@ GLOBAL OPTIONS
 
 -Touch DeadZone: Enable/Disable a deadzone on DPAD touch center. It could be better for some games. Disable if you don't like it.
 
--DeadZone Value: Wii classic stick deadzone selector. Upper if you have problems with stick (controller going crazy). Lower to gets more sensitivity.
+-Wii Classic DZ: Wii classic stick deadzone selector. Upper if you have problems with stick (controller going crazy). Lower to gets more sensitivity.
 
 -Skin: Let's you select skin (retina or not). Retina skin looks better but needs more resources.
 

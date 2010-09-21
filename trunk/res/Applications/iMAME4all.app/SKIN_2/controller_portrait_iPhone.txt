@@ -15,12 +15,12 @@
 183,408,57,70//ButtonDown X*
 240,399,80,81//ButtonDownRight (X + B)
 178,323,57,57//ButtonLeft A*
-252,383,57,70//ButtonRight B*
+252,383,67,70//ButtonRight B*
 178,298,70,66//ButtonUpLeft (A + Y)
 248,298,57,57//ButtonUp Y
 252,298,68,85//ButtonUpRight (B + Y)*
 0,240,69,26//LPad2*
-69,240,79,26//RPad2
+69,240,79,30//RPad2
 0,0,0,0//showkyboard
 240,370,83,83//B img
 170,395,83,83//X img
