@@ -1385,8 +1385,8 @@ void* app_Thread_Start(void* args)
            else
            {
              Left.size.width -= 14;
-             Right.origin.x += 12;
-             Right.size.width -= 12;
+             Right.origin.x += 20;
+             Right.size.width -= 20;
            }
         }
         else

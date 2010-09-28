@@ -700,6 +700,7 @@ int iOS_wiimote_check (struct  wiimote_t  *wm){
 	 joy_analog_x[wm->unid]=0.0f;
 	 joy_analog_y[wm->unid]=0.0f;
 	 int joyExKey = 0;
+	 iOS_exitGame = 0;
 	 if (1) {
 
 			if (IS_PRESSED(wm, WIIMOTE_BUTTON_A))		{joyExKey |= GP2X_A;}
@@ -713,8 +714,8 @@ int iOS_wiimote_check (struct  wiimote_t  *wm){
 			if (IS_PRESSED(wm, WIIMOTE_BUTTON_ONE))		{joyExKey |= GP2X_X;}
 			if (IS_PRESSED(wm, WIIMOTE_BUTTON_TWO))		{joyExKey |= GP2X_B;}
 			if (IS_PRESSED(wm, WIIMOTE_BUTTON_HOME))	{
-			  iOS_exitGame = 0;
-	          usleep(50000);
+
+	          //usleep(50000);
 	          iOS_exitGame = 1;}
 
 			 if (wm->exp.type == EXP_CLASSIC) {
@@ -747,7 +748,8 @@ int iOS_wiimote_check (struct  wiimote_t  *wm){
 					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_DOWN))		joyExKey |= GP2X_DOWN;
 					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_FULL_L))		joyExKey |= GP2X_L;
 					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_MINUS))		joyExKey |= GP2X_SELECT;
-					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_HOME))		{iOS_exitGame = 0;usleep(50000);iOS_exitGame = 1;}
+					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_HOME))		{//iOS_exitGame = 0;usleep(50000);
+					                                                     iOS_exitGame = 1;}
 					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_PLUS))		joyExKey |= GP2X_START;
 					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_FULL_R))		joyExKey |= GP2X_R;
 
