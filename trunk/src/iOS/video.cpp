@@ -5,11 +5,14 @@
 
 extern int  global_fps;
 extern int isIpad;
+extern int emulated_width;
+extern int emulated_height;
 extern "C" int safe_render_path;
 int iOS_exitPause = 0;
 int iOS_cropVideo = 0;
 int iOS_aspectRatio = 0;
 int iOS_320x240 = 0;
+extern int iOS_43;
 
 dirtygrid grid1;
 dirtygrid grid2;
@@ -245,6 +248,10 @@ static void select_display_mode(int width,int height,int depth,int attributes,in
 		logerror("Game needs %d-bit colors.\n",depth);
 	}
 
+	emulated_width = width;
+	emulated_height = height;
+
+
 	if (!gfx_width && !gfx_height)//no aspect ratio
 	{
 		gfx_width = width;
@@ -255,7 +262,10 @@ static void select_display_mode(int width,int height,int depth,int attributes,in
 	{
 		gfx_width = 320;
 		gfx_height = 240;
+		emulated_width = 320;
+		emulated_height = 240;
 	}
+
 
 	if(iOS_cropVideo)
 	{
@@ -263,38 +273,51 @@ static void select_display_mode(int width,int height,int depth,int attributes,in
 		gfx_width = width;
 		gfx_height = height;
 
+		int rx = iOS_cropVideo == 1 ? 4 : 3;
+		int ry = iOS_cropVideo == 1 ? 3 : 4;
+
+
 		//double ratio = 4.0/3.0;
-		//printf("%d %d %f\n",width,height,ratio);
+		//printf("%d %d \n",width,height);
 
 		int new_width = //gfx_height * ratio;
-		            ((((gfx_height*4)/3)+7)&~7);
+		            ((((gfx_height*rx)/ry)+7)&~7);
 
 		if(new_width>gfx_width)
 		{
 			gfx_height = //gfx_width / ratio;
-					((((gfx_width*3)/4)+7)&~7);
+					((((gfx_width*ry)/rx)+7)&~7);
 		}
 		else
  		    gfx_width = new_width;
 
+		emulated_width = gfx_width;
+		emulated_height = gfx_height;
+
 		//printf("%d %d\n",gfx_width,gfx_height);
 	}
 
+/*
 	if(iOS_aspectRatio)//aspect ratio
 	{
 
 		gfx_width = width;
 		gfx_height = height;
 
-		double ratio = 4.0/3.0;//isIpad ? 1024.0/768.0 :480.0/320.0;
+		//double ratio = 4.0/3.0;//isIpad ? 1024.0/768.0 :480.0/320.0;
 
 		//printf("%d %d %f\n",width,height,ratio);
 
 		int done = 0;
 
+		iOS_43 = width > height;
+
+		int rx = iOS_43 ? 4 : 3;
+		int ry = iOS_43 ? 3 : 4;
+
 		// Try adjusting width to be proportional to height
 		int newWidth = //(int) (ratio * gfx_height);
-				((((gfx_height*4)/3)+7)&~7);
+				((((gfx_height*rx)/ry)+7)&~7);
 
 		if (newWidth >= gfx_width) {
 			gfx_width = newWidth;
@@ -304,7 +327,7 @@ static void select_display_mode(int width,int height,int depth,int attributes,in
 		// Try adjusting height to be proportional to width
 		if (!done) {
 			int newHeight = //(int) (gfx_width / ratio);
-					((((gfx_width*3)/4)+7)&~7);
+					((((gfx_width*ry)/rx)+7)&~7);
 
 			if (newHeight >= gfx_height) {
 				gfx_height = newHeight;
@@ -313,7 +336,7 @@ static void select_display_mode(int width,int height,int depth,int attributes,in
 
 		//printf("%d %d\n",gfx_width,gfx_height);
 	}
-
+*/
 	/* Video hardware scaling */
 	if (video_scale)
 	{
@@ -328,11 +351,15 @@ static void select_display_mode(int width,int height,int depth,int attributes,in
 		{
 		   gfx_width = 640;
 		   gfx_height = 480;
+		   emulated_width = 640;
+		   emulated_height = 480;
 		}
 		else
 		{
 		   gfx_width = 320;
 		   gfx_height = 240;
+		   emulated_width = 320;
+		   emulated_height = 240;
 		}
 	}
 

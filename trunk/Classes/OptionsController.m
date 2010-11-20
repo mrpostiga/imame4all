@@ -38,7 +38,8 @@ extern int isIphone4;
 
 @implementation Options
 
-@synthesize keepAspectRatio;
+@synthesize keepAspectRatioPort;
+@synthesize keepAspectRatioLand;
 @synthesize smoothedLand;
 @synthesize smoothedPort;
 @synthesize safeRenderPath;
@@ -53,6 +54,7 @@ extern int isIphone4;
 @synthesize lowlatencySound;
 @synthesize fourButtonsLand;
 @synthesize fullLand;
+@synthesize fullPort;
 
 @synthesize skin;
 
@@ -73,7 +75,7 @@ extern int isIphone4;
 - (void)loadOptions
 {
 	
-	NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v3.bin")];
+	NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v6.bin")];
 	
 	NSData *plistData;
 	id plist;
@@ -96,7 +98,8 @@ extern int isIphone4;
 		
 		optionsArray = [[NSMutableArray alloc] init];
 		
-		keepAspectRatio=isIpad?0:1;
+		keepAspectRatioPort=1;
+		keepAspectRatioLand=1;
 		smoothedPort=isIpad?1:0;
 		smoothedLand=isIpad?1:0;
 		
@@ -126,6 +129,7 @@ extern int isIphone4;
 		              ;
 		              
         fullLand = animatedButtons;
+        fullPort = 0;
         
         skin = isIpad ? 2 : 1;
         deadZoneValue = 2;
@@ -138,7 +142,8 @@ extern int isIphone4;
 		
 		optionsArray = [[NSMutableArray alloc] initWithArray:plist];
 		
-		keepAspectRatio = [[[optionsArray objectAtIndex:0] objectForKey:@"KeepAspect"] intValue];
+		keepAspectRatioPort = [[[optionsArray objectAtIndex:0] objectForKey:@"KeepAspectPort"] intValue];
+		keepAspectRatioLand = [[[optionsArray objectAtIndex:0] objectForKey:@"KeepAspectLand"] intValue];
 		smoothedLand = [[[optionsArray objectAtIndex:0] objectForKey:@"SmoothedLand"] intValue];
 		smoothedPort = [[[optionsArray objectAtIndex:0] objectForKey:@"SmoothedPort"] intValue];	
 		safeRenderPath =  (isIpad || isIphone4)?1:[[[optionsArray objectAtIndex:0] objectForKey:@"safeRenderPath"] intValue];
@@ -154,6 +159,7 @@ extern int isIphone4;
         lowlatencySound =  [[[optionsArray objectAtIndex:0] objectForKey:@"lowlatencySound"] intValue];
         animatedButtons =  [[[optionsArray objectAtIndex:0] objectForKey:@"animatedButtons"] intValue];	
         fullLand =  [[[optionsArray objectAtIndex:0] objectForKey:@"fullLand"] intValue];
+        fullPort =  [[[optionsArray objectAtIndex:0] objectForKey:@"fullPort"] intValue];
         
         skin =  [[[optionsArray objectAtIndex:0] objectForKey:@"skin"] intValue];
         
@@ -169,7 +175,8 @@ extern int isIphone4;
 
 	[optionsArray removeAllObjects];
 	[optionsArray addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-							 [NSString stringWithFormat:@"%d", keepAspectRatio], @"KeepAspect",
+							 [NSString stringWithFormat:@"%d", keepAspectRatioPort], @"KeepAspectPort",
+							 [NSString stringWithFormat:@"%d", keepAspectRatioLand], @"KeepAspectLand",
 							 [NSString stringWithFormat:@"%d", smoothedLand], @"SmoothedLand",
 							 [NSString stringWithFormat:@"%d", smoothedPort], @"SmoothedPort",
 							 [NSString stringWithFormat:@"%d", safeRenderPath], @"safeRenderPath",
@@ -185,6 +192,7 @@ extern int isIphone4;
 							 [NSString stringWithFormat:@"%d", lowlatencySound], @"lowlatencySound",							 
 							 [NSString stringWithFormat:@"%d", animatedButtons], @"animatedButtons",							 							 							 											 
 							 [NSString stringWithFormat:@"%d", fullLand], @"fullLand",
+							 [NSString stringWithFormat:@"%d", fullPort], @"fullPort",
 							 
 							 [NSString stringWithFormat:@"%d", skin], @"skin",
 							  
@@ -193,7 +201,7 @@ extern int isIphone4;
 							 nil]];	
 
 	
-    NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v3.bin")];
+    NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v6.bin")];
 	
 	NSData *plistData;
 	
@@ -244,7 +252,8 @@ extern int isIphone4;
 
     if (self = [super init]) {
     
-	   switchKeepAspect=nil;
+	   switchKeepAspectPort=nil;
+	   switchKeepAspectLand=nil;
 	   switchSmoothedPort=nil;
 	   switchSmoothedLand=nil;
 	
@@ -260,6 +269,7 @@ extern int isIphone4;
    	   switchLowlatencySound=nil;
 	   switch4buttonsLand=nil;
 	   switchfullLand=nil;
+	   switchfullPort=nil;
 	   
 	   segmentedSkin= nil;
 	   
@@ -360,16 +370,23 @@ extern int isIphone4;
                }          
                case 3:
                {
-                   if(isIpad)
-                   {
-	                   cell.text  = @"Original Size";
-	                   switchKeepAspect  = [[UISwitch alloc] initWithFrame:CGRectZero];                
-	                   cell.accessoryView = switchKeepAspect ;
-	                   [switchKeepAspect setOn:[op keepAspectRatio] animated:NO];
-	                   [switchKeepAspect addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-                   }   
+                   cell.text  = @"Full Screen";
+                   switchfullPort  = [[UISwitch alloc] initWithFrame:CGRectZero];                
+                   cell.accessoryView = switchfullPort;
+                   [switchfullPort setOn:[op fullPort] animated:NO];
+                   [switchfullPort addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged]; 
                    break;
-               }               
+               }   
+               case 4:
+               {
+	                cell.text  = @"Keep Aspect Ratio";
+	                switchKeepAspectPort  = [[UISwitch alloc] initWithFrame:CGRectZero];                
+	                cell.accessoryView = switchKeepAspectPort;
+	                [switchKeepAspectPort setOn:[op keepAspectRatioPort] animated:NO];
+	                [switchKeepAspectPort addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
+                   break;
+               }             
+                           
            }    
            break;
        }
@@ -427,14 +444,13 @@ extern int isIphone4;
 
                case 4:
                {
-                   if(!isIpad)
-                   {
-	                   cell.text  = @"Keep Aspect Ratio";
-	                   switchKeepAspect  = [[UISwitch alloc] initWithFrame:CGRectZero];                
-	                   cell.accessoryView = switchKeepAspect ;
-	                   [switchKeepAspect setOn:[op keepAspectRatio] animated:NO];
-	                   [switchKeepAspect addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-                   }   
+
+                    cell.text  = @"Keep Aspect Ratio";
+                    switchKeepAspectLand  = [[UISwitch alloc] initWithFrame:CGRectZero];                
+                    cell.accessoryView = switchKeepAspectLand;
+                    [switchKeepAspectLand setOn:[op keepAspectRatioLand] animated:NO];
+                    [switchKeepAspectLand addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+   
                    break;
                }
            }
@@ -547,8 +563,8 @@ extern int isIphone4;
    
       switch (section)
       {
-          case 0: return isIpad ? 4 : 3;
-          case 1: return isIpad ? 4 : 5;
+          case 0: return 5;
+          case 1: return 5;
           case 2: return (isIpad | isIphone4) ? 6 : 7;
       }
 }
@@ -568,8 +584,10 @@ extern int isIphone4;
 
 
 - (void)dealloc {
-   if(switchKeepAspect!=nil)
-     [switchKeepAspect release];
+   if(switchKeepAspectPort!=nil)
+     [switchKeepAspectPort release];
+   if(switchKeepAspectLand!=nil)
+     [switchKeepAspectLand release];     
    if(switchSmoothedPort!=nil)  
      [switchSmoothedPort release];
    if(switchSmoothedLand!=nil)  
@@ -595,7 +613,9 @@ extern int isIphone4;
      [switch4buttonsLand release];
    if(switchfullLand!=nil)
      [switchfullLand release];      
-     
+   if(switchfullPort!=nil)
+     [switchfullPort release]; 
+          
    if(segmentedSkin!=nil)
      [segmentedSkin release];  
      
@@ -612,9 +632,12 @@ extern int isIphone4;
 {
     Options *op = [[Options alloc] init];
 	
-	if(sender==switchKeepAspect)    		
-	   op.keepAspectRatio = [switchKeepAspect isOn];
-	   
+	if(sender==switchKeepAspectPort)    		
+	   op.keepAspectRatioPort = [switchKeepAspectPort isOn];
+	
+	if(sender==switchKeepAspectLand)    		
+	   op.keepAspectRatioLand = [switchKeepAspectLand isOn];
+	   	   
 	if(sender==switchSmoothedPort)   
 	   op.smoothedPort =  [switchSmoothedPort isOn];
 	
@@ -656,6 +679,9 @@ extern int isIphone4;
 	
 	if(sender == switchfullLand) 
 	   op.fullLand =  [switchfullLand isOn];
+
+	if(sender == switchfullPort) 
+	   op.fullPort =  [switchfullPort isOn];
 	   
     if(sender == segmentedSkin) 
 	   op.skin =  [segmentedSkin selectedSegmentIndex];   

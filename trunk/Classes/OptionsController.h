@@ -34,7 +34,8 @@
 {
    NSMutableArray*	  optionsArray;
 
-   @public  int keepAspectRatio;
+   @public  int keepAspectRatioPort;
+   @public  int keepAspectRatioLand;
    @public  int smoothedPort;
    @public  int smoothedLand;
    @public  int safeRenderPath;
@@ -49,6 +50,7 @@
    @public  int lowlatencySound;
    @public  int fourButtonsLand;
    @public  int fullLand;
+   @public  int fullPort;
 
    @public  int skin;
 
@@ -61,7 +63,8 @@
 - (void)loadOptions;
 - (void)saveOptions;
 
-@property (readwrite,assign) int keepAspectRatio;
+@property (readwrite,assign) int keepAspectRatioPort;
+@property (readwrite,assign) int keepAspectRatioLand;
 @property (readwrite,assign) int smoothedPort;
 @property (readwrite,assign) int smoothedLand;
 @property (readwrite,assign) int safeRenderPath;
@@ -77,6 +80,7 @@
 @property (readwrite,assign) int lowlatencySound;
 @property (readwrite,assign) int fourButtonsLand;
 @property (readwrite,assign) int fullLand;
+@property (readwrite,assign) int fullPort;
 
 @property (readwrite,assign) int skin;
 
@@ -89,7 +93,8 @@
 @interface OptionsController : UIViewController  <UITableViewDelegate, UITableViewDataSource>
 {
 
-   UISwitch*		  switchKeepAspect;
+   UISwitch*		  switchKeepAspectPort;
+   UISwitch*		  switchKeepAspectLand;
    UISwitch*		  switchSmoothedPort;
    UISwitch*		  switchSmoothedLand;
    UISwitch*		  switchSafeRender;
@@ -106,6 +111,7 @@
    UISwitch*		  switchLowlatencySound;
    UISwitch*		  switch4buttonsLand;
    UISwitch*		  switchfullLand;
+   UISwitch*		  switchfullPort;
 
    UISegmentedControl *segmentedDeadZoneValue;
 

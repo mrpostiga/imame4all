@@ -86,6 +86,7 @@ static CGRect rLoopImageMask;
 static CGRect rShowKeyboard;
 
 extern CGRect rExternal;
+CGRect rView;
 
 int iphone_menu = IPHONE_MENU_DISABLED;
 
@@ -93,7 +94,8 @@ int iphone_controller_opacity = 50;
 int iphone_is_landscape = 0;
 int iphone_smooth_land = 0;
 int iphone_smooth_port = 0;
-int iphone_keep_aspect_ratio = 0;
+int iphone_keep_aspect_ratio_land = 0;
+int iphone_keep_aspect_ratio_port = 0;
 
 extern int isIpad;
 int safe_render_path = 1;
@@ -113,6 +115,10 @@ int global_low_latency_sound = 0;
 int iOS_animated_DPad = 0;
 int iOS_4buttonsLand = 0;
 int iOS_full_screen_land = 1;
+int iOS_full_screen_port = 1;
+int emulated_width = 320;
+int emulated_height = 240;
+
 extern int iOS_landscape_buttons;
 int iOS_hide_LR=0;
 int iOS_skin = 1;
@@ -172,6 +178,7 @@ void* app_Thread_Start(void* args)
     //app_MuteSound();
 	return NULL;
 }
+
 
 @implementation EmulatorController
 
@@ -262,7 +269,8 @@ void* app_Thread_Start(void* args)
     if(iphone_smooth_port != [op smoothedPort] 
         || iphone_smooth_land != [op smoothedLand] 
         || safe_render_path != [op safeRenderPath]
-        || iphone_keep_aspect_ratio != [op keepAspectRatio]
+        || iphone_keep_aspect_ratio_land != [op keepAspectRatioLand]
+        || iphone_keep_aspect_ratio_port != [op keepAspectRatioPort]        
         || tv_filter_land != [op tvFilterLand]
         || tv_filter_port != [op tvFilterPort]
         || scanline_filter_land != [op scanlineFilterLand]
@@ -272,12 +280,14 @@ void* app_Thread_Start(void* args)
         || iOS_animated_DPad  != [op animatedButtons]
         || iOS_4buttonsLand  != [op fourButtonsLand]
         || iOS_full_screen_land  != [op fullLand]
+        || iOS_full_screen_port  != [op fullPort]
         || iOS_skin != ([op skin]+1)
         || iOS_deadZoneValue != [op deadZoneValue]
         || iOS_touchDeadZone != [op touchDeadZone]
         )
     {
-        iphone_keep_aspect_ratio = [op keepAspectRatio];
+        iphone_keep_aspect_ratio_land = [op keepAspectRatioLand];
+        iphone_keep_aspect_ratio_port = [op keepAspectRatioPort];
         iphone_smooth_land = [op smoothedLand];
         iphone_smooth_port = [op smoothedPort];
         safe_render_path = [op safeRenderPath];
@@ -293,12 +303,14 @@ void* app_Thread_Start(void* args)
        iOS_animated_DPad  = [op animatedButtons];
        iOS_4buttonsLand  = [op fourButtonsLand];
        iOS_full_screen_land  = [op fullLand];
+       iOS_full_screen_port  = [op fullPort];
        
        iOS_skin = [op skin]+1;
        iOS_deadZoneValue = [op deadZoneValue];
        iOS_touchDeadZone = [op touchDeadZone];
        
        [self changeUI];
+       //[self performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
        
        /*      
        [screenView removeFromSuperview];
@@ -357,21 +369,27 @@ void* app_Thread_Start(void* args)
     }
   }
 
-   usleep(100000);
-   app_DemuteSound();
-   iOS_exitPause = 1;
-  __emulation_paused = 0;  
-  
+  //usleep(100000);
+  app_DemuteSound();
+
   int old = btUsed;
   btUsed = num_of_joys!=0;
+    
+  if(((!iphone_is_landscape && iOS_full_screen_port) || iphone_is_landscape) && btUsed && old!=btUsed)
+  {
+      [self performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO]; 
+  }
+  if(((!iphone_is_landscape && iOS_full_screen_port) || iphone_is_landscape) && !btUsed && old!=btUsed)
+  { 
+      [self performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
+  }
+    
   actionPending=0;
-  
-  if(iphone_is_landscape && btUsed && old!=btUsed)
-      [self removeDPadView];
-  if(iphone_is_landscape && !btUsed && old!=btUsed) 
-      [self buildDPadView];
-      
-  [pool release];
+  iOS_exitPause = 1;
+  __emulation_paused = 0; 
+   
+  [pool release]; 
+     
 }
 
 - (void)runMainMenu
@@ -466,7 +484,7 @@ void* app_Thread_Start(void* args)
    
    int i;
    for(i=0; i<NUM_BUTTONS;i++)
-      buttonViews[i]!=nil;
+      buttonViews[i]=nil;
       
    screenView=nil;
    imageBack=nil;   			
@@ -483,6 +501,7 @@ void* app_Thread_Start(void* args)
 	
     self.view.opaque = YES;
 	self.view.clearsContextBeforeDrawing = NO; //Performance?
+	
 	self.view.userInteractionEnabled = YES;
 	
 	self.view.multipleTouchEnabled = YES;
@@ -503,7 +522,8 @@ void* app_Thread_Start(void* args)
 		
 	Options *op = [[Options alloc] init];
 	        
-    iphone_keep_aspect_ratio = [op keepAspectRatio];
+    iphone_keep_aspect_ratio_land = [op keepAspectRatioLand];
+    iphone_keep_aspect_ratio_port = [op keepAspectRatioPort];
     iphone_smooth_land = [op smoothedLand];
     iphone_smooth_port = [op smoothedPort];
     safe_render_path = [op safeRenderPath];
@@ -519,6 +539,7 @@ void* app_Thread_Start(void* args)
     iOS_animated_DPad  = [op animatedButtons];
     iOS_4buttonsLand  = [op fourButtonsLand];
     iOS_full_screen_land  = [op fullLand];
+    iOS_full_screen_port  = [op fullPort];
     
     iOS_skin = [op skin]+1;
     iOS_deadZoneValue = [op deadZoneValue];
@@ -536,7 +557,8 @@ void* app_Thread_Start(void* args)
 }
 
 -(BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-	//return (interfaceOrientation == UIInterfaceOrientationPortrait);
+	//return (interfaceOrientation ==  UIDeviceOrientationLandscapeLeft || interfaceOrientation ==  UIDeviceOrientationLandscapeRight);
+	//return NO;
 	return YES;
 }
 
@@ -555,10 +577,14 @@ void* app_Thread_Start(void* args)
    
   __emulation_paused = 1;
   
+  [ self getConf];
+  
   //reset_video(); 
   
   //if(!safe_render_path)
       usleep(150000);//ensure some frames displayed
+  
+  //[self removeDPadView];
         
   [screenView removeFromSuperview];
   [screenView release];
@@ -571,26 +597,28 @@ void* app_Thread_Start(void* args)
   }
    
   //si tiene overlay
-  if(imageOverlay!=nil)
-  {
+   if(imageOverlay!=nil)
+   {
      [imageOverlay removeFromSuperview];
      [imageOverlay release];
      imageOverlay = nil;
-  }
-  
-  if((self.interfaceOrientation ==  UIDeviceOrientationLandscapeLeft) || (self.interfaceOrientation == UIDeviceOrientationLandscapeRight)){
-	  [self buildLandscape];	        
-	
-   } else	if((self.interfaceOrientation == UIDeviceOrientationPortrait) || (self.interfaceOrientation == UIDeviceOrientationPortraitUpsideDown)){	
-      [self buildPortrait];
    }
+   
+   if((self.interfaceOrientation ==  UIDeviceOrientationLandscapeLeft) || (self.interfaceOrientation == UIDeviceOrientationLandscapeRight)){
+	   [self buildLandscape];	        	
+   } else	if((self.interfaceOrientation == UIDeviceOrientationPortrait) || (self.interfaceOrientation == UIDeviceOrientationPortraitUpsideDown)){	
+       [self buildPortrait];
+   }
+
+   //self.view.backgroundColor = [UIColor blackColor];
+   [self.view setNeedsDisplay];
+   	
+   iOS_exitPause = 1;
 	
-	iOS_exitPause = 1;
-	
-	if(prev_emulation_paused!=1)
+   if(prev_emulation_paused!=1)
 	   __emulation_paused = 0;
 		
-	[pool release];
+   [pool release];
 }
 
 - (void)removeDPadView{
@@ -624,14 +652,14 @@ void* app_Thread_Start(void* args)
    
    btUsed = num_of_joys!=0; 
    
-   if(btUsed && iphone_is_landscape)
+   if(btUsed && ((!iphone_is_landscape && iOS_full_screen_port) || iphone_is_landscape))
      return;
    
    //dpad
    NSString *name = [NSString stringWithFormat:@"./SKIN_%d/%@",iOS_skin,nameImgDPad[DPAD_NONE]];
    dpadView = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:name]];
    dpadView.frame = rDPad_image;
-   if(iphone_is_landscape && iOS_full_screen_land)
+   if((iphone_is_landscape && iOS_full_screen_land) || (!iphone_is_landscape && iOS_full_screen_port))
          [dpadView setAlpha:((float)iphone_controller_opacity / 100.0f)];  
    [self.view addSubview: dpadView];
    dpad_state = old_dpad_state = DPAD_NONE;
@@ -639,7 +667,7 @@ void* app_Thread_Start(void* args)
    for(i=0; i<NUM_BUTTONS;i++)
    {
 
-      if(iphone_is_landscape)
+      if(iphone_is_landscape || iOS_full_screen_port)
       {
           if(i==BTN_Y && iOS_landscape_buttons < 4)continue;
           if(i==BTN_A && iOS_landscape_buttons < 3)continue;
@@ -654,7 +682,7 @@ void* app_Thread_Start(void* args)
       name = [NSString stringWithFormat:@"./SKIN_%d/%@",iOS_skin,nameImgButton_NotPress[i]];   
       buttonViews[i] = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:name]];
       buttonViews[i].frame = rButton_image[i];
-      if(iphone_is_landscape && (iOS_full_screen_land || i==BTN_Y || i==BTN_A))      
+      if((iphone_is_landscape && (iOS_full_screen_land || i==BTN_Y || i==BTN_A)) || iOS_full_screen_port)      
          [buttonViews[i] setAlpha:((float)iphone_controller_opacity / 100.0f)];   
       [self.view addSubview: buttonViews[i]];
       btnStates[i] = old_btnStates[i] = BUTTON_NO_PRESS; 
@@ -668,20 +696,22 @@ void* app_Thread_Start(void* args)
    [UIView setAnimationCurve:UIViewAnimationCurveEaseOut];
    [UIView setAnimationDuration:0.50];
    */
-
-   if(isIpad)
-     imageBack = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:[NSString stringWithFormat:@"./SKIN_%d/back_portrait_iPad.png",iOS_skin]]];
-   else
-     imageBack = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:[NSString stringWithFormat:@"./SKIN_%d/back_portrait_iPhone.png",iOS_skin]]];
-   
-   imageBack.frame = rPortraitImageBackFrame; // Set the frame in which the UIImage should be drawn in.
-   
-   imageBack.userInteractionEnabled = NO;
-   imageBack.multipleTouchEnabled = NO;
-   imageBack.clearsContextBeforeDrawing = NO;
-   //[imageBack setOpaque:YES];
-
-   [self.view addSubview: imageBack]; // Draw the image in self.view.
+   if(!iOS_full_screen_port)
+   {
+	   if(isIpad)
+	     imageBack = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:[NSString stringWithFormat:@"./SKIN_%d/back_portrait_iPad.png",iOS_skin]]];
+	   else
+	     imageBack = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:[NSString stringWithFormat:@"./SKIN_%d/back_portrait_iPhone.png",iOS_skin]]];
+	   
+	   imageBack.frame = rPortraitImageBackFrame; // Set the frame in which the UIImage should be drawn in.
+	   
+	   imageBack.userInteractionEnabled = NO;
+	   imageBack.multipleTouchEnabled = NO;
+	   imageBack.clearsContextBeforeDrawing = NO;
+	   //[imageBack setOpaque:YES];
+	
+	   [self.view addSubview: imageBack]; // Draw the image in self.view.
+   }
    //[UIView commitAnimations];
    
 }
@@ -691,13 +721,15 @@ void* app_Thread_Start(void* args)
    if(safe_render_path || scanline_filter_port || tv_filter_port)
    {
                                                                                                                                                        
-       UIGraphicsBeginImageContext(rPortraitImageOverlayFrame.size);  
+       CGRect r = iOS_full_screen_port ? rView : rPortraitImageOverlayFrame;
+       
+       UIGraphicsBeginImageContext(r.size);  
        
        //[image1 drawInRect: rPortraitImageOverlayFrame];
        
        CGContextRef uiContext = UIGraphicsGetCurrentContext();
              
-       CGContextTranslateCTM(uiContext, 0, rPortraitImageOverlayFrame.size.height);
+       CGContextTranslateCTM(uiContext, 0, r.size.height);
 	
        CGContextScaleCTM(uiContext, 1.0, -1.0);
 
@@ -729,7 +761,7 @@ void* app_Thread_Start(void* args)
           CGImageRelease(tile);       
        }
      
-       if(isIpad && externalView==nil /*|| 1*/)
+       if(isIpad && externalView==nil && (!iOS_full_screen_port /*|| 1*/))
        {
           UIImage *image1;
           if(isIpad)          
@@ -752,7 +784,7 @@ void* app_Thread_Start(void* args)
        
        imageOverlay = [ [ UIImageView alloc ] initWithImage: finishedImage];
          
-       imageOverlay.frame = rPortraitImageOverlayFrame;
+       imageOverlay.frame = r;
        
        if(externalView==nil)
        {             		    			
@@ -760,7 +792,7 @@ void* app_Thread_Start(void* args)
        }  
        else
        {   
-           screenView.frame = rExternal;
+           //screenView.frame = rExternal;
            [externalView addSubview: imageOverlay];
        } 
                                     
@@ -794,33 +826,69 @@ void* app_Thread_Start(void* args)
 
    iphone_is_landscape = 0;
    [ self getControllerCoords:0 ];
-     
-
-	   //HACK
-	   if(safe_render_path &&  rPortraitViewFrame.size.width==319)//HACK
-	   {
-	       rPortraitViewFrame = CGRectMake(0,0,320,240);
-	   }
-	   /*
-	   else
-	   {
-	       rPortraitViewFrame = CGRectMake(0,0,319,240);
-	   }*/  
    
    [self buildPortraitImageBack];
    
-   if(!iphone_keep_aspect_ratio && isIpad)
-		screenView = [ [ScreenView alloc] initWithFrame: rPortraitViewFrameNotFull];	  
+   CGRect r;
+   
+   if(externalView!=nil)   
+   {
+        r = rExternal;
+   }
+   else if(!iOS_full_screen_port)
+   {
+	    r = rPortraitViewFrameNotFull;	
+   }		  
    else
-        screenView = [ [ScreenView alloc] initWithFrame: rPortraitViewFrame];
-               
+   {
+        r = rPortraitViewFrame;
+   }
+   
+    if(iphone_keep_aspect_ratio_port)
+    {
+
+       int tmp_height = r.size.height;// > emulated_width ?
+       int tmp_width = ((((tmp_height * emulated_width) / emulated_height)+7)&~7);
+       		       
+       if(tmp_width > r.size.width) //y no crop
+       {
+          tmp_width = r.size.width;
+          tmp_height = ((((tmp_width * emulated_height) / emulated_width)+7)&~7);
+       }   
+       
+       r.origin.x = r.origin.x + ((r.size.width - tmp_width) / 2);      
+       
+       if(!iOS_full_screen_port || btUsed)
+       {
+          r.origin.y = r.origin.y + ((r.size.height - tmp_height) / 2);
+       }
+       else
+       {
+          int tmp = r.size.height - (r.size.height/5);
+          if(tmp_height < tmp)                                
+             r.origin.y = r.origin.y + ((tmp - tmp_height) / 2);
+       }
+       
+       if(tmp_width==320 && !safe_render_path)
+       {
+          tmp_width = 319;
+       }
+       
+       r.size.width = tmp_width;
+       r.size.height = tmp_height;
+   
+   }  
+   
+   rView = r;
+       
+   screenView = [ [ScreenView alloc] initWithFrame: rView];
+                  
    if(externalView==nil)
    {             		    			
       [self.view addSubview: screenView];
    }  
    else
    {   
-      screenView.frame = rExternal;
       [externalView addSubview: screenView];
    }  
    
@@ -865,11 +933,13 @@ void* app_Thread_Start(void* args)
    if(scanline_filter_land || tv_filter_land)
    {                                                                                                                                              
 	   CGRect r;
-   
+       /*
        if(!iphone_keep_aspect_ratio && !isIpad && iOS_full_screen_land)
 		  r = rLandscapeViewFrameFull;	  
-       else if(iOS_full_screen_land)
-          r = rLandscapeViewFrame;
+       else 
+       */
+       if(iOS_full_screen_land)
+          r = rView;//rLandscapeViewFrame;
        else
           r = rLandscapeImageOverlayFrame;
 	
@@ -936,7 +1006,6 @@ void* app_Thread_Start(void* args)
 		 }  
 		 else
 		 {   
-		      screenView.frame = rExternal;
 		      [externalView addSubview: imageOverlay];
 		 }  
          //[UIView commitAnimations];	    
@@ -970,25 +1039,59 @@ void* app_Thread_Start(void* args)
 - (void)buildLandscape{
 	
    iphone_is_landscape = 1;
-   
+      
    [self getControllerCoords:1 ];
-
+   
    [self buildLandscapeImageBack];
-         
-   if(!iphone_keep_aspect_ratio && !isIpad && iOS_full_screen_land) 
-		screenView = [ [ScreenView alloc] initWithFrame: rLandscapeViewFrameFull];	 
-   else if(iOS_full_screen_land)
-        screenView = [ [ScreenView alloc] initWithFrame: rLandscapeViewFrame];
-   else
-        screenView = [ [ScreenView alloc] initWithFrame: rLandscapeViewFrameNotFull];
         
+   CGRect r;
+   
+   if(externalView!=nil)
+   {
+        r = rExternal;
+   }
+   else if(!iOS_full_screen_land)
+   {
+        r = rLandscapeViewFrameNotFull;
+   }     
+   else
+   {
+        r = rLandscapeViewFrameFull;
+   }     
+   
+   if(iphone_keep_aspect_ratio_land)
+   {
+       //printf("%d %d\n",emulated_width,emulated_height);
+
+       int tmp_width = r.size.width;// > emulated_width ?
+       int tmp_height = ((((tmp_width * emulated_height) / emulated_width)+7)&~7);
+       
+       //printf("%d %d\n",tmp_width,tmp_height);
+       
+       if(tmp_height > r.size.height) //y no crop
+       {
+          tmp_height = r.size.height;
+          tmp_width = ((((tmp_height * emulated_width) / emulated_height)+7)&~7);
+       }   
+       
+       //printf("%d %d\n",tmp_width,tmp_height);
+                
+       r.origin.x = r.origin.x +(((int)r.size.width - tmp_width) / 2);             
+       r.origin.y = r.origin.y +(((int)r.size.height - tmp_height) / 2);
+       r.size.width = tmp_width;
+       r.size.height = tmp_height;
+   }
+   
+   rView = r;
+   
+   screenView = [ [ScreenView alloc] initWithFrame: rView];
+          
    if(externalView==nil)
-   {             		    			
+   {             		    			      
       [self.view addSubview: screenView];
    }  
    else
    {               
-      screenView.frame = rExternal;
       [externalView addSubview: screenView];
    }   
       
@@ -1051,7 +1154,7 @@ void* app_Thread_Start(void* args)
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {	       
-    if(btUsed && iphone_is_landscape)
+    if(btUsed && (!iphone_is_landscape && iOS_full_screen_port || iphone_is_landscape))
     {
         NSSet *allTouches = [event allTouches];
         UITouch *touch = [[allTouches allObjects] objectAtIndex:0];
@@ -1293,16 +1396,36 @@ void* app_Thread_Start(void* args)
 	if(!orientation)
 	{
 		if(isIpad)
-		  fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_portrait_iPad.txt",  get_resource_path("/"), iOS_skin] UTF8String], "r");
+		{
+ 		   if(iOS_full_screen_port)
+		     fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_portrait_full_iPad.txt",  get_resource_path("/"), iOS_skin] UTF8String], "r");
+		   else
+		     fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_portrait_iPad.txt",  get_resource_path("/"), iOS_skin] UTF8String], "r");
+		}  
 		else
-		  fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_portrait_iPhone.txt", get_resource_path("/"),  iOS_skin] UTF8String], "r");
+		{
+		   if(iOS_full_screen_port)
+		     fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_portrait_full_iPhone.txt", get_resource_path("/"),  iOS_skin] UTF8String], "r");
+		   else
+		     fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_portrait_iPhone.txt", get_resource_path("/"),  iOS_skin] UTF8String], "r");  
+		}
     }
 	else
 	{
 		if(isIpad)
-		   fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_landscape_iPad.txt", get_resource_path("/"), iOS_skin ] UTF8String], "r");
+		{
+		   if(iOS_full_screen_land)
+		     fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_landscape_full_iPad.txt", get_resource_path("/"), iOS_skin ] UTF8String], "r");
+		   else
+		     fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_landscape_iPad.txt", get_resource_path("/"), iOS_skin ] UTF8String], "r");
+		}
 		else
-		   fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_landscape_iPhone.txt", get_resource_path("/"), iOS_skin] UTF8String], "r");
+		{
+		   if(iOS_full_screen_land)
+		     fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_landscape_full_iPhone.txt", get_resource_path("/"), iOS_skin] UTF8String], "r");
+		   else
+		     fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_landscape_iPhone.txt", get_resource_path("/"), iOS_skin] UTF8String], "r");
+		}
 	}
 	
 	if (fp) 

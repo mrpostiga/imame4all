@@ -1,6 +1,5 @@
-
 ===========================================================
-iMAME4ALL 1.5 (September 19, 2010) by David Valdeita (Seleuco)
+iMAME4ALL 1.6 (November 15, 2010) by David Valdeita (Seleuco)
 ===========================================================
 
 
@@ -72,8 +71,7 @@ After selecting a game on the list, the following configuration options are avai
 - Video Aspect:
 The video aspect can be configured with the following combination of options:
 Original: Original game driver resolution scaled to window keeping aspect ratio.
-Ratio Not Kept: Original game driver resolution scaled to window without keeping aspect ratio.
-With Cropping: Original game driver resolution scaled to window with cropping.
+Cropping 4/3 or 3/4: Original game driver resolution scaled to window with cropping.
 Fixed 320x240: Nominal emulated video resolution scaled to fixed 320x240.
 NOTE:If "Not Safe Render Path" is active, only fixed 320x240 is available.
 
@@ -135,9 +133,7 @@ GLOBAL OPTIONS
 
 -Sacanline Filter. Enable to apply a scanline filter over the image.
 
--Landscape Keeps Aspect (iPhone only). 'Enabled' keeps the aspect ratio in landscape mode; 'Disabled' will use all available screen.
-
--Original size (iPad only). Enable to draw screen at its original size on portrait mode.
+-Keeps Aspect. 'Enabled' keeps the aspect ratio; 'Disabled' will use all available screen.
 
 -Safe Render Path (iPhone only). Enable at the expenses of performance for maximun compability. Slow in 3G (not recomended unless you find any problem).
 
@@ -355,7 +351,8 @@ PORT CREDITS
 
 
 DEVELOPMENT
----------------
+November 15,2010
+- Version 1.6: Added full screen portrait. Added landscape-portrait keep aspect ratio option. Reworked some touch controls.
 September 12,2010:
 - Version 1.5: Added new skin (retina) and touch control layout. Added touch deadzone. Added Wii classic stick deadzone selector. Added 8/16/auto color depth (fixes ZeroWing like games missing sprites)
 September 12,2010:

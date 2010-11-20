@@ -1,5 +1,5 @@
 0,0,320,240//EmulatorFrame
-224,168,320,240//PortraitViewFrame
+0,0,768,1024//PortraitViewFrame
 11,11,746,556//PortraitViewFrameNotFull
 0,576,768,448//PortraitImageBackFrame
 0,0,768,576//PortraitImageOverlayFrame

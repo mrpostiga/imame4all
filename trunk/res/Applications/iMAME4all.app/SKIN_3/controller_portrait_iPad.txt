@@ -8,29 +8,29 @@
 166,689,85,85//UpRight*
 330,576,130,84//Select*
 460,576,168,84//Start*
-420,700,105,105//LPad*
-380,810,105,105//RPad*
+420,730,105,105//LPad*
+380,840,105,105//RPad*
 0,0,0,0//Menu*
-590,825,25,105//ButtonDownLeft (A + X)
-610,805,105,105//ButtonDown X*
-662,805,105,70//ButtonDownRight (B + X)
-485,825,105,105//ButtonLeft A*
-662,700,105,105//ButtonRight B*
-540,805,105,20//ButtonUpLeft (Y + A)
-540,700,105,105//ButtonUp Y
-640,700,25,105//ButtonUpRight (Y + B)*
+590,845,25,105//ButtonDownLeft (A + X)
+610,825,110,125//ButtonDown X*
+662,825,105,70//ButtonDownRight (B + X)
+485,845,105,105//ButtonLeft A*
+662,720,105,125//ButtonRight B*
+540,825,105,20//ButtonUpLeft (Y + A)
+540,720,105,105//ButtonUp Y
+640,720,25,105//ButtonUpRight (Y + B)*
 0,576,135,74//LPad2*
 135,576,158,74//RPad2
 0,0,768,576//showkyboard
-650,700,120,120//B img
-600,800,120,120//X img
-490,800,120,120//A img
-540,700,120,120//Y img
+650,720,127,127//B img
+600,830,127,127//X img
+480,830,127,127//A img
+530,720,127,127//Y img
 17,695,230,230//DPad img
 323,588,78,78//select img
 460,588,78,78//start img
-430,700,120,120//L1 img
-380,800,120,120//R1 img
+420,720,127,127//L1 img
+370,830,127,127//R1 img
 4,588,78,78//L2 img
 142,588,78,78//R2 img
 100

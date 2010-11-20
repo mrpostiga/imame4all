@@ -29,9 +29,12 @@ int iOS_clock_sound=80;
 int iOS_cheat=0;
 int iOS_landscape_buttons=2;
 
+
 extern int iOS_aspectRatio;
 extern int iOS_cropVideo;
 extern int iOS_320x240;
+extern int emulated_width;
+extern int emulated_height;
 
 extern int safe_render_path;
 extern int isIpad;
@@ -179,7 +182,7 @@ static void game_list_view(int *pos) {
 		gp2x_gamelist_text_out(35, 110, "NO AVAILABLE GAMES FOUND");
 	}
 
-	gp2x_gamelist_text_out( 8*6, (29*8)-6,"iMAME4all v1.5 by D.Valdeita");
+	gp2x_gamelist_text_out( 8*6, (29*8)-6,"iMAME4all v1.6 by D.Valdeita");
 }
 
 static void game_list_select (int index, char *game, char *emu) {
@@ -230,7 +233,7 @@ static int show_options(char *game)
 	  while(ExKey=gp2x_joystick_read(0)&0x8c0ff55){};
 
 	/* Read game configuration */
-	sprintf(text,get_documents_path("iOS/%s_v21.cfg"),game);
+	sprintf(text,get_documents_path("iOS/%s_v3.cfg"),game);
 	f=fopen(text,"r");
 	if (f) {
 		fscanf(f,"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",&iOS_video_aspect,&iOS_video_rotate,&iOS_video_sync,
@@ -258,8 +261,12 @@ static int show_options(char *game)
 		switch (iOS_video_aspect)
 		{
 			case 0: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+30,"Video Aspect  Original"); break;
+			/*
 			case 1: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+30,"Video Aspect  Ratio Not Kept"); break;
-			case 2: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+30,"Video Aspect  With Cropping"); break;
+			*/
+			case 1: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+30,"Video Aspect  Cropping 4/3"); break;
+			case 2: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+30,"Video Aspect  Cropping 3/4"); break;
+
 			case 3: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+30,"Video Aspect  Fixed 320x240"); break;
 		}
 
@@ -320,11 +327,11 @@ static int show_options(char *game)
 		/* (7) Landscape Num Buttons */
 		switch (iOS_landscape_buttons)
 		{
-			case 1: gp2x_gamelist_text_out(x_Pos,y_Pos+90, "Landscape     1 Button"); break;
-			case 2: gp2x_gamelist_text_out(x_Pos,y_Pos+90, "Landscape     2 Buttons"); break;
-			case 3: gp2x_gamelist_text_out(x_Pos,y_Pos+90, "Landscape     3 Buttons"); break;
-			case 4: gp2x_gamelist_text_out(x_Pos,y_Pos+90, "Landscape     4 Buttons"); break;
-			case 5: gp2x_gamelist_text_out(x_Pos,y_Pos+90, "Landscape     All Buttons"); break;
+			case 1: gp2x_gamelist_text_out(x_Pos,y_Pos+90, "Num Buttons   1 Button"); break;
+			case 2: gp2x_gamelist_text_out(x_Pos,y_Pos+90, "Num Buttons   2 Buttons"); break;
+			case 3: gp2x_gamelist_text_out(x_Pos,y_Pos+90, "Num Buttons   3 Buttons"); break;
+			case 4: gp2x_gamelist_text_out(x_Pos,y_Pos+90, "Num Buttons   4 Buttons"); break;
+			case 5: gp2x_gamelist_text_out(x_Pos,y_Pos+90, "Num Buttons   All Buttons"); break;
 		}
 
 		/* (8) CPU Clock */
@@ -499,7 +506,7 @@ static int show_options(char *game)
 		if ((ExKey & GP2X_A) || (ExKey & GP2X_B) || (ExKey & GP2X_PUSH) || (ExKey & GP2X_START))
 		{
 			/* Write game configuration */
-			sprintf(text,get_documents_path("iOS/%s_v21.cfg"),game);
+			sprintf(text,get_documents_path("iOS/%s_v3.cfg"),game);
 			f=fopen(text,"w");
 			if (f) {
 				fprintf(f,"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",iOS_video_aspect,iOS_video_rotate,iOS_video_sync,
@@ -648,9 +655,11 @@ void execute_game (char *playemu, char *playgame)
     if (iOS_video_aspect==0)
 	{
     	iOS_aspectRatio = 1;
-	}else if(iOS_video_aspect==2){
+}else if(iOS_video_aspect==1){
 		iOS_cropVideo = 1;
-	}else if(iOS_video_aspect==3){
+}else if(iOS_video_aspect==2){
+		iOS_cropVideo = 2;
+    }else if(iOS_video_aspect==3){
 		iOS_320x240 = 1;
 		//printf("fixed %d,%d,%d\n",iOS_aspectRatio,iOS_cropVideo,iOS_320x240);
 	}
@@ -771,6 +780,8 @@ void execute_game (char *playemu, char *playgame)
 
 	iOS_exitGame=0;
 	iOS_inGame = 0;
+	emulated_width = 320;
+	emulated_height = 240;
 	gp2x_set_video_mode(16,320,240);
 
 }
