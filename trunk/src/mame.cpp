@@ -6,7 +6,7 @@
 #include "port_wrapper.h"
 
 extern int safe_render_path;
-extern int iOS_320x240;
+extern int iOS_fixedRes;
 
 static struct RunningMachine machine;
 struct RunningMachine *Machine = &machine;
@@ -62,15 +62,33 @@ int run_game(int game)
 		Machine->color_depth = 8;
 
 
-    if(safe_render_path && !iOS_320x240)
+    if(!iOS_fixedRes)
     {
 	  if (options.vector_width == 0) options.vector_width = 640;
 	  if (options.vector_height == 0) options.vector_height = 480;
     }
     else
     {
-	  if (options.vector_width == 0) options.vector_width = 320;
-	  if (options.vector_height == 0) options.vector_height = 240;
+        if(iOS_fixedRes==1)
+        {
+    	  options.vector_width = 320;
+	      options.vector_height = 240;
+        }
+        else if(iOS_fixedRes==2)
+        {
+    	  options.vector_width = 240;
+	      options.vector_height = 320;
+        }
+        else if(iOS_fixedRes==3)
+        {
+    	  options.vector_width = 640;
+	      options.vector_height = 480;
+        }
+        else if(iOS_fixedRes==4)
+        {
+    	  options.vector_width = 480;
+	      options.vector_height = 640;
+        }
     }
 	Machine->sample_rate = options.samplerate;
 

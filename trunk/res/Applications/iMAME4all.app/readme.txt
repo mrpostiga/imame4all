@@ -1,5 +1,5 @@
 ===========================================================
-iMAME4ALL 1.6 (November 15, 2010) by David Valdeita (Seleuco)
+iMAME4ALL 1.6.1 (November 20, 2010) by David Valdeita (Seleuco)
 ===========================================================
 
 
@@ -72,8 +72,8 @@ After selecting a game on the list, the following configuration options are avai
 The video aspect can be configured with the following combination of options:
 Original: Original game driver resolution scaled to window keeping aspect ratio.
 Cropping 4/3 or 3/4: Original game driver resolution scaled to window with cropping.
-Fixed 320x240: Nominal emulated video resolution scaled to fixed 320x240.
-NOTE:If "Not Safe Render Path" is active, only fixed 320x240 is available.
+Fixed 320x240,240x320,640x480,480x640: Nominal emulated video resolution scaled to fixed resolution.
+NOTE:If "Not Safe Render Path" is active, only fixed 320x240 (4/3) or 240x320 (3/4) are available.
 
 - Video Rotate:
 The video Rotate is configured with the following combination of options:
@@ -351,6 +351,8 @@ PORT CREDITS
 
 
 DEVELOPMENT
+November 20,2010
+- Version 1.6.1: Added 240x320,640x480,480x640 fixed resolutions. Let's play some vector games on full portrait (like tempest), also lets 3g users use real full portrait selecting 240x320 resolution.
 November 15,2010
 - Version 1.6: Added full screen portrait. Added landscape-portrait keep aspect ratio option. Reworked some touch controls.
 September 12,2010:

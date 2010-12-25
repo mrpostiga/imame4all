@@ -1,6 +1,7 @@
 PREFIX=/home/david/Projects/iphone/toolchain/toolchain/pre/bin/arm-apple-darwin9-
 #BASE_DEV=/home/david/Projects/iphone/toolchain/sdks/iPhoneOS3.1.2.sdk
 BASE_DEV=/home/david/Projects/iphone/toolchain/sdks/iPhoneOS2.0.sdk
+#BASE_DEV=/home/david/Projects/iphone/toolchain/sdks/iPhoneOS4.1.sdk
 
 TARGET = mame
 
@@ -49,6 +50,7 @@ CFLAGS += -fsigned-char $(DEVLIBS) \
 CFLAGS += -Isrc -Isrc/$(MAMEOS) -Isrc/zlib -IClasses/btstack
 CFLAGS += -O3 -ffast-math 
 CFLAGS += -I/home/david/Projects/iphone/toolchain/sdks/iPhoneOS3.1.2.sdk/usr/include
+
 	
 #CFLAGS	= -I./ -I./Classes/  \
           -I/home/david/Projects/iphone/toolchain/sdks/iPhoneOS3.1.2.sdk/usr/include \
@@ -57,7 +59,8 @@ CFLAGS += -I/home/david/Projects/iphone/toolchain/sdks/iPhoneOS3.1.2.sdk/usr/inc
           -Isrc/ -Isrc/$(MAMEOS) -Isrc/zlib
           	
 CFLAGS += -I./Classes/
-CFLAGS += -F/home/david/Projects/iphone/toolchain/sdks/iPhoneOS3.1.2.sdk/System/Library/PrivateFrameworks 
+CFLAGS += -F/home/david/Projects/iphone/toolchain/sdks/iPhoneOS3.1.2.sdk/System/Library/PrivateFrameworks
+#CFLAGS += -isysroot /home/david/Projects/iphone/toolchain/sdks/iPhoneOS4.1.sdk
 
 LDFLAGS +=  $(CFLAGS) -static -s
 #LDFLAGS = $(CFLAGS) -s -static

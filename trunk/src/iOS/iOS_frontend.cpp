@@ -32,7 +32,7 @@ int iOS_landscape_buttons=2;
 
 extern int iOS_aspectRatio;
 extern int iOS_cropVideo;
-extern int iOS_320x240;
+extern int iOS_fixedRes;
 extern int emulated_width;
 extern int emulated_height;
 
@@ -182,7 +182,7 @@ static void game_list_view(int *pos) {
 		gp2x_gamelist_text_out(35, 110, "NO AVAILABLE GAMES FOUND");
 	}
 
-	gp2x_gamelist_text_out( 8*6, (29*8)-6,"iMAME4all v1.6 by D.Valdeita");
+	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"iMAME4all v1.6.1 by D.Valdeita");
 }
 
 static void game_list_select (int index, char *game, char *emu) {
@@ -241,7 +241,7 @@ static int show_options(char *game)
 		fclose(f);
 	}
 
-	if(!safe_render_path)
+	if(!safe_render_path && iOS_video_aspect!=3 && iOS_video_aspect!=4)
 	{
 	   iOS_video_aspect=3;
 	}
@@ -268,6 +268,9 @@ static int show_options(char *game)
 			case 2: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+30,"Video Aspect  Cropping 3/4"); break;
 
 			case 3: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+30,"Video Aspect  Fixed 320x240"); break;
+			case 4: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+30,"Video Aspect  Fixed 240x320"); break;
+			case 5: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+30,"Video Aspect  Fixed 640x480"); break;
+			case 6: gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+30,"Video Aspect  Fixed 480x640"); break;
 		}
 
 		/* (2) Video Rotation */
@@ -380,22 +383,45 @@ static int show_options(char *game)
 		{
 			switch(selected_option) {
 			case 0:
+				/*
 				if(!safe_render_path)
 				{
 					iOS_video_aspect=3;
 					break;
 				}
+				*/
 				if((ExKey & GP2X_R) || (ExKey & GP2X_RIGHT))
 				{
-					iOS_video_aspect++;
-					if (iOS_video_aspect>3)
-						iOS_video_aspect=0;
+
+					if(safe_render_path)
+					{
+						iOS_video_aspect++;
+						if (iOS_video_aspect>6)
+							iOS_video_aspect=0;
+					}
+					else
+					{
+						iOS_video_aspect++;
+						if (iOS_video_aspect>4)
+							iOS_video_aspect=3;
+					}
+
+
 				}
 				else
 				{
-					iOS_video_aspect--;
-					if (iOS_video_aspect<0)
-						iOS_video_aspect=3;
+					if(safe_render_path)
+					{
+						iOS_video_aspect--;
+						if (iOS_video_aspect<0)
+							iOS_video_aspect=6;
+					}
+					else
+					{
+						iOS_video_aspect--;
+						if (iOS_video_aspect<3)
+							iOS_video_aspect=4;
+					}
 				}
 				break;
 			case 1:
@@ -651,7 +677,7 @@ void execute_game (char *playemu, char *playgame)
 	}
 
 	/* iOS_video_aspect */
-	iOS_aspectRatio = iOS_cropVideo = iOS_320x240 = 0;
+	iOS_aspectRatio = iOS_cropVideo = iOS_fixedRes = 0;
     if (iOS_video_aspect==0)
 	{
     	iOS_aspectRatio = 1;
@@ -660,9 +686,15 @@ void execute_game (char *playemu, char *playgame)
 }else if(iOS_video_aspect==2){
 		iOS_cropVideo = 2;
     }else if(iOS_video_aspect==3){
-		iOS_320x240 = 1;
+		iOS_fixedRes = 1;
 		//printf("fixed %d,%d,%d\n",iOS_aspectRatio,iOS_cropVideo,iOS_320x240);
-	}
+    }else if(iOS_video_aspect==4){
+		iOS_fixedRes = 2;
+    }else if(iOS_video_aspect==5){
+		iOS_fixedRes = 3;
+    }else if(iOS_video_aspect==6){
+		iOS_fixedRes = 4;
+    }
 
 	/* iOS_video_rotate */
 	if ((iOS_video_rotate>=1) && (iOS_video_rotate<=2))

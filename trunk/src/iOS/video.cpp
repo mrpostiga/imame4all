@@ -11,8 +11,8 @@ extern "C" int safe_render_path;
 int iOS_exitPause = 0;
 int iOS_cropVideo = 0;
 int iOS_aspectRatio = 0;
-int iOS_320x240 = 0;
-extern int iOS_43;
+int iOS_fixedRes = 0;
+
 
 dirtygrid grid1;
 dirtygrid grid2;
@@ -258,12 +258,31 @@ static void select_display_mode(int width,int height,int depth,int attributes,in
 		gfx_height = height;
 	}
 
-	if(iOS_320x240)
+	if(iOS_fixedRes == 1)
 	{
 		gfx_width = 320;
 		gfx_height = 240;
 		emulated_width = 320;
 		emulated_height = 240;
+	}
+	else if(iOS_fixedRes == 2)
+	{
+		gfx_width = 240;
+		gfx_height = 320;
+		emulated_width = 240;
+		emulated_height = 320;
+	}else if(iOS_fixedRes == 3)
+	{
+		gfx_width = 640;
+		gfx_height = 480;
+		emulated_width = 640;
+		emulated_height = 480;
+	}else if(iOS_fixedRes == 4)
+	{
+		gfx_width = 480;
+		gfx_height = 640;
+		emulated_width = 480;
+		emulated_height = 640;
 	}
 
 
@@ -345,9 +364,9 @@ static void select_display_mode(int width,int height,int depth,int attributes,in
 	}
 
 	/* vector games use 640x480 as default */
-	if (vector_game)
+	if (vector_game && !iOS_fixedRes)
 	{
-		if(safe_render_path && !iOS_320x240)
+		if(safe_render_path)
 		{
 		   gfx_width = 640;
 		   gfx_height = 480;

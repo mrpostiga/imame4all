@@ -1,8 +1,9 @@
 Package: com.seleuco.imame4all
 Name: iMAME4all
-Version: 1.6.0-0
+Version: 1.6.1-0
 Architecture: iphoneos-arm
 Description: Multiple Arcade Machine Emulator.
+ V1.6.1: Added 240x320,640x480,480x640 fixed resolutions.
  V1.6: Added full screen portrait. Added landscape-portrait keep aspect ratio option. Removed video aspect crop option. Reworked some touch controls.
  V1.5: Added New Skin (retina). Touch DeadZone. Stick DeadZone. 8/16/auto depth color.
  V1.4: Added Native TV-Out for firmware >=3.2. Added Wii classic analog support. Added support for Wii classics clones.
