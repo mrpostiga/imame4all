@@ -55,10 +55,10 @@ After selecting a game on the list, the following configuration options are avai
 The video aspect can be configured with the following combination of options:
 
 Original: Original game driver resolution scaled to window keeping aspect ratio.
-Ratio Not Kept: Original game driver resolution scaled to window without keeping aspect ratio.
-With Cropping: Original game driver resolution scaled to window with cropping.
-Fixed 320x240: Nominal emulated video resolution scaled to fixed 320x240.
-NOTE:If "Not Safe Render Path" is active, only fixed 320x240 is available.
+Cropping 4/3 or 3/4: Original game driver resolution scaled to window with cropping.
+Fixed 320x240,240x320,640x480,480x640: Nominal emulated video resolution scaled to fixed resolution.
+NOTE:If "Not Safe Render Path" is active, only fixed 320x240 (4/3) or 240x320 (3/4) are available.
+
 
 - Video Rotate:
 The video Rotate is configured with the following combination of options:
@@ -342,14 +342,6 @@ http://dl.openhandhelds.org/cgi-bin/gp2x.cgi?0,0,0,0,5,2512
 - Headoverheels (davega@euskalnet.net) has added some new games to MAME4ALL, and he has also done some optimizations to existing games.
 
 
-* DEVELOPMENT *
-
-August 22, 2010:
-- Version 1.1. Added WiiMote. Fixed cheats,samples,artwork,hiscores.
-
-August 18, 2010:
-- Version 1.0. First version.
-
 * KNOWN PROBLEMS *
 
 - Only uses 320x240 emulated screen size. Some games are centered nd does not show the whole game.
@@ -368,7 +360,15 @@ August 18, 2010:
 - http://www.marcianitos.org/
 
 
+* Thanks to: *
+
+Todd Laney for sending me iCade patches, and Martijn Bosschaart for support me with an iCade.
+
 * ART *
+
+Retina skin and touch control layout thanks to Bryn Thompson. 
+
+also
 
 Thanks to: Zenzuke, Chipan, Dokesman, Enkonsierto, Quest, Sttraping, Sike, Danibat, Pedator,
 Antiriad and Slaanesh. Thanks to everybody !.
