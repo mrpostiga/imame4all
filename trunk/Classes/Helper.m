@@ -251,7 +251,7 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
                                 case L2CAP_EVENT_CHANNEL_CLOSED:
                                        {                                
 	                                        // data: event (8), len(8), channel (16)                                                                                       
-	                                        uint16  source_cid = READ_BT_16(packet, 2);                                              
+	                                        uint16_t  source_cid = READ_BT_16(packet, 2);                                              
 	                                        NSLog(@"Channel successfully closed: cid 0x%02x",source_cid);
 	                                        
 	                                        bd_addr_t addr;

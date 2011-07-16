@@ -88,6 +88,9 @@ static CGRect rShowKeyboard;
 extern CGRect rExternal;
 CGRect rView;
 
+extern int nativeTVOUT;
+extern int overscanTVOUT;
+
 int iphone_menu = IPHONE_MENU_DISABLED;
 
 int iphone_controller_opacity = 50;
@@ -108,6 +111,7 @@ int scanline_filter_land = 0;
 int scanline_filter_port = 0;
 
 int hide_keyboard = 0;
+int show_controls = 1;      
 
 /////
 int global_fps = 0;
@@ -147,7 +151,8 @@ extern int iOS_exitGame;
 extern int iOS_exitPause;
 
 int actionPending=0;
-
+int wantExit = 0;
+int warnIcade = 1;
 
 //SHARED y GLOBALES!
 pthread_t	main_tid;
@@ -179,10 +184,10 @@ void* app_Thread_Start(void* args)
 	return NULL;
 }
 
-
 @implementation EmulatorController
 
 @synthesize externalView;
+
 
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
 {
@@ -199,13 +204,13 @@ void* app_Thread_Start(void* args)
 	    {
            iphone_menu = IPHONE_MENU_OPTIONS;
 	    }
-	    /*
+
 	    else if(buttonIndex == 2)    
 	    {
            iphone_menu = IPHONE_MENU_DONATE;
 	    }
-	    */
-	    else if(buttonIndex == 2 )    
+	 
+	    else if(buttonIndex == 3 )    
 	    {
            iphone_menu = IPHONE_MENU_WIIMOTE;
 	    }	    
@@ -284,6 +289,8 @@ void* app_Thread_Start(void* args)
         || iOS_skin != ([op skin]+1)
         || iOS_deadZoneValue != [op deadZoneValue]
         || iOS_touchDeadZone != [op touchDeadZone]
+        || nativeTVOUT != [op tvoutNative]
+        || overscanTVOUT != [op overscanValue]
         )
     {
         iphone_keep_aspect_ratio_land = [op keepAspectRatioLand];
@@ -308,6 +315,38 @@ void* app_Thread_Start(void* args)
        iOS_skin = [op skin]+1;
        iOS_deadZoneValue = [op deadZoneValue];
        iOS_touchDeadZone = [op touchDeadZone];
+       
+       if (nativeTVOUT != [op tvoutNative])
+       {
+           nativeTVOUT = [op tvoutNative];
+           UIAlertView *warnAlert = [[UIAlertView alloc] initWithTitle:@"Pending restart Application!" 
+															  
+ 
+           message:[NSString stringWithFormat: @"You need to restar iMAME4all for the changes to take effect"]
+														 
+															 delegate:self 
+													cancelButtonTitle:@"Dismiss" 
+													otherButtonTitles: nil];
+	
+	       [warnAlert show];
+	       [warnAlert release];
+       }
+        
+       if(overscanTVOUT != [op overscanValue])
+       {
+           overscanTVOUT = [op overscanValue];
+           UIAlertView *warnAlert = [[UIAlertView alloc] initWithTitle:@"Pending unplug/plug TVOUT!" 
+															  
+ 
+           message:[NSString stringWithFormat: @"You need to unplug/plug TVOUT for the changes to take effect"]
+														 
+															 delegate:self 
+													cancelButtonTitle:@"Dismiss" 
+													otherButtonTitles: nil];
+	
+	       [warnAlert show];
+	       [warnAlert release];
+       }
        
        [self changeUI];
        //[self performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
@@ -387,6 +426,7 @@ void* app_Thread_Start(void* args)
   actionPending=0;
   iOS_exitPause = 1;
   __emulation_paused = 0; 
+  //warnIcade = 1;
    
   [pool release]; 
      
@@ -396,10 +436,13 @@ void* app_Thread_Start(void* args)
 {
 
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	UIActionSheet *alert;
-	 alert = [[UIActionSheet alloc] initWithTitle:
-	   @"Choose an option from the menu. Press cancel to go back." delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil 
-	   otherButtonTitles:@"Help",@"Options",@"WiiMote",@"Cancel", nil];	   
+    
+    UIActionSheet *alert;
+    
+    alert = [[UIActionSheet alloc] initWithTitle:
+		   @"Choose an option from the menu. Press cancel to go back." delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil 
+		   otherButtonTitles:@"Help",@"Options",@"Donate",@"WiiMote",@"Cancel", nil];
+	   
 	/*   
 	if(isIpad)
 	  //[alert showInView:imageBack];
@@ -544,12 +587,102 @@ void* app_Thread_Start(void* args)
     iOS_skin = [op skin]+1;
     iOS_deadZoneValue = [op deadZoneValue];
     iOS_touchDeadZone = [op touchDeadZone];
+    
+    nativeTVOUT = [op tvoutNative];
+    overscanTVOUT = [op overscanValue];
         
     [op release];
+     
+    //
+    // we want to get keyboard input *only* from an external keyboard (no SW keyboards) the iCade is a bluetooth keyboard
+    //
+    // here is the plan, if a SW keyboard pops up resign.
+    //
+    // if a keyboard shows up later and someone starts using it, then try to grab FR status again
+    //
     
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(resignFirstResponder) name:@"UIKeyboardDidShowNotification" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(becomeFirstResponder) name:@"UIKeyboardEmptyDelegateNotification" object:nil];
+
     [self changeUI];
-	
 }
+- (void)viewDidUnload
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"UIKeyboardDidShowNotification" object:nil]; 
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"UIKeyboardEmptyDelegateNotification" object:nil]; 
+ 
+    [super viewDidUnload];
+}
+
+-(void)autoDimiss:(id)sender {
+
+     UIAlertView *alert = (UIAlertView *)sender;
+     [alert dismissWithClickedButtonIndex:0 animated:YES];
+     [alert release];
+
+}
+
+
+-(BOOL)becomeFirstResponder {
+    static first = 1;
+    //NSLog(@"becomeFirstResponder");
+    if(warnIcade){
+       
+          	UIAlertView *warnAlert; 
+          	
+          	if(first)
+          	{
+	          	first=0;
+	          	warnAlert = [[UIAlertView alloc] initWithTitle:@"Connection!" 
+																  
+	 
+	            message:[NSString stringWithFormat: @"Have I detected an iCade? Due to the limitations of the HW not all games are suited, use WiiClassic instead if you get slowdowns or control lag. You can also select fullscreen mode in options!"]
+															 
+																 delegate:self 
+														cancelButtonTitle:@"Dismiss" 
+														otherButtonTitles: nil];																
+		       [warnAlert show];
+		       [warnAlert release];
+	       }
+	       else
+	       {
+	           
+	           warnAlert = [[UIAlertView alloc] initWithTitle:nil 
+   																										
+	           message:[NSString stringWithFormat: @"\n\n\niCade connection?.\nPlease Wait..."]
+														 
+															 delegate: nil 
+													cancelButtonTitle: nil 
+													otherButtonTitles: nil];
+		   
+		      [self performSelector:@selector(autoDimiss:) withObject:warnAlert afterDelay:2.5f];
+	          [warnAlert show];
+	       }
+    }
+    return [super becomeFirstResponder];
+}
+
+-(BOOL)resignFirstResponder {
+   //NSLog(@"resignFirstResponder");
+   if(warnIcade)
+   {
+           	UIAlertView *warnAlert = [[UIAlertView alloc] initWithTitle:nil 
+   																										
+	        message:[NSString stringWithFormat: @"\n\n\niCade disconnection?.\nPlease Wait..."]
+														 
+															 delegate: nil 
+													cancelButtonTitle: nil 
+													otherButtonTitles: nil];
+		   
+		   [self performSelector:@selector(autoDimiss:) withObject:warnAlert afterDelay:2.5f];
+	       [warnAlert show];
+	       
+	       [self showControls:TRUE];
+   }
+   return [super resignFirstResponder];
+}
+
+
 
 - (void)drawRect:(CGRect)rect
 {
@@ -559,25 +692,27 @@ void* app_Thread_Start(void* args)
 -(BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
 	//return (interfaceOrientation ==  UIDeviceOrientationLandscapeLeft || interfaceOrientation ==  UIDeviceOrientationLandscapeRight);
 	//return NO;
-	return YES;
+	//return YES;
+	return actionPending ? NO : YES;
 }
 
 
 
 -(void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
    
+    show_controls = 1;    
     [self changeUI];
-    
+        
 }
 
 - (void)changeUI{
    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-   
+    
   int prev_emulation_paused = __emulation_paused;
    
   __emulation_paused = 1;
   
-  [ self getConf];
+  [self getConf];
   
   //reset_video(); 
   
@@ -649,11 +784,13 @@ void* app_Thread_Start(void* args)
    
    
    [self removeDPadView];
-   
+    
    btUsed = num_of_joys!=0; 
    
-   if(btUsed && ((!iphone_is_landscape && iOS_full_screen_port) || iphone_is_landscape))
+   if((btUsed && ((!iphone_is_landscape && iOS_full_screen_port) || iphone_is_landscape)) || !show_controls)
      return;
+    
+    //show_controls = TRUE;
    
    //dpad
    NSString *name = [NSString stringWithFormat:@"./SKIN_%d/%@",iOS_skin,nameImgDPad[DPAD_NONE]];
@@ -718,7 +855,7 @@ void* app_Thread_Start(void* args)
 
 - (void)buildPortraitImageOverlay {
    
-   if(safe_render_path || scanline_filter_port || tv_filter_port)
+   if((safe_render_path || scanline_filter_port || tv_filter_port) && externalView==nil)
    {
                                                                                                                                                        
        CGRect r = iOS_full_screen_port ? rView : rPortraitImageOverlayFrame;
@@ -761,7 +898,7 @@ void* app_Thread_Start(void* args)
           CGImageRelease(tile);       
        }
      
-       if(isIpad && externalView==nil && (!iOS_full_screen_port /*|| 1*/))
+       if(isIpad /*&& externalView==nil*/ && (!iOS_full_screen_port /*|| 1*/))
        {
           UIImage *image1;
           if(isIpad)          
@@ -786,15 +923,15 @@ void* app_Thread_Start(void* args)
          
        imageOverlay.frame = r;
        
-       if(externalView==nil)
-       {             		    			
+       //if(externalView==nil)
+       //{             		    			
            [self.view addSubview: imageOverlay];
-       }  
-       else
-       {   
+       //}  
+       //else
+       //{   
            //screenView.frame = rExternal;
-           [externalView addSubview: imageOverlay];
-       } 
+       //    [externalView addSubview: imageOverlay];
+       //} 
                                     
    }  
 
@@ -858,7 +995,7 @@ void* app_Thread_Start(void* args)
        
        r.origin.x = r.origin.x + ((r.size.width - tmp_width) / 2);      
        
-       if(!iOS_full_screen_port || btUsed)
+       if(!iOS_full_screen_port || btUsed || !show_controls)
        {
           r.origin.y = r.origin.y + ((r.size.height - tmp_height) / 2);
        }
@@ -891,7 +1028,7 @@ void* app_Thread_Start(void* args)
    {   
       [externalView addSubview: screenView];
    }  
-   
+      
    [self buildPortraitImageOverlay];
      
 }
@@ -930,7 +1067,7 @@ void* app_Thread_Start(void* args)
    [UIView setAnimationDuration:0.50];
 */
     
-   if(scanline_filter_land || tv_filter_land)
+   if((scanline_filter_land || tv_filter_land) &&  externalView==nil)
    {                                                                                                                                              
 	   CGRect r;
        /*
@@ -1000,14 +1137,14 @@ void* app_Thread_Start(void* args)
    
         //[imageBack setOpaque:YES];
          
-         if(externalView==nil)
-		 {             		    			
+         //if(externalView==nil)
+		 //{             		    			
 		      [self.view addSubview: imageOverlay];
-		 }  
-		 else
-		 {   
-		      [externalView addSubview: imageOverlay];
-		 }  
+		 //}  
+		 //else
+		 //{   
+		 //     [externalView addSubview: imageOverlay];
+		 //}  
          //[UIView commitAnimations];	    
     }
    
@@ -1094,16 +1231,48 @@ void* app_Thread_Start(void* args)
    {               
       [externalView addSubview: screenView];
    }   
-      
+           
    [self buildLandscapeImageOverlay];
 	
 }
 
 ////////////////
 
+- (void)showControls:(BOOL)state
+{
+    if (show_controls == state /*|| iphone_controller_opacity == 100*/ 
+        || (!iOS_full_screen_port && !iphone_is_landscape) || (!iOS_full_screen_land && iphone_is_landscape))
+        return;
+    
+                                                                                                                                                                                                        
+    show_controls = state;
+    
+    [self changeUI];//need relayout if fullscreen
+        
+    [UIView beginAnimations:nil context:NULL];
+    [UIView setAnimationDuration:1.0];
+    
+    if(dpadView!=nil)
+    {
+        [dpadView setAlpha:state * iphone_controller_opacity / 100.0];
+    }
+    
+    int i;
+    
+    for(i=0; i<NUM_BUTTONS;i++)
+    {
+        if(buttonViews[i]!=nil)
+        {
+            [buttonViews[i] setAlpha:state * iphone_controller_opacity / 100.0];
+        }
+    }
+    
+    [UIView commitAnimations];
+}
+
 - (void)handle_DPAD{
 
-    if(!iOS_animated_DPad)return;
+    if(!iOS_animated_DPad || !show_controls)return;
 
     if(dpad_state!=old_dpad_state)
     {
@@ -1154,6 +1323,8 @@ void* app_Thread_Start(void* args)
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {	       
+    [self showControls:TRUE];
+    
     if(btUsed && (!iphone_is_landscape && iOS_full_screen_port || iphone_is_landscape))
     {
         NSSet *allTouches = [event allTouches];
@@ -1163,6 +1334,8 @@ void* app_Thread_Start(void* args)
 		{
 			if(__emulation_run)
 		    {
+                actionPending=1;
+                warnIcade = 0;
                 [NSThread detachNewThreadSelector:@selector(runMenu) toTarget:self withObject:nil];
 			}					
 	    }
@@ -1177,12 +1350,38 @@ void* app_Thread_Start(void* args)
 {
   iOS_exitPause = 1;
   __emulation_paused = 0;
-  if(buttonIndex == 0 )
+  if(buttonIndex == 0 && wantExit )
   {
      iOS_exitGame = 1;
   }
   actionPending=0;
+  wantExit = 0;
 }
+
+- (void)handle_MENU
+{
+    if(btnStates[BTN_L2] == BUTTON_PRESS && iOS_inGame && !actionPending)
+    {				  				
+        actionPending=1;
+        iOS_exitGame = 0;
+        wantExit = 1;	
+        usleep(100000);	            
+        __emulation_paused = 1;
+        UIAlertView* downloadAlertView=[[UIAlertView alloc] initWithTitle:nil
+                                                                  message:@"are you sure you want to exit the game?"
+                                                                 delegate:self cancelButtonTitle:nil
+                                                        otherButtonTitles:@"Yes",@"No",nil];
+        [downloadAlertView show];
+        [downloadAlertView release];
+    } 
+    
+    if(btnStates[BTN_R2] == BUTTON_PRESS && __emulation_run && !actionPending)
+    {
+        actionPending=1;
+        warnIcade = 0;
+        [NSThread detachNewThreadSelector:@selector(runMenu) toTarget:self withObject:nil];
+    }					
+}			
 
 - (void)touchesController:(NSSet *)touches withEvent:(UIEvent *)event {	
 	int i;
@@ -1328,37 +1527,11 @@ void* app_Thread_Start(void* args)
 				//NSLog(@"GP2X_VOL_DOWN");
 				//gp2x_pad_status |= GP2X_VOL_DOWN;
 				btnStates[BTN_L2] = BUTTON_PRESS;
-				
-				if(iOS_inGame && !actionPending)
-				{				  				
-		            
-		            actionPending=1;
-		            iOS_exitGame = 0;	
-		            usleep(100000);	            
-		            __emulation_paused = 1;
-		            UIAlertView* downloadAlertView=[[UIAlertView alloc] initWithTitle:nil
-	                     message:@"are you sure you want to exit the game?"
-					     delegate:self cancelButtonTitle:nil
-	                     otherButtonTitles:@"Yes",@"No",nil];
-		            [downloadAlertView show];
-		            [downloadAlertView release];
-	            } 
-							
 			}
 			else if (MyCGRectContainsPoint(RPad2, point)) {
 				//NSLog(@"GP2X_VOL_UP");
 				//gp2x_pad_status |= GP2X_VOL_UP;
 				btnStates[BTN_R2] = BUTTON_PRESS;
-				
-				//if(touch.phase == UITouchPhaseBegan || touch.phase == UITouchPhaseStationary)
-				//{
-					if(__emulation_run && !actionPending)
-					{
-                        actionPending=1;
-                        [NSThread detachNewThreadSelector:@selector(runMenu) toTarget:self withObject:nil];
-					}					
-				//}
-				
 			}			
 			else if (MyCGRectContainsPoint(Menu, point)) {
 				gp2x_pad_status |= GP2X_SELECT;				
@@ -1373,6 +1546,7 @@ void* app_Thread_Start(void* args)
 		}
 	}
 	
+	[self handle_MENU];
 	[self handle_DPAD];
 }
 
@@ -1388,6 +1562,176 @@ void* app_Thread_Start(void* args)
 	[self touchesBegan:touches withEvent:event];
 }
 
+
+//
+// Keyboard input from iCade
+//
+- (BOOL)canBecomeFirstResponder 
+{ 
+    return YES; 
+}
+
+- (void)insertText:(NSString *)theText 
+{
+    //NSLog(@"%s: %@ %d", __FUNCTION__, theText, [theText characterAtIndex:0]);
+    
+    [self showControls:FALSE];
+    warnIcade = 1;
+    
+    unichar key = [theText characterAtIndex:0];
+    
+    switch (key)
+    {
+        // joystick up
+        case 'w':
+            gp2x_pad_status |= GP2X_UP;
+            break;
+        case 'e':
+            gp2x_pad_status &= ~GP2X_UP;
+            break;
+            
+        // joystick down
+        case 'x':
+            gp2x_pad_status |= GP2X_DOWN;
+            break;
+        case 'z':
+            gp2x_pad_status &= ~GP2X_DOWN;
+            break;
+            
+        // joystick right
+        case 'd':
+            gp2x_pad_status |= GP2X_RIGHT;
+            break;
+        case 'c':
+            gp2x_pad_status &= ~GP2X_RIGHT;
+            break;
+            
+        // joystick left
+        case 'a':
+            gp2x_pad_status |= GP2X_LEFT;
+            break;
+        case 'q':
+            gp2x_pad_status &= ~GP2X_LEFT;
+            break;
+            
+        // Y / UP
+        case 'i':
+            gp2x_pad_status |= GP2X_Y;
+            btnStates[BTN_Y] = BUTTON_PRESS;
+            break;
+        case 'm':
+            gp2x_pad_status &= ~GP2X_Y;
+            btnStates[BTN_Y] = BUTTON_NO_PRESS;
+            break;
+            
+        // X / DOWN
+        case 'l':
+            gp2x_pad_status |= GP2X_X;
+            btnStates[BTN_X] = BUTTON_PRESS;
+            break;
+        case 'v':
+            gp2x_pad_status &= ~GP2X_X;
+            btnStates[BTN_X] = BUTTON_NO_PRESS;
+            break;
+            
+        // A / LEFT
+        case 'k':
+            gp2x_pad_status |= GP2X_A;
+            btnStates[BTN_A] = BUTTON_PRESS;
+            break;
+        case 'p':
+            gp2x_pad_status &= ~GP2X_A;
+            btnStates[BTN_A] = BUTTON_NO_PRESS;
+            break;
+            
+        // B / RIGHT
+        case 'o':
+            gp2x_pad_status |= GP2X_B;
+            btnStates[BTN_B] = BUTTON_PRESS;
+            break;
+        case 'g':
+            gp2x_pad_status &= ~GP2X_B;
+            btnStates[BTN_B] = BUTTON_NO_PRESS;
+            break;
+            
+        // SELECT / COIN
+        case 'y':
+            gp2x_pad_status |= GP2X_SELECT;
+            btnStates[BTN_SELECT] = BUTTON_PRESS;
+            break;
+        case 't':
+            gp2x_pad_status &= ~GP2X_SELECT;
+            btnStates[BTN_SELECT] = BUTTON_NO_PRESS;
+            break;
+            
+        // START
+        case 'h':
+            gp2x_pad_status |= GP2X_START;
+            btnStates[BTN_START] = BUTTON_PRESS;
+            break;
+        case 'r':
+            gp2x_pad_status &= ~GP2X_START;
+            btnStates[BTN_START] = BUTTON_NO_PRESS;
+            break;
+            
+        // 
+        case 'u':
+            gp2x_pad_status |= GP2X_L;
+            btnStates[BTN_L1] = BUTTON_PRESS;
+            break;
+        case 'f':
+            gp2x_pad_status &= ~GP2X_L;
+            btnStates[BTN_L1] = BUTTON_NO_PRESS;
+            break;
+            
+        // 
+        case 'j':
+            gp2x_pad_status |= GP2X_R;
+            btnStates[BTN_R1] = BUTTON_PRESS;
+            break;
+        case 'n':
+            gp2x_pad_status &= ~GP2X_R;
+            btnStates[BTN_R1] = BUTTON_NO_PRESS;
+            break;
+    }
+    
+    // calculate dpad_state
+    switch (gp2x_pad_status & (GP2X_UP|GP2X_DOWN|GP2X_LEFT|GP2X_RIGHT))
+    {
+        case    GP2X_UP:    dpad_state = DPAD_UP; break;
+        case    GP2X_DOWN:  dpad_state = DPAD_DOWN; break;
+        case    GP2X_LEFT:  dpad_state = DPAD_LEFT; break;
+        case    GP2X_RIGHT: dpad_state = DPAD_RIGHT; break;
+            
+        case    GP2X_UP | GP2X_LEFT:  dpad_state = DPAD_UP_LEFT; break;
+        case    GP2X_UP | GP2X_RIGHT: dpad_state = DPAD_UP_RIGHT; break;
+        case    GP2X_DOWN | GP2X_LEFT:  dpad_state = DPAD_DOWN_LEFT; break;
+        case    GP2X_DOWN | GP2X_RIGHT: dpad_state = DPAD_DOWN_RIGHT; break;
+            
+        default: dpad_state = DPAD_NONE;
+    }
+    
+    static int cycleResponder = 0;
+    if (++cycleResponder > 20) {
+        // necessary to clear a buffer that accumulates internally
+        cycleResponder = 0;
+        warnIcade = 0;
+        [self resignFirstResponder];
+        [self becomeFirstResponder];
+        
+    }
+    
+    [self handle_MENU];
+    [self handle_DPAD];
+}
+
+- (void)deleteBackward 
+{
+}
+- (BOOL)hasText 
+{
+    return YES;
+}
 
 - (void)getControllerCoords:(int)orientation {
     char string[256];

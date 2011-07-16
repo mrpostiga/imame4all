@@ -57,6 +57,8 @@
    @public  int deadZoneValue;
    @public  int touchDeadZone;
 
+   @public  int overscanValue;
+   @public  int tvoutNative;
 
 }
 
@@ -86,6 +88,9 @@
 
 @property (readwrite,assign) int deadZoneValue;
 @property (readwrite,assign) int touchDeadZone;
+
+@property (readwrite,assign) int overscanValue;
+@property (readwrite,assign) int tvoutNative;
 
 @end
 
@@ -117,6 +122,10 @@
 
    UISegmentedControl*		  segmentedSkin;
    UISwitch*		  switchTouchDeadZone;
+
+   UISegmentedControl*		  segmentedOverscanValue;
+   UISwitch*		  switchTvoutNative;
+
 }
 
 - (void)optionChanged:(id)sender;

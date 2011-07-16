@@ -182,7 +182,7 @@ static void game_list_view(int *pos) {
 		gp2x_gamelist_text_out(35, 110, "NO AVAILABLE GAMES FOUND");
 	}
 
-	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"iMAME4all v1.6.1 by D.Valdeita");
+	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"iMAME4all v1.7.0 by D.Valdeita");
 }
 
 static void game_list_select (int index, char *game, char *emu) {
@@ -202,6 +202,7 @@ static void game_list_select (int index, char *game, char *emu) {
 		}
 	}
 }
+
 
 static char *game_list_description (int index)
 {

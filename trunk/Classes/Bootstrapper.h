@@ -32,6 +32,7 @@
 
 #import <UIKit/UIScreen.h>
 
+#if 1
 UIKIT_EXTERN_CLASS @interface UIScreenMode : NSObject {
   @private
     id _mode;
@@ -41,6 +42,7 @@ UIKIT_EXTERN_CLASS @interface UIScreenMode : NSObject {
 @property(readonly,nonatomic) CGFloat pixelAspectRatio; // The aspect ratio of a single pixel. The ratio is defined as X/Y.
 
 @end
+#endif
 
 @interface Bootstrapper : UIApplication  {
 	

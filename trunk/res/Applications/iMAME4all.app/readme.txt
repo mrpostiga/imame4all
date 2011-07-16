@@ -1,5 +1,5 @@
 ===========================================================
-iMAME4ALL 1.6.1 (November 20, 2010) by David Valdeita (Seleuco)
+iMAME4ALL 1.7.0 (July 10, 2011) by David Valdeita (Seleuco)
 ===========================================================
 
 
@@ -43,6 +43,7 @@ Video Aspect Normal, Rotate, Rotate controls.
 Adjustable CPU, Audio clock.
 WiiMote\WiiClassic control thanks to BTstack.
 Support for up to 4 WiiMotes/Classic (multiplayer).
+iCade support.
 Native TV-Out for firmware >= 3.2.
 
 ... and more. 
@@ -151,6 +152,10 @@ GLOBAL OPTIONS
 
 -Skin: Let's you select skin (retina or not). Retina skin looks better but needs more resources.
 
+-Native TV-OUT:  If you like iPad 2 TVOUT mirror or you use and external 3rd party TVOUT app, you can turn off iMame4All native TVOUT.
+
+-Overscan TV-OUT: You can set the amount of TV overscan correction.
+
 WIIMOTE
 -------
 
@@ -178,10 +183,29 @@ home: exit game
 
 In landscape mode touch on anywhere of the screen to show the emulator options.
 
+ICADE
+-----
+
+Best way to use iCade with iMAME4All is in fullscreen portrait mode, hit the option button and choose options. The onscreen controls will fade out when you start using the iCade buttons
+to get on screen controls back, just touch the screen.
+
+if the iCade is off (the fake coin slot light is off) just hit an iCade button or move the joystick.(you must have paired the iCade via bluetooth before) 
+
+when the iCade turns off, the SW keyboard may popup and then backdown, this is normal don't be alarmed
+
+iCade KEY MAPPINGS
+
+TOP:  [RED/COIN]	[BLACK/EXIT]	[BLACK/Y]	[WHITE/B]
+BOT:  [RED/START]	[BLACK/OPTION]	[BLACK/A]	[WHITE/X]
+
+Thanks to Todd Laney for sending me patches, and Martijn Bosschaart who has support me to get the iCade HW.
+
+Due to the limitations of the HW not all games are suited, use WiiClassic instead if you get slowdowns or control lag.
+
 TV-OUT
 -------
 
-To connect an iPad ot iPhone to your TV or a projector, you can either use the Apple Component AV Cable, Apple Composite AV Cable, Apple Dock Connector to VGA Adapter, or other compatible cable.
+To connect an iPad ot iPhone to your TV or a projector, you can either use the Apple HDMI, Component AV Cable, Apple Composite AV Cable, Apple Dock Connector to VGA Adapter, or other compatible cable.
 
 Use TV Out settings to set up how iPad or iPhone plays videos on your TV.
 
@@ -190,6 +214,10 @@ When the cable is connected to a TV or projector, iMAME4all will automatically u
 Set the TV signal to NTSC or PAL: Choose Video > TV Signal and select NTSC or PAL. NTSC and PAL are TV broadcast standards, used in different regions. If you are in the Americas, NTSC is probably the correct choice. Elsewhere, try PAL. If you’re not sure, check the documentation that came with your TV or projector.
 
 Note: TV-Out needs firmaware >= 3.2
+
+You can set the amount of overscan corrections in options menu.
+
+If you like iPad 2 TVOUT mirror or you use and external 3rd party TVOUT app, you can turn off iMame4All native TVOUT in options menu.
 
 
 INSTALLATION
@@ -351,6 +379,8 @@ PORT CREDITS
 
 
 DEVELOPMENT
+July 10,2011
+- Version 1.7: Added iONS's iCade support, improved TVOUT, improved touch controls.
 November 20,2010
 - Version 1.6.1: Added 240x320,640x480,480x640 fixed resolutions. Let's play some vector games on full portrait (like tempest), also lets 3g users use real full portrait selecting 240x320 resolution.
 November 15,2010
@@ -395,6 +425,10 @@ ART
 Retina skin and touch control layout thanks to Bryn Thompson. 
 
 Thanks to: 
+
+Todd Laney for sending me iCade patches, and Martijn Bosschaart for support me with an iCade.
+
+also
 
 Zenzuke, Chipan, Dokesman, Enkonsierto, Quest, Sttraping, Sike, Danibat, Pedator,
 Antiriad and Slaanesh. Thanks to everybody !.
@@ -1538,6 +1572,7 @@ makaimuc  "Makai-Mura (Revision C)"
 makaimug  "Makai-Mura (Revision G)"
 makaimur  "Makai-Mura"
 maketrax  "Make Trax"
+
 makyosen  "Makyou Senshi (Japan)"
 maniach   "Mania Challenge (set 1)"
 maniach2  "Mania Challenge (set 2)"
@@ -2496,6 +2531,7 @@ tophuntr  "Top Hunter - Roddy & Cathy"
 tpgolf    "Top Player's Golf"
 topracer  "Top Racer"
 topsecex  "Top Secret (Exidy) (version 1.0)"
+
 topsecrt  "Top Secret (Japan)"
 toramich  "Tora eno Michi (Japan)"
 tornbase  "Tornado Baseball"

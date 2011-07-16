@@ -61,6 +61,9 @@ extern int isIphone4;
 @synthesize deadZoneValue;
 @synthesize touchDeadZone;
 
+@synthesize overscanValue;
+@synthesize tvoutNative;
+
 
 - (id)init {
 
@@ -75,7 +78,7 @@ extern int isIphone4;
 - (void)loadOptions
 {
 	
-	NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v6.bin")];
+	NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v7.bin")];
 	
 	NSData *plistData;
 	id plist;
@@ -134,6 +137,9 @@ extern int isIphone4;
         skin = isIpad ? 2 : 1;
         deadZoneValue = 2;
         touchDeadZone = 1;
+        
+        overscanValue = 3;
+        tvoutNative = 1;
 		
 		//[self saveOptions];
 	}
@@ -165,6 +171,9 @@ extern int isIphone4;
         
         deadZoneValue =  [[[optionsArray objectAtIndex:0] objectForKey:@"deadZoneValue"] intValue];
         touchDeadZone =  [[[optionsArray objectAtIndex:0] objectForKey:@"touchDeadZone"] intValue];
+
+        overscanValue =  [[[optionsArray objectAtIndex:0] objectForKey:@"overscanValue"] intValue];
+        tvoutNative =  [[[optionsArray objectAtIndex:0] objectForKey:@"tvoutNative"] intValue];
         		
 	}
 			
@@ -198,10 +207,14 @@ extern int isIphone4;
 							  
 							 [NSString stringWithFormat:@"%d", deadZoneValue], @"deadZoneValue",
 							 [NSString stringWithFormat:@"%d", touchDeadZone], @"touchDeadZone",
+							 
+							 [NSString stringWithFormat:@"%d", overscanValue], @"overscanValue",
+							 [NSString stringWithFormat:@"%d", tvoutNative], @"tvoutNative",
+							 
 							 nil]];	
 
 	
-    NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v6.bin")];
+    NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v7.bin")];
 	
 	NSData *plistData;
 	
@@ -275,6 +288,9 @@ extern int isIphone4;
 	   
 	   segmentedDeadZoneValue = nil;
 	   switchTouchDeadZone = nil;
+	   
+	   segmentedOverscanValue = nil;
+	   switchTvoutNative = nil;
 
     }
 
@@ -525,8 +541,28 @@ extern int isIphone4;
                    //[cell addSubview:segmentedDeadZoneValue];
                    cell.accessoryView = segmentedSkin;
                    break;
-               }               
+               }
                case 6:
+               {
+                   cell.text  = @"Native TV-OUT";
+                   switchTvoutNative  = [[UISwitch alloc] initWithFrame:CGRectZero];                
+                   cell.accessoryView = switchTvoutNative ;
+                   [switchTvoutNative setOn:[op tvoutNative] animated:NO];
+                   [switchTvoutNative addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
+                   break;
+               }                
+               case 7:
+               {
+                   cell.text  = @"Overscan TV-OUT";                   
+                   segmentedOverscanValue = [[UISegmentedControl alloc] initWithItems:
+                   [NSArray arrayWithObjects: @"0", @"1", @"2",@"3",@"4",@"5",@"6", nil]];
+                   segmentedOverscanValue.selectedSegmentIndex = [op overscanValue];
+                   [segmentedOverscanValue addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                   segmentedOverscanValue.segmentedControlStyle = UISegmentedControlStyleBar;
+                   cell.accessoryView = segmentedOverscanValue;
+                   break;
+               }               
+               case 8:
                {
                    cell.text  = @"Safe Render Path";
                    switchSafeRender  = [[UISwitch alloc] initWithFrame:CGRectZero];                
@@ -565,7 +601,7 @@ extern int isIphone4;
       {
           case 0: return 5;
           case 1: return 5;
-          case 2: return (isIpad | isIphone4) ? 6 : 7;
+          case 2: return (isIpad | isIphone4) ? 6+2 : 7+2;
       }
 }
 
@@ -624,6 +660,12 @@ extern int isIphone4;
     
    if(switchTouchDeadZone!=nil)
      [switchTouchDeadZone release];
+     
+   if(segmentedOverscanValue!=nil)
+    [segmentedOverscanValue release];
+    
+   if(switchTvoutNative!=nil)
+     [switchTvoutNative release]; 
      
    [super dealloc];
 }
@@ -691,6 +733,12 @@ extern int isIphone4;
 	   
 	if(sender == switchTouchDeadZone)
 	  op.touchDeadZone = [switchTouchDeadZone isOn];
+	  
+	if(sender == segmentedOverscanValue)
+	   op.overscanValue = [segmentedOverscanValue selectedSegmentIndex];   
+	   
+	if(sender == switchTvoutNative)
+	  op.tvoutNative = [switchTvoutNative isOn];  
 	   
 	[op saveOptions];
 		

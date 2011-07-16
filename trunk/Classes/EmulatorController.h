@@ -42,7 +42,17 @@
 
 #define NUM_BUTTONS 10
 
-@interface EmulatorController : UIViewController <UIActionSheetDelegate>
+#if 1
+@protocol UIKeyInput <UITextInputTraits>
+
+- (BOOL)hasText;
+- (void)insertText:(NSString *)text;
+- (void)deleteBackward;
+
+@end
+#endif
+
+@interface EmulatorController : UIViewController <UIActionSheetDelegate, UIKeyInput>
 {
 
   UIView			* screenView;

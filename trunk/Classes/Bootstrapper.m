@@ -42,6 +42,8 @@ extern __emulation_run;
 //extern int iOS_external_width;
 //extern int iOS_external_height;
 CGRect rExternal;
+int nativeTVOUT = 1;
+int overscanTVOUT = 1;
 
 @implementation Bootstrapper
 
@@ -75,6 +77,9 @@ CGRect rExternal;
 	isIpad = [[Helper machine] rangeOfString:@"iPad"].location != NSNotFound;
 	isIphone4 = [[Helper machine] rangeOfString:@"iPhone3"].location != NSNotFound;
 	//isIpad = 1;
+    
+    // do this so we can detect keyboard in viewDidLoad
+    [deviceWindow makeKeyWindow];
 
 	hrViewController = [[EmulatorController alloc] init];
 	
@@ -87,18 +92,21 @@ CGRect rExternal;
 	externalWindow = [[UIWindow alloc] initWithFrame:CGRectZero];
 	externalWindow.hidden = YES;
 	 	
-	[[NSNotificationCenter defaultCenter] addObserver:self 
-												 selector:@selector(prepareScreen) 
-													 name:@"UIScreenDidConnectNotification"
-												   object:nil];
-        
-		
-    [[NSNotificationCenter defaultCenter] addObserver:self 
-												 selector:@selector(prepareScreen) 
-													 name:@"UIScreenDidDisconnectNotification" 
-												   object:nil];
+	if(nativeTVOUT)
+	{ 	
+		[[NSNotificationCenter defaultCenter] addObserver:self 
+													 selector:@selector(prepareScreen) 
+														 name:@"UIScreenDidConnectNotification"
+													   object:nil];
+	        
+			
+	    [[NSNotificationCenter defaultCenter] addObserver:self 
+													 selector:@selector(prepareScreen) 
+														 name:@"UIScreenDidDisconnectNotification" 
+													   object:nil];
+	}	
+    
     [self prepareScreen];
-	
 }
 
 
@@ -119,7 +127,7 @@ CGRect rExternal;
 {
 	 @try
     {												   										       
-	    if ([[UIScreen screens] count] > 1) {
+	    if ([[UIScreen screens] count] > 1 && nativeTVOUT) {
 	    											 	        	   					
 			// Internal display is 0, external is 1.
 			externalScreen = [[[UIScreen screens] objectAtIndex:1] retain];			
@@ -180,12 +188,43 @@ CGRect rExternal;
 	int  external_width = externalWindow.frame.size.width;
 	int  external_height = externalWindow.frame.size.height;
 	
-	float overscan = (desiredMode.size.width== 720) ? 0.92f : 1.0f;
+	//float overscan = (desiredMode.size.width== 720) ? 0.92f : 1.0f;
+	float overscan = 1 - (overscanTVOUT *  0.025f);
 	
-	int width = (int)(external_width * overscan);//overscan
-    int height = (int)((width * 3) / 4);
+	
+	//int width = (int)(external_width /* * overscan */);//overscan
+    //int height = (int)((width * 3) / 4);
+    
+    //if(height > external_height)
+    //{
+    //   int  height = (int)(external_height /** overscan*/);//overscan
+    //   int  width = (int)((height * 4) / 3);       
+    //}
+    
+    //?????
+    int width=external_width;
+    int height=external_height; 
+    /*
+    	                                       UIAlertView* alert = 
+                                               [[UIAlertView alloc] initWithTitle:@"Ventana"
+       message:[NSString stringWithFormat:@"%@ %@ %@ %@",
+       [NSNumber numberWithInt:width],
+       [NSNumber numberWithInt:height],
+       [NSNumber numberWithInt:overscan],
+       [NSNumber numberWithInt:overscanTVOUT]
+       ] 
+                                                                     delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles: nil];
+                                               [alert show];                                           
+                                                                                      
+                                               [alert release];
+    */
+    width = width * overscan;    
+    height = height * overscan;
+    int x = (external_width - width)/2;
+    int y = (external_height - height)/2;
+                                       
       
-    rExternal = CGRectMake( (external_width - width)/2, (external_height - height)/2, width, height);
+    rExternal = CGRectMake( x, y, width, height);
     
     for (UIView *view in [externalWindow subviews]) {
        [view removeFromSuperview];

@@ -1,7 +1,12 @@
-PREFIX=/home/david/Projects/iphone/toolchain/toolchain/pre/bin/arm-apple-darwin9-
+#PREFIX=/home/david/Projects/iphone/toolchain/toolchain/pre/bin/arm-apple-darwin9-
+
+#TOOLCHAIN
 #BASE_DEV=/home/david/Projects/iphone/toolchain/sdks/iPhoneOS3.1.2.sdk
-BASE_DEV=/home/david/Projects/iphone/toolchain/sdks/iPhoneOS2.0.sdk
 #BASE_DEV=/home/david/Projects/iphone/toolchain/sdks/iPhoneOS4.1.sdk
+#this one
+BASE_DEV=/home/david/Projects/iphone/toolchain/sdks/iPhoneOS2.0.sdk
+#OSX
+#BASE_DEV=/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.2.sdk
 
 TARGET = mame
 
@@ -18,12 +23,18 @@ EXE =
 VPATH=src $(wildcard src/cpu/*)
 
 # compiler, linker and utilities
-# compiler, linker and utilities
+#TOOLCHAIN
 AR = /home/david/Projects/iphone/toolchain/toolchain/pre/bin/arm-apple-darwin9-ar
 CC = /home/david/Projects/iphone/toolchain/toolchain/pre/bin/arm-apple-darwin9-gcc
 CPP =/home/david/Projects/iphone/toolchain/toolchain/pre/bin/arm-apple-darwin9-gcc
 LD =  /home/david/Projects/iphone/toolchain/toolchain/pre/bin/arm-apple-darwin9-gcc
 ASM = /home/david/Projects/iphone/toolchain/toolchain/pre/bin/arm-apple-darwin9-gcc
+#OSX
+#AR = /Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/ar
+#CC = /Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/arm-apple-darwin10-gcc-4.2.1
+#CPP = /Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/arm-apple-darwin10-gcc-4.2.1
+#LD =  /Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/arm-apple-darwin10-gcc-4.2.1
+#ASM = /Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/arm-apple-darwin10-gcc-4.2.1
 MD = @mkdir
 RM = @rm -f
 
@@ -49,8 +60,11 @@ CFLAGS += -fsigned-char $(DEVLIBS) \
 
 CFLAGS += -Isrc -Isrc/$(MAMEOS) -Isrc/zlib -IClasses/btstack
 CFLAGS += -O3 -ffast-math 
-CFLAGS += -I/home/david/Projects/iphone/toolchain/sdks/iPhoneOS3.1.2.sdk/usr/include
 
+#TOOLCHAIN
+CFLAGS += -I/home/david/Projects/iphone/toolchain/sdks/iPhoneOS3.1.2.sdk/usr/include
+#OSX
+#CFLAGS += -I/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.2.sdk/usr/include
 	
 #CFLAGS	= -I./ -I./Classes/  \
           -I/home/david/Projects/iphone/toolchain/sdks/iPhoneOS3.1.2.sdk/usr/include \
@@ -59,14 +73,25 @@ CFLAGS += -I/home/david/Projects/iphone/toolchain/sdks/iPhoneOS3.1.2.sdk/usr/inc
           -Isrc/ -Isrc/$(MAMEOS) -Isrc/zlib
           	
 CFLAGS += -I./Classes/
+
+#TOOLCHAIN
 CFLAGS += -F/home/david/Projects/iphone/toolchain/sdks/iPhoneOS3.1.2.sdk/System/Library/PrivateFrameworks
+#OSX
+#CFLAGS += -F/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.2.sdk/System/Library/PrivateFrameworks
+#CFLAGS += -F/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.2.sdk/System/Library/Frameworks
+
 #CFLAGS += -isysroot /home/david/Projects/iphone/toolchain/sdks/iPhoneOS4.1.sdk
+#CFLAGS += -isysroot /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.2.sdk/
 
 LDFLAGS +=  $(CFLAGS) -static -s
 #LDFLAGS = $(CFLAGS) -s -static
 LDFLAGS = -lobjc -lpthread -bind_at_load 
 
+#TOOLCHAIN
 LDFLAGS += -L/home/david/Projects/iphone/toolchain/apps/mame4iphone/lib
+#OSX
+#LDFLAGS += -L/Users/david/Documents/iMame4all/lib
+
 LDFLAGS += -lBTstack
 
 LDFLAGS += -framework Foundation -framework CoreFoundation -framework CoreSurface -framework UIKit -framework QuartzCore -framework CoreGraphics -framework AudioToolbox    
