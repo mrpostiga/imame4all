@@ -155,6 +155,24 @@ home: exit game
 
 In landscape mode touch on anywhere of the screen to show the emulator options.
 
+* ICADE *
+
+Best way to use iCade with iMAME4All is in fullscreen portrait mode, hit the option button and choose options. The onscreen controls will fade out when you start using the iCade buttons
+to get on screen controls back, just touch the screen.
+
+if the iCade is off (the fake coin slot light is off) just hit an iCade button or move the joystick.(you must have paired the iCade via bluetooth before) 
+
+when the iCade turns off, the SW keyboard may popup and then backdown, this is normal don't be alarmed
+
+iCade KEY MAPPINGS
+
+TOP:  [RED/COIN]	[BLACK/EXIT]	[BLACK/Y]	[WHITE/B]
+BOT:  [RED/START]	[BLACK/OPTION]	[BLACK/A]	[WHITE/X]
+
+Thanks to Todd Laney for sending me patches, and Martijn Bosschaart who has support me to get the iCade HW.
+
+Due to the limitations of the HW not all games are suited, use WiiClassic instead if you get slowdowns or control lag.
+
 * INSTALLATION *
 
 cheat.dat   -> Cheats definition file
