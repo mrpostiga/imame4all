@@ -65,6 +65,8 @@ extern iphone_menu;
    UINavigationItem *item = [[ UINavigationItem alloc ] initWithTitle:@"Donate" ];
    
    UIBarButtonItem *backButton = [[[UIBarButtonItem alloc] initWithTitle:@"Quit" style:UIBarButtonItemStyleBordered target:/*[self parentViewController]*/self action:  @selector(mydone:) ] autorelease];
+   //UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithTitle:@"Quit2" style:UIBarButtonItemStyleBordered target:[self parentViewController]   action:  @selector(done:) ];
+   
    item.rightBarButtonItem = backButton;
   
    /*  
@@ -126,6 +128,10 @@ extern iphone_menu;
         [aWebView stopLoading];
    [self dismissModalViewControllerAnimated:YES];
    iphone_menu = 0; 
+   
+//   [[self parentViewController] resignFirstResponder];
+//   [[self parentViewController] becomeFirstResponder];
+   
 }
 
 
