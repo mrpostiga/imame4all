@@ -43,6 +43,7 @@
 #define IPHONE_MENU_DISABLED            0
 #define IPHONE_MENU_MAIN                1
 
+#define IPHONE_MENU_EXIT                4
 #define IPHONE_MENU_HELP                5
 #define IPHONE_MENU_OPTIONS             6
 #define IPHONE_MENU_DONATE              9
@@ -68,6 +69,7 @@ extern CGRect drects[100];
 extern int ndrects;
 //extern btUsed;
 unsigned long btUsed = 0;
+unsigned long iCadeUsed = 0;
 
 extern CGRect rEmulatorFrame;
 static CGRect rPortraitViewFrame;
@@ -111,7 +113,7 @@ int scanline_filter_land = 0;
 int scanline_filter_port = 0;
 
 int hide_keyboard = 0;
-int show_controls = 1;      
+//int show_controls = 1;      
 
 /////
 int global_fps = 0;
@@ -196,21 +198,40 @@ void* app_Thread_Start(void* args)
 	{
 	  if(iphone_menu == IPHONE_MENU_MAIN)
 	  {
-        if(buttonIndex == 0)
+        
+        int more  = iCadeUsed && iOS_inGame; 
+        
+        if(buttonIndex == 0 && more)
+	    {
+   //        __emulation_paused = 0;
+
+           iOS_exitGame = 0;
+           wantExit = 1;	
+           usleep(100000);	            
+           UIAlertView* exitAlertView=[[UIAlertView alloc] initWithTitle:nil
+                                                                  message:@"are you sure you want to exit the game?"
+                                                                 delegate:self cancelButtonTitle:nil
+                                                        otherButtonTitles:@"Yes",@"No",nil];                                                        
+           [exitAlertView show];
+           [exitAlertView release];           
+           
+           iphone_menu = IPHONE_MENU_DISABLED;
+	    }        
+        else if(buttonIndex == 0 + more)
 	    {
            iphone_menu = IPHONE_MENU_HELP;
 	    }
-	    else if(buttonIndex == 1)
+	    else if(buttonIndex == 1 + more)
 	    {
            iphone_menu = IPHONE_MENU_OPTIONS;
 	    }
 
-	    else if(buttonIndex == 2)    
+	    else if(buttonIndex == 2 + more)    
 	    {
            iphone_menu = IPHONE_MENU_DONATE;
 	    }
 	 
-	    else if(buttonIndex == 3 )    
+	    else if(buttonIndex == 3 + more)    
 	    {
            iphone_menu = IPHONE_MENU_WIIMOTE;
 	    }	    
@@ -236,7 +257,7 @@ void* app_Thread_Start(void* args)
 	  
 	  if(iphone_menu == IPHONE_MENU_OPTIONS)
 	  {
-            
+                        
            OptionsController *addController =[OptionsController alloc];
                                    
            [self presentModalViewController:addController animated:YES];
@@ -246,7 +267,9 @@ void* app_Thread_Start(void* args)
 	  
 	  if(iphone_menu == IPHONE_MENU_DONATE)
 	  {
-    
+               
+           [self  resignFirstResponder];
+           
            DonateController *addController =[DonateController alloc];
                                    
            [self presentModalViewController:addController animated:YES];
@@ -256,7 +279,7 @@ void* app_Thread_Start(void* args)
 	  
 	  if(iphone_menu == IPHONE_MENU_WIIMOTE)
 	  {
-    
+              
            [Helper startwiimote:self]; 
                                                 
 	  }
@@ -439,9 +462,18 @@ void* app_Thread_Start(void* args)
     
     UIActionSheet *alert;
     
-    alert = [[UIActionSheet alloc] initWithTitle:
-		   @"Choose an option from the menu. Press cancel to go back." delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil 
-		   otherButtonTitles:@"Help",@"Options",@"Donate",@"WiiMote",@"Cancel", nil];
+    if(!iCadeUsed || !iOS_inGame)
+    {
+		alert = [[UIActionSheet alloc] initWithTitle:
+			   @"Choose an option from the menu. Press cancel to go back." delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil 
+			   otherButtonTitles:@"Help",@"Options",@"Donate",@"WiiMote",@"Cancel", nil];    
+    }
+    else
+    {
+	    alert = [[UIActionSheet alloc] initWithTitle:
+			   @"Choose an option from the menu. Press cancel to go back." delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil 
+			   otherButtonTitles:@"Exit Game",@"Help",@"Options",@"Donate",@"WiiMote",@"Cancel", nil];
+    }
 	   
 	/*   
 	if(isIpad)
@@ -628,36 +660,42 @@ void* app_Thread_Start(void* args)
     //NSLog(@"becomeFirstResponder");
     if(warnIcade){
        
-          	UIAlertView *warnAlert; 
-          	
-          	if(first)
+          	if(!iCadeUsed)
           	{
-	          	first=0;
-	          	warnAlert = [[UIAlertView alloc] initWithTitle:@"Connection!" 
-																  
-	 
-	            message:[NSString stringWithFormat: @"Have I detected an iCade? Due to the limitations of the HW not all games are suited, use WiiClassic instead if you get slowdowns or control lag. You can also select fullscreen mode in options!"]
+	          	UIAlertView *warnAlert; 
+	          	
+	          	if(first)
+	          	{
+		          	first=0;
+		          	warnAlert = [[UIAlertView alloc] initWithTitle:@"Connection!" 
+																	  
+		 
+		            message:[NSString stringWithFormat: @"Have I detected an iCade? Due to the limitations of the HW not all games are suited, use WiiClassic Pro instead if you get slowdowns or control lag. Remember, that you can select portrait fullscreen mode in options!. GERMAN users, set the soft keyboard to 'english (us)' before using the iCade"]
+																 
+																	 delegate:self 
+															cancelButtonTitle:@"Dismiss" 
+															otherButtonTitles: nil];																
+			       [warnAlert show];
+			       [warnAlert release];
+		       }
+		       else
+		       {
+		           
+		           warnAlert = [[UIAlertView alloc] initWithTitle:nil 
+	   																										
+		           message:[NSString stringWithFormat: @"\n\n\niCade connection?.\nPlease Wait..."]
 															 
-																 delegate:self 
-														cancelButtonTitle:@"Dismiss" 
-														otherButtonTitles: nil];																
-		       [warnAlert show];
-		       [warnAlert release];
+																 delegate: nil 
+														cancelButtonTitle: nil 
+														otherButtonTitles: nil];
+			   
+			      [self performSelector:@selector(autoDimiss:) withObject:warnAlert afterDelay:2.5f];
+		          [warnAlert show];
+		       }
 	       }
-	       else
-	       {
-	           
-	           warnAlert = [[UIAlertView alloc] initWithTitle:nil 
-   																										
-	           message:[NSString stringWithFormat: @"\n\n\niCade connection?.\nPlease Wait..."]
-														 
-															 delegate: nil 
-													cancelButtonTitle: nil 
-													otherButtonTitles: nil];
-		   
-		      [self performSelector:@selector(autoDimiss:) withObject:warnAlert afterDelay:2.5f];
-	          [warnAlert show];
-	       }
+	       iCadeUsed = 1;
+	       [self changeUI];
+	       
     }
     return [super becomeFirstResponder];
 }
@@ -665,19 +703,22 @@ void* app_Thread_Start(void* args)
 -(BOOL)resignFirstResponder {
    //NSLog(@"resignFirstResponder");
    if(warnIcade)
-   {
-           	UIAlertView *warnAlert = [[UIAlertView alloc] initWithTitle:nil 
-   																										
-	        message:[NSString stringWithFormat: @"\n\n\niCade disconnection?.\nPlease Wait..."]
-														 
-															 delegate: nil 
-													cancelButtonTitle: nil 
-													otherButtonTitles: nil];
-		   
-		   [self performSelector:@selector(autoDimiss:) withObject:warnAlert afterDelay:2.5f];
-	       [warnAlert show];
-	       
-	       [self showControls:TRUE];
+   {           	
+           	if(iCadeUsed)
+           	{
+	           	UIAlertView *warnAlert = [[UIAlertView alloc] initWithTitle:nil 
+	   																										
+		        message:[NSString stringWithFormat: @"\n\n\niCade disconnection?.\nPlease Wait..."]
+															 
+																 delegate: nil 
+														cancelButtonTitle: nil 
+														otherButtonTitles: nil];
+			   
+			   [self performSelector:@selector(autoDimiss:) withObject:warnAlert afterDelay:2.5f];
+		       [warnAlert show];
+	       }
+	       iCadeUsed = 0;
+	       [self changeUI];	       
    }
    return [super resignFirstResponder];
 }
@@ -700,7 +741,7 @@ void* app_Thread_Start(void* args)
 
 -(void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
    
-    show_controls = 1;    
+    //show_controls = 1;    
     [self changeUI];
         
 }
@@ -787,11 +828,9 @@ void* app_Thread_Start(void* args)
     
    btUsed = num_of_joys!=0; 
    
-   if((btUsed && ((!iphone_is_landscape && iOS_full_screen_port) || iphone_is_landscape)) || !show_controls)
+   if(((btUsed || iCadeUsed) && ((!iphone_is_landscape && iOS_full_screen_port) || iphone_is_landscape)))
      return;
-    
-    //show_controls = TRUE;
-   
+       
    //dpad
    NSString *name = [NSString stringWithFormat:@"./SKIN_%d/%@",iOS_skin,nameImgDPad[DPAD_NONE]];
    dpadView = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:name]];
@@ -995,7 +1034,7 @@ void* app_Thread_Start(void* args)
        
        r.origin.x = r.origin.x + ((r.size.width - tmp_width) / 2);      
        
-       if(!iOS_full_screen_port || btUsed || !show_controls)
+       if(!iOS_full_screen_port || btUsed || iCadeUsed)
        {
           r.origin.y = r.origin.y + ((r.size.height - tmp_height) / 2);
        }
@@ -1238,41 +1277,10 @@ void* app_Thread_Start(void* args)
 
 ////////////////
 
-- (void)showControls:(BOOL)state
-{
-    if (show_controls == state /*|| iphone_controller_opacity == 100*/ 
-        || (!iOS_full_screen_port && !iphone_is_landscape) || (!iOS_full_screen_land && iphone_is_landscape))
-        return;
-    
-                                                                                                                                                                                                        
-    show_controls = state;
-    
-    [self changeUI];//need relayout if fullscreen
-        
-    [UIView beginAnimations:nil context:NULL];
-    [UIView setAnimationDuration:1.0];
-    
-    if(dpadView!=nil)
-    {
-        [dpadView setAlpha:state * iphone_controller_opacity / 100.0];
-    }
-    
-    int i;
-    
-    for(i=0; i<NUM_BUTTONS;i++)
-    {
-        if(buttonViews[i]!=nil)
-        {
-            [buttonViews[i] setAlpha:state * iphone_controller_opacity / 100.0];
-        }
-    }
-    
-    [UIView commitAnimations];
-}
 
 - (void)handle_DPAD{
 
-    if(!iOS_animated_DPad || !show_controls)return;
+    if(!iOS_animated_DPad /*|| !show_controls*/)return;
 
     if(dpad_state!=old_dpad_state)
     {
@@ -1323,9 +1331,8 @@ void* app_Thread_Start(void* args)
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {	       
-    [self showControls:TRUE];
     
-    if(btUsed && (!iphone_is_landscape && iOS_full_screen_port || iphone_is_landscape))
+    if(((btUsed || iCadeUsed) && (!iphone_is_landscape && iOS_full_screen_port || iphone_is_landscape)))
     {
         NSSet *allTouches = [event allTouches];
         UITouch *touch = [[allTouches allObjects] objectAtIndex:0];
@@ -1335,13 +1342,15 @@ void* app_Thread_Start(void* args)
 			if(__emulation_run)
 		    {
                 actionPending=1;
-                warnIcade = 0;
+                //warnIcade = 0;
                 [NSThread detachNewThreadSelector:@selector(runMenu) toTarget:self withObject:nil];
 			}					
 	    }
     }
     else
+    {
       [self touchesController:touches withEvent:event];
+    }  
 }
 
 
@@ -1367,18 +1376,18 @@ void* app_Thread_Start(void* args)
         wantExit = 1;	
         usleep(100000);	            
         __emulation_paused = 1;
-        UIAlertView* downloadAlertView=[[UIAlertView alloc] initWithTitle:nil
+        UIAlertView* exitAlertView=[[UIAlertView alloc] initWithTitle:nil
                                                                   message:@"are you sure you want to exit the game?"
                                                                  delegate:self cancelButtonTitle:nil
                                                         otherButtonTitles:@"Yes",@"No",nil];
-        [downloadAlertView show];
-        [downloadAlertView release];
+        [exitAlertView show];
+        [exitAlertView release];
     } 
     
     if(btnStates[BTN_R2] == BUTTON_PRESS && __emulation_run && !actionPending)
     {
         actionPending=1;
-        warnIcade = 0;
+        //warnIcade = 0;
         [NSThread detachNewThreadSelector:@selector(runMenu) toTarget:self withObject:nil];
     }					
 }			
@@ -1575,7 +1584,6 @@ void* app_Thread_Start(void* args)
 {
     //NSLog(@"%s: %@ %d", __FUNCTION__, theText, [theText characterAtIndex:0]);
     
-    [self showControls:FALSE];
     warnIcade = 1;
     
     unichar key = [theText characterAtIndex:0];
@@ -1718,6 +1726,7 @@ void* app_Thread_Start(void* args)
         warnIcade = 0;
         [self resignFirstResponder];
         [self becomeFirstResponder];
+        warnIcade = 1;
         
     }
     

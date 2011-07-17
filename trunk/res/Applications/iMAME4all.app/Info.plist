@@ -23,8 +23,8 @@
     <string>0.1</string>
     <key>LSRequiresIPhoneOS</key>
     <true/>
-    <key>SBUsesNetwork</key>
-    <integer>3</integer>
+    <key>UIStatusBarHidden</key>
+    <true/>
     <key>UISupportedInterfaceOrientations</key>
     <array>
     <string>UIInterfaceOrientationPortrait</string>

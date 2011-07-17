@@ -1,5 +1,5 @@
 ===========================================================
-iMAME4ALL 1.7.0 (July 10, 2011) by David Valdeita (Seleuco)
+iMAME4ALL 1.7.1 (July 17, 2011) by David Valdeita (Seleuco)
 ===========================================================
 
 
@@ -379,6 +379,8 @@ PORT CREDITS
 
 
 DEVELOPMENT
+July 17,2011
+- Version 1.7.1: Improved iONS's iCade support, Bringin iMame4all up to App Standards.
 July 10,2011
 - Version 1.7: Added iONS's iCade support, improved TVOUT, improved touch controls.
 November 20,2010
@@ -1085,6 +1087,7 @@ flstoryj  "Fairyland Story, The (Japan)"
 fantasyj  "Fantasy (Japan)"
 fantasy   "Fantasy (US)"
 fantzone  "Fantasy Zone (Japan New Ver.)"
+
 fantzono  "Fantasy Zone (Old Ver.)"
 fantazia  "Fantazia"
 farwest   "Far West"
