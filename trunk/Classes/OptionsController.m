@@ -51,18 +51,20 @@ extern int isIphone4;
 
 @synthesize showFPS;
 @synthesize animatedButtons;
-@synthesize lowlatencySound;
 @synthesize fourButtonsLand;
 @synthesize fullLand;
 @synthesize fullPort;
 
 @synthesize skin;
 
-@synthesize deadZoneValue;
+@synthesize wiiDeadZoneValue;
 @synthesize touchDeadZone;
 
 @synthesize overscanValue;
 @synthesize tvoutNative;
+
+@synthesize analogStick;
+@synthesize analogDeadZoneValue;
 
 
 - (id)init {
@@ -78,7 +80,7 @@ extern int isIphone4;
 - (void)loadOptions
 {
 	
-	NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v7.bin")];
+	NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v9.bin")];
 	
 	NSData *plistData;
 	id plist;
@@ -125,7 +127,6 @@ extern int isIphone4;
         
         showFPS = 0;
         fourButtonsLand = 0;
-        lowlatencySound =isIpad?1:0;
         animatedButtons = ![[Helper machine] isEqualToString: @"iPhone1,1"] 
 		              && ![[Helper machine] isEqualToString: @"iPhone1,2"] 		               
 		              && ![[Helper machine] isEqualToString: @"iPod1,1"]		              
@@ -135,12 +136,14 @@ extern int isIphone4;
         fullPort = 0;
         
         skin = isIpad ? 2 : 1;
-        deadZoneValue = 2;
+        wiiDeadZoneValue = 2;
         touchDeadZone = 1;
         
         overscanValue = 3;
         tvoutNative = 1;
-		
+        
+        analogStick = 1;
+        analogDeadZoneValue = 1;		
 		//[self saveOptions];
 	}
 	else
@@ -162,19 +165,20 @@ extern int isIphone4;
 
         showFPS =  [[[optionsArray objectAtIndex:0] objectForKey:@"showFPS"] intValue];
         fourButtonsLand =  [[[optionsArray objectAtIndex:0] objectForKey:@"fourButtonsLand"] intValue];
-        lowlatencySound =  [[[optionsArray objectAtIndex:0] objectForKey:@"lowlatencySound"] intValue];
         animatedButtons =  [[[optionsArray objectAtIndex:0] objectForKey:@"animatedButtons"] intValue];	
         fullLand =  [[[optionsArray objectAtIndex:0] objectForKey:@"fullLand"] intValue];
         fullPort =  [[[optionsArray objectAtIndex:0] objectForKey:@"fullPort"] intValue];
         
         skin =  [[[optionsArray objectAtIndex:0] objectForKey:@"skin"] intValue];
         
-        deadZoneValue =  [[[optionsArray objectAtIndex:0] objectForKey:@"deadZoneValue"] intValue];
+        wiiDeadZoneValue =  [[[optionsArray objectAtIndex:0] objectForKey:@"wiiDeadZoneValue"] intValue];
         touchDeadZone =  [[[optionsArray objectAtIndex:0] objectForKey:@"touchDeadZone"] intValue];
 
         overscanValue =  [[[optionsArray objectAtIndex:0] objectForKey:@"overscanValue"] intValue];
         tvoutNative =  [[[optionsArray objectAtIndex:0] objectForKey:@"tvoutNative"] intValue];
-        		
+        
+        analogStick =  [[[optionsArray objectAtIndex:0] objectForKey:@"analogStick"] intValue];
+        analogDeadZoneValue =  [[[optionsArray objectAtIndex:0] objectForKey:@"analogDeadZoneValue"] intValue];        		
 	}
 			
 }
@@ -197,24 +201,26 @@ extern int isIphone4;
 							 [NSString stringWithFormat:@"%d", scanlineFilterLand], @"ScanlineFilterLand",
 
 							 [NSString stringWithFormat:@"%d", showFPS], @"showFPS",							 
-							 [NSString stringWithFormat:@"%d", fourButtonsLand], @"fourButtonsLand",
-							 [NSString stringWithFormat:@"%d", lowlatencySound], @"lowlatencySound",							 
+							 [NSString stringWithFormat:@"%d", fourButtonsLand], @"fourButtonsLand",							 
 							 [NSString stringWithFormat:@"%d", animatedButtons], @"animatedButtons",							 							 							 											 
 							 [NSString stringWithFormat:@"%d", fullLand], @"fullLand",
 							 [NSString stringWithFormat:@"%d", fullPort], @"fullPort",
 							 
 							 [NSString stringWithFormat:@"%d", skin], @"skin",
 							  
-							 [NSString stringWithFormat:@"%d", deadZoneValue], @"deadZoneValue",
+							 [NSString stringWithFormat:@"%d", wiiDeadZoneValue], @"wiiDeadZoneValue",
 							 [NSString stringWithFormat:@"%d", touchDeadZone], @"touchDeadZone",
 							 
 							 [NSString stringWithFormat:@"%d", overscanValue], @"overscanValue",
 							 [NSString stringWithFormat:@"%d", tvoutNative], @"tvoutNative",
 							 
+							 [NSString stringWithFormat:@"%d", analogStick], @"analogStick",
+							 [NSString stringWithFormat:@"%d", analogDeadZoneValue], @"analogDeadZoneValue",
+							 							 
 							 nil]];	
 
 	
-    NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v7.bin")];
+    NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v9.bin")];
 	
 	NSData *plistData;
 	
@@ -279,19 +285,20 @@ extern int isIphone4;
 	
 	   switchShowFPS=nil;
 	   switchAnimatedButtons=nil;
-   	   switchLowlatencySound=nil;
 	   switch4buttonsLand=nil;
 	   switchfullLand=nil;
 	   switchfullPort=nil;
 	   
 	   segmentedSkin= nil;
 	   
-	   segmentedDeadZoneValue = nil;
+	   segmentedWiiDeadZoneValue = nil;
 	   switchTouchDeadZone = nil;
 	   
 	   segmentedOverscanValue = nil;
 	   switchTvoutNative = nil;
-
+	   
+	   switchAnalogStick = nil;
+	   segmentedAnalogDeadZoneValue = nil;
     }
 
     return self;
@@ -368,7 +375,7 @@ extern int isIphone4;
                
                case 1:
                {
-                   cell.text  = @"TV Filter";
+                   cell.text  = @"CRT Filter";
                    switchTvFilterPort  = [[UISwitch alloc] initWithFrame:CGRectZero];                               
                    cell.accessoryView = switchTvFilterPort ;
                    [switchTvFilterPort setOn:[op tvFilterPort] animated:NO];
@@ -421,7 +428,7 @@ extern int isIphone4;
                }
                case 1:
                {
-                   cell.text  = @"TV Filter";
+                   cell.text  = @"CRT Filter";
                    switchTvFilterLand  = [[UISwitch alloc] initWithFrame:CGRectZero];                
                    cell.accessoryView = switchTvFilterLand ;
                    [switchTvFilterLand setOn:[op tvFilterLand] animated:NO];
@@ -484,17 +491,63 @@ extern int isIphone4;
                    [switchAnimatedButtons setOn:[op animatedButtons] animated:NO];
                    [switchAnimatedButtons addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
                    break;
-               }
-               case 1:
+              }
+              case 1:
+              {
+                   cell.text  = @"Analog Stick";
+                   switchAnalogStick  = [[UISwitch alloc] initWithFrame:CGRectZero];                
+                   cell.accessoryView = switchAnalogStick ;
+                   [switchAnalogStick setOn:[op analogStick] animated:NO];
+                   [switchAnalogStick addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
+                   break;
+              }               
+              case 2:
                {
-                   cell.text  = @"Low Latency Sound";
-                   switchLowlatencySound  = [[UISwitch alloc] initWithFrame:CGRectZero];                
-                   cell.accessoryView = switchLowlatencySound ;
-                   [switchLowlatencySound setOn:[op lowlatencySound] animated:NO];
-                   [switchLowlatencySound addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
+                   cell.text  = @"Digital DZ";
+                   switchTouchDeadZone  = [[UISwitch alloc] initWithFrame:CGRectZero];                
+                   cell.accessoryView = switchTouchDeadZone ;
+                   [switchTouchDeadZone setOn:[op touchDeadZone] animated:NO];
+                   [switchTouchDeadZone addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
                    break;
                }
-              case 2:
+               case 3:
+               {                                      
+                   cell.text  = @"Analog DZ";
+                   
+                    segmentedAnalogDeadZoneValue = [[UISegmentedControl alloc] initWithItems:
+                       [NSArray arrayWithObjects: @"1", @"2", @"3",@"4", @"5", @"6", nil]];
+                    segmentedAnalogDeadZoneValue.selectedSegmentIndex = [op analogDeadZoneValue];
+                    //actionControl.tag = 3;
+                    [segmentedAnalogDeadZoneValue addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                    segmentedAnalogDeadZoneValue.segmentedControlStyle = UISegmentedControlStyleBar;
+                    //[cell addSubview:segmentedDeadZoneValue];
+                     cell.accessoryView = segmentedAnalogDeadZoneValue;                     
+                   break;
+               }                              
+               case 4:
+               {                                      
+                   cell.text  = @"Wii Classic DZ";
+                   
+                    segmentedWiiDeadZoneValue = [[UISegmentedControl alloc] initWithItems:
+                       [NSArray arrayWithObjects: @"1", @"2", @"3",@"4", @"5", @"6", nil]];
+                    //segmentedDeadZoneValue.frame = CGRectMake(145, 5, 150, 35);
+                    segmentedWiiDeadZoneValue.selectedSegmentIndex = [op wiiDeadZoneValue];
+                    //actionControl.tag = 3;
+                    [segmentedWiiDeadZoneValue addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                    segmentedWiiDeadZoneValue.segmentedControlStyle = UISegmentedControlStyleBar;
+                    //[cell addSubview:segmentedDeadZoneValue];
+                     cell.accessoryView = segmentedWiiDeadZoneValue;
+
+                   break;
+               }       
+            }   
+            break;
+        }        
+        case 3:
+        {
+            switch (indexPath.row) 
+            {
+              case 0:
                {
                    cell.text  = @"Show FPS";
                    switchShowFPS  = [[UISwitch alloc] initWithFrame:CGRectZero];                
@@ -503,36 +556,13 @@ extern int isIphone4;
                    [switchShowFPS addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
                    break;
                }
-              case 3:
-               {
-                   cell.text  = @"Touch DeadZone";
-                   switchTouchDeadZone  = [[UISwitch alloc] initWithFrame:CGRectZero];                
-                   cell.accessoryView = switchTouchDeadZone ;
-                   [switchTouchDeadZone setOn:[op touchDeadZone] animated:NO];
-                   [switchTouchDeadZone addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
-                   break;
-               }               
-               case 4:
-               {                                      
-                   cell.text  = @"Wii Classic DZ";
-                   
-                    segmentedDeadZoneValue = [[UISegmentedControl alloc] initWithItems:
-                       [NSArray arrayWithObjects: @"1", @"2", @"3",@"4", @"5", @"6", nil]];
-                    //segmentedDeadZoneValue.frame = CGRectMake(145, 5, 150, 35);
-                    segmentedDeadZoneValue.selectedSegmentIndex = [op deadZoneValue];
-                    //actionControl.tag = 3;
-                    [segmentedDeadZoneValue addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-                    segmentedDeadZoneValue.segmentedControlStyle = UISegmentedControlStyleBar;
-                    //[cell addSubview:segmentedDeadZoneValue];
-                     cell.accessoryView = segmentedDeadZoneValue;
-
-                   break;
-               }
-               case 5:
+               case 1:
                {
                    cell.text  = @"Skin";                   
                    segmentedSkin = [[UISegmentedControl alloc] initWithItems:
-                   [NSArray arrayWithObjects: @"A", @"B", @"B+Retina", nil]];
+                   (isIpad ?
+                   [NSArray arrayWithObjects: @"A", @"B", @"B (Layout 2)", nil]
+                   :[NSArray arrayWithObjects: @"A", @"B", @"B Retina", nil])];
                     //segmentedDeadZoneValue.frame = CGRectMake(145, 5, 150, 35);
                    segmentedSkin.selectedSegmentIndex = [op skin];
                     //actionControl.tag = 3;
@@ -542,7 +572,7 @@ extern int isIphone4;
                    cell.accessoryView = segmentedSkin;
                    break;
                }
-               case 6:
+               case 2:
                {
                    cell.text  = @"Native TV-OUT";
                    switchTvoutNative  = [[UISwitch alloc] initWithFrame:CGRectZero];                
@@ -551,7 +581,7 @@ extern int isIphone4;
                    [switchTvoutNative addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
                    break;
                }                
-               case 7:
+               case 3:
                {
                    cell.text  = @"Overscan TV-OUT";                   
                    segmentedOverscanValue = [[UISegmentedControl alloc] initWithItems:
@@ -562,7 +592,7 @@ extern int isIphone4;
                    cell.accessoryView = segmentedOverscanValue;
                    break;
                }               
-               case 8:
+               case 4:
                {
                    cell.text  = @"Safe Render Path";
                    switchSafeRender  = [[UISwitch alloc] initWithFrame:CGRectZero];                
@@ -571,7 +601,8 @@ extern int isIphone4;
                    [switchSafeRender addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
                    break;
                }
-            }   
+            }
+            break;   
         }
    }
      
@@ -582,7 +613,7 @@ extern int isIphone4;
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-      return 3;
+      return 4;
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
@@ -591,7 +622,8 @@ extern int isIphone4;
     {
           case 0: return @"Portrait";
           case 1: return @"Landscape";
-          case 2: return @"Miscellaneous";
+          case 2: return @"Input";
+          case 3: return @"Miscellaneous";
     }
 }
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -601,7 +633,8 @@ extern int isIphone4;
       {
           case 0: return 5;
           case 1: return 5;
-          case 2: return (isIpad | isIphone4) ? 6+2 : 7+2;
+          case 2: return 5;
+          case 3: return (isIpad | isIphone4) ? 4 : 3;
       }
 }
 
@@ -643,8 +676,6 @@ extern int isIphone4;
      [switchShowFPS release];
    if(switchAnimatedButtons!=nil)
      [switchAnimatedButtons release];
-   if(switchLowlatencySound!=nil)
-     [switchLowlatencySound release];
    if(switch4buttonsLand!=nil)
      [switch4buttonsLand release];
    if(switchfullLand!=nil)
@@ -655,8 +686,8 @@ extern int isIphone4;
    if(segmentedSkin!=nil)
      [segmentedSkin release];  
      
-   if(segmentedDeadZoneValue!=nil)
-    [segmentedDeadZoneValue release];
+   if(segmentedWiiDeadZoneValue!=nil)
+    [segmentedWiiDeadZoneValue release];
     
    if(switchTouchDeadZone!=nil)
      [switchTouchDeadZone release];
@@ -666,7 +697,13 @@ extern int isIphone4;
     
    if(switchTvoutNative!=nil)
      [switchTvoutNative release]; 
-     
+
+   if(switchAnalogStick!=nil)
+     [switchAnalogStick release]; 
+
+   if(segmentedAnalogDeadZoneValue!=nil)
+    [segmentedAnalogDeadZoneValue release];
+         
    [super dealloc];
 }
 
@@ -712,9 +749,6 @@ extern int isIphone4;
 	
 	if(sender == switchAnimatedButtons) 
 	   op.animatedButtons=  [switchAnimatedButtons isOn];
-
-    if(sender == switchLowlatencySound)
-	   op.lowlatencySound =  [switchLowlatencySound isOn];
 	
 	if(sender == switch4buttonsLand) 
 	   op.fourButtonsLand =  [switch4buttonsLand isOn];	
@@ -728,8 +762,8 @@ extern int isIphone4;
     if(sender == segmentedSkin) 
 	   op.skin =  [segmentedSkin selectedSegmentIndex];   
 	   
-	if(sender == segmentedDeadZoneValue)
-	   op.deadZoneValue = [segmentedDeadZoneValue selectedSegmentIndex];   
+	if(sender == segmentedWiiDeadZoneValue)
+	   op.wiiDeadZoneValue = [segmentedWiiDeadZoneValue selectedSegmentIndex];   
 	   
 	if(sender == switchTouchDeadZone)
 	  op.touchDeadZone = [switchTouchDeadZone isOn];
@@ -739,6 +773,12 @@ extern int isIphone4;
 	   
 	if(sender == switchTvoutNative)
 	  op.tvoutNative = [switchTvoutNative isOn];  
+
+	if(sender == switchAnalogStick)
+	  op.analogStick = [switchAnalogStick isOn];
+	  
+	if(sender == segmentedAnalogDeadZoneValue)
+	   op.analogDeadZoneValue = [segmentedAnalogDeadZoneValue selectedSegmentIndex];  	  
 	   
 	[op saveOptions];
 		

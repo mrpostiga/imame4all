@@ -90,6 +90,9 @@ static CGRect rShowKeyboard;
 extern CGRect rExternal;
 CGRect rView;
 
+static CGRect rStickWindow;
+extern CGRect rStickArea;
+
 extern int nativeTVOUT;
 extern int overscanTVOUT;
 
@@ -128,9 +131,16 @@ int emulated_height = 240;
 extern int iOS_landscape_buttons;
 int iOS_hide_LR=0;
 int iOS_skin = 1;
-int iOS_deadZoneValue = 2;
+int iOS_skin_data = 1;
+int iOS_wiiDeadZoneValue = 2;
 int iOS_touchDeadZone = 1;
-        
+
+int iOS_analogStick = 1;
+int iOS_analogDeadZoneValue = 2;
+extern int iOS_waysStick;
+
+#define STICK4WAY (iOS_waysStick == 4 && iOS_inGame)
+#define STICK2WAY (iOS_waysStick == 2 && iOS_inGame)
         
 enum { DPAD_NONE=0,DPAD_UP=1,DPAD_DOWN=2,DPAD_LEFT=3,DPAD_RIGHT=4,DPAD_UP_LEFT=5,DPAD_UP_RIGHT=6,DPAD_DOWN_LEFT=7,DPAD_DOWN_RIGHT=8};    
 
@@ -304,16 +314,17 @@ void* app_Thread_Start(void* args)
         || scanline_filter_land != [op scanlineFilterLand]
         || scanline_filter_port != [op scanlineFilterPort]      
         || global_fps != [op showFPS]
-        || global_low_latency_sound  != [op lowlatencySound]
         || iOS_animated_DPad  != [op animatedButtons]
         || iOS_4buttonsLand  != [op fourButtonsLand]
         || iOS_full_screen_land  != [op fullLand]
         || iOS_full_screen_port  != [op fullPort]
-        || iOS_skin != ([op skin]+1)
-        || iOS_deadZoneValue != [op deadZoneValue]
+        || iOS_skin_data != ([op skin]+1)
+        || iOS_wiiDeadZoneValue != [op wiiDeadZoneValue]
         || iOS_touchDeadZone != [op touchDeadZone]
         || nativeTVOUT != [op tvoutNative]
         || overscanTVOUT != [op overscanValue]
+        || iOS_analogStick != [op analogStick]
+        || iOS_analogDeadZoneValue != [op analogDeadZoneValue]        
         )
     {
         iphone_keep_aspect_ratio_land = [op keepAspectRatioLand];
@@ -329,14 +340,17 @@ void* app_Thread_Start(void* args)
         scanline_filter_port = [op scanlineFilterPort];
         
        global_fps = [op showFPS];
-       global_low_latency_sound  = [op lowlatencySound];
        iOS_animated_DPad  = [op animatedButtons];
        iOS_4buttonsLand  = [op fourButtonsLand];
        iOS_full_screen_land  = [op fullLand];
        iOS_full_screen_port  = [op fullPort];
        
        iOS_skin = [op skin]+1;
-       iOS_deadZoneValue = [op deadZoneValue];
+       iOS_skin_data = iOS_skin;
+       if(iOS_skin == 2 && isIpad)
+          iOS_skin = 3;
+        
+       iOS_wiiDeadZoneValue = [op wiiDeadZoneValue];
        iOS_touchDeadZone = [op touchDeadZone];
        
        if (nativeTVOUT != [op tvoutNative])
@@ -371,7 +385,12 @@ void* app_Thread_Start(void* args)
 	       [warnAlert release];
        }
        
+       iOS_analogStick = [op analogStick];
+       iOS_analogDeadZoneValue = [op analogDeadZoneValue];
+              
        [self changeUI];
+       
+       
        //[self performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
        
        /*      
@@ -556,7 +575,8 @@ void* app_Thread_Start(void* args)
    nameImgDPad[DPAD_DOWN_RIGHT]= @"DPad_DR.png";
       
    dpadView=nil;
-   
+   analogStickView = nil;
+      
    int i;
    for(i=0; i<NUM_BUTTONS;i++)
       buttonViews[i]=nil;
@@ -564,6 +584,7 @@ void* app_Thread_Start(void* args)
    screenView=nil;
    imageBack=nil;   			
    dview = nil;
+
    
    [ self getConf];
 
@@ -580,7 +601,7 @@ void* app_Thread_Start(void* args)
 	self.view.userInteractionEnabled = YES;
 	
 	self.view.multipleTouchEnabled = YES;
-	self.view.exclusiveTouch = YES;
+	self.view.exclusiveTouch = NO;
 	
     //self.view.multipleTouchEnabled = NO; investigar porque se queda
 	//self.view.contentMode = UIViewContentModeTopLeft;
@@ -610,19 +631,25 @@ void* app_Thread_Start(void* args)
     scanline_filter_port = [op scanlineFilterPort];
     
     global_fps = [op showFPS];
-    global_low_latency_sound  = [op lowlatencySound];
     iOS_animated_DPad  = [op animatedButtons];
     iOS_4buttonsLand  = [op fourButtonsLand];
     iOS_full_screen_land  = [op fullLand];
     iOS_full_screen_port  = [op fullPort];
     
     iOS_skin = [op skin]+1;
-    iOS_deadZoneValue = [op deadZoneValue];
+    iOS_skin_data = iOS_skin;
+    if(iOS_skin == 2 && isIpad)
+        iOS_skin = 3;
+          
+    iOS_wiiDeadZoneValue = [op wiiDeadZoneValue];
     iOS_touchDeadZone = [op touchDeadZone];
     
     nativeTVOUT = [op tvoutNative];
     overscanTVOUT = [op overscanValue];
-        
+    
+    iOS_analogStick = [op analogStick];
+    iOS_analogDeadZoneValue = [op analogDeadZoneValue];
+            
     [op release];
      
     //
@@ -637,6 +664,20 @@ void* app_Thread_Start(void* args)
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(becomeFirstResponder) name:@"UIKeyboardEmptyDelegateNotification" object:nil];
 
     [self changeUI];
+    
+    if(0)
+    {
+		   UIAlertView *loadAlert = [[UIAlertView alloc] initWithTitle:nil 
+	   																										
+		           message:[NSString stringWithFormat: @"\n\n\nLoading.\nPlease Wait..."]
+															 
+																 delegate: nil 
+														cancelButtonTitle: nil 
+														otherButtonTitles: nil];
+			   			      
+		   [loadAlert show];
+	       [loadAlert release];
+	 }      
 }
 - (void)viewDidUnload
 {
@@ -808,6 +849,13 @@ void* app_Thread_Start(void* args)
       dpadView=nil;
    }
    
+   if(analogStickView!=nil)
+   {
+      [analogStickView removeFromSuperview];
+      [analogStickView release];
+      analogStickView=nil;   
+   }
+   
    for(i=0; i<NUM_BUTTONS;i++)
    {
       if(buttonViews[i]!=nil)
@@ -817,6 +865,8 @@ void* app_Thread_Start(void* args)
          buttonViews[i] = nil; 
       }
    }
+   
+   
 }
 
 - (void)buildDPadView {
@@ -830,15 +880,26 @@ void* app_Thread_Start(void* args)
    
    if(((btUsed || iCadeUsed) && ((!iphone_is_landscape && iOS_full_screen_port) || iphone_is_landscape)))
      return;
-       
-   //dpad
-   NSString *name = [NSString stringWithFormat:@"./SKIN_%d/%@",iOS_skin,nameImgDPad[DPAD_NONE]];
-   dpadView = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:name]];
-   dpadView.frame = rDPad_image;
-   if((iphone_is_landscape && iOS_full_screen_land) || (!iphone_is_landscape && iOS_full_screen_port))
-         [dpadView setAlpha:((float)iphone_controller_opacity / 100.0f)];  
-   [self.view addSubview: dpadView];
-   dpad_state = old_dpad_state = DPAD_NONE;
+   
+   NSString *name;    
+   
+   if(!iOS_analogStick)
+   {
+	   name = [NSString stringWithFormat:@"./SKIN_%d/%@",iOS_skin,nameImgDPad[DPAD_NONE]];
+	   dpadView = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:name]];
+	   dpadView.frame = rDPad_image;
+	   if((iphone_is_landscape && iOS_full_screen_land) || (!iphone_is_landscape && iOS_full_screen_port))
+	         [dpadView setAlpha:((float)iphone_controller_opacity / 100.0f)];  
+	   [self.view addSubview: dpadView];
+	   dpad_state = old_dpad_state = DPAD_NONE;
+   }
+   else
+   {   
+       //analogStickView
+	   analogStickView = [[AnalogStickView alloc] initWithFrame:rStickWindow];	  
+	   [self.view addSubview:analogStickView];  
+	   [analogStickView setNeedsDisplay];
+   }
    
    for(i=0; i<NUM_BUTTONS;i++)
    {
@@ -1393,15 +1454,23 @@ void* app_Thread_Start(void* args)
 }			
 
 - (void)touchesController:(NSSet *)touches withEvent:(UIEvent *)event {	
+    
 	int i;
+	static UITouch *stickTouch = nil;
 	//Get all the touches.
 	NSSet *allTouches = [event allTouches];
 	int touchcount = [allTouches count];
-	
-	gp2x_pad_status = 0;
-	
-	dpad_state = DPAD_NONE;
-	
+		
+	//gp2x_pad_status = 0;
+	gp2x_pad_status &= ~GP2X_X;
+	gp2x_pad_status &= ~GP2X_Y;
+	gp2x_pad_status &= ~GP2X_A;
+	gp2x_pad_status &= ~GP2X_B;
+	gp2x_pad_status &= ~GP2X_SELECT;
+	gp2x_pad_status &= ~GP2X_START;
+	gp2x_pad_status &= ~GP2X_L;
+	gp2x_pad_status &= ~GP2X_R;
+		
 	for(i=0; i<NUM_BUTTONS;i++)
     {
        btnStates[i] = BUTTON_NO_PRESS; 
@@ -1416,16 +1485,148 @@ void* app_Thread_Start(void* args)
 			return;
 		}
 		
-		/*if(touch.phase == UITouchPhaseBegan)
-		{
-			NSLog([NSString stringWithFormat:@"%s", test_print_buffer]);
-		}*/
 		if( touch.phase == UITouchPhaseBegan		||
 			touch.phase == UITouchPhaseMoved		||
 			touch.phase == UITouchPhaseStationary	)
 		{
 			struct CGPoint point;
 			point = [touch locationInView:self.view];
+			
+			if(!iOS_analogStick)
+			{
+				if (MyCGRectContainsPoint(Up, point) && !STICK2WAY) {
+					//NSLog(@"GP2X_UP");
+					gp2x_pad_status |= GP2X_UP;
+					dpad_state = DPAD_UP;
+												    
+				    gp2x_pad_status &= ~GP2X_DOWN;
+				    gp2x_pad_status &= ~GP2X_LEFT;
+				    gp2x_pad_status &= ~GP2X_RIGHT;		
+				    
+				    stickTouch = touch;		    				
+				}			
+				else if (MyCGRectContainsPoint(Down, point) && !STICK2WAY) {
+					//NSLog(@"GP2X_DOWN");
+					gp2x_pad_status |= GP2X_DOWN;								
+					dpad_state = DPAD_DOWN;
+					
+				    gp2x_pad_status &= ~GP2X_UP;
+				    gp2x_pad_status &= ~GP2X_LEFT;
+				    gp2x_pad_status &= ~GP2X_RIGHT;				    
+				    
+				    stickTouch = touch;
+				}			
+				else if (MyCGRectContainsPoint(Left, point)) {
+					//NSLog(@"GP2X_LEFT");
+					gp2x_pad_status |= GP2X_LEFT;
+					dpad_state = DPAD_LEFT;
+					
+				    gp2x_pad_status &= ~GP2X_UP;			    
+				    gp2x_pad_status &= ~GP2X_DOWN;
+				    gp2x_pad_status &= ~GP2X_RIGHT;				    
+				    
+				    stickTouch = touch;
+				}			
+				else if (MyCGRectContainsPoint(Right, point)) {
+					//NSLog(@"GP2X_RIGHT");
+					gp2x_pad_status |= GP2X_RIGHT;
+					dpad_state = DPAD_RIGHT;
+					
+					gp2x_pad_status &= ~GP2X_UP;			    
+				    gp2x_pad_status &= ~GP2X_DOWN;
+				    gp2x_pad_status &= ~GP2X_LEFT;
+				    
+				    stickTouch = touch;
+				}			
+				else if (MyCGRectContainsPoint(UpLeft, point)) {
+					//NSLog(@"GP2X_UP | GP2X_LEFT");
+					if(!STICK2WAY && !STICK4WAY)
+					{
+						gp2x_pad_status |= GP2X_UP | GP2X_LEFT;
+						dpad_state = DPAD_UP_LEFT;
+								    
+					    gp2x_pad_status &= ~GP2X_DOWN;
+					    gp2x_pad_status &= ~GP2X_RIGHT;
+				    }
+				    else
+				    {
+						gp2x_pad_status |= GP2X_LEFT;
+						dpad_state = DPAD_LEFT;
+								    
+					    gp2x_pad_status &= ~GP2X_UP;
+					    gp2x_pad_status &= ~GP2X_DOWN;
+					    gp2x_pad_status &= ~GP2X_RIGHT;				    
+				    }				    
+				    stickTouch = touch;				
+				}			
+				else if (MyCGRectContainsPoint(UpRight, point)) {
+					//NSLog(@"GP2X_UP | GP2X_RIGHT");
+					
+					if(!STICK2WAY && !STICK4WAY)
+					{
+					   gp2x_pad_status |= GP2X_UP | GP2X_RIGHT;
+					   dpad_state = DPAD_UP_RIGHT;
+								    
+				       gp2x_pad_status &= ~GP2X_DOWN;
+				       gp2x_pad_status &= ~GP2X_LEFT;
+				    }
+				    else
+				    {
+					   gp2x_pad_status |= GP2X_RIGHT;
+					   dpad_state = DPAD_RIGHT;
+								    
+				       gp2x_pad_status &= ~GP2X_UP;
+				       gp2x_pad_status &= ~GP2X_DOWN;
+				       gp2x_pad_status &= ~GP2X_LEFT;				    
+				    }   				    
+				    stickTouch = touch;
+				}			
+				else if (MyCGRectContainsPoint(DownLeft, point)) {
+					//NSLog(@"GP2X_DOWN | GP2X_LEFT");
+
+					if(!STICK2WAY && !STICK4WAY)
+					{
+						gp2x_pad_status |= GP2X_DOWN | GP2X_LEFT;
+						dpad_state = DPAD_DOWN_LEFT;
+						
+		                gp2x_pad_status &= ~GP2X_UP;			    
+					    gp2x_pad_status &= ~GP2X_RIGHT;
+				    }
+				    else
+				    {
+						gp2x_pad_status |= GP2X_LEFT;
+						dpad_state = DPAD_LEFT;
+						
+		                gp2x_pad_status &= ~GP2X_DOWN;
+		                gp2x_pad_status &= ~GP2X_UP;			    
+					    gp2x_pad_status &= ~GP2X_RIGHT;				    
+				    }
+				    stickTouch = touch;				
+				}			
+				else if (MyCGRectContainsPoint(DownRight, point)) {
+					//NSLog(@"GP2X_DOWN | GP2X_RIGHT");
+					if(!STICK2WAY && !STICK4WAY)
+					{
+					    gp2x_pad_status |= GP2X_DOWN | GP2X_RIGHT;
+					    dpad_state = DPAD_DOWN_RIGHT;
+					
+	                    gp2x_pad_status &= ~GP2X_UP;			    
+				        gp2x_pad_status &= ~GP2X_LEFT;
+				    }
+				    else
+				    {    
+					    gp2x_pad_status |= GP2X_RIGHT;
+					    dpad_state = DPAD_RIGHT;
+					
+                        gp2x_pad_status &= ~GP2X_DOWN;	                    
+	                    gp2x_pad_status &= ~GP2X_UP;			    
+				        gp2x_pad_status &= ~GP2X_LEFT;				    
+				    }
+				    stickTouch = touch;
+				}			
+			}
+			
+			if(touch == stickTouch) continue;
 			
 			if (MyCGRectContainsPoint(ButtonUp, point)) {
 				gp2x_pad_status |= GP2X_Y;
@@ -1482,46 +1683,6 @@ void* app_Thread_Start(void* args)
 				gp2x_pad_status |= GP2X_START;
 			    btnStates[BTN_START] = BUTTON_PRESS;
 			}						
-			else if (MyCGRectContainsPoint(Up, point)) {
-				//NSLog(@"GP2X_UP");
-				gp2x_pad_status |= GP2X_UP;
-				dpad_state = DPAD_UP;
-			}			
-			else if (MyCGRectContainsPoint(Down, point)) {
-				//NSLog(@"GP2X_DOWN");
-				gp2x_pad_status |= GP2X_DOWN;
-				dpad_state = DPAD_DOWN;
-			}			
-			else if (MyCGRectContainsPoint(Left, point)) {
-				//NSLog(@"GP2X_LEFT");
-				gp2x_pad_status |= GP2X_LEFT;
-				dpad_state = DPAD_LEFT;
-			}			
-			else if (MyCGRectContainsPoint(Right, point)) {
-				//NSLog(@"GP2X_RIGHT");
-				gp2x_pad_status |= GP2X_RIGHT;
-				dpad_state = DPAD_RIGHT;
-			}			
-			else if (MyCGRectContainsPoint(UpLeft, point)) {
-				//NSLog(@"GP2X_UP | GP2X_LEFT");
-				gp2x_pad_status |= GP2X_UP | GP2X_LEFT;
-				dpad_state = DPAD_UP_LEFT;
-			}			
-			else if (MyCGRectContainsPoint(UpRight, point)) {
-				//NSLog(@"GP2X_UP | GP2X_RIGHT");
-				gp2x_pad_status |= GP2X_UP | GP2X_RIGHT;
-				dpad_state = DPAD_UP_RIGHT;
-			}			
-			else if (MyCGRectContainsPoint(DownLeft, point)) {
-				//NSLog(@"GP2X_DOWN | GP2X_LEFT");
-				gp2x_pad_status |= GP2X_DOWN | GP2X_LEFT;
-				dpad_state = DPAD_DOWN_LEFT;
-			}			
-			else if (MyCGRectContainsPoint(DownRight, point)) {
-				//NSLog(@"GP2X_DOWN | GP2X_RIGHT");
-				gp2x_pad_status |= GP2X_DOWN | GP2X_RIGHT;
-				dpad_state = DPAD_DOWN_RIGHT;
-			}
 			else if (MyCGRectContainsPoint(LPad, point)) {
 				//NSLog(@"GP2X_L");
 				gp2x_pad_status |= GP2X_L;
@@ -1547,12 +1708,21 @@ void* app_Thread_Start(void* args)
                 btnStates[BTN_SELECT] = BUTTON_PRESS;
 				gp2x_pad_status |= GP2X_START;
 			    btnStates[BTN_START] = BUTTON_PRESS;
-			}
-			else if (MyCGRectContainsPoint(rShowKeyboard, point)) {
-  
-			}	
-			
+			}			
+	        			
 		}
+	    else
+	    {
+	        if(!iOS_analogStick && touch == stickTouch)
+			{
+	             gp2x_pad_status &= ~GP2X_UP;
+			     gp2x_pad_status &= ~GP2X_DOWN;
+				 gp2x_pad_status &= ~GP2X_LEFT;
+				 gp2x_pad_status &= ~GP2X_RIGHT;
+				 dpad_state = DPAD_NONE;
+				 stickTouch = nil;
+		    }
+	    }
 	}
 	
 	[self handle_MENU];
@@ -1571,7 +1741,6 @@ void* app_Thread_Start(void* args)
 	[self touchesBegan:touches withEvent:event];
 }
 
-
 //
 // Keyboard input from iCade
 //
@@ -1583,7 +1752,10 @@ void* app_Thread_Start(void* args)
 - (void)insertText:(NSString *)theText 
 {
     //NSLog(@"%s: %@ %d", __FUNCTION__, theText, [theText characterAtIndex:0]);
-    
+    static int up = 0;
+    static int down = 0;
+    static int left = 0;
+    static int right = 0;    
     warnIcade = 1;
     
     unichar key = [theText characterAtIndex:0];
@@ -1592,34 +1764,86 @@ void* app_Thread_Start(void* args)
     {
         // joystick up
         case 'w':
-            gp2x_pad_status |= GP2X_UP;
+            //if(!STICK2WAY && !(STICK4WAY && (left || right)))              
+            if(STICK4WAY)
+            {
+               gp2x_pad_status &= ~GP2X_LEFT;
+               gp2x_pad_status &= ~GP2X_RIGHT;
+            }            
+            if(!STICK2WAY)
+              gp2x_pad_status |= GP2X_UP;
+            up = 1;     
             break;
         case 'e':
+            if(STICK4WAY)
+            {
+               if(left)gp2x_pad_status |= GP2X_LEFT;
+               if(right)gp2x_pad_status |= GP2X_RIGHT;
+            }            
             gp2x_pad_status &= ~GP2X_UP;
+            up = 0;
             break;
             
         // joystick down
         case 'x':
-            gp2x_pad_status |= GP2X_DOWN;
+            //if(!STICK2WAY && !(STICK4WAY && (left || right)))
+            if(STICK4WAY)
+            {
+               gp2x_pad_status &= ~GP2X_LEFT;
+               gp2x_pad_status &= ~GP2X_RIGHT;
+            }            
+            if(!STICK2WAY)
+               gp2x_pad_status |= GP2X_DOWN;
+            down = 1;   
             break;
         case 'z':
+            if(STICK4WAY)
+            {
+               if(left)gp2x_pad_status |= GP2X_LEFT;
+               if(right)gp2x_pad_status |= GP2X_RIGHT;
+            }
             gp2x_pad_status &= ~GP2X_DOWN;
+            down = 0;   
             break;
             
         // joystick right
-        case 'd':
+        case 'd':            
+            if(STICK4WAY)
+            {
+               gp2x_pad_status &= ~GP2X_UP;
+               gp2x_pad_status &= ~GP2X_DOWN;
+            }
             gp2x_pad_status |= GP2X_RIGHT;
+            right = 1;
             break;
         case 'c':
+            if(STICK4WAY)
+            {
+               if(up)gp2x_pad_status |= GP2X_UP;
+               if(down)gp2x_pad_status |= GP2X_DOWN;
+            }
             gp2x_pad_status &= ~GP2X_RIGHT;
+            right = 0;
             break;
             
         // joystick left
-        case 'a':
+        case 'a':            
+            if(STICK4WAY)
+            {
+               gp2x_pad_status &= ~GP2X_UP;
+               gp2x_pad_status &= ~GP2X_DOWN;
+            }
             gp2x_pad_status |= GP2X_LEFT;
+            left = 1;
             break;
         case 'q':
+            if(STICK4WAY)
+            {
+               if(up)gp2x_pad_status |= GP2X_UP;
+               if(down)gp2x_pad_status |= GP2X_DOWN;
+            }
             gp2x_pad_status &= ~GP2X_LEFT;
+            left = 0;
             break;
             
         // Y / UP
@@ -1751,16 +1975,16 @@ void* app_Thread_Start(void* args)
 		if(isIpad)
 		{
  		   if(iOS_full_screen_port)
-		     fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_portrait_full_iPad.txt",  get_resource_path("/"), iOS_skin] UTF8String], "r");
+		     fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_portrait_full_iPad.txt",  get_resource_path("/"), iOS_skin_data] UTF8String], "r");
 		   else
-		     fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_portrait_iPad.txt",  get_resource_path("/"), iOS_skin] UTF8String], "r");
+		     fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_portrait_iPad.txt",  get_resource_path("/"), iOS_skin_data] UTF8String], "r");
 		}  
 		else
 		{
 		   if(iOS_full_screen_port)
-		     fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_portrait_full_iPhone.txt", get_resource_path("/"),  iOS_skin] UTF8String], "r");
+		     fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_portrait_full_iPhone.txt", get_resource_path("/"),  iOS_skin_data] UTF8String], "r");
 		   else
-		     fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_portrait_iPhone.txt", get_resource_path("/"),  iOS_skin] UTF8String], "r");  
+		     fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_portrait_iPhone.txt", get_resource_path("/"),  iOS_skin_data] UTF8String], "r");  
 		}
     }
 	else
@@ -1768,16 +1992,16 @@ void* app_Thread_Start(void* args)
 		if(isIpad)
 		{
 		   if(iOS_full_screen_land)
-		     fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_landscape_full_iPad.txt", get_resource_path("/"), iOS_skin ] UTF8String], "r");
+		     fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_landscape_full_iPad.txt", get_resource_path("/"), iOS_skin_data] UTF8String], "r");
 		   else
-		     fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_landscape_iPad.txt", get_resource_path("/"), iOS_skin ] UTF8String], "r");
+		     fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_landscape_iPad.txt", get_resource_path("/"), iOS_skin_data] UTF8String], "r");
 		}
 		else
 		{
 		   if(iOS_full_screen_land)
-		     fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_landscape_full_iPhone.txt", get_resource_path("/"), iOS_skin] UTF8String], "r");
+		     fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_landscape_full_iPhone.txt", get_resource_path("/"), iOS_skin_data] UTF8String], "r");
 		   else
-		     fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_landscape_iPhone.txt", get_resource_path("/"), iOS_skin] UTF8String], "r");
+		     fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_landscape_iPhone.txt", get_resource_path("/"), iOS_skin_data] UTF8String], "r");
 		}
 	}
 	
@@ -1785,7 +2009,7 @@ void* app_Thread_Start(void* args)
 	{
 
 		int i = 0;
-        while(fgets(string, 256, fp) != NULL && i < 36) 
+        while(fgets(string, 256, fp) != NULL && i < 38) 
        {
 			char* result = strtok(string, ",");
 			int coords[4];
@@ -1841,7 +2065,11 @@ void* app_Thread_Start(void* args)
             case 32:   rButton_image[BTN_R1] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
             case 33:   rButton_image[BTN_L2] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
             case 34:   rButton_image[BTN_R2] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 35:   iphone_controller_opacity= coords[0]; break;
+            
+            case 35:   rStickWindow = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+            case 36:   rStickArea = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+            
+            case 37:   iphone_controller_opacity= coords[0]; break;
 			}
       i++;
     }
@@ -1884,7 +2112,6 @@ void* app_Thread_Start(void* args)
   }
 }
 
-
 - (void)getConf{
     char string[256];
     FILE *fp;
@@ -1909,8 +2136,7 @@ void* app_Thread_Start(void* args)
 				result = strtok(NULL, ",");
 				i2++;
 			}
-			
-			
+						
 			switch(i)
 			{
     		case 0:    rEmulatorFrame   	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
@@ -1931,6 +2157,7 @@ void* app_Thread_Start(void* args)
     fclose(fp);
   }
 }
+
 
 - (void)didReceiveMemoryWarning {
 	//[super didReceiveMemoryWarning]; // Releases the view if it doesn't have a superview
@@ -1953,37 +2180,49 @@ void* app_Thread_Start(void* args)
  
     if(dview!=nil)
 	   [dview release];	   
-
+	   
 	[super dealloc];
 }
 
 - (void)filldrectsController {
 
-    		drects[0]=DownLeft;
-    		drects[1]=Down;
-    		drects[2]=DownRight;
-    		drects[3]=Left;
-    		drects[4]=Right;
-    		drects[5]=UpLeft;
-    		drects[6]=Up;
-    		drects[7]=UpRight;
+	    	drects[0]=ButtonDownLeft;
+	    	drects[1]=ButtonDown;
+	    	drects[2]=ButtonDownRight;
+	    	drects[3]=ButtonLeft;
+	    	drects[4]=ButtonRight;
+	    	drects[5]=ButtonUpLeft;
+	    	drects[6]=ButtonUp;
+	        drects[7]=ButtonUpRight;
     		drects[8]=Select;
     		drects[9]=Start;
     		drects[10]=LPad;
     		drects[11]=RPad;
     		drects[12]=Menu;
-    		drects[13]=ButtonDownLeft;
-    		drects[14]=ButtonDown;
-    		drects[15]=ButtonDownRight;
-    		drects[16]=ButtonLeft;
-    		drects[17]=ButtonRight;
-    		drects[18]=ButtonUpLeft;
-    		drects[19]=ButtonUp;
-    		drects[20]=ButtonUpRight;
-    		drects[21]=LPad2;
-    		drects[22]=RPad2;
-    		drects[23]=rShowKeyboard;
-            ndrects = 24;        
+    		drects[13]=LPad2;
+    		drects[14]=RPad2;
+    		drects[15]=rShowKeyboard;
+    		
+    		if(!iOS_analogStick)
+    		{
+				drects[16]=DownLeft;
+				drects[17]=Down;
+				drects[18]=DownRight;
+				drects[19]=Left;
+				drects[20]=Right;
+				drects[21]=UpLeft;
+				drects[22]=Up;
+				drects[23]=UpRight;
+	    		
+	            ndrects = 24;     
+            }
+            else
+            {
+  	    		drects[16]=rStickWindow;
+	    		drects[17]=rStickArea;
+	    		
+	            ndrects = 18;          
+            }   
 }
 
 @end

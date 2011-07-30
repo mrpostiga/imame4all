@@ -1,5 +1,5 @@
 ===========================================================
-iMAME4ALL 1.7.1 (July 17, 2011) by David Valdeita (Seleuco)
+iMAME4ALL 1.8 (July 30, 2011) by David Valdeita (Seleuco)
 ===========================================================
 
 
@@ -102,6 +102,11 @@ ON: The sound is activated. 11, 22, 33 and 44 KHz sound mixing rates are availab
 OFF: The sound is disabled.
 Fast sound: Some tweaks are done to improve the performance (but with a bit worse sound quality).
 
+- Stick
+limits the joystick's range of motion:
+8-way,4-way,2-way
+The most common reason to use a gate in an actual arcade setting is the retrofitting of an older machine that is not compatible with a new 8-way stick. A classic example of this is Pac-Man. The game was originally designed for a 4-way stick, and is programmed to respond only when a new input occurs. If the user is holding the stick in the down position, then suddenly makes a motion to move to the right, what often happens is that the stick first moves into the down-right diagonal, which the game does not recognize as new input since down is still being held. However, right is also now considered held, and when the user completes the motion to move right, it is also not a new input, and Pac-Man will still be moving down.
+
 -Landscape 1-4 Buttons.
 Show 1-4 Buttons: Hide/show Y/A/X buttons if needed.
 
@@ -130,11 +135,11 @@ GLOBAL OPTIONS
 
 -Smoothed image. Enable to apply a smoothing image filter over the emulator screen.
 
--TV Filter. Enable to apply a TV like filter over the image.
+-CRT Filter. Enable to apply a CRT like filter over the image.
 
 -Sacanline Filter. Enable to apply a scanline filter over the image.
 
--Keeps Aspect. 'Enabled' keeps the aspect ratio; 'Disabled' will use all available screen.
+-Keep Aspect. 'Enabled' keeps the aspect ratio; 'Disabled' will use all available screen.
 
 -Safe Render Path (iPhone only). Enable at the expenses of performance for maximun compability. Slow in 3G (not recomended unless you find any problem).
 
@@ -142,11 +147,13 @@ GLOBAL OPTIONS
 
 -Animated DPad. Animates ON/OFF DPad. Disable to gain performance.
 
--Low Latency Sound. More accurate sound. Expensive.(keep enabled on iPad)
+-Analog Stick: Enabled set the touch stick to works as analog stick, else works as digital stick.
 
 -Show FPS: Shows ON/OFF fps.
 
--Touch DeadZone: Enable/Disable a deadzone on DPAD touch center. It could be better for some games. Disable if you don't like it.
+-Digital DeadZone: Enable/Disable a deadzone on DPAD touch center. It could be better for some games. Disable if you don't like it.
+
+-Analog DZ: Analog touch stick deadzone selector.  Lower to gets more sensitivity.
 
 -Wii Classic DZ: Wii classic stick deadzone selector. Upper if you have problems with stick (controller going crazy). Lower to gets more sensitivity.
 
@@ -379,6 +386,8 @@ PORT CREDITS
 
 
 DEVELOPMENT
+July 30,2011
+- Version 1.8: Added Analog touch stick, stick 2/4/8-way restrictors, stereo support, sound going out of sync fixed, fixed jerky gameplay and more...
 July 17,2011
 - Version 1.7.1: Improved iONS's iCade support, Bringin iMame4all up to App Standards.
 July 10,2011
@@ -1820,6 +1829,7 @@ pengo2    "Pengo (set 2)"
 pkunwarj  "Penguin-Kun Wars (Japan)"
 pkunwar   "Penguin-Kun Wars (US)"
 penta     "Penta"
+
 pepper2   "Pepper II"
 percuss   "Percussor, The"
 psoldier  "Perfect Soldiers (Japan)"

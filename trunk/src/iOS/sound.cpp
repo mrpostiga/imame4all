@@ -60,8 +60,7 @@ void msdos_shutdown_sound(void)
 
 int osd_start_audio_stream(int stereo)
 {
-	//if (stereo) stereo = 1;	/* make sure it's either 0 or 1 */
-	stereo = 0;
+	if (stereo) stereo = 1;	/* make sure it's either 0 or 1 */
 	
 	stream_cache_stereo = stereo;
 	gp2x_sound_stereo = stereo;

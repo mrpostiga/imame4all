@@ -47,19 +47,20 @@
 
    @public  int showFPS;
    @public  int animatedButtons;
-   @public  int lowlatencySound;
    @public  int fourButtonsLand;
    @public  int fullLand;
    @public  int fullPort;
 
    @public  int skin;
 
-   @public  int deadZoneValue;
+   @public  int wiiDeadZoneValue;
    @public  int touchDeadZone;
 
    @public  int overscanValue;
    @public  int tvoutNative;
 
+   @public  int analogStick;
+   @public  int analogDeadZoneValue;
 }
 
 - (void)loadOptions;
@@ -79,18 +80,20 @@
 
 @property (readwrite,assign) int showFPS;
 @property (readwrite,assign) int animatedButtons;
-@property (readwrite,assign) int lowlatencySound;
 @property (readwrite,assign) int fourButtonsLand;
 @property (readwrite,assign) int fullLand;
 @property (readwrite,assign) int fullPort;
 
 @property (readwrite,assign) int skin;
 
-@property (readwrite,assign) int deadZoneValue;
+@property (readwrite,assign) int wiiDeadZoneValue;
 @property (readwrite,assign) int touchDeadZone;
 
 @property (readwrite,assign) int overscanValue;
 @property (readwrite,assign) int tvoutNative;
+
+@property (readwrite,assign) int analogStick;
+@property (readwrite,assign) int analogDeadZoneValue;
 
 @end
 
@@ -113,18 +116,20 @@
 
    UISwitch*		  switchShowFPS;
    UISwitch*		  switchAnimatedButtons;
-   UISwitch*		  switchLowlatencySound;
    UISwitch*		  switch4buttonsLand;
    UISwitch*		  switchfullLand;
    UISwitch*		  switchfullPort;
 
-   UISegmentedControl *segmentedDeadZoneValue;
+   UISegmentedControl *segmentedWiiDeadZoneValue;
 
    UISegmentedControl*		  segmentedSkin;
    UISwitch*		  switchTouchDeadZone;
 
    UISegmentedControl*		  segmentedOverscanValue;
    UISwitch*		  switchTvoutNative;
+
+   UISwitch*		  switchAnalogStick;
+   UISegmentedControl *segmentedAnalogDeadZoneValue;
 
 }
 

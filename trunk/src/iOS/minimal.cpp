@@ -17,18 +17,19 @@
 
 #include "minimal.h"
 #include "wiimote.h"
+#include "driver.h"
 
 #include <unistd.h>
 #include <fcntl.h>
 
 #import <AudioToolbox/AudioQueue.h>
-#import <AudioUnit/AudioUnit.h>
 #import <AudioToolbox/AudioToolbox.h>
 #import <pthread.h>
 
 /* Audio Resources */
-#define AUDIO_BUFFERS 12
-//12 o 6
+//SQ minimum required buffers for iOS AudioQueue
+#define AUDIO_BUFFERS 3
+
 
 extern "C" void app_MuteSound(void);
 extern "C" void app_DemuteSound(void);
@@ -51,7 +52,6 @@ extern int global_low_latency_sound;
 
 extern int soundcard;
 
-int audioBufferSize = 44100*2;
 AQCallbackStruct in;
 int soundInit = 0;
 struct timeval ptv;
@@ -76,8 +76,6 @@ unsigned char  			*gp2x_dualcore_ram;
 unsigned long  			 gp2x_dualcore_ram_size;
 
 unsigned long gp2x_pad_status = 0;
-
-#define MAX_SAMPLE_RATE (44100*2)
 
 void gp2x_video_flip(void)
 {
@@ -381,113 +379,12 @@ void gp2x_printf(char* fmt, ...)
 }
 
 
-static short gp2x_sound_buffers_total[256*1024];					// Sound buffer
-
-
 void gp2x_sound_thread_mute(void)
 {
-	memset(gp2x_sound_buffers_total,0,audioBufferSize);
-}
-/////
-/*
-void gp2x_sound_play(void *buff, int len)
-{
-	memcpy(gp2x_sound_buffers_total,buff,len);					// Write the sound buffer
 }
 
-
-static void gp2x_sound_thread_play(void *buffer, int size)
-{
-	memcpy(buffer, gp2x_sound_buffers_total, size);
-}
-
-static void AQBufferCallback(
-							 void *userdata,
-							 AudioQueueRef outQ,
-							 AudioQueueBufferRef outQB)
-{
-	unsigned char *coreAudioBuffer;
-	coreAudioBuffer = (unsigned char*) outQB->mAudioData;
-	
-	outQB->mAudioDataByteSize = audioBufferSize;
-	AudioQueueSetParameter(outQ, kAudioQueueParam_Volume, __audioVolume);	
-	gp2x_sound_thread_play(coreAudioBuffer, audioBufferSize);
-	AudioQueueEnqueueBuffer(outQ, outQB, 0, NULL);
-}
-
-
-int app_OpenSound(int samples_per_sync, int sample_rate) {
-    Float64 sampleRate = 44100.0;
-    int i;
-    UInt32 bufferBytes;
-	
-    app_MuteSound();
-	
-    soundInit = 0;
-	
-    in.mDataFormat.mSampleRate = sampleRate;
-    in.mDataFormat.mFormatID = kAudioFormatLinearPCM;
-    in.mDataFormat.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger
-	| kAudioFormatFlagIsPacked;
-    in.mDataFormat.mBytesPerPacket = 4;
-    in.mDataFormat.mFramesPerPacket = 2;
-    in.mDataFormat.mBytesPerFrame = 2;
-    in.mDataFormat.mChannelsPerFrame = 1;
-    in.mDataFormat.mBitsPerChannel = 16;
-	
-    // Pre-buffer before we turn on audio
-    UInt32 err;
-    err = AudioQueueNewOutput(&in.mDataFormat,
-							  AQBufferCallback,
-							  NULL,
-							  NULL,
-							  kCFRunLoopCommonModes,
-							  0,
-							  &in.queue);
-	
-	bufferBytes = audioBufferSize;
-	
-	for (i=0; i<AUDIO_BUFFERS; i++) 
-	{
-		err = AudioQueueAllocateBuffer(in.queue, bufferBytes, &in.mBuffers[i]);
-		//"Prime" by calling the callback once per buffer
-		//AQBufferCallback (&in, in.queue, in.mBuffers[i]);
-		in.mBuffers[i]->mAudioDataByteSize = audioBufferSize; //samples_per_frame * 2; //inData->mDataFormat.mBytesPerFrame; //(inData->frameCount * 4 < (sndOutLen) ? inData->frameCount * 4 : (sndOutLen));
-		AudioQueueEnqueueBuffer(in.queue, in.mBuffers[i], 0, NULL);
-	}
-	
-	soundInit = 1;
-	err = AudioQueueStart(in.queue, NULL);
-	
-	return 0;
-}
-
-void app_CloseSound(void) {
-	if( soundInit == 1 )
-	{
-		AudioQueueDispose(in.queue, true);
-		soundInit = 0;
-	}
-}
-
-extern "C" void app_MuteSound(void) {
-	if( soundInit == 1 )
-	{
-		app_CloseSound();
-	}
-}
-
-extern "C" void app_DemuteSound(void) {
-	if( soundInit == 0 )
-	{
-		app_OpenSound(1, 44100);
-	}
-}
-*/
-////
 void gp2x_sound_thread_start(int len)
 {
-	audioBufferSize = len;
 	//fprintf(stderr,"audio buffer size %d \n", audioBufferSize);
 	gp2x_sound_thread_mute();
 }
@@ -558,8 +455,10 @@ void gp2x_deinit(void)
 
 /// QUEUE
 //TODO quidado.. que va a 60hz no a 50
-//#define TAM (882 * 2 * 2 * 6)
-#define TAM (256*1024)
+//SQ buffers for sound between MAME and iOS AudioQueue. AudioQueue
+//SQ callback reads from these.
+//SQ Size: (44100/30fps) * bytesize * stereo * (3 buffers)
+#define TAM (1470 * 2 * 2 * 3)
 unsigned char ptr_buf[TAM];
 unsigned head = 0;
 unsigned tail = 0;
@@ -582,32 +481,6 @@ inline int emptyQueue(){
 }
 
 void queue(unsigned char *p,unsigned size){
-/*
-		if(fullQueue(size))
-		{
-
-			do
-		    {
-		    	usleep(100);
-		    }
-		    while (fullQueue(size));
-		}
-*/
-/*
-	   if(fullQueue(size))
-	   {
-		    if(head < tail)
-			{
-				//return head + size >= tail;
-		    	size = (tail - head) - 1;
-			}
-			else if(head > tail)
-			{
-				//return (head + size) >= TAM ? (head + size)- TAM >= tail : false;
-				size = (TAM - head) + tail -1;
-			}
-	    }
-*/
         unsigned newhead;
 		if(head + size < TAM)
 		{
@@ -659,10 +532,6 @@ unsigned short dequeue(unsigned char *p,unsigned size){
         return real;
 }
 
-///////
-
-#define kOutputBus 0
-static AudioComponentInstance audioUnit;
 int stereo_cached = 0;
 int bits_cached = 16;
 int rate_cached = 44100;
@@ -670,150 +539,15 @@ int rate_cached = 44100;
 
 void checkStatus(OSStatus status){}
 
-static OSStatus playbackCallback(void *inRefCon,
-                                  AudioUnitRenderActionFlags *ioActionFlags,
-                                  const AudioTimeStamp *inTimeStamp,
-                                  UInt32 inBusNumber,
-                                  UInt32 inNumberFrames,
-                                  AudioBufferList *ioData) {
-    // Notes: ioData contains buffers (may be more than one!)
-    // Fill them up as much as you can. Remember to set the size value in each buffer to match how
-    // much data is in the buffer.
-
-	unsigned  char *coreAudioBuffer;
-
-    int i;
-    for (i = 0 ; i < ioData->mNumberBuffers; i++)
-    {
-      coreAudioBuffer = (unsigned char*) ioData->mBuffers[i].mData;
-      ioData->mBuffers[i].mDataByteSize = dequeue(coreAudioBuffer,/*BUF*/stereo_cached ? inNumberFrames * 4: inNumberFrames * 2);
-    }
-
-    return noErr;
-}
-
-int sound_close_AudioUnit(){
-
-	if( soundInit == 1 )
-	{
-		OSStatus status = AudioOutputUnitStop(audioUnit);
-		checkStatus(status);
-
-		AudioUnitUninitialize(audioUnit);
-		soundInit = 0;
-	}
-
-	return 1;
-}
-
-int sound_open_AudioUnit(int rate, int bits, int stereo){
-	    Float64 sampleRate = 44100.0;
-
-	    stereo_cached = stereo;
-	    rate_cached = rate;
-	    bits_cached = bits;
-
-	    if( soundInit == 1 )
-	    {
-	    	sound_close_AudioUnit();
-	    }
-
-	    if(rate==32000)
-	    	sampleRate = 32000.0;
-	    else if(rate==22050)
-	    	sampleRate = 22050.0;
-	    else if(rate==11025)
-	    	sampleRate = 11025.0;
-
-	    audioBufferSize =  (rate / 50) * 2 * (stereo==1 ? 2 : 1) ;
-
-	    OSStatus status;
-
-	    // Describe audio component
-	    AudioComponentDescription desc;
-	    desc.componentType = kAudioUnitType_Output;
-	    desc.componentSubType = kAudioUnitSubType_RemoteIO;
-
-	    desc.componentFlags = 0;
-	    desc.componentFlagsMask = 0;
-	    desc.componentManufacturer = kAudioUnitManufacturer_Apple;
-
-	    // Get component
-	    AudioComponent inputComponent = AudioComponentFindNext(NULL, &desc);
-
-	    // Get audio units
-	    status = AudioComponentInstanceNew(inputComponent, &audioUnit);
-	    checkStatus(status);
-
-	    UInt32 flag = 1;
-	    // Enable IO for playback
-	    status = AudioUnitSetProperty(audioUnit,
-	                                  kAudioOutputUnitProperty_EnableIO,
-	                                  kAudioUnitScope_Output,
-	                                  kOutputBus,
-	                                  &flag,
-	                                  sizeof(flag));
-	    checkStatus(status);
-
-	    AudioStreamBasicDescription audioFormat;
-
-	    memset (&audioFormat, 0, sizeof (audioFormat));
-
-	    audioFormat.mSampleRate = sampleRate;
-	    audioFormat.mFormatID = kAudioFormatLinearPCM;
-	    audioFormat.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger  | kAudioFormatFlagIsPacked;
-	    audioFormat.mBytesPerPacket =  (stereo == 1 ? 4 : 2 );
-	    audioFormat.mFramesPerPacket = 1;
-	    audioFormat.mBytesPerFrame = (stereo ==  1? 4 : 2);
-	    audioFormat.mChannelsPerFrame = (stereo == 1 ? 2 : 1);
-	    audioFormat.mBitsPerChannel = 16;
-
-	    status = AudioUnitSetProperty(audioUnit,
-	                                  kAudioUnitProperty_StreamFormat,
-	                                  kAudioUnitScope_Input,
-	                                  kOutputBus,
-	                                  &audioFormat,
-	                                  sizeof(audioFormat));
-	    checkStatus(status);
-
-		struct AURenderCallbackStruct callbackStruct;
-	    // Set output callback
-	    callbackStruct.inputProc = playbackCallback;
-	    callbackStruct.inputProcRefCon = NULL;
-	    status = AudioUnitSetProperty(audioUnit,
-	                                  kAudioUnitProperty_SetRenderCallback,
-	                                  kAudioUnitScope_Global,
-	                                  kOutputBus,
-	                                  &callbackStruct,
-	                                  sizeof(callbackStruct));
-	    checkStatus(status);
-
-	    status = AudioUnitInitialize(audioUnit);
-	    checkStatus(status);
-
-	    //ARANCAR
-		soundInit = 1;
-	    status = AudioOutputUnitStart(audioUnit);
-	    checkStatus(status);
-
-	    return 1;
-}
-
-#define BUF (audioBufferSize )
-
-static void AQBufferCallback(
-							 void *userdata,
+static void AQBufferCallback(void *userdata,
 							 AudioQueueRef outQ,
 							 AudioQueueBufferRef outQB)
 {
 	unsigned char *coreAudioBuffer;
 	coreAudioBuffer = (unsigned char*) outQB->mAudioData;
 
-	//outQB->mAudioDataByteSize = BUF;
-	//AudioQueueSetParameter(outQ, kAudioQueueParam_Volume, __audioVolume);
-
-	int res = dequeue(coreAudioBuffer,BUF);
-	outQB->mAudioDataByteSize = res;
+	int res = dequeue(coreAudioBuffer, in.mDataFormat.mBytesPerFrame * in.frameCount);
+	outQB->mAudioDataByteSize = in.mDataFormat.mBytesPerFrame * in.frameCount;
 
 	AudioQueueEnqueueBuffer(outQ, outQB, 0, NULL);
 }
@@ -833,7 +567,8 @@ int sound_open_AudioQueue(int rate, int bits, int stereo){
 
     Float64 sampleRate = 44100.0;
     int i;
-
+    int fps;
+    
     stereo_cached = stereo;
     rate_cached = rate;
     bits_cached = bits;
@@ -845,17 +580,13 @@ int sound_open_AudioQueue(int rate, int bits, int stereo){
     else if(rate==11025)
     	sampleRate = 11025.0;
 
-    audioBufferSize =  (rate / 50) * 2 * (stereo==1 ? 2 : 1) ;
-
-    //audioBufferSize = 882 * 2 * 2;
-    //printf("%d %d %d %f\n",rate,bits,stereo,sampleRate);
-    //printf("audio buffer size %d\n",audioBufferSize);
+	//SQ Roundup for games like Galaxians
+    fps = ceil(Machine->drv->frames_per_second);
 
     if( soundInit == 1 )
     {
     	sound_close_AudioQueue();
     }
-
 
     soundInit = 0;
     memset (&in.mDataFormat, 0, sizeof (in.mDataFormat));
@@ -867,15 +598,17 @@ int sound_open_AudioQueue(int rate, int bits, int stereo){
     in.mDataFormat.mBytesPerFrame = (stereo ==  1? 4 : 2);
     in.mDataFormat.mChannelsPerFrame = (stereo == 1 ? 2 : 1);
     in.mDataFormat.mBitsPerChannel = 16;
-
-
-    printf("format %f %d %d %d %d %d\n",in.mDataFormat.mSampleRate,
+	in.frameCount = rate / fps;
+/*
+    printf("Sound format %f %d %d %d %d %d %d\n",
+            in.mDataFormat.mSampleRate,
     		in.mDataFormat.mBytesPerPacket,
     		in.mDataFormat.mFramesPerPacket,
     		in.mDataFormat.mBytesPerFrame,
     		in.mDataFormat.mChannelsPerFrame,
-    		in.mDataFormat.mBitsPerChannel);
-
+    		in.mDataFormat.mBitsPerChannel,
+            in.frameCount);
+*/
     /* Pre-buffer before we turn on audio */
     UInt32 err;
     err = AudioQueueNewOutput(&in.mDataFormat,
@@ -888,12 +621,13 @@ int sound_open_AudioQueue(int rate, int bits, int stereo){
 
     //printf("res %ld",err);
 
-
+    unsigned long bufferSize;
+    bufferSize = in.frameCount * in.mDataFormat.mBytesPerFrame;
+    
 	for (i=0; i<AUDIO_BUFFERS; i++)
 	{
-		err = AudioQueueAllocateBuffer(in.queue, BUF, &in.mBuffers[i]);
-		//printf("res %ld",err);
-		in.mBuffers[i]->mAudioDataByteSize = BUF;
+		err = AudioQueueAllocateBuffer(in.queue, bufferSize, &in.mBuffers[i]);
+		in.mBuffers[i]->mAudioDataByteSize = bufferSize;
 		AudioQueueEnqueueBuffer(in.queue, in.mBuffers[i], 0, NULL);
 	}
 
@@ -907,22 +641,14 @@ int sound_open_AudioQueue(int rate, int bits, int stereo){
 extern "C" void app_MuteSound(void) {
 	if( soundInit == 1 )
 	{
-		if(global_low_latency_sound)
-		   sound_close_AudioUnit();
-		else
-		   sound_close_AudioQueue();
-
+		sound_close_AudioQueue();
 	}
 }
 
 extern "C" void app_DemuteSound(void) {
 	if( soundInit == 0 && soundcard!=0)
 	{
-		if(global_low_latency_sound)
-	      sound_open_AudioUnit(gp2x_sound_rate/*rate_cached*/, bits_cached, gp2x_sound_stereo/*stereo_cached*/);
-		else
-		  sound_open_AudioQueue(gp2x_sound_rate/*rate_cached*/, bits_cached,gp2x_sound_stereo/* stereo_cached*/);
-
+		  sound_open_AudioQueue(gp2x_sound_rate, bits_cached, gp2x_sound_stereo);
 	}
 }
 
