@@ -28,6 +28,7 @@ int iOS_clock_cpu= 80;
 int iOS_clock_sound=80;
 int iOS_cheat=0;
 int iOS_landscape_buttons=2;
+int iOS_waysStick = 8;
 
 
 extern int iOS_aspectRatio;
@@ -182,7 +183,7 @@ static void game_list_view(int *pos) {
 		gp2x_gamelist_text_out(35, 110, "NO AVAILABLE GAMES FOUND");
 	}
 
-	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"iMAME4all v1.7.1 by D.Valdeita");
+	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"iMAME4all v1.8.B by D.Valdeita");
 }
 
 static void game_list_select (int index, char *game, char *emu) {
@@ -224,8 +225,8 @@ static int show_options(char *game)
 	unsigned long ExKey=0;
 	int selected_option=0;
 	int x_Pos = 41;
-	int y_Pos = 58;
-	int options_count = 10;
+	int y_Pos = 48;
+	int options_count = 11;
 	char text[256];
 	FILE *f;
 	int i=0;
@@ -234,11 +235,11 @@ static int show_options(char *game)
 	  while(ExKey=gp2x_joystick_read(0)&0x8c0ff55){};
 
 	/* Read game configuration */
-	sprintf(text,get_documents_path("iOS/%s_v3.cfg"),game);
+	sprintf(text,get_documents_path("iOS/%s_v4.cfg"),game);
 	f=fopen(text,"r");
 	if (f) {
-		fscanf(f,"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",&iOS_video_aspect,&iOS_video_rotate,&iOS_video_sync,
-		&iOS_frameskip,&iOS_sound,&iOS_landscape_buttons,&iOS_clock_cpu,&iOS_clock_sound,&i,&iOS_cheat,&iOS_video_depth);
+		fscanf(f,"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",&iOS_video_aspect,&iOS_video_rotate,&iOS_video_sync,
+		&iOS_frameskip,&iOS_sound,&iOS_landscape_buttons,&iOS_clock_cpu,&iOS_clock_sound,&i,&iOS_cheat,&iOS_video_depth,&iOS_waysStick);
 		fclose(f);
 	}
 
@@ -329,29 +330,37 @@ static int show_options(char *game)
 		}
 
 		/* (7) Landscape Num Buttons */
-		switch (iOS_landscape_buttons)
+		switch (iOS_waysStick)
 		{
-			case 1: gp2x_gamelist_text_out(x_Pos,y_Pos+90, "Num Buttons   1 Button"); break;
-			case 2: gp2x_gamelist_text_out(x_Pos,y_Pos+90, "Num Buttons   2 Buttons"); break;
-			case 3: gp2x_gamelist_text_out(x_Pos,y_Pos+90, "Num Buttons   3 Buttons"); break;
-			case 4: gp2x_gamelist_text_out(x_Pos,y_Pos+90, "Num Buttons   4 Buttons"); break;
-			case 5: gp2x_gamelist_text_out(x_Pos,y_Pos+90, "Num Buttons   All Buttons"); break;
+			case 8: gp2x_gamelist_text_out(x_Pos,y_Pos+90, "Stick         8-way"); break;
+			case 4: gp2x_gamelist_text_out(x_Pos,y_Pos+90, "Stick         4-way"); break;
+			case 2: gp2x_gamelist_text_out(x_Pos,y_Pos+90, "Stick         2-way"); break;
 		}
 
-		/* (8) CPU Clock */
-		gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+100,"CPU Clock     %d%%",iOS_clock_cpu);
+		/* (8) Landscape Num Buttons */
+		switch (iOS_landscape_buttons)
+		{
+			case 1: gp2x_gamelist_text_out(x_Pos,y_Pos+100, "Num Buttons   1 Button"); break;
+			case 2: gp2x_gamelist_text_out(x_Pos,y_Pos+100, "Num Buttons   2 Buttons"); break;
+			case 3: gp2x_gamelist_text_out(x_Pos,y_Pos+100, "Num Buttons   3 Buttons"); break;
+			case 4: gp2x_gamelist_text_out(x_Pos,y_Pos+100, "Num Buttons   4 Buttons"); break;
+			case 5: gp2x_gamelist_text_out(x_Pos,y_Pos+100, "Num Buttons   All Buttons"); break;
+		}
 
-		/* (9) Audio Clock */
-		gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+110,"Audio Clock   %d%%",iOS_clock_sound);
+		/* (9) CPU Clock */
+		gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+110,"CPU Clock     %d%%",iOS_clock_cpu);
+
+		/* (10) Audio Clock */
+		gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+120,"Audio Clock   %d%%",iOS_clock_sound);
 
 
-		/* (10) Cheats */
+		/* (11) Cheats */
 		if (iOS_cheat)
-			gp2x_gamelist_text_out(x_Pos,y_Pos+120,"Cheats        ON");
+			gp2x_gamelist_text_out(x_Pos,y_Pos+130,"Cheats        ON");
 		else
-			gp2x_gamelist_text_out(x_Pos,y_Pos+120,"Cheats        OFF");
+			gp2x_gamelist_text_out(x_Pos,y_Pos+130,"Cheats        OFF");
 	
-		gp2x_gamelist_text_out(x_Pos,y_Pos+140,"Press B to confirm, X to return\0");
+		gp2x_gamelist_text_out(x_Pos,y_Pos+150,"Press B to confirm, X to return\0");
 
 		/* Show currently selected item */
 		gp2x_gamelist_text_out(x_Pos-16,y_Pos+(selected_option*10)+30," >");
@@ -482,6 +491,14 @@ static int show_options(char *game)
 				}
 				break;
 			case 6:
+				switch (iOS_waysStick)
+				{
+					case 8: iOS_waysStick=4; break;
+					case 4: iOS_waysStick=2; break;
+					case 2: iOS_waysStick=8; break;
+				}
+				break;
+			case 7:
 				if(ExKey & GP2X_R || ExKey & GP2X_RIGHT)
 				{
 					iOS_landscape_buttons ++;
@@ -495,7 +512,7 @@ static int show_options(char *game)
 						iOS_landscape_buttons=5;
 				}
 				break;
-			case 7:
+			case 8:
 				/* "CPU Clock" */
 				if(ExKey & GP2X_R || ExKey & GP2X_RIGHT)
 				{
@@ -510,7 +527,7 @@ static int show_options(char *game)
 						iOS_clock_cpu = 10;
 				}
 				break;
-			case 8:
+			case 9:
 				/* "Audio Clock" */
 				if(ExKey & GP2X_R || ExKey & GP2X_RIGHT)
 				{
@@ -524,7 +541,7 @@ static int show_options(char *game)
 						iOS_clock_sound = 10;
 				}
 				break;
-			case 9:
+			case 10:
 				iOS_cheat=!iOS_cheat;
 				break;
 			}
@@ -533,11 +550,11 @@ static int show_options(char *game)
 		if ((ExKey & GP2X_A) || (ExKey & GP2X_B) || (ExKey & GP2X_PUSH) || (ExKey & GP2X_START))
 		{
 			/* Write game configuration */
-			sprintf(text,get_documents_path("iOS/%s_v3.cfg"),game);
+			sprintf(text,get_documents_path("iOS/%s_v4.cfg"),game);
 			f=fopen(text,"w");
 			if (f) {
-				fprintf(f,"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",iOS_video_aspect,iOS_video_rotate,iOS_video_sync,
-				iOS_frameskip,iOS_sound,iOS_landscape_buttons,iOS_clock_cpu,iOS_clock_sound,i,iOS_cheat,iOS_video_depth);
+				fprintf(f,"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",iOS_video_aspect,iOS_video_rotate,iOS_video_sync,
+				iOS_frameskip,iOS_sound,iOS_landscape_buttons,iOS_clock_cpu,iOS_clock_sound,i,iOS_cheat,iOS_video_depth,iOS_waysStick);
 				fclose(f);
 				sync();
 			}
@@ -611,6 +628,7 @@ static void select_game(char *emu, char *game)
 			iOS_video_sync=0;
 			iOS_frameskip=-1;
 			iOS_cheat=0;
+            iOS_waysStick = 8;
 
 			if(!safe_render_path)
 			{
@@ -627,6 +645,7 @@ static void select_game(char *emu, char *game)
 				iOS_clock_cpu= 100;
 				iOS_clock_sound= 100;
 				iOS_landscape_buttons=2;
+				iOS_sound=12;
 			}
 			else
 			{
@@ -846,6 +865,7 @@ extern "C" int mimain (int argc, char **argv)
 		iOS_clock_cpu= 100;
 		iOS_clock_sound= 100;
 		iOS_landscape_buttons=2;
+		iOS_sound=12;
 	}
 
 	/* Show intro screen */

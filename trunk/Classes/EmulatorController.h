@@ -34,6 +34,7 @@
 #import "CoreSurface/CoreSurface.h"
 #import <QuartzCore/CALayer.h>
 #import "DView.h"
+#import "AnalogStick.h"
 
 #import <pthread.h>
 #import <sched.h>
@@ -64,6 +65,8 @@
 
   UIImageView	    * dpadView;
   UIImageView	    * buttonViews[NUM_BUTTONS];
+
+  AnalogStickView   * analogStickView;
 
 
   //joy controller

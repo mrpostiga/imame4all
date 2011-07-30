@@ -8,7 +8,8 @@ OSOBJS =  $(OBJ)/Classes/iph_main.o \
 	$(OBJ)/Classes/Helper.o \
 	$(OBJ)/Classes/DView.o \
 	$(OBJ)/Classes/BTDevice.o \
-	$(OBJ)/Classes/BTInquiryViewController.o 
+	$(OBJ)/Classes/BTInquiryViewController.o \
+	$(OBJ)/Classes/AnalogStick.o  
 
 	
 

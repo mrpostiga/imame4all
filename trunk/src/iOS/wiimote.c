@@ -49,7 +49,11 @@
 int num_of_joys = 0;
 struct wiimote_t joys[4];
 extern int iOS_exitGame;
-extern int iOS_deadZoneValue;
+extern int iOS_wiiDeadZoneValue;
+extern int iOS_inGame;
+extern int iOS_waysStick;
+#define STICK4WAY (iOS_waysStick == 4 && iOS_inGame)
+#define STICK2WAY (iOS_waysStick == 2 && iOS_inGame)
 
 int wiimote_send(struct wiimote_t* wm, byte report_type, byte* msg, int len);
 int wiimote_read_data(struct wiimote_t* wm, unsigned int addr, unsigned short len);
@@ -705,10 +709,23 @@ int iOS_wiimote_check (struct  wiimote_t  *wm){
 
 			if (IS_PRESSED(wm, WIIMOTE_BUTTON_A))		{joyExKey |= GP2X_A;}
 			if (IS_PRESSED(wm, WIIMOTE_BUTTON_B))		{joyExKey |= GP2X_Y;}
+
 			if (IS_PRESSED(wm, WIIMOTE_BUTTON_UP))		{joyExKey |= GP2X_LEFT;}
 			if (IS_PRESSED(wm, WIIMOTE_BUTTON_DOWN))	{joyExKey |= GP2X_RIGHT;}
-			if (IS_PRESSED(wm, WIIMOTE_BUTTON_LEFT))	{joyExKey |= GP2X_DOWN;}
-			if (IS_PRESSED(wm, WIIMOTE_BUTTON_RIGHT))	{joyExKey |= GP2X_UP;}
+
+			if (IS_PRESSED(wm, WIIMOTE_BUTTON_LEFT))	{
+				if(!STICK2WAY &&
+						!(STICK4WAY && (IS_PRESSED(wm, WIIMOTE_BUTTON_UP) ||
+								       (IS_PRESSED(wm, WIIMOTE_BUTTON_DOWN)))))
+				joyExKey |= GP2X_DOWN;
+			}
+			if (IS_PRESSED(wm, WIIMOTE_BUTTON_RIGHT))	{
+				if(!STICK2WAY &&
+						!(STICK4WAY && (IS_PRESSED(wm, WIIMOTE_BUTTON_UP) ||
+								       (IS_PRESSED(wm, WIIMOTE_BUTTON_DOWN)))))
+				joyExKey |= GP2X_UP;
+			}
+
 			if (IS_PRESSED(wm, WIIMOTE_BUTTON_MINUS))	{joyExKey |= GP2X_SELECT;}
 			if (IS_PRESSED(wm, WIIMOTE_BUTTON_PLUS))	{joyExKey |= GP2X_START;}
 			if (IS_PRESSED(wm, WIIMOTE_BUTTON_ONE))		{joyExKey |= GP2X_X;}
@@ -722,7 +739,7 @@ int iOS_wiimote_check (struct  wiimote_t  *wm){
 
 				    float deadZone;
 
-				    switch(iOS_deadZoneValue)
+				    switch(iOS_wiiDeadZoneValue)
 				    {
 				      case 0: deadZone = 0.12f;break;
 				      case 1: deadZone = 0.15f;break;
@@ -742,10 +759,24 @@ int iOS_wiimote_check (struct  wiimote_t  *wm){
 					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_A))			joyExKey |= GP2X_B;
 					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_X))			joyExKey |= GP2X_Y;
 					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_ZR))			joyExKey |= GP2X_L;
+
+
+					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_UP)){
+						if(!STICK2WAY &&
+								!(STICK4WAY && (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_LEFT) ||
+										       (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_RIGHT)))))
+						  joyExKey |= GP2X_UP;
+					}
+					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_DOWN)){
+						if(!STICK2WAY &&
+								!(STICK4WAY && (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_LEFT) ||
+										       (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_RIGHT)))))
+						joyExKey |= GP2X_DOWN;
+			        }
 					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_LEFT))		joyExKey |= GP2X_LEFT;
-					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_UP))			joyExKey |= GP2X_UP;
 					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_RIGHT))		joyExKey |= GP2X_RIGHT;
-					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_DOWN))		joyExKey |= GP2X_DOWN;
+
+
 					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_FULL_L))		joyExKey |= GP2X_L;
 					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_MINUS))		joyExKey |= GP2X_SELECT;
 					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_HOME))		{//iOS_exitGame = 0;usleep(50000);
@@ -760,38 +791,71 @@ int iOS_wiimote_check (struct  wiimote_t  *wm){
 
 						float v = cc->ljs.ang;
 
-						if( v >= 330 || v < 30){
-							joyExKey |= GP2X_UP;
-							//printf("Up\n");
+						if(STICK2WAY)
+						{
+							if( v < 180){
+								joyExKey |= GP2X_RIGHT;
+								//printf("Right\n");
+							}
+							else if ( v >= 180){
+								joyExKey |= GP2X_LEFT;
+								//printf("Left\n");
+							}
 						}
-						else if ( v >= 30 && v <60  )  {
-							joyExKey |= GP2X_UP;joyExKey |= GP2X_RIGHT;
-							//printf("UpRight\n");
+						else if(STICK4WAY)
+						{
+							if(v >= 315 || v < 45){
+								joyExKey |= GP2X_UP;
+								//printf("Up\n");
+							}
+							else if (v >= 45 && v < 135){
+								joyExKey |= GP2X_RIGHT;
+								//printf("Right\n");
+							}
+							else if (v >= 135 && v < 225){
+								joyExKey |= GP2X_DOWN;
+								//printf("Down\n");
+							}
+							else if (v >= 225 && v < 315){
+								joyExKey |= GP2X_LEFT;
+								//printf("Left\n");
+							}
 						}
-						else if ( v >= 60 && v < 120  ){
-							joyExKey |= GP2X_RIGHT;
-							//printf("Right\n");
-						}
-						else if ( v >= 120 && v < 150  ){
-							joyExKey |= GP2X_RIGHT;joyExKey |= GP2X_DOWN;
-							//printf("RightDown\n");
-						}
-						else if ( v >= 150 && v < 210  ){
-							joyExKey |= GP2X_DOWN;
-							//printf("Down\n");
-						}
-						else if ( v >= 210 && v < 240  ){
-							joyExKey |= GP2X_DOWN;joyExKey |= GP2X_LEFT;
-							//printf("DownLeft\n");
-						}
-						else if ( v >= 240 && v < 300  ){
-							joyExKey |= GP2X_LEFT;
-						    //printf("Left\n");
-						}
-						else if ( v >= 300 && v < 330  ){
-							joyExKey |= GP2X_LEFT;
-							joyExKey |= GP2X_UP;
-							//printf("LeftUp\n");
+						else
+						{
+							if( v >= 330 || v < 30){
+								joyExKey |= GP2X_UP;
+								//printf("Up\n");
+							}
+							else if ( v >= 30 && v <60  )  {
+								joyExKey |= GP2X_UP;joyExKey |= GP2X_RIGHT;
+								//printf("UpRight\n");
+							}
+							else if ( v >= 60 && v < 120  ){
+								joyExKey |= GP2X_RIGHT;
+								//printf("Right\n");
+							}
+							else if ( v >= 120 && v < 150  ){
+								joyExKey |= GP2X_RIGHT;joyExKey |= GP2X_DOWN;
+								//printf("RightDown\n");
+							}
+							else if ( v >= 150 && v < 210  ){
+								joyExKey |= GP2X_DOWN;
+								//printf("Down\n");
+							}
+							else if ( v >= 210 && v < 240  ){
+								joyExKey |= GP2X_DOWN;joyExKey |= GP2X_LEFT;
+								//printf("DownLeft\n");
+							}
+							else if ( v >= 240 && v < 300  ){
+								joyExKey |= GP2X_LEFT;
+								//printf("Left\n");
+							}
+							else if ( v >= 300 && v < 330  ){
+								joyExKey |= GP2X_LEFT;
+								joyExKey |= GP2X_UP;
+								//printf("LeftUp\n");
+							}
 						}
 					}
 
