@@ -39,8 +39,6 @@
 int isIpad = 0;
 int isIphone4 = 0;
 extern __emulation_run; 
-//extern int iOS_external_width;
-//extern int iOS_external_height;
 CGRect rExternal;
 int nativeTVOUT = 1;
 int overscanTVOUT = 1;
@@ -109,20 +107,21 @@ int overscanTVOUT = 1;
     [self prepareScreen];
 }
 
+- (void)applicationWillResignActive:(UIApplication *)application {
 
-- (void)applicationWillTerminate:(UIApplication *)application {
-//TODO???.
+   [Helper endwiimote]; 
+   [hrViewController showMenu];
+   usleep(1000000);   
+}
 /*
-    // disconnect
-    if (wiiMoteConHandle) {
-          bt_send_cmd(&hci_disconnect, wiiMoteConHandle, 0x13); // remote closed connection
-    }
-    // bt_send_cmd(&btstack_set_power_mode, HCI_POWER_OFF );
-
-    bt_close();
- */   
+- (void)applicationDidBecomeActive:(UIApplication  *)application {
+  
 }
 
+- (void)applicationWillTerminate:(UIApplication *)application {
+ 
+}
+*/
 - (void)prepareScreen
 {
 	 @try

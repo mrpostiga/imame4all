@@ -43,7 +43,7 @@
 
 #define NUM_BUTTONS 10
 
-#if 1
+#ifdef IOS3
 @protocol UIKeyInput <UITextInputTraits>
 
 - (BOOL)hasText;
@@ -129,7 +129,10 @@
 - (void)buildLandscapeImageBack;
 - (void)buildLandscape;
 
+- (void)showMenu;
+
 - (void)handle_DPAD;
+- (void)handle_MENU;
 
 - (void)touchesController:(NSSet *)touches withEvent:(UIEvent *)event;
 

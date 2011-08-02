@@ -59,6 +59,7 @@ and the 2011 next generation iPad will be == iPad2,1
 
 + (NSString *)machine;
 + (void)startwiimote:(UIViewController *)controller;
++ (void)endwiimote;
 + (void)cancelWiiMoteSearch;
 
 @end
