@@ -37,7 +37,7 @@
     <true/>
 
     <key>MinimumOSVersion</key>
-    <string>3.0</string>
+    <string>4.0</string>
 
     <key>UIDeviceFamily</key>
     <array>
@@ -59,9 +59,6 @@
         <string>icon-72.png</string>
         <string>icon@2x.png</string>
     </array>
-
-    <key>UIApplicationExitsOnSuspend</key>
-    <true/>
 
 </dict>
 

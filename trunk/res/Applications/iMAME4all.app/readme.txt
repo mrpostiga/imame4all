@@ -387,7 +387,7 @@ PORT CREDITS
 
 DEVELOPMENT
 July 30,2011
-- Version 1.8: Added Analog touch stick, stick 2/4/8-way restrictors, stereo support, sound going out of sync fixed, fixed jerky gameplay and more...
+- Version 1.8: Added iOS4 multitasking, analog touch stick, stick 2/4/8-way restrictors, stereo support, sound going out of sync fixed, fixed jerky gameplay and more...
 July 17,2011
 - Version 1.7.1: Improved iONS's iCade support, Bringin iMame4all up to App Standards.
 July 10,2011

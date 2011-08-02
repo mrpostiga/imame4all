@@ -774,8 +774,8 @@ void* app_Thread_Start(void* args)
 -(BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
 	//return (interfaceOrientation ==  UIDeviceOrientationLandscapeLeft || interfaceOrientation ==  UIDeviceOrientationLandscapeRight);
 	//return NO;
-	//return YES;
-	return actionPending ? NO : YES;
+	return YES;
+	//return actionPending ? NO : YES;
 }
 
 
@@ -1387,6 +1387,14 @@ void* app_Thread_Start(void* args)
     
 }
 
+- (void)showMenu{
+	if(__emulation_run)
+    {
+        actionPending=1;
+        //warnIcade = 0;
+        [NSThread detachNewThreadSelector:@selector(runMenu) toTarget:self withObject:nil];
+	}
+}
 
 ////////////////
 
@@ -1400,12 +1408,7 @@ void* app_Thread_Start(void* args)
         
         if(touch.phase == UITouchPhaseBegan || touch.phase == UITouchPhaseStationary)
 		{
-			if(__emulation_run)
-		    {
-                actionPending=1;
-                //warnIcade = 0;
-                [NSThread detachNewThreadSelector:@selector(runMenu) toTarget:self withObject:nil];
-			}					
+			[self showMenu];		
 	    }
     }
     else
@@ -1447,9 +1450,7 @@ void* app_Thread_Start(void* args)
     
     if(btnStates[BTN_R2] == BUTTON_PRESS && __emulation_run && !actionPending)
     {
-        actionPending=1;
-        //warnIcade = 0;
-        [NSThread detachNewThreadSelector:@selector(runMenu) toTarget:self withObject:nil];
+         [self showMenu];
     }					
 }			
 

@@ -306,9 +306,18 @@ extern int isIphone4;
 
 - (void)loadView {
 
-	struct CGRect rect = [self parentViewController].view.frame;//[[UIScreen mainScreen] bounds];
+	UIViewController *pctrl = [self parentViewController];		
+	struct CGRect rect = pctrl.view.frame;//[[UIScreen mainScreen] bounds];
 	rect.origin.x = rect.origin.y = 0.0f;
-	UIView *view= [[UIView alloc] initWithFrame:rect];
+	if(pctrl.interfaceOrientation==UIInterfaceOrientationLandscapeLeft 
+	||pctrl.interfaceOrientation==UIInterfaceOrientationLandscapeRight )
+	{
+	     int tmp = rect.size.width;
+	     rect.size.width = rect.size.height; 
+	     rect.size.height = tmp;	     
+	}
+
+	UIView *view= [[UIView alloc] initWithFrame:rect];	
 	self.view = view;
 	[view release];
     self.view.backgroundColor = [UIColor whiteColor];
@@ -644,7 +653,8 @@ extern int isIphone4;
 
 
 -(BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-     return (interfaceOrientation == UIInterfaceOrientationPortrait);
+     //return (interfaceOrientation == UIInterfaceOrientationPortrait);
+     return YES;
 }
 
 - (void)didReceiveMemoryWarning {

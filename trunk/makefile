@@ -2,9 +2,9 @@
 
 #TOOLCHAIN
 #BASE_DEV=/home/david/Projects/iphone/toolchain/sdks/iPhoneOS3.1.2.sdk
-#BASE_DEV=/home/david/Projects/iphone/toolchain/sdks/iPhoneOS4.1.sdk
+BASE_DEV=/home/david/Projects/iphone/toolchain/sdks/iPhoneOS4.1.sdk
 #this one
-BASE_DEV=/home/david/Projects/iphone/toolchain/sdks/iPhoneOS2.0.sdk
+#BASE_DEV=/home/david/Projects/iphone/toolchain/sdks/iPhoneOS2.0.sdk
 #OSX
 #BASE_DEV=/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.2.sdk
 
@@ -62,7 +62,7 @@ CFLAGS += -Isrc -Isrc/$(MAMEOS) -Isrc/zlib -IClasses/btstack
 CFLAGS += -O3 -ffast-math 
 
 #TOOLCHAIN
-CFLAGS += -I/home/david/Projects/iphone/toolchain/sdks/iPhoneOS3.1.2.sdk/usr/include
+CFLAGS += -DIOS3 -I/home/david/Projects/iphone/toolchain/sdks/iPhoneOS3.1.2.sdk/usr/include
 #OSX
 #CFLAGS += -I/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.2.sdk/usr/include
 	

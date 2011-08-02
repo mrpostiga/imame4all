@@ -32,7 +32,7 @@
 
 #import <UIKit/UIScreen.h>
 
-#if 1
+#ifdef IOS3
 UIKIT_EXTERN_CLASS @interface UIScreenMode : NSObject {
   @private
     id _mode;

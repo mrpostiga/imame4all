@@ -302,10 +302,10 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 }
 
 - (void) startInquiry {
-   static int b = 0;
-   if(!b)
-   {
-	 b=1;
+   //static int b = 0;
+   //if(!b)
+   //{
+	 //b=1;
 	// put into loop
 
 	// @TODO: cannot be called a second time!
@@ -318,7 +318,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 	restartInquiry = true;
 	
 	bt_send_cmd(&btstack_set_power_mode, HCI_POWER_ON );
-	}
+	//}
 }
 
 - (void) stopInquiry {
@@ -404,9 +404,9 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 
 // Override to allow orientations other than the default portrait orientation.
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-	// return YES;
+	return YES;
 	//return NO;
-	return (interfaceOrientation == UIInterfaceOrientationPortrait);
+	//return (interfaceOrientation == UIInterfaceOrientationPortrait);
 }
 
 - (void)didReceiveMemoryWarning {
@@ -573,6 +573,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 	}
 	
 }
+
 - (NSIndexPath *)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 	if (allowSelection) {
 		return indexPath;

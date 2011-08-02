@@ -336,8 +336,8 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
     
 	   struct CGRect rect = 
 	  // controller.view.frame;
-	  // [inqViewControl parentViewController].view.frame;
-	  [[UIScreen mainScreen] bounds]; 
+	  [inqViewControl parentViewController].view.frame;
+	  //[[UIScreen mainScreen] bounds]; 
 	  CGFloat navBarWidht = /*iphone_is_landscape ?*/ rect.size.height /*: rect.size.width*/;     
 	  //CGFloat navBarWidht = rect.size.width;
 	  
@@ -374,7 +374,7 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
 	  
 	   
 	   
-	   UILabel *navLabel = [[UILabel alloc] initWithFrame:CGRectMake((rect.size.width/2)-70,0,300, navBarHeight)];	   
+	   UILabel *navLabel = [[UILabel alloc] initWithFrame:CGRectMake(40,0,300, navBarHeight)];	   
 	   navLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 	   navLabel.text = @"WiiMote Sync";
 	   navLabel.backgroundColor = [UIColor clearColor];
@@ -487,6 +487,54 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
 + (void) disconnectDevice:(BTInquiryViewController *) inqView device:(BTDevice*) selectedDevice {
 }
 
++ (void)endwiimote{
+
+    // disconnect
+    /*
+    if (wiiMoteConHandle) {
+          bt_send_cmd(&hci_disconnect, wiiMoteConHandle, 0x13); // remote closed connection
+    }
+    */
+    if(btOK)
+    {
+        /*
+		while(num_of_joys!=0)
+        {
+	        bd_addr_t addr;
+			//bt_send_cmd(&hci_disconnect,joys[0].wiiMoteConHandle , 0x13); // remote closed connection
+			
+	        int unid = wiimote_remove(joys[0].c_source_cid,&addr);
+	        if(unid!=-1)
+	        {
+	           [inqViewControl removeDeviceForAddress:&addr];
+	        }			                   
+        }
+		*/
+		
+		if(iphone_menu==12)
+		{	
+		  //[inqViewControl stopInquiry];
+		  [inqViewControl dismissModalViewControllerAnimated:YES];
+		  iphone_menu = 0;
+		}
+		 
+		//[inqViewControl release];
+		//inqViewControl = nil;
+		int i=0;
+		while(i!=num_of_joys){
+			[inqViewControl removeDeviceForAddress:&joys[i].addr];
+			i++;
+			
+		}
+			
+		num_of_joys=0;
+	    bt_send_cmd(&btstack_set_power_mode, HCI_POWER_OFF );
+	    bt_close();
+	    activated= false;
+		btOK = false;
+		//initLoop=false;		
+    }
+}
 
 @end
 

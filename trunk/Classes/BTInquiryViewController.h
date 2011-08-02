@@ -69,6 +69,7 @@ typedef enum {
 	BTDevice *remoteDevice;     // device for which connection is pending
 	BTDevice *connectedDevice;  // device to which we're connected
 	bool notifyDelegateOnInquiryStopped;
+
 }
 
 - (void) startInquiry;
