@@ -1,5 +1,5 @@
 ===========================================================
-iMAME4ALL 1.8 (July 30, 2011) by David Valdeita (Seleuco)
+iMAME4ALL 1.8 (August 6, 2011) by David Valdeita (Seleuco)
 ===========================================================
 
 
@@ -145,15 +145,15 @@ GLOBAL OPTIONS
 
 -Full Screen (Landscape); Uses all avalible screen or shows the emulator windowed.
 
--Animated DPad. Animates ON/OFF DPad. Disable to gain performance.
+-Animated. Animates ON/OFF DPad/Stick. Disable to gain performance.
 
--Analog Stick: Enabled set the touch stick to works as analog stick, else works as digital stick.
+-Touch Type: Set the touch stick to works as analog stick or as digital stick.
 
 -Show FPS: Shows ON/OFF fps.
 
--Digital DeadZone: Enable/Disable a deadzone on DPAD touch center. It could be better for some games. Disable if you don't like it.
+-Digital Touch DZ: Enable/Disable a deadzone on DPAD touch center. It could be better for some games. Disable if you don't like it.
 
--Analog DZ: Analog touch stick deadzone selector.  Lower to gets more sensitivity.
+-Analog Touch DZ: Analog touch stick deadzone selector.  Lower to gets more sensitivity.
 
 -Wii Classic DZ: Wii classic stick deadzone selector. Upper if you have problems with stick (controller going crazy). Lower to gets more sensitivity.
 
@@ -386,8 +386,8 @@ PORT CREDITS
 
 
 DEVELOPMENT
-July 30,2011
-- Version 1.8: Added iOS4 multitasking, analog touch stick, stick 2/4/8-way restrictors, stereo support, sound going out of sync fixed, fixed jerky gameplay and more...
+August 6,2011
+- Version 1.8: Added iOS4 multitasking, new skin, analog touch stick, stick 2/4/8-way restrictors, stereo support, sound going out of sync fixed, fixed jerky gameplay and more...
 July 17,2011
 - Version 1.7.1: Improved iONS's iCade support, Bringin iMame4all up to App Standards.
 July 10,2011
@@ -415,6 +415,19 @@ KNOWN PROBLEMS
 - Preferences couldn't be saved. Check for write permissions. chmod 777 if needed:
   Just go to imame4all.app file in your iDevice directory and set the permissions to 777.
   also needs to be on the iMAME4ALL folder under /var/mobile/Media/ROMS. (recursive)
+
+  This is what you need to do. SSH into your iPad and then run this command on the two directories like this:
+
+  chmod -R 777 /var/mobile/Media/ROMs/iMAME4all
+  chmod -R 777 /Applications/iMAME4all.app
+
+  Make sure of the following:
+
+  1) You're logged in as root
+  2) You type in the commands case sensitive
+  3) iMAME4all is not running
+
+  You can use other apps but this works for sure.
  
 - Not perfect sound or incomplete in some games.
 

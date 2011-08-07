@@ -34,6 +34,7 @@
 #include "wiimote.h"
 
 #import "Helper.h"
+#import "EmulatorController.h"
 
 #import "BTDevice.h"
 #import "BTInquiryViewController.h"
@@ -51,6 +52,7 @@ bool conected = false;
 bool activated = false;
 
 BTInquiryViewController *inqViewControl;
+
 extern int iphone_menu;
 extern int iphone_is_landscape;
 extern int iOS_exitGame;
@@ -335,10 +337,12 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
        inqViewControl = [[BTInquiryViewController alloc] init];
     
 	   struct CGRect rect = 
-	  // controller.view.frame;
-	  [inqViewControl parentViewController].view.frame;
+	   controller.view.frame;
+	  //[inqViewControl parentViewController].view.frame;
+	  
 	  //[[UIScreen mainScreen] bounds]; 
-	  CGFloat navBarWidht = /*iphone_is_landscape ?*/ rect.size.height /*: rect.size.width*/;     
+	  CGFloat navBarWidht =  rect.size.width;
+	  /*iphone_is_landscape ?*/ rect.size.height /*: rect.size.width*/;     
 	  //CGFloat navBarWidht = rect.size.width;
 	  
 	  CGFloat navBarHeight = 45;     
@@ -372,7 +376,7 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
 	   [ navBar pushNavigationItem: item  animated:YES];
 	   */
 	  
-	   
+
 	   
 	   UILabel *navLabel = [[UILabel alloc] initWithFrame:CGRectMake(40,0,300, navBarHeight)];	   
 	   navLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -435,14 +439,17 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
   else
   {
      [inqViewControl dismissModalViewControllerAnimated:YES];
-     iphone_menu = 0;
+     EmulatorController *eC = (EmulatorController *)[inqViewControl parentViewController];	
+     [eC endMenu];
+
   }
 }
 
 +(void) cancelWiiMoteSearch {        
     [inqViewControl stopInquiry];
     [inqViewControl dismissModalViewControllerAnimated:YES];
-    iphone_menu = 0;
+    EmulatorController *eC = (EmulatorController *)[inqViewControl parentViewController];	
+    [eC endMenu];
 }
 
 
@@ -515,7 +522,8 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
 		{	
 		  //[inqViewControl stopInquiry];
 		  [inqViewControl dismissModalViewControllerAnimated:YES];
-		  iphone_menu = 0;
+		  EmulatorController *eC = (EmulatorController *)[inqViewControl parentViewController];	
+          [eC endMenu];
 		}
 		 
 		//[inqViewControl release];

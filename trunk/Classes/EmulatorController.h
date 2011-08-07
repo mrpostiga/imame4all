@@ -114,8 +114,6 @@
 - (void)filldrectsController;
 
 - (void)startEmulation;
-- (void)runMenu;
-- (void)runMainMenu;
 
 - (void)removeDPadView;
 - (void)buildDPadView;
@@ -129,7 +127,8 @@
 - (void)buildLandscapeImageBack;
 - (void)buildLandscape;
 
-- (void)showMenu;
+- (void)runMenu;
+- (void)endMenu;
 
 - (void)handle_DPAD;
 - (void)handle_MENU;

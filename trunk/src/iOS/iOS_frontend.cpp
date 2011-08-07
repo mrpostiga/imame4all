@@ -340,7 +340,8 @@ static int show_options(char *game)
 		/* (8) Landscape Num Buttons */
 		switch (iOS_landscape_buttons)
 		{
-			case 1: gp2x_gamelist_text_out(x_Pos,y_Pos+100, "Num Buttons   1 Button"); break;
+		    case 0: gp2x_gamelist_text_out(x_Pos,y_Pos+100, "Num Buttons   0 Button"); break;
+		    case 1: gp2x_gamelist_text_out(x_Pos,y_Pos+100, "Num Buttons   1 Button"); break;
 			case 2: gp2x_gamelist_text_out(x_Pos,y_Pos+100, "Num Buttons   2 Buttons"); break;
 			case 3: gp2x_gamelist_text_out(x_Pos,y_Pos+100, "Num Buttons   3 Buttons"); break;
 			case 4: gp2x_gamelist_text_out(x_Pos,y_Pos+100, "Num Buttons   4 Buttons"); break;
@@ -503,12 +504,12 @@ static int show_options(char *game)
 				{
 					iOS_landscape_buttons ++;
 					if (iOS_landscape_buttons>5)
-						iOS_landscape_buttons=1;
+						iOS_landscape_buttons=0;
 				}
 				else
 				{
 					iOS_landscape_buttons--;
-					if (iOS_landscape_buttons<1)
+					if (iOS_landscape_buttons<0)
 						iOS_landscape_buttons=5;
 				}
 				break;

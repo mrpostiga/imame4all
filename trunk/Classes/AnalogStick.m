@@ -36,8 +36,6 @@
 
 #include "minimal.h"
 
-static int debug = 0;
-
 @implementation AnalogStickView
 
 CGRect rStickArea;
@@ -55,6 +53,9 @@ extern int iOS_animated_DPad;
 extern int iOS_skin;
 extern int iOS_waysStick;
 extern int iOS_analogDeadZoneValue;
+extern int enable_dview;
+
+int iOS_stick_radio = 60;
 
 #define STICK4WAY (iOS_waysStick == 4 && iOS_inGame)
 #define STICK2WAY (iOS_waysStick == 2 && iOS_inGame)
@@ -75,7 +76,7 @@ extern int iOS_analogDeadZoneValue;
 	if(mag >= deadZone)
 	{
 		joy_analog_x[0] = rx;
-		joy_analog_y[0] = ry;
+		joy_analog_y[0] = ry * -1.0f;
 
 		float v = ang;
 		
@@ -233,7 +234,7 @@ extern int iOS_analogDeadZoneValue;
          	 
 	 NSString *name;
 	 
-	 if((iphone_is_landscape && iOS_full_screen_land) || (!iphone_is_landscape && iOS_full_screen_port) || iOS_skin==1)
+	 if((iphone_is_landscape && iOS_full_screen_land) || (!iphone_is_landscape && iOS_full_screen_port) /*|| iOS_skin==1*/)
 	 {   
 	     name = [NSString stringWithFormat:@"./SKIN_%d/%@",iOS_skin,@"./stick-outer.png"];
 	     outerView = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:name]];
@@ -245,8 +246,8 @@ extern int iOS_analogDeadZoneValue;
 	     [self addSubview: outerView];   
     }
     name = [NSString stringWithFormat:@"./SKIN_%d/%@",iOS_skin,@"./stick-inner.png"];
-    stickWidth =  rImg.size.width * 0.60;
-    stickHeight = rImg.size.height * 0.60; 
+    stickWidth =  rImg.size.width * (iOS_stick_radio/100.0f);//0.60;
+    stickHeight = rImg.size.height * (iOS_stick_radio/100.0f);//0.60; 
     innerView = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:name]];
     [self calculateStickPosition: ptCenter];
     innerView.frame =  stickPos;
@@ -266,11 +267,11 @@ extern int iOS_analogDeadZoneValue;
 
 - (void)drawRect:(CGRect)rect 
 {
-    if(debug)
+    if(enable_dview)
     {
 	    CGContextRef context = UIGraphicsGetCurrentContext();	 
 	    	       
-	    CGContextSelectFont(context, "Helvetica", 12, kCGEncodingMacRoman); 
+	    CGContextSelectFont(context, "Helvetica", 10, kCGEncodingMacRoman); 
 	    
 	    CGContextSetTextDrawingMode (context, kCGTextFillStroke);
 	    CGContextSetRGBFillColor (context, 0, 5, 0, .5);
@@ -388,7 +389,7 @@ extern int iOS_analogDeadZoneValue;
       [self calculateStickPosition: (mag >= deadZone ? ptCur : ptCenter)];      
       
       innerView.center = CGPointMake(CGRectGetMidX(stickPos),CGRectGetMidY(stickPos));
-      if(debug)[self setNeedsDisplay];
+      if(enable_dview)[self setNeedsDisplay];
       [innerView setNeedsDisplay];
     }  
 }

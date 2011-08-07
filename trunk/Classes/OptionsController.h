@@ -59,7 +59,7 @@
    @public  int overscanValue;
    @public  int tvoutNative;
 
-   @public  int analogStick;
+   @public  int inputTouchType;
    @public  int analogDeadZoneValue;
 }
 
@@ -92,7 +92,7 @@
 @property (readwrite,assign) int overscanValue;
 @property (readwrite,assign) int tvoutNative;
 
-@property (readwrite,assign) int analogStick;
+@property (readwrite,assign) int inputTouchType;
 @property (readwrite,assign) int analogDeadZoneValue;
 
 @end
@@ -128,7 +128,7 @@
    UISegmentedControl*		  segmentedOverscanValue;
    UISwitch*		  switchTvoutNative;
 
-   UISwitch*		  switchAnalogStick;
+   UISegmentedControl *segmentedTouchType;
    UISegmentedControl *segmentedAnalogDeadZoneValue;
 
 }

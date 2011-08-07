@@ -40,8 +40,7 @@
 #import <pthread.h>
 
 
-#define IPHONE_MENU_DISABLED            0
-#define IPHONE_MENU_MAIN                1
+#define IPHONE_MENU_NONE           0
 
 #define IPHONE_MENU_EXIT                4
 #define IPHONE_MENU_HELP                5
@@ -50,17 +49,12 @@
 #define IPHONE_MENU_DOWNLOAD           11
 #define IPHONE_MENU_WIIMOTE            12
 
-#define IPHONE_MENU_QUIT                7
-#define IPHONE_MENU_MAIN_LOAD           8
-
-    
 #define MyCGRectContainsPoint(rect, point)						\
 	(((point.x >= rect.origin.x) &&								\
 		(point.y >= rect.origin.y) &&							\
 		(point.x <= rect.origin.x + rect.size.width) &&			\
 		(point.y <= rect.origin.y + rect.size.height)) ? 1 : 0)  
 		
-	
 
 extern unsigned long gp2x_pad_status;
 extern int num_of_joys;
@@ -92,11 +86,12 @@ CGRect rView;
 
 static CGRect rStickWindow;
 extern CGRect rStickArea;
+extern int iOS_stick_radio; 
 
 extern int nativeTVOUT;
 extern int overscanTVOUT;
 
-int iphone_menu = IPHONE_MENU_DISABLED;
+int iphone_menu = IPHONE_MENU_NONE;
 
 int iphone_controller_opacity = 50;
 int iphone_is_landscape = 0;
@@ -114,10 +109,7 @@ int tv_filter_port = 0;
 
 int scanline_filter_land = 0;
 int scanline_filter_port = 0;
-
-int hide_keyboard = 0;
-//int show_controls = 1;      
-
+     
 /////
 int global_fps = 0;
 int global_low_latency_sound = 0;
@@ -135,9 +127,14 @@ int iOS_skin_data = 1;
 int iOS_wiiDeadZoneValue = 2;
 int iOS_touchDeadZone = 1;
 
-int iOS_analogStick = 1;
+#define TOUCH_INPUT_DIGITAL 0
+#define TOUCH_INPUT_ANALOG 1
+
+int iOS_inputTouchType = 1;
 int iOS_analogDeadZoneValue = 2;
 extern int iOS_waysStick;
+
+int menu_exit_option = 0;
 
 #define STICK4WAY (iOS_waysStick == 4 && iOS_inGame)
 #define STICK2WAY (iOS_waysStick == 2 && iOS_inGame)
@@ -168,8 +165,9 @@ int warnIcade = 1;
 
 //SHARED y GLOBALES!
 pthread_t	main_tid;
-int			__emulation_run = 0;
-int        __emulation_paused = 0;
+
+int __emulation_paused = 0;
+int __emulation_run=0;
 
 static EmulatorController *sharedInstance = nil;
 
@@ -186,13 +184,11 @@ void iphone_Reset_Views()
 
 void* app_Thread_Start(void* args)
 {
-	__emulation_run = 1;	
-    //app_DemuteSound();
-	//iphone_main(ourArgsCnt, ourArgs);
-	//mimain(ourArgsCnt, ourArgs);
+
+	__emulation_run = 1;
+	
 	mimain(0,NULL);
-	__emulation_run = 0;//comento de momento
-    //app_MuteSound();
+
 	return NULL;
 }
 
@@ -200,106 +196,159 @@ void* app_Thread_Start(void* args)
 
 @synthesize externalView;
 
+- (void)startEmulation{
+    
+    sharedInstance = self;
+	     		
+    //[self buildPortrait];
+    				
+    pthread_create(&main_tid, NULL, app_Thread_Start, NULL);
+		
+	struct sched_param param;
+ 
+    //param.sched_priority = 63;
+    param.sched_priority = 46;  
+    //param.sched_priority = 100;
+     
+           
+    if(pthread_setschedparam(main_tid, /*SCHED_RR*/ SCHED_OTHER, &param) != 0)    
+             fprintf(stderr, "Error setting pthread priority\n");
+    	
+}
 
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
 {
+	
 	// the user clicked one of the OK/Cancel buttons
-	if(__emulation_run)
-	{
-	  if(iphone_menu == IPHONE_MENU_MAIN)
-	  {
-        
-        int more  = iCadeUsed && iOS_inGame; 
-        
-        if(buttonIndex == 0 && more)
-	    {
+    
+    if(buttonIndex == 0 && menu_exit_option)
+    {
    //        __emulation_paused = 0;
+       iphone_menu = IPHONE_MENU_EXIT;
+       iOS_exitGame = 0;
+       wantExit = 1;	            
+       UIAlertView* exitAlertView=[[UIAlertView alloc] initWithTitle:nil
+                                                              message:@"are you sure you want to exit the game?"
+                                                             delegate:self cancelButtonTitle:nil
+                                                    otherButtonTitles:@"Yes",@"No",nil];                                                        
+       [exitAlertView show];
+       [exitAlertView release];           
+       
+    }        
+    else if(buttonIndex == 0 + menu_exit_option)
+    {
+       iphone_menu = IPHONE_MENU_HELP;
+       
+       HelpController *addController =[HelpController alloc];
+                               
+       [self presentModalViewController:addController animated:YES];
 
-           iOS_exitGame = 0;
-           wantExit = 1;	
-           usleep(100000);	            
-           UIAlertView* exitAlertView=[[UIAlertView alloc] initWithTitle:nil
-                                                                  message:@"are you sure you want to exit the game?"
-                                                                 delegate:self cancelButtonTitle:nil
-                                                        otherButtonTitles:@"Yes",@"No",nil];                                                        
-           [exitAlertView show];
-           [exitAlertView release];           
-           
-           iphone_menu = IPHONE_MENU_DISABLED;
-	    }        
-        else if(buttonIndex == 0 + more)
-	    {
-           iphone_menu = IPHONE_MENU_HELP;
-	    }
-	    else if(buttonIndex == 1 + more)
-	    {
-           iphone_menu = IPHONE_MENU_OPTIONS;
-	    }
+       [addController release];
+    }
+    else if(buttonIndex == 1 + menu_exit_option)
+    {
+       iphone_menu = IPHONE_MENU_OPTIONS;
+       
+       OptionsController *addController =[OptionsController alloc];
+                               
+       [self presentModalViewController:addController animated:YES];
 
-	    else if(buttonIndex == 2 + more)    
-	    {
-           iphone_menu = IPHONE_MENU_DONATE;
-	    }
-	 
-	    else if(buttonIndex == 3 + more)    
-	    {
-           iphone_menu = IPHONE_MENU_WIIMOTE;
-	    }	    
-	    else	    
-	    {
-           iphone_menu = IPHONE_MENU_DISABLED;
-	    }
-	    	    
-	  }
-	  
-	  //myPool = [[NSAutoreleasePool alloc] init];
-	     
-	  if(iphone_menu == IPHONE_MENU_HELP)
+       [addController release];
+    }
+
+    else if(buttonIndex == 2 + menu_exit_option)    
+    {
+       iphone_menu = IPHONE_MENU_DONATE;
+       
+       [self  resignFirstResponder];
+       
+       DonateController *addController =[DonateController alloc];
+                               
+       [self presentModalViewController:addController animated:YES];
+
+       [addController release];
+    }
+ 
+    else if(buttonIndex == 3 + menu_exit_option)    
+    {
+       iphone_menu = IPHONE_MENU_WIIMOTE;
+       
+       [Helper startwiimote:self]; 
+    }	    
+    else	    
+    {
+       [self endMenu];
+    }	  	  
+}
+
+- (void)runMenu
+{
+    actionPending=1;
+    
+    if(__emulation_paused)return;
+    //btUsed = num_of_joys!=0;
+  
+    app_MuteSound();
+    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+    __emulation_paused = 1;
+  
+    UIActionSheet *alert;
+    
+    menu_exit_option  = iCadeUsed && iOS_inGame; 
+    
+    if(!menu_exit_option)
+    {
+		alert = [[UIActionSheet alloc] initWithTitle:
+			   @"Choose an option from the menu. Press cancel to go back." delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil 
+			   otherButtonTitles:@"Help",@"Options",@"Donate",@"WiiMote",@"Cancel", nil];    
+    }
+    else
+    {
+	    alert = [[UIActionSheet alloc] initWithTitle:
+			   @"Choose an option from the menu. Press cancel to go back." delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil 
+			   otherButtonTitles:@"Exit Game",@"Help",@"Options",@"Donate",@"WiiMote",@"Cancel", nil];
+    }
+	   
+	/*   
+	if(isIpad)
+	  //[alert showInView:imageBack];
+	  [alert showInView:self.view];
+	else
+	*/
+	  [alert showInView:self.view];
+
+	
+	[alert release];
+   
+    [pool release]; 
+     
+}
+
+- (void)endMenu{
+	  app_DemuteSound();
+	
+	  int old = btUsed;
+	  btUsed = num_of_joys!=0;
+	    
+	  if(((!iphone_is_landscape && iOS_full_screen_port) || (iphone_is_landscape && iOS_full_screen_land)) && btUsed && old!=btUsed)
 	  {
-
-           HelpController *addController =[HelpController alloc];
-                                   
-           [self presentModalViewController:addController animated:YES];
-
-           [addController release];
-           
+	      //[self performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:YES];
+	      [self changeUI]; 
 	  }
-	  
-	  if(iphone_menu == IPHONE_MENU_OPTIONS)
-	  {
-                        
-           OptionsController *addController =[OptionsController alloc];
-                                   
-           [self presentModalViewController:addController animated:YES];
-
-           [addController release];
+	  if(((!iphone_is_landscape && iOS_full_screen_port) || (iphone_is_landscape && iOS_full_screen_land)) && !btUsed && old!=btUsed)
+	  { 
+	      //[self performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:YES];
+	      [self changeUI];
 	  }
-	  
-	  if(iphone_menu == IPHONE_MENU_DONATE)
-	  {
-               
-           [self  resignFirstResponder];
-           
-           DonateController *addController =[DonateController alloc];
-                                   
-           [self presentModalViewController:addController animated:YES];
-
-           [addController release];
-	  }
-	  
-	  if(iphone_menu == IPHONE_MENU_WIIMOTE)
-	  {
-              
-           [Helper startwiimote:self]; 
-                                                
-	  }
-	  
-	}
+	    
+	  actionPending=0;
+	  iOS_exitPause = 1;
+      __emulation_paused = 0;
+      iphone_menu = IPHONE_MENU_NONE; 
 }
 
 -(void)done:(id)sender {
 
-	
     [self dismissModalViewControllerAnimated:YES];
 
 	Options *op = [[Options alloc] init];
@@ -323,7 +372,7 @@ void* app_Thread_Start(void* args)
         || iOS_touchDeadZone != [op touchDeadZone]
         || nativeTVOUT != [op tvoutNative]
         || overscanTVOUT != [op overscanValue]
-        || iOS_analogStick != [op analogStick]
+        || iOS_inputTouchType != [op inputTouchType]
         || iOS_analogDeadZoneValue != [op analogDeadZoneValue]        
         )
     {
@@ -385,14 +434,12 @@ void* app_Thread_Start(void* args)
 	       [warnAlert release];
        }
        
-       iOS_analogStick = [op analogStick];
+       iOS_inputTouchType = [op inputTouchType];
        iOS_analogDeadZoneValue = [op analogDeadZoneValue];
               
-       [self changeUI];
-       
-       
-       //[self performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
-       
+       [self performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:YES];
+       //[self changeUI];
+              
        /*      
        [screenView removeFromSuperview];
        [screenView release];
@@ -422,112 +469,50 @@ void* app_Thread_Start(void* args)
     
     [op release];
     
-    iphone_menu = IPHONE_MENU_DISABLED;
+    [self endMenu];
     
     //[myPool release];
 }
 
-- (void)runMenu
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-    
-  if(__emulation_paused)return;
-  //btUsed = num_of_joys!=0;
-  
-  app_MuteSound();
-  NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-  __emulation_paused = 1;
-  iphone_menu = IPHONE_MENU_MAIN_LOAD;
-  while(iphone_menu != IPHONE_MENU_DISABLED)
-  {
-    if(iphone_menu == IPHONE_MENU_MAIN_LOAD)
-    {
-      iphone_menu = IPHONE_MENU_MAIN;
-      [NSThread detachNewThreadSelector:@selector(runMainMenu) toTarget:self withObject:nil];
-	}
-	else
-	{
-      usleep(1000000);
-    }
-  }
-
-  //usleep(100000);
-  app_DemuteSound();
-
-  int old = btUsed;
-  btUsed = num_of_joys!=0;
-    
-  if(((!iphone_is_landscape && iOS_full_screen_port) || iphone_is_landscape) && btUsed && old!=btUsed)
-  {
-      [self performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO]; 
-  }
-  if(((!iphone_is_landscape && iOS_full_screen_port) || iphone_is_landscape) && !btUsed && old!=btUsed)
-  { 
-      [self performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
-  }
-    
-  actionPending=0;
   iOS_exitPause = 1;
-  __emulation_paused = 0; 
-  //warnIcade = 1;
-   
-  [pool release]; 
-     
-}
-
-- (void)runMainMenu
-{
-
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    
-    UIActionSheet *alert;
-    
-    if(!iCadeUsed || !iOS_inGame)
-    {
-		alert = [[UIActionSheet alloc] initWithTitle:
-			   @"Choose an option from the menu. Press cancel to go back." delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil 
-			   otherButtonTitles:@"Help",@"Options",@"Donate",@"WiiMote",@"Cancel", nil];    
-    }
-    else
-    {
-	    alert = [[UIActionSheet alloc] initWithTitle:
-			   @"Choose an option from the menu. Press cancel to go back." delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil 
-			   otherButtonTitles:@"Exit Game",@"Help",@"Options",@"Donate",@"WiiMote",@"Cancel", nil];
-    }
-	   
-	/*   
-	if(isIpad)
-	  //[alert showInView:imageBack];
-	  [alert showInView:self.view];
-	else
-	*/
-	  [alert showInView:self.view];
-	
-	[alert release];
-	
-	[pool release];
-    
-}
-
-
-- (void)startEmulation{
-    
-    sharedInstance = self;
-	     		
-    //[self buildPortrait];
-    				
-    pthread_create(&main_tid, NULL, app_Thread_Start, NULL);
-		
-	struct sched_param param;
+  __emulation_paused = 0;
+  if(iphone_menu == IPHONE_MENU_EXIT)
+  {
+     [self endMenu];
+  }
  
-    //param.sched_priority = 63;
-    param.sched_priority = 46;  
-    //param.sched_priority = 100;
-     
-           
-    if(pthread_setschedparam(main_tid, /*SCHED_RR*/ SCHED_OTHER, &param) != 0)    
-             fprintf(stderr, "Error setting pthread priority\n");
-    	
+  if(buttonIndex == 0 && wantExit )
+  {
+     iOS_exitGame = 1;
+  }
+  actionPending=0;
+  wantExit = 0;
 }
+
+- (void)handle_MENU
+{
+    if(btnStates[BTN_L2] == BUTTON_PRESS && iOS_inGame && !actionPending)
+    {				  				
+        actionPending=1;
+        iOS_exitGame = 0;
+        wantExit = 1;	
+        usleep(100000);	            
+        __emulation_paused = 1;
+        UIAlertView* exitAlertView=[[UIAlertView alloc] initWithTitle:nil
+                                                                  message:@"are you sure you want to exit the game?"
+                                                                 delegate:self cancelButtonTitle:nil
+                                                        otherButtonTitles:@"Yes",@"No",nil];
+        [exitAlertView show];
+        [exitAlertView release];
+    } 
+    
+    if(btnStates[BTN_R2] == BUTTON_PRESS && !actionPending)
+    {
+         [self runMenu];
+    }					
+}	
 
 - (void)loadView {
 
@@ -612,7 +597,7 @@ void* app_Thread_Start(void* args)
 	//kito
 	[NSThread setThreadPriority:1.0];
 	
-	iphone_menu = IPHONE_MENU_DISABLED;
+	iphone_menu = IPHONE_MENU_NONE;
 		
 	//self.view.frame = [[UIScreen mainScreen] bounds];//rMainViewFrame;
 		
@@ -647,7 +632,7 @@ void* app_Thread_Start(void* args)
     nativeTVOUT = [op tvoutNative];
     overscanTVOUT = [op overscanValue];
     
-    iOS_analogStick = [op analogStick];
+    iOS_inputTouchType = [op inputTouchType];
     iOS_analogDeadZoneValue = [op analogDeadZoneValue];
             
     [op release];
@@ -697,7 +682,7 @@ void* app_Thread_Start(void* args)
 
 
 -(BOOL)becomeFirstResponder {
-    static first = 1;
+    static int first = 1;
     //NSLog(@"becomeFirstResponder");
     if(warnIcade){
        
@@ -777,7 +762,6 @@ void* app_Thread_Start(void* args)
 	return YES;
 	//return actionPending ? NO : YES;
 }
-
 
 
 -(void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
@@ -865,8 +849,7 @@ void* app_Thread_Start(void* args)
          buttonViews[i] = nil; 
       }
    }
-   
-   
+      
 }
 
 - (void)buildDPadView {
@@ -878,17 +861,17 @@ void* app_Thread_Start(void* args)
     
    btUsed = num_of_joys!=0; 
    
-   if(((btUsed || iCadeUsed) && ((!iphone_is_landscape && iOS_full_screen_port) || iphone_is_landscape)))
+   if((btUsed || iCadeUsed) && ((!iphone_is_landscape && iOS_full_screen_port) || (iphone_is_landscape && iOS_full_screen_land)))
      return;
    
    NSString *name;    
    
-   if(!iOS_analogStick)
+   if(iOS_inputTouchType == TOUCH_INPUT_DIGITAL)
    {
 	   name = [NSString stringWithFormat:@"./SKIN_%d/%@",iOS_skin,nameImgDPad[DPAD_NONE]];
 	   dpadView = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:name]];
 	   dpadView.frame = rDPad_image;
-	   if((iphone_is_landscape && iOS_full_screen_land) || (!iphone_is_landscape && iOS_full_screen_port))
+	   if( (!iphone_is_landscape && iOS_full_screen_port) || (iphone_is_landscape && iOS_full_screen_land))
 	         [dpadView setAlpha:((float)iphone_controller_opacity / 100.0f)];  
 	   [self.view addSubview: dpadView];
 	   dpad_state = old_dpad_state = DPAD_NONE;
@@ -904,12 +887,13 @@ void* app_Thread_Start(void* args)
    for(i=0; i<NUM_BUTTONS;i++)
    {
 
-      if(iphone_is_landscape || iOS_full_screen_port)
+      if(iphone_is_landscape || (!iphone_is_landscape && iOS_full_screen_port))
       {
           if(i==BTN_Y && iOS_landscape_buttons < 4)continue;
           if(i==BTN_A && iOS_landscape_buttons < 3)continue;
-          if(i==BTN_X && iOS_landscape_buttons < 2)continue;      
-          
+          if(i==BTN_X && iOS_landscape_buttons < 2)continue;
+          if(i==BTN_B && iOS_landscape_buttons < 1)continue;  
+                            
           if(i==BTN_L1 && iOS_hide_LR)continue;
           if(i==BTN_R1 && iOS_hide_LR)continue;
       }
@@ -919,7 +903,7 @@ void* app_Thread_Start(void* args)
       name = [NSString stringWithFormat:@"./SKIN_%d/%@",iOS_skin,nameImgButton_NotPress[i]];   
       buttonViews[i] = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:name]];
       buttonViews[i].frame = rButton_image[i];
-      if((iphone_is_landscape && (iOS_full_screen_land || i==BTN_Y || i==BTN_A)) || iOS_full_screen_port)      
+      if((iphone_is_landscape && (iOS_full_screen_land /*|| i==BTN_Y || i==BTN_A*/)) || (!iphone_is_landscape && iOS_full_screen_port))      
          [buttonViews[i] setAlpha:((float)iphone_controller_opacity / 100.0f)];   
       [self.view addSubview: buttonViews[i]];
       btnStates[i] = old_btnStates[i] = BUTTON_NO_PRESS; 
@@ -1387,73 +1371,28 @@ void* app_Thread_Start(void* args)
     
 }
 
-- (void)showMenu{
-	if(__emulation_run)
-    {
-        actionPending=1;
-        //warnIcade = 0;
-        [NSThread detachNewThreadSelector:@selector(runMenu) toTarget:self withObject:nil];
-	}
-}
-
 ////////////////
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {	       
-    
-    if(((btUsed || iCadeUsed) && (!iphone_is_landscape && iOS_full_screen_port || iphone_is_landscape)))
+   
+    if(((btUsed || iCadeUsed) && ((!iphone_is_landscape && iOS_full_screen_port) || (iphone_is_landscape && iOS_full_screen_land)))) 
     {
         NSSet *allTouches = [event allTouches];
         UITouch *touch = [[allTouches allObjects] objectAtIndex:0];
         
-        if(touch.phase == UITouchPhaseBegan || touch.phase == UITouchPhaseStationary)
+        if(touch.phase == UITouchPhaseBegan)
 		{
-			[self showMenu];		
+			[self runMenu];		
 	    }
     }
     else
     {
-      [self touchesController:touches withEvent:event];
+        [self touchesController:touches withEvent:event];
     }  
 }
-
-
   
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
-{
-  iOS_exitPause = 1;
-  __emulation_paused = 0;
-  if(buttonIndex == 0 && wantExit )
-  {
-     iOS_exitGame = 1;
-  }
-  actionPending=0;
-  wantExit = 0;
-}
-
-- (void)handle_MENU
-{
-    if(btnStates[BTN_L2] == BUTTON_PRESS && iOS_inGame && !actionPending)
-    {				  				
-        actionPending=1;
-        iOS_exitGame = 0;
-        wantExit = 1;	
-        usleep(100000);	            
-        __emulation_paused = 1;
-        UIAlertView* exitAlertView=[[UIAlertView alloc] initWithTitle:nil
-                                                                  message:@"are you sure you want to exit the game?"
-                                                                 delegate:self cancelButtonTitle:nil
-                                                        otherButtonTitles:@"Yes",@"No",nil];
-        [exitAlertView show];
-        [exitAlertView release];
-    } 
-    
-    if(btnStates[BTN_R2] == BUTTON_PRESS && __emulation_run && !actionPending)
-    {
-         [self showMenu];
-    }					
-}			
-
+		
 - (void)touchesController:(NSSet *)touches withEvent:(UIEvent *)event {	
     
 	int i;
@@ -1493,7 +1432,7 @@ void* app_Thread_Start(void* args)
 			struct CGPoint point;
 			point = [touch locationInView:self.view];
 			
-			if(!iOS_analogStick)
+			if(!iOS_inputTouchType)
 			{
 				if (MyCGRectContainsPoint(Up, point) && !STICK2WAY) {
 					//NSLog(@"GP2X_UP");
@@ -1714,7 +1653,7 @@ void* app_Thread_Start(void* args)
 		}
 	    else
 	    {
-	        if(!iOS_analogStick && touch == stickTouch)
+	        if(!iOS_inputTouchType && touch == stickTouch)
 			{
 	             gp2x_pad_status &= ~GP2X_UP;
 			     gp2x_pad_status &= ~GP2X_DOWN;
@@ -2010,7 +1949,7 @@ void* app_Thread_Start(void* args)
 	{
 
 		int i = 0;
-        while(fgets(string, 256, fp) != NULL && i < 38) 
+        while(fgets(string, 256, fp) != NULL && i < 39) 
        {
 			char* result = strtok(string, ",");
 			int coords[4];
@@ -2069,8 +2008,8 @@ void* app_Thread_Start(void* args)
             
             case 35:   rStickWindow = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
             case 36:   rStickArea = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            
-            case 37:   iphone_controller_opacity= coords[0]; break;
+            case 37:   iOS_stick_radio =coords[0]; break;            
+            case 38:   iphone_controller_opacity= coords[0]; break;
 			}
       i++;
     }
@@ -2204,7 +2143,7 @@ void* app_Thread_Start(void* args)
     		drects[14]=RPad2;
     		drects[15]=rShowKeyboard;
     		
-    		if(!iOS_analogStick)
+    		if(iOS_inputTouchType==TOUCH_INPUT_DIGITAL)
     		{
 				drects[16]=DownLeft;
 				drects[17]=Down;
