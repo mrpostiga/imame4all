@@ -62,7 +62,7 @@
 	     rect.size.width = rect.size.height; 
 	     rect.size.height = tmp;	     
 	}
-	
+
 	UIView *view= [[UIView alloc] initWithFrame:rect];
 	self.view = view;
 	[view release];

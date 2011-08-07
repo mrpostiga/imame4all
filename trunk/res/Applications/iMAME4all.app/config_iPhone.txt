@@ -5,8 +5,8 @@
 0,0,320,240//PortraitImageOverlayFrame
 28,1,424,318//LandscapeViewFrame
 0,0,480,320//LandscapeViewFrameFull
-81,3,320,240//rLandscapeViewFrameNotFull
+81,0,320,240//rLandscapeViewFrameNotFull
 0,0,480,320//LandscapeImageBackFrame
-81,3,320,240//LandscapeImageOverlayFrame
+81,0,320,240//LandscapeImageOverlayFrame
 15,15,30,30//rLoopImageMask
-0//drawcoords
+1//drawcoords

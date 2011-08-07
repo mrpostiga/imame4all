@@ -29,9 +29,8 @@
  */
  
 #import "DonateController.h"
+#import "EmulatorController.h"
 #include <stdio.h>
-
-extern iphone_menu;
 
 @implementation DonateController
 
@@ -136,10 +135,9 @@ extern iphone_menu;
     if ([aWebView isLoading])
         [aWebView stopLoading];
    [self dismissModalViewControllerAnimated:YES];
-   iphone_menu = 0; 
    
-//   [[self parentViewController] resignFirstResponder];
-//   [[self parentViewController] becomeFirstResponder];
+   EmulatorController *eC = (EmulatorController *)[self parentViewController];	
+   [eC endMenu];
    
 }
 

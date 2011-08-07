@@ -35,5 +35,6 @@
 18,110,78,78//R2 img
 0,384,254,264//StickWindow
 25,400,200,200//StickArea
+60//StickRadio
 45
 

@@ -110,7 +110,7 @@ int overscanTVOUT = 1;
 - (void)applicationWillResignActive:(UIApplication *)application {
 
    [Helper endwiimote]; 
-   [hrViewController showMenu];
+   [hrViewController runMenu];
    usleep(1000000);   
 }
 /*
@@ -122,6 +122,7 @@ int overscanTVOUT = 1;
  
 }
 */
+
 - (void)prepareScreen
 {
 	 @try

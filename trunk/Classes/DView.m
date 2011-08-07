@@ -86,11 +86,11 @@ extern int isIpad;
  
    if(!isIpad)
    {
-      CGContextShowTextAtPoint(context, 10, 10, "Es un iPhone",12 );
+ //     CGContextShowTextAtPoint(context, 10, 10, "Es un iPhone",12 );
    }
    else
    {
-      CGContextShowTextAtPoint(context, 10, 10, "Es un iPad",10 );
+      //CGContextShowTextAtPoint(context, 10, 10, "Es un iPad",10 );
    }
 		
 }

@@ -63,7 +63,7 @@ extern int isIphone4;
 @synthesize overscanValue;
 @synthesize tvoutNative;
 
-@synthesize analogStick;
+@synthesize inputTouchType;
 @synthesize analogDeadZoneValue;
 
 
@@ -80,7 +80,7 @@ extern int isIphone4;
 - (void)loadOptions
 {
 	
-	NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v9.bin")];
+	NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v10.bin")];
 	
 	NSData *plistData;
 	id plist;
@@ -135,15 +135,32 @@ extern int isIphone4;
         fullLand = animatedButtons;
         fullPort = 0;
         
-        skin = isIpad ? 2 : 1;
+        if(isIpad)
+        {
+           skin = 0;
+        }
+        else if( [[Helper machine] isEqualToString: @"iPhone1,1"] || 
+		         [[Helper machine] isEqualToString: @"iPhone1,2"] ||
+		         [[Helper machine] isEqualToString: @"iPhone2,1"] ||		               
+		         [[Helper machine] isEqualToString: @"iPod1,1"]   ||
+                 [[Helper machine] isEqualToString: @"iPod2,1"])
+        {
+           skin = 1;
+        }
+        else
+        {
+           skin = 0;
+        }
+        
+        
         wiiDeadZoneValue = 2;
         touchDeadZone = 1;
         
         overscanValue = 3;
         tvoutNative = 1;
         
-        analogStick = 1;
-        analogDeadZoneValue = 1;		
+        inputTouchType = 1;
+        analogDeadZoneValue = 2;		
 		//[self saveOptions];
 	}
 	else
@@ -177,7 +194,7 @@ extern int isIphone4;
         overscanValue =  [[[optionsArray objectAtIndex:0] objectForKey:@"overscanValue"] intValue];
         tvoutNative =  [[[optionsArray objectAtIndex:0] objectForKey:@"tvoutNative"] intValue];
         
-        analogStick =  [[[optionsArray objectAtIndex:0] objectForKey:@"analogStick"] intValue];
+        inputTouchType =  [[[optionsArray objectAtIndex:0] objectForKey:@"inputTouchType"] intValue];
         analogDeadZoneValue =  [[[optionsArray objectAtIndex:0] objectForKey:@"analogDeadZoneValue"] intValue];        		
 	}
 			
@@ -214,13 +231,13 @@ extern int isIphone4;
 							 [NSString stringWithFormat:@"%d", overscanValue], @"overscanValue",
 							 [NSString stringWithFormat:@"%d", tvoutNative], @"tvoutNative",
 							 
-							 [NSString stringWithFormat:@"%d", analogStick], @"analogStick",
+							 [NSString stringWithFormat:@"%d", inputTouchType], @"inputTouchType",
 							 [NSString stringWithFormat:@"%d", analogDeadZoneValue], @"analogDeadZoneValue",
 							 							 
 							 nil]];	
 
 	
-    NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v9.bin")];
+    NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v10.bin")];
 	
 	NSData *plistData;
 	
@@ -297,7 +314,7 @@ extern int isIphone4;
 	   segmentedOverscanValue = nil;
 	   switchTvoutNative = nil;
 	   
-	   switchAnalogStick = nil;
+	   segmentedTouchType = nil;
 	   segmentedAnalogDeadZoneValue = nil;
     }
 
@@ -494,7 +511,7 @@ extern int isIphone4;
             {
                case 0:
                {
-                   cell.text  = @"Animated DPad";
+                   cell.text  = @"Animated";
                    switchAnimatedButtons  = [[UISwitch alloc] initWithFrame:CGRectZero];                
                    cell.accessoryView = switchAnimatedButtons ;
                    [switchAnimatedButtons setOn:[op animatedButtons] animated:NO];
@@ -503,25 +520,25 @@ extern int isIphone4;
               }
               case 1:
               {
-                   cell.text  = @"Analog Stick";
-                   switchAnalogStick  = [[UISwitch alloc] initWithFrame:CGRectZero];                
-                   cell.accessoryView = switchAnalogStick ;
-                   [switchAnalogStick setOn:[op analogStick] animated:NO];
-                   [switchAnalogStick addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
+                   cell.text  = @"Touch Type";
+
+                    segmentedTouchType = [[UISegmentedControl alloc] initWithItems:
+                       [NSArray arrayWithObjects: @"Digital", @"Analog", nil]];
+                    segmentedTouchType.selectedSegmentIndex = [op inputTouchType];
+                  
+                    CGRect r = segmentedTouchType.frame;
+                    r.size.height = 30;
+                    segmentedTouchType.frame = r;
+                    
+                    [segmentedTouchType addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                    segmentedAnalogDeadZoneValue.segmentedControlStyle = UISegmentedControlStylePlain; 
+                    //UISegmentedControlStyleBar;
+                     cell.accessoryView = segmentedTouchType;     
                    break;
-              }               
-              case 2:
-               {
-                   cell.text  = @"Digital DZ";
-                   switchTouchDeadZone  = [[UISwitch alloc] initWithFrame:CGRectZero];                
-                   cell.accessoryView = switchTouchDeadZone ;
-                   [switchTouchDeadZone setOn:[op touchDeadZone] animated:NO];
-                   [switchTouchDeadZone addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
-                   break;
-               }
-               case 3:
+              } 
+               case 2:
                {                                      
-                   cell.text  = @"Analog DZ";
+                   cell.text  = @"Analog Touch DZ";
                    
                     segmentedAnalogDeadZoneValue = [[UISegmentedControl alloc] initWithItems:
                        [NSArray arrayWithObjects: @"1", @"2", @"3",@"4", @"5", @"6", nil]];
@@ -531,6 +548,15 @@ extern int isIphone4;
                     segmentedAnalogDeadZoneValue.segmentedControlStyle = UISegmentedControlStyleBar;
                     //[cell addSubview:segmentedDeadZoneValue];
                      cell.accessoryView = segmentedAnalogDeadZoneValue;                     
+                   break;
+               }                            
+              case 3:
+               {
+                   cell.text  = @"Digital Touch DZ";
+                   switchTouchDeadZone  = [[UISwitch alloc] initWithFrame:CGRectZero];                
+                   cell.accessoryView = switchTouchDeadZone ;
+                   [switchTouchDeadZone setOn:[op touchDeadZone] animated:NO];
+                   [switchTouchDeadZone addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
                    break;
                }                              
                case 4:
@@ -570,8 +596,13 @@ extern int isIphone4;
                    cell.text  = @"Skin";                   
                    segmentedSkin = [[UISegmentedControl alloc] initWithItems:
                    (isIpad ?
-                   [NSArray arrayWithObjects: @"A", @"B", @"B (Layout 2)", nil]
-                   :[NSArray arrayWithObjects: @"A", @"B", @"B Retina", nil])];
+                   [NSArray arrayWithObjects: @"A", @"B (Layaut 2)", @"B ", nil]
+                   :[NSArray arrayWithObjects: @"A", @"B ( Lo )", @"B", nil])];
+                    
+                    CGRect r = segmentedTouchType.frame;
+                    r.size.height = 30;
+                    segmentedTouchType.frame = r;
+                    
                     //segmentedDeadZoneValue.frame = CGRectMake(145, 5, 150, 35);
                    segmentedSkin.selectedSegmentIndex = [op skin];
                     //actionControl.tag = 3;
@@ -595,6 +626,7 @@ extern int isIphone4;
                    cell.text  = @"Overscan TV-OUT";                   
                    segmentedOverscanValue = [[UISegmentedControl alloc] initWithItems:
                    [NSArray arrayWithObjects: @"0", @"1", @"2",@"3",@"4",@"5",@"6", nil]];
+                                      
                    segmentedOverscanValue.selectedSegmentIndex = [op overscanValue];
                    [segmentedOverscanValue addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
                    segmentedOverscanValue.segmentedControlStyle = UISegmentedControlStyleBar;
@@ -708,8 +740,8 @@ extern int isIphone4;
    if(switchTvoutNative!=nil)
      [switchTvoutNative release]; 
 
-   if(switchAnalogStick!=nil)
-     [switchAnalogStick release]; 
+   if(segmentedTouchType!=nil)
+     [segmentedTouchType release]; 
 
    if(segmentedAnalogDeadZoneValue!=nil)
     [segmentedAnalogDeadZoneValue release];
@@ -784,8 +816,8 @@ extern int isIphone4;
 	if(sender == switchTvoutNative)
 	  op.tvoutNative = [switchTvoutNative isOn];  
 
-	if(sender == switchAnalogStick)
-	  op.analogStick = [switchAnalogStick isOn];
+	if(sender == segmentedTouchType)
+	  op.inputTouchType = [segmentedTouchType selectedSegmentIndex];
 	  
 	if(sender == segmentedAnalogDeadZoneValue)
 	   op.analogDeadZoneValue = [segmentedAnalogDeadZoneValue selectedSegmentIndex];  	  
