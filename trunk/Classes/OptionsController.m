@@ -596,7 +596,7 @@ extern int isIphone4;
                    cell.text  = @"Skin";                   
                    segmentedSkin = [[UISegmentedControl alloc] initWithItems:
                    (isIpad ?
-                   [NSArray arrayWithObjects: @"A", @"B (Layaut 2)", @"B ", nil]
+                   [NSArray arrayWithObjects: @"A", @"B (Layout 2)", @"B ", nil]
                    :[NSArray arrayWithObjects: @"A", @"B ( Lo )", @"B", nil])];
                     
                     CGRect r = segmentedTouchType.frame;

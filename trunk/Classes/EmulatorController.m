@@ -122,6 +122,8 @@ int emulated_height = 240;
 
 extern int iOS_landscape_buttons;
 int iOS_hide_LR=0;
+int iOS_BplusX=0;
+int iOS_landscape_buttons=2;
 int iOS_skin = 1;
 int iOS_skin_data = 1;
 int iOS_wiiDeadZoneValue = 2;
@@ -135,6 +137,7 @@ int iOS_analogDeadZoneValue = 2;
 extern int iOS_waysStick;
 
 int menu_exit_option = 0;
+
 
 #define STICK4WAY (iOS_waysStick == 4 && iOS_inGame)
 #define STICK2WAY (iOS_waysStick == 2 && iOS_inGame)
@@ -217,9 +220,19 @@ void* app_Thread_Start(void* args)
 }
 
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
-{
-	
+{/*
+                [[[UIAlertView alloc] initWithTitle:nil
+                            message:@"action"
+                            delegate:self cancelButtonTitle:nil
+                            otherButtonTitles:@"Yes",@"No",nil] show];
+   */                         
 	// the user clicked one of the OK/Cancel buttons
+
+	
+	if(buttonIndex == 999)
+    {
+        return;
+    }
     
     if(buttonIndex == 0 && menu_exit_option)
     {
@@ -275,36 +288,51 @@ void* app_Thread_Start(void* args)
        
        [Helper startwiimote:self]; 
     }	    
-    else	    
+    else   	    
     {
        [self endMenu];
-    }	  	  
+    }
+  	      
+    [menu release];
+    menu = nil;
+                          
 }
 
 - (void)runMenu
 {
+    if(iphone_menu != IPHONE_MENU_NONE)
+       return;
+
+    if(menu!=nil)
+    {
+
+       [menu dismissWithClickedButtonIndex:999 animated:YES];
+       [menu release];
+       menu = nil;
+    } 
+
     actionPending=1;
-    
-    if(__emulation_paused)return;
+        
+    //if(__emulation_paused)return;
     //btUsed = num_of_joys!=0;
   
     app_MuteSound();
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
     __emulation_paused = 1;
   
-    UIActionSheet *alert;
+    //UIActionSheet *alert;
     
     menu_exit_option  = iCadeUsed && iOS_inGame; 
     
     if(!menu_exit_option)
     {
-		alert = [[UIActionSheet alloc] initWithTitle:
+		menu = [[UIActionSheet alloc] initWithTitle:
 			   @"Choose an option from the menu. Press cancel to go back." delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil 
 			   otherButtonTitles:@"Help",@"Options",@"Donate",@"WiiMote",@"Cancel", nil];    
     }
     else
     {
-	    alert = [[UIActionSheet alloc] initWithTitle:
+	    menu = [[UIActionSheet alloc] initWithTitle:
 			   @"Choose an option from the menu. Press cancel to go back." delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil 
 			   otherButtonTitles:@"Exit Game",@"Help",@"Options",@"Donate",@"WiiMote",@"Cancel", nil];
     }
@@ -315,10 +343,9 @@ void* app_Thread_Start(void* args)
 	  [alert showInView:self.view];
 	else
 	*/
-	  [alert showInView:self.view];
-
-	
-	[alert release];
+	  [menu showInView:self.view];
+	       
+	//[menu release];
    
     [pool release]; 
      
@@ -569,6 +596,8 @@ void* app_Thread_Start(void* args)
    screenView=nil;
    imageBack=nil;   			
    dview = nil;
+   
+   menu = nil;
 
    
    [ self getConf];
@@ -766,9 +795,13 @@ void* app_Thread_Start(void* args)
 
 -(void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
    
-    //show_controls = 1;    
+    //show_controls = 1;   
+ 
     [self changeUI];
-        
+    if(menu!=nil)
+    {         
+         [self runMenu];
+    }        
 }
 
 - (void)changeUI{
@@ -1579,8 +1612,18 @@ void* app_Thread_Start(void* args)
 				//NSLog(@"GP2X_X");
 			}
 			else if (MyCGRectContainsPoint(ButtonLeft, point)) {
-				gp2x_pad_status |= GP2X_A;
-				btnStates[BTN_A] = BUTTON_PRESS;
+			    if(iOS_BplusX)
+			    {
+					gp2x_pad_status |= GP2X_X | GP2X_B;
+	                btnStates[BTN_B] = BUTTON_PRESS;
+	                btnStates[BTN_X] = BUTTON_PRESS;
+	                btnStates[BTN_A] = BUTTON_PRESS;
+                }
+                else
+                {
+					gp2x_pad_status |= GP2X_A;
+					btnStates[BTN_A] = BUTTON_PRESS;
+				}
 				//NSLog(@"GP2X_A");
 			}
 			else if (MyCGRectContainsPoint(ButtonRight, point)) {
@@ -1608,9 +1651,12 @@ void* app_Thread_Start(void* args)
 				//NSLog(@"GP2X_Y | GP2X_B");
 			}			
 			else if (MyCGRectContainsPoint(ButtonDownRight, point)) {
-				gp2x_pad_status |= GP2X_X | GP2X_B;
-                btnStates[BTN_B] = BUTTON_PRESS;
-                btnStates[BTN_X] = BUTTON_PRESS;
+			    if(!iOS_BplusX && iOS_landscape_buttons>=3)
+			    {
+					gp2x_pad_status |= GP2X_X | GP2X_B;
+	                btnStates[BTN_B] = BUTTON_PRESS;
+	                btnStates[BTN_X] = BUTTON_PRESS;
+                }
 				//NSLog(@"GP2X_X | GP2X_B");
 			} 
 			else if (MyCGRectContainsPoint(Select, point)) {
@@ -1837,21 +1883,21 @@ void* app_Thread_Start(void* args)
             break;
             
         // START
-        case 'h':
+        case 'u':
             gp2x_pad_status |= GP2X_START;
             btnStates[BTN_START] = BUTTON_PRESS;
             break;
-        case 'r':
+        case 'f':
             gp2x_pad_status &= ~GP2X_START;
             btnStates[BTN_START] = BUTTON_NO_PRESS;
             break;
             
         // 
-        case 'u':
+        case 'h':
             gp2x_pad_status |= GP2X_L;
             btnStates[BTN_L1] = BUTTON_PRESS;
             break;
-        case 'f':
+        case 'r':
             gp2x_pad_status &= ~GP2X_L;
             btnStates[BTN_L1] = BUTTON_NO_PRESS;
             break;
@@ -1894,7 +1940,7 @@ void* app_Thread_Start(void* args)
         
     }
     
-    [self handle_MENU];
+    //[self handle_MENU];
     [self handle_DPAD];
 }
 

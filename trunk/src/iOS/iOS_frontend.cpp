@@ -27,7 +27,7 @@ int iOS_sound = 4;
 int iOS_clock_cpu= 80;
 int iOS_clock_sound=80;
 int iOS_cheat=0;
-int iOS_landscape_buttons=2;
+int iOS_buttons=2;
 int iOS_waysStick = 8;
 
 
@@ -40,6 +40,8 @@ extern int emulated_height;
 extern int safe_render_path;
 extern int isIpad;
 extern int iOS_hide_LR;
+extern int iOS_BplusX;
+extern int iOS_landscape_buttons;
 
 int _master_volume = 100;
 
@@ -183,7 +185,7 @@ static void game_list_view(int *pos) {
 		gp2x_gamelist_text_out(35, 110, "NO AVAILABLE GAMES FOUND");
 	}
 
-	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"iMAME4all v1.8.0 by D.Valdeita");
+	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"iMAME4all v1.8.1 by D.Valdeita");
 }
 
 static void game_list_select (int index, char *game, char *emu) {
@@ -239,7 +241,7 @@ static int show_options(char *game)
 	f=fopen(text,"r");
 	if (f) {
 		fscanf(f,"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",&iOS_video_aspect,&iOS_video_rotate,&iOS_video_sync,
-		&iOS_frameskip,&iOS_sound,&iOS_landscape_buttons,&iOS_clock_cpu,&iOS_clock_sound,&i,&iOS_cheat,&iOS_video_depth,&iOS_waysStick);
+		&iOS_frameskip,&iOS_sound,&iOS_buttons,&iOS_clock_cpu,&iOS_clock_sound,&i,&iOS_cheat,&iOS_video_depth,&iOS_waysStick);
 		fclose(f);
 	}
 
@@ -338,14 +340,15 @@ static int show_options(char *game)
 		}
 
 		/* (8) Landscape Num Buttons */
-		switch (iOS_landscape_buttons)
+		switch (iOS_buttons)
 		{
 		    case 0: gp2x_gamelist_text_out(x_Pos,y_Pos+100, "Num Buttons   0 Button"); break;
 		    case 1: gp2x_gamelist_text_out(x_Pos,y_Pos+100, "Num Buttons   1 Button"); break;
 			case 2: gp2x_gamelist_text_out(x_Pos,y_Pos+100, "Num Buttons   2 Buttons"); break;
-			case 3: gp2x_gamelist_text_out(x_Pos,y_Pos+100, "Num Buttons   3 Buttons"); break;
-			case 4: gp2x_gamelist_text_out(x_Pos,y_Pos+100, "Num Buttons   4 Buttons"); break;
-			case 5: gp2x_gamelist_text_out(x_Pos,y_Pos+100, "Num Buttons   All Buttons"); break;
+			case 3: gp2x_gamelist_text_out(x_Pos,y_Pos+100, "Num Buttons   3 Buttons (A=B+X)"); break;
+			case 4: gp2x_gamelist_text_out(x_Pos,y_Pos+100, "Num Buttons   3 Buttons"); break;
+			case 5: gp2x_gamelist_text_out(x_Pos,y_Pos+100, "Num Buttons   4 Buttons"); break;
+			case 6: gp2x_gamelist_text_out(x_Pos,y_Pos+100, "Num Buttons   All Buttons"); break;
 		}
 
 		/* (9) CPU Clock */
@@ -502,15 +505,15 @@ static int show_options(char *game)
 			case 7:
 				if(ExKey & GP2X_R || ExKey & GP2X_RIGHT)
 				{
-					iOS_landscape_buttons ++;
-					if (iOS_landscape_buttons>5)
-						iOS_landscape_buttons=0;
+					iOS_buttons ++;
+					if (iOS_buttons>6)
+						iOS_buttons=0;
 				}
 				else
 				{
-					iOS_landscape_buttons--;
-					if (iOS_landscape_buttons<0)
-						iOS_landscape_buttons=5;
+					iOS_buttons--;
+					if (iOS_buttons<0)
+						iOS_buttons=6;
 				}
 				break;
 			case 8:
@@ -555,7 +558,7 @@ static int show_options(char *game)
 			f=fopen(text,"w");
 			if (f) {
 				fprintf(f,"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",iOS_video_aspect,iOS_video_rotate,iOS_video_sync,
-				iOS_frameskip,iOS_sound,iOS_landscape_buttons,iOS_clock_cpu,iOS_clock_sound,i,iOS_cheat,iOS_video_depth,iOS_waysStick);
+				iOS_frameskip,iOS_sound,iOS_buttons,iOS_clock_cpu,iOS_clock_sound,i,iOS_cheat,iOS_video_depth,iOS_waysStick);
 				fclose(f);
 				sync();
 			}
@@ -645,14 +648,14 @@ static void select_game(char *emu, char *game)
 			{
 				iOS_clock_cpu= 100;
 				iOS_clock_sound= 100;
-				iOS_landscape_buttons=2;
+				iOS_buttons=2;
 				iOS_sound=12;
 			}
 			else
 			{
 				iOS_clock_cpu= 80;
 				iOS_clock_sound= 80;
-				iOS_landscape_buttons=2;
+				iOS_buttons=2;
 			}
 
 			if(show_options(game))
@@ -820,19 +823,23 @@ void execute_game (char *playemu, char *playgame)
 	
 	iOS_inGame = 1;
 	iOS_exitGame=0;
-	iOS_hide_LR = iOS_landscape_buttons!=5;
+	iOS_hide_LR = iOS_buttons!=6;
+	iOS_BplusX = iOS_buttons==3;
+	iOS_landscape_buttons = iOS_buttons <= 3 ? iOS_buttons : (iOS_buttons - 1) ;
 	//gp2x_set_video_mode(16,320,240);
 	iphone_main(n, args);
 
 	if(isIpad)
-		iOS_landscape_buttons=2;
+		iOS_buttons=2;
 	else
-		iOS_landscape_buttons=2;
+		iOS_buttons=2;
 
 	iOS_hide_LR = 0;
+	iOS_BplusX = 0;
 
 	iOS_exitGame=0;
 	iOS_inGame = 0;
+	iOS_landscape_buttons = 2;
 	emulated_width = 320;
 	emulated_height = 240;
 	gp2x_set_video_mode(16,320,240);
@@ -865,7 +872,7 @@ extern "C" int mimain (int argc, char **argv)
 	{
 		iOS_clock_cpu= 100;
 		iOS_clock_sound= 100;
-		iOS_landscape_buttons=2;
+		iOS_buttons=2;
 		iOS_sound=12;
 	}
 
