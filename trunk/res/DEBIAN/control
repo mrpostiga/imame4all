@@ -1,6 +1,6 @@
 Package: com.seleuco.imame4all
 Name: iMAME4all
-Version: 1.8.1-0
+Version: 1.8.1-1
 Architecture: iphoneos-arm
 Description: Multiple Arcade Machine Emulator.
  v1.8.1: iCade iControlpad compatible button mapping, new A=B+X button option, menu fixes, layout changes.
