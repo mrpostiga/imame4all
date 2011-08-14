@@ -68,6 +68,8 @@
 
   AnalogStickView   * analogStickView;
 
+  UIActionSheet     * menu;
+
 
   //joy controller
   CGRect ButtonUp;

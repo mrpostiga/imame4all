@@ -1,5 +1,5 @@
 ===========================================================
-iMAME4ALL 1.8 (August 6, 2011) by David Valdeita (Seleuco)
+iMAME4ALL 1.8.1 (August 14, 2011) by David Valdeita (Seleuco)
 ===========================================================
 
 
@@ -108,7 +108,7 @@ limits the joystick's range of motion:
 The most common reason to use a gate in an actual arcade setting is the retrofitting of an older machine that is not compatible with a new 8-way stick. A classic example of this is Pac-Man. The game was originally designed for a 4-way stick, and is programmed to respond only when a new input occurs. If the user is holding the stick in the down position, then suddenly makes a motion to move to the right, what often happens is that the stick first moves into the down-right diagonal, which the game does not recognize as new input since down is still being held. However, right is also now considered held, and when the user completes the motion to move right, it is also not a new input, and Pac-Man will still be moving down.
 
 -Landscape 1-4 Buttons.
-Show 1-4 Buttons: Hide/show Y/A/X buttons if needed.
+Show 1-4 Buttons: Hide/show Y/A/X buttons if needed. Select A=B+X to use A button as B and X simultaneus press.
 
 - CPU Clock:
 The clock of the CPUs can be adjusted from 50% to 200%. The nominal value is 100% and the CPU is emulated accurately.
@@ -202,8 +202,8 @@ when the iCade turns off, the SW keyboard may popup and then backdown, this is n
 
 iCade KEY MAPPINGS
 
-TOP:  [RED/COIN]	[BLACK/EXIT]	[BLACK/Y]	[WHITE/B]
-BOT:  [RED/START]	[BLACK/OPTION]	[BLACK/A]	[WHITE/X]
+TOP:  [RED/COIN]	[BLACK/START]	[BLACK/Y]	[WHITE/B]
+BOT:  [RED/L1] 		[BLACK/R1]	[BLACK/A]	[WHITE/X]
 
 Thanks to Todd Laney for sending me patches, and Martijn Bosschaart who has support me to get the iCade HW.
 
@@ -386,6 +386,8 @@ PORT CREDITS
 
 
 DEVELOPMENT
+August 14,2011
+- v1.8.1: iCade & iControlpad compatible button mapping, new A=B+X button option, menu fixes, layout changes.
 August 6,2011
 - Version 1.8: Added iOS4 multitasking, new skin, analog touch stick, stick 2/4/8-way restrictors, stereo support, sound going out of sync fixed, fixed jerky gameplay and more...
 July 17,2011
