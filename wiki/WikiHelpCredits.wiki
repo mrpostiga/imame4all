@@ -348,18 +348,18 @@ http://dl.openhandhelds.org/cgi-bin/gp2x.cgi?0,0,0,0,5,2512
   Just go to imame4all.app file in your iDevice directory and set the permissions to 777.
   also needs to be on the iMAME4ALL folder under /var/mobile/Media/ROMS. (recursive)
 
-  This is what you need to do. SSH into your iPad and then run this command on the two directories like this:
+This is what you need to do. SSH into your iPad and then run this command on the two directories like this:
 
-chmod -R 777 /var/mobile/Media/ROMs/iMAME4a­ll
-chmod -R 777 /Applications/iMAME4all.app
+  chmod -R 777 /var/mobile/Media/ROMs/iMAME4a­ll
+  chmod -R 777 /Applications/iMAME4all.app
 
-Make sure of the following:
+  Make sure of the following:
 
   1) You're logged in as root
   2) You type in the commands case sensitive
   3) iMAME4all is not running
 
- You can use other apps but this works for sure.
+  You can use other apps but this works for sure. You can try iFile from cydia, which is a UI file manager that let you change permissions.
 
 - Not perfect sound or incomplete in some games.
 
