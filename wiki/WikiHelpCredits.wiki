@@ -348,8 +348,8 @@ http://dl.openhandhelds.org/cgi-bin/gp2x.cgi?0,0,0,0,5,2512
 
 This is what you need to do. SSH into your iPad and then run this command on the two directories like this:
 
-chmod -R 777 /var/mobile/Media/ROMs/iMAME4a­ll
-chmod -R 777 /Applications/iMAME4all.app
+- 'chmod -R 777 /var/mobile/Media/ROMs/iMAME4a­ll'
+- 'chmod -R 777 /Applications/iMAME4all.app'
 
 Make sure of the following:
 
