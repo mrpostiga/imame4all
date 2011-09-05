@@ -187,10 +187,10 @@ static void updatekeyboard(void)
 
 	key[KEY_ESC]=iOS_exitGame;//iOS
 
-	key[KEY_P]=((ExKey1 & GP2X_L) && (ExKey1 & GP2X_R) && (!(ExKey1 & GP2X_START)));
-
-    key[KEY_F11]=(((ExKey1 & GP2X_L) && (ExKey1 & GP2X_START)) || ((ExKey1 & GP2X_R) && (ExKey1 & GP2X_SELECT)));
-    key[KEY_LSHIFT]=((ExKey1 & GP2X_L) && (ExKey1 & GP2X_START));
+//sq Disable multiple key press combinations. Causes issues with iCade. Hangover from GP2X port.
+//sq	key[KEY_P]=((ExKey1 & GP2X_L) && (ExKey1 & GP2X_R) && (!(ExKey1 & GP2X_START)));
+//sq    key[KEY_F11]=(((ExKey1 & GP2X_L) && (ExKey1 & GP2X_START)) || ((ExKey1 & GP2X_R) && (ExKey1 & GP2X_SELECT)));
+//sq    key[KEY_LSHIFT]=((ExKey1 & GP2X_L) && (ExKey1 & GP2X_START));
 }
 
 int osd_is_key_pressed(int keycode)
