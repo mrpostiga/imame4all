@@ -200,9 +200,9 @@ void get_rom_sample_path (int argc, char **argv, int game_index)
 	mame_argc = argc;
 	mame_argv = argv;
 	game = game_index;
-
-	rompath    = get_string ("directory", "rompath",    NULL, "/var/mobile/Media/ROMs/iMAME4all/.;/var/mobile/Media/ROMs/iMAME4all/roms");
-	samplepath = get_string ("directory", "samplepath", NULL, "/var/mobile/Media/ROMs/iMAME4all/.;/var/mobile/Media/ROMs/iMAME4all/samples");
+    
+	rompath    = get_string ("directory", "rompath",    NULL, IMAMEBASEPATH "/roms");
+	samplepath = get_string ("directory", "samplepath", NULL, IMAMEBASEPATH "/samples");
 
 	/* handle '-romdir' hack. We should get rid of this BW */
 	alternate_name = 0;
@@ -310,14 +310,14 @@ void parse_cmdline (int argc, char **argv, int game_index)
 	resolution  = get_string ("config", "resolution", NULL, "auto");
 
 	/* set default subdirectories */
-	nvdir      = get_string ("directory", "nvram",   NULL, "/var/mobile/Media/ROMs/iMAME4all/nvram" );
-	hidir      = get_string ("directory", "hi",      NULL, "/var/mobile/Media/ROMs/iMAME4all/hi");
-	cfgdir     = get_string ("directory", "cfg",     NULL, "/var/mobile/Media/ROMs/iMAME4all/cfg");
-	screenshotdir = get_string ("directory", "snap",     NULL, "/var/mobile/Media/ROMs/iMAME4all/snap");
-	memcarddir = get_string ("directory", "memcard", NULL, "/var/mobile/Media/ROMs/iMAME4all/memcard");
-	stadir     = get_string ("directory", "sta",     NULL, "/var/mobile/Media/ROMs/iMAME4all/sta");
-	artworkdir = get_string ("directory", "artwork", NULL, "/var/mobile/Media/ROMs/iMAME4all/artwork");
-	cheatdir = get_string ("directory", "cheat", NULL, "/var/mobile/Media/ROMs/iMAME4all");
+	nvdir      = get_string ("directory", "nvram",   NULL, IMAMEBASEPATH "/nvram" );
+	hidir      = get_string ("directory", "hi",      NULL, IMAMEBASEPATH "/hi");
+	cfgdir     = get_string ("directory", "cfg",     NULL, IMAMEBASEPATH "/cfg");
+	screenshotdir = get_string ("directory", "snap",     NULL, IMAMEBASEPATH "/snap");
+	memcarddir = get_string ("directory", "memcard", NULL, IMAMEBASEPATH "/memcard");
+	stadir     = get_string ("directory", "sta",     NULL, IMAMEBASEPATH "/sta");
+	artworkdir = get_string ("directory", "artwork", NULL, IMAMEBASEPATH "/artwork");
+	cheatdir = get_string ("directory", "cheat", NULL, IMAMEBASEPATH);
 
 	logerror("cheatfile = %s - cheatdir = %s\n",cheatfile,cheatdir);
 
