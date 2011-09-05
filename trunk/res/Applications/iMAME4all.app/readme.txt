@@ -1,5 +1,5 @@
 ===========================================================
-iMAME4ALL 1.8.1 (August 14, 2011) by David Valdeita (Seleuco)
+iMAME4ALL 1.9 (September 5, 2011) by David Valdeita (Seleuco)
 ===========================================================
 
 
@@ -391,6 +391,8 @@ PORT CREDITS
 
 
 DEVELOPMENT
+September 5,2011
+- v1.9:  key delay on game selection,added option to set Sound defaults,added option to choose iCade or iControlPad layout,sleep processor between inputs on game select screen,Fixed multiple key presses problems,sound initialisation fixes.
 August 14,2011
 - v1.8.1: iCade & iControlpad compatible button mapping, new A=B+X button option, menu fixes, layout changes.
 August 6,2011
@@ -1781,6 +1783,7 @@ gaiden    "Ninja Gaiden (World)"
 ninjakd2  "Ninja Kid II (set 1)"
 ninjak2a  "Ninja Kid II (set 2)"
 ninjak2b  "Ninja Kid II (set 3)"
+
 ninjakj   "Ninja Kids (Japan)"
 ninjak    "Ninja Kids (World)"
 ninjamas  "Ninja Master's - haoh-ninpo-cho"

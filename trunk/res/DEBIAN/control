@@ -1,8 +1,9 @@
 Package: com.seleuco.imame4all
 Name: iMAME4all
-Version: 1.8.1-1
+Version: 1.9-0
 Architecture: iphoneos-arm
 Description: Multiple Arcade Machine Emulator.
+ v1.9:key delay on game selection,added option to set Sound defaults,added option to choose iCade or iControlPad layout,sleep processor between inputs on game select screen,Fixed multiple key presses problems,sound initialisation fixes.
  v1.8.1: iCade iControlpad compatible button mapping, new A=B+X button option, menu fixes, layout changes.
  v1.8: Added iOS4 multitasking, new skin, analog touch stick, stick 2/4/8-way restrictors, stereo support, sound going out of sync fixed, fixed jerky gameplay and more...
  V1.7.1: Improved iONS's iCade support, Bringin iMame4all up to App Standards.
