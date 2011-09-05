@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <signal.h>
+#include "shared.h"
 
 /* Verbose outputs to error.log ? */
 #define VERBOSE 	0
@@ -950,7 +951,7 @@ void *osd_fopen (const char *game, const char *filename, int filetype, int _writ
 	case OSD_FILETYPE_HIGHSCORE_DB:
 	case OSD_FILETYPE_HISTORY:
 		/* only for reading */
-		sprintf (name, "/var/mobile/Media/ROMs/iMAME4all/%s", filename);//FIX Seleuco
+		sprintf (name, IMAMEBASEPATH "/%s", filename);//FIX Seleuco
 		if( _write )
 		{
 			logerror("osd_fopen: type %02x write not supported\n",filetype);
