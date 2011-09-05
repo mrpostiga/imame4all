@@ -20,7 +20,7 @@
 #include "i286.h"
 #include "i286intf.h"
 
-#include "i86time.c"
+#include "i86time.cpp"
 
 /***************************************************************************/
 /* cpu state                                                               */
@@ -91,9 +91,9 @@ static struct i86_timing cycles;
 #include "instr186.h"
 #include "instr286.h"
 #include "table286.h"
-#include "instr86.c"
-#include "instr186.c"
-#include "instr286.c"
+#include "instr86.cpp"
+#include "instr186.cpp"
+#include "instr286.cpp"
 
 static void i286_urinit(void)
 {
