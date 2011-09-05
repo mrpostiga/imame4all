@@ -35,6 +35,7 @@ extern "C" void app_MuteSound(void);
 extern "C" void app_DemuteSound(void);
 extern "C" void iphone_UpdateScreen(void);
 extern "C" void iphone_Reset_Views(void);
+int sound_close_AudioQueue();
 
 int iOS_video_width = 320;
 int iOS_video_height = 240;
@@ -48,7 +49,6 @@ typedef struct AQCallbackStruct {
 
 typedef unsigned char byte;
 extern unsigned short *screenbuffer;
-extern int global_low_latency_sound;
 
 extern int soundcard;
 
@@ -391,6 +391,7 @@ void gp2x_sound_thread_start(int len)
 
 void gp2x_sound_thread_stop(void)
 {
+    sound_close_AudioQueue();
 }
 
 void gp2x_sound_set_rate(int rate)
@@ -560,6 +561,8 @@ int sound_close_AudioQueue(){
 
 		AudioQueueDispose(in.queue, true);
 		soundInit = 0;
+        head = 0;
+        tail = 0;
 	}
 }
 
