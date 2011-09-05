@@ -43,6 +43,8 @@ extern int iOS_hide_LR;
 extern int iOS_BplusX;
 extern int iOS_landscape_buttons;
 
+extern int global_sound;
+
 int _master_volume = 100;
 
 extern int iphone_main (int argc, char **argv);
@@ -90,7 +92,7 @@ static void gp2x_intro_screen(void) {
 
 		int ExKey=gp2x_joystick_read(0);
 		if(ExKey!=0)break;
-		gp2x_timer_delay(50);
+        usleep(50000);
 	}
 	sprintf(name,get_documents_path("skins/iOSmenu.bmp"));
 	f=fopen(name,"rb");
@@ -185,7 +187,7 @@ static void game_list_view(int *pos) {
 		gp2x_gamelist_text_out(35, 110, "NO AVAILABLE GAMES FOUND");
 	}
 
-	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"iMAME4all v1.8.1 by D.Valdeita");
+	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"iMAME4all v1.9.0 by D.Valdeita");
 }
 
 static void game_list_select (int index, char *game, char *emu) {
@@ -234,7 +236,7 @@ static int show_options(char *game)
 	int i=0;
 
 	if(!safe_render_path)
-	  while(ExKey=gp2x_joystick_read(0)&0x8c0ff55){};
+	  while(ExKey=gp2x_joystick_read(0)&0x8c0ff55){usleep(1000);};
 
 	/* Read game configuration */
 	sprintf(text,get_documents_path("iOS/%s_v4.cfg"),game);
@@ -373,14 +375,14 @@ static int show_options(char *game)
 
 		if(safe_render_path)
 		{
-		   while(gp2x_joystick_read(0)&0x8c0ff55) { gp2x_timer_delay(150); }
-		   while(!(ExKey=gp2x_joystick_read(0)&0x8c0ff55)) { }
+		   while(gp2x_joystick_read(0)&0x8c0ff55) { 
+               usleep(150000);
+           }
+		   while(!(ExKey=gp2x_joystick_read(0)&0x8c0ff55)) { usleep(1000); }
 		}
 		else
 		{
-		   //ExKey=gp2x_joystick_read(0);
-		   //gp2x_timer_delay(150);
-		   gp2x_timer_delay(150);
+           usleep(150000);
 		   ExKey=gp2x_joystick_read(0)&0x8c0ff55;
 		}
 
@@ -581,7 +583,8 @@ static void gp2x_exit(void)
 static void select_game(char *emu, char *game)
 {
 
-	unsigned long ExKey;
+	unsigned long ExKey=0;
+    int keydelay=0;
 
 	/* No Selected game */
 	strcpy(game,"builtinn");
@@ -590,7 +593,7 @@ static void select_game(char *emu, char *game)
 	gp2x_video_flip();
 
 	if(!safe_render_path)
-	   while(ExKey=gp2x_joystick_read(0)&0x8c0ff55){};
+	   while(ExKey=gp2x_joystick_read(0)&0x8c0ff55){usleep(1000);};
 
 	/* Wait until user selects a game */
 	while(1)
@@ -598,21 +601,29 @@ static void select_game(char *emu, char *game)
 		game_list_view(&last_game_selected);
 		gp2x_video_flip();
 
+        if(keydelay) {
+            usleep(400000);
+            keydelay=0;
+        } 
+        
         if(safe_render_path)
-        {
-			if( (gp2x_joystick_read(0)&0x8c0ff55))
-				gp2x_timer_delay(100);
+        {          
+			if( (gp2x_joystick_read(0)&0x8c0ff55)) {
+                usleep(100000);
+            }
 			while(!(ExKey=gp2x_joystick_read(0)&0x8c0ff55))
 			{
-				if ((ExKey & GP2X_L) && (ExKey & GP2X_R)) { gp2x_exit(); }
+                keydelay=1;
+                usleep(1000);
 			}
         }
         else
         {
-			gp2x_timer_delay(100);
+            usleep(100000);
         	ExKey=gp2x_joystick_read(0);
         }
-
+  
+        
 		if (ExKey & GP2X_UP) last_game_selected--;
 		else if (ExKey & GP2X_DOWN) last_game_selected++;
 		else if ((ExKey & GP2X_L) || ExKey & GP2X_LEFT) last_game_selected-=21;
@@ -636,12 +647,12 @@ static void select_game(char *emu, char *game)
 
 			if(!safe_render_path)
 			{
-				iOS_sound = 1;
+				iOS_sound = global_sound;
 				iOS_video_depth=8;
 			}
 			else
 			{
-				iOS_sound = 4;
+				iOS_sound = global_sound;
 				iOS_video_depth=16;
 			}
 			if(isIpad)
@@ -649,7 +660,7 @@ static void select_game(char *emu, char *game)
 				iOS_clock_cpu= 100;
 				iOS_clock_sound= 100;
 				iOS_buttons=2;
-				iOS_sound=12;
+				iOS_sound=global_sound;
 			}
 			else
 			{
@@ -662,8 +673,9 @@ static void select_game(char *emu, char *game)
 			{
 				break;
 			}
+            
+            
 		}
-
 	}
 }
 
@@ -705,9 +717,9 @@ void execute_game (char *playemu, char *playgame)
     if (iOS_video_aspect==0)
 	{
     	iOS_aspectRatio = 1;
-}else if(iOS_video_aspect==1){
+    }else if(iOS_video_aspect==1){
 		iOS_cropVideo = 1;
-}else if(iOS_video_aspect==2){
+    }else if(iOS_video_aspect==2){
 		iOS_cropVideo = 2;
     }else if(iOS_video_aspect==3){
 		iOS_fixedRes = 1;
@@ -859,12 +871,12 @@ extern "C" int mimain (int argc, char **argv)
 	//hack: por defecto lentos van a 11000
 	if(!safe_render_path)
 	{
-		iOS_sound = 1;
+		iOS_sound = global_sound;
 		iOS_video_depth = 8;
 	}
 	else
 	{
-		iOS_sound = 4;
+		iOS_sound = global_sound;
 		iOS_video_depth = 16;
 	}
 
@@ -873,7 +885,7 @@ extern "C" int mimain (int argc, char **argv)
 		iOS_clock_cpu= 100;
 		iOS_clock_sound= 100;
 		iOS_buttons=2;
-		iOS_sound=12;
+		iOS_sound=global_sound;
 	}
 
 	/* Show intro screen */
