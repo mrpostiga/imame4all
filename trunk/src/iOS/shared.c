@@ -14,7 +14,9 @@ const char* get_documents_path(char* file)
 {
   static char documents_path[1024];
 
-  sprintf(documents_path, "/var/mobile/Media/ROMs/iMAME4all/%s", file);
+//sq  sprintf(documents_path, "/var/mobile/Media/ROMs/iMAME4all/%s", file);
+
+    sprintf(documents_path, IMAMEBASEPATH "/%s", file);
 
   return documents_path;
 }
