@@ -15,7 +15,7 @@ This version emulates over 2000 different romsets. (see at the end of document f
 Please, try to understand that that with that amount of games, some will run better than others and some might not even run with iMAME4all. 
 Please, don't email me asking for a specific game to run.
 
-Although the performance is very good with modern devices (all games I tested on iPad run practically perfect), owners of older devices should not expect a good performance; please turn off sound because that's very helpful.
+Although the performance is very good with modern devices (all games I tested on the iPad 2 run near perfect), owners of older devices should not expect as good performance. Tips to help performance: use lower quality sound or switch it off, use 8 bit depth, underclock the CPU and Sound CPUs.
 
 After installing, place your MAME-titled zipped roms in /var/mobile/Media/ROMs/iMAME4all/roms folder.
 
@@ -31,19 +31,18 @@ To see MAME license see the end of this document
 Features
 ------------
 
-Full speed on iPad HD. Almost perfect on iPhone 4.
+Full speed on iPad 2. Almost perfect on iPhone 4 and iPad 1.
 Autorotate.
 Smoothed image.
 Scanline & TV Filter.
 Full screen, windowed.
 Animated touch DPad.
 1/4 buttons selectable.
-Low latency audio.
 Video Aspect Normal, Rotate, Rotate controls.
 Adjustable CPU, Audio clock.
 WiiMote\WiiClassic control thanks to BTstack.
 Support for up to 4 WiiMotes/Classic (multiplayer).
-iCade support.
+iCade & iControlPad support.
 Native TV-Out for firmware >= 3.2.
 
 ... and more. 
@@ -56,9 +55,7 @@ The emulator controls are the next ones:
 - Buttons B,X,A,Y,L,R: Buttons A,B,C,D,E,F.
 - Button SELECT (1): Insert credits (UP+SELECT = 2P credits, RIGHT+SELECT = 3P credits, DOWN+SELECT = 4P credits).
 - Button START (2): start (UP+START = 2P start, RIGHT+START = 3P start, DOWN+START = 4P start).
-- Button L1+R1: Pause.
 - Buttons L2: Exit to selection menu to select another game.
-- Buttons L1+START simultaneously: Show profiler.
 - Buttons START+SELECT simultaneously: Access to the MAME menu.
 - Button R2: Open help , global options, WiiMote searcher.
 
@@ -86,6 +83,7 @@ TATE: The window and controls are rotated. (it may help to play some landscape g
 The video Rotate is configured with the following combination of options:
 8 bit /16 bit /Auto
 Try different video depth if you have glitches with current game.
+Most games will play fine with the default 16 bit but some, such as "Space Invaders", require setting to 8 bit or Auto.
 
 - Video Sync:
 Normal: Single buffer and dirty buffer is used.
@@ -100,7 +98,7 @@ Auto: The frameskip is adjusted automatically in real time.
 The sound options are the following ones:
 ON: The sound is activated. 11, 22, 33 and 44 KHz sound mixing rates are available in both mono and stereo.
 OFF: The sound is disabled.
-Fast sound: Some tweaks are done to improve the performance (but with a bit worse sound quality).
+Fast sound: Some tweaks are done to improve the performance (but with slightly worse sound quality), this also forces mono.
 
 - Stick
 limits the joystick's range of motion:
@@ -143,13 +141,21 @@ GLOBAL OPTIONS
 
 -Safe Render Path (iPhone only). Enable at the expenses of performance for maximun compability. Slow in 3G (not recomended unless you find any problem).
 
--Full Screen (Landscape); Uses all avalible screen or shows the emulator windowed.
+-Full Screen (Landscape); Uses all available screen or shows the emulator windowed.
 
 -Animated. Animates ON/OFF DPad/Stick. Disable to gain performance.
 
 -Touch Type: Set the touch stick to works as analog stick or as digital stick.
 
+-Control Layout: Configures bluetooth control layout for iCade or iControlPad.
+
+-Sound Rate: Set the default rate for games.
+
+-Sound Stereo: Set the default number of channels for sound, you can also select "Fast" for faster performance but lower quality and mono.
+
 -Show FPS: Shows ON/OFF fps.
+
+-Show Info/Warnings: Shows Game Info and any warnings when a game is selected.
 
 -Digital Touch DZ: Enable/Disable a deadzone on DPAD touch center. It could be better for some games. Disable if you don't like it.
 
@@ -188,22 +194,21 @@ B = Y
 A = A
 home: exit game
 
-In landscape mode touch on anywhere of the screen to show the emulator options.
+In landscape mode touch anywhere on the screen to show the emulator options.
 
 ICADE
 -----
 
-Best way to use iCade with iMAME4All is in fullscreen portrait mode, hit the option button and choose options. The onscreen controls will fade out when you start using the iCade buttons
-to get on screen controls back, just touch the screen.
+Best way to use iCade with iMAME4All is in fullscreen portrait mode, hit the option button and choose options. The onscreen controls will fade out when you start using the iCade buttons. To get on screen controls back, just touch the screen.
 
-if the iCade is off (the fake coin slot light is off) just hit an iCade button or move the joystick.(you must have paired the iCade via bluetooth before) 
+If the iCade is off (the fake coin slot light is off) just hit an iCade button or move the joystick.(you must have paired the iCade via bluetooth before) 
 
-when the iCade turns off, the SW keyboard may popup and then backdown, this is normal don't be alarmed
+When the iCade turns off, the SW keyboard may popup and then backdown, this is normal don't be alarmed
 
 iCade KEY MAPPINGS
 
-TOP:  [RED/COIN]	[BLACK/START]	[BLACK/Y]	[WHITE/B]
-BOT:  [RED/L1] 		[BLACK/R1]	[BLACK/A]	[WHITE/X]
+TOP:  [RED/COIN]	[BLACK/EXIT]	[BLACK/Y]	[WHITE/B]
+BOT:  [RED/START]	[BLACK/OPTION]	[BLACK/A]	[WHITE/X]
 
 Thanks to Todd Laney for sending me patches, and Martijn Bosschaart who has support me to get the iCade HW.
 
@@ -218,7 +223,7 @@ Use TV Out settings to set up how iPad or iPhone plays videos on your TV.
 
 When the cable is connected to a TV or projector, iMAME4all will automatically use it when playing a game.
 
-Set the TV signal to NTSC or PAL: Choose Video > TV Signal and select NTSC or PAL. NTSC and PAL are TV broadcast standards, used in different regions. If you are in the Americas, NTSC is probably the correct choice. Elsewhere, try PAL. If you’re not sure, check the documentation that came with your TV or projector.
+Set the TV signal to NTSC or PAL: Choose Video > TV Signal and select NTSC or PAL. NTSC and PAL are TV broadcast standards, used in different regions. If you are in the Americas, NTSC is probably the correct choice. Elsewhere, try PAL. If you're not sure, check the documentation that came with your TV or projector.
 
 Note: TV-Out needs firmaware >= 3.2
 
