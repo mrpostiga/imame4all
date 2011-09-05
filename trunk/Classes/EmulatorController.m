@@ -112,7 +112,8 @@ int scanline_filter_port = 0;
      
 /////
 int global_fps = 0;
-int global_low_latency_sound = 0;
+int global_showinfo = 1;
+int global_sound = 0;
 int iOS_animated_DPad = 0;
 int iOS_4buttonsLand = 0;
 int iOS_full_screen_land = 1;
@@ -134,6 +135,7 @@ int iOS_touchDeadZone = 1;
 
 int iOS_inputTouchType = 1;
 int iOS_analogDeadZoneValue = 2;
+int iOS_iCadeLayout = 1;
 extern int iOS_waysStick;
 
 int menu_exit_option = 0;
@@ -390,6 +392,7 @@ void* app_Thread_Start(void* args)
         || scanline_filter_land != [op scanlineFilterLand]
         || scanline_filter_port != [op scanlineFilterPort]      
         || global_fps != [op showFPS]
+        || global_showinfo != [op showINFO]
         || iOS_animated_DPad  != [op animatedButtons]
         || iOS_4buttonsLand  != [op fourButtonsLand]
         || iOS_full_screen_land  != [op fullLand]
@@ -400,7 +403,8 @@ void* app_Thread_Start(void* args)
         || nativeTVOUT != [op tvoutNative]
         || overscanTVOUT != [op overscanValue]
         || iOS_inputTouchType != [op inputTouchType]
-        || iOS_analogDeadZoneValue != [op analogDeadZoneValue]        
+        || iOS_analogDeadZoneValue != [op analogDeadZoneValue]
+        || iOS_iCadeLayout != [op iCadeLayout]
         )
     {
         iphone_keep_aspect_ratio_land = [op keepAspectRatioLand];
@@ -416,6 +420,7 @@ void* app_Thread_Start(void* args)
         scanline_filter_port = [op scanlineFilterPort];
         
        global_fps = [op showFPS];
+       global_showinfo = [op showINFO];
        iOS_animated_DPad  = [op animatedButtons];
        iOS_4buttonsLand  = [op fourButtonsLand];
        iOS_full_screen_land  = [op fullLand];
@@ -463,6 +468,7 @@ void* app_Thread_Start(void* args)
        
        iOS_inputTouchType = [op inputTouchType];
        iOS_analogDeadZoneValue = [op analogDeadZoneValue];
+       iOS_iCadeLayout = [op iCadeLayout];
               
        [self performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:YES];
        //[self changeUI];
@@ -492,6 +498,8 @@ void* app_Thread_Start(void* args)
          [self buildPortrait];
        */    
     }
+    
+    global_sound = [op SoundKHZ]+1+([op SoundSTEREO]*4);
     
     
     [op release];
@@ -645,6 +653,8 @@ void* app_Thread_Start(void* args)
     scanline_filter_port = [op scanlineFilterPort];
     
     global_fps = [op showFPS];
+    global_showinfo = [op showINFO];
+    global_sound = [op SoundKHZ]+1+([op SoundSTEREO]*4); 
     iOS_animated_DPad  = [op animatedButtons];
     iOS_4buttonsLand  = [op fourButtonsLand];
     iOS_full_screen_land  = [op fullLand];
@@ -663,6 +673,7 @@ void* app_Thread_Start(void* args)
     
     iOS_inputTouchType = [op inputTouchType];
     iOS_analogDeadZoneValue = [op analogDeadZoneValue];
+    iOS_iCadeLayout = [op iCadeLayout];
             
     [op release];
      
@@ -1873,33 +1884,57 @@ void* app_Thread_Start(void* args)
             break;
             
         // SELECT / COIN
-        case 'y':
+        case 'y': //button down
             gp2x_pad_status |= GP2X_SELECT;
             btnStates[BTN_SELECT] = BUTTON_PRESS;
             break;
-        case 't':
+        case 't': //button up
             gp2x_pad_status &= ~GP2X_SELECT;
             btnStates[BTN_SELECT] = BUTTON_NO_PRESS;
             break;
             
         // START
-        case 'u':
-            gp2x_pad_status |= GP2X_START;
-            btnStates[BTN_START] = BUTTON_PRESS;
+        case 'u':   //button down
+            if(iOS_iCadeLayout) { 
+                gp2x_pad_status |= GP2X_L;
+                btnStates[BTN_L1] = BUTTON_PRESS;
+            }
+            else {
+                gp2x_pad_status |= GP2X_START;
+                btnStates[BTN_START] = BUTTON_PRESS;
+            }
             break;
-        case 'f':
-            gp2x_pad_status &= ~GP2X_START;
-            btnStates[BTN_START] = BUTTON_NO_PRESS;
+        case 'f':   //button up
+            if(iOS_iCadeLayout) { 
+                gp2x_pad_status &= ~GP2X_L;
+                btnStates[BTN_L1] = BUTTON_NO_PRESS;
+            }
+            else {
+                gp2x_pad_status &= ~GP2X_START;
+                btnStates[BTN_START] = BUTTON_NO_PRESS;
+            }
             break;
             
         // 
-        case 'h':
-            gp2x_pad_status |= GP2X_L;
-            btnStates[BTN_L1] = BUTTON_PRESS;
+        case 'h':   //button down
+            if(iOS_iCadeLayout) { 
+                gp2x_pad_status |= GP2X_START;
+                btnStates[BTN_START] = BUTTON_PRESS;
+            }
+            else {
+                gp2x_pad_status |= GP2X_L;
+                btnStates[BTN_L1] = BUTTON_PRESS;
+            }
             break;
-        case 'r':
-            gp2x_pad_status &= ~GP2X_L;
-            btnStates[BTN_L1] = BUTTON_NO_PRESS;
+        case 'r':   //button up
+            if(iOS_iCadeLayout) { 
+                gp2x_pad_status &= ~GP2X_START;
+                btnStates[BTN_START] = BUTTON_NO_PRESS;
+            }
+            else {
+                gp2x_pad_status &= ~GP2X_L;
+                btnStates[BTN_L1] = BUTTON_NO_PRESS;
+            }
             break;
             
         // 
