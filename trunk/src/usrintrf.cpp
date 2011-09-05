@@ -57,6 +57,7 @@ static int single_step;
 static int trueorientation;
 static int orientation_count;
 
+extern int global_showinfo;
 
 static void switch_ui_orientation(void)
 {
@@ -2229,6 +2230,9 @@ int showgamewarnings(struct osd_bitmap *bitmap)
 {
 	int i;
 	char buf[2048];
+
+	//sq If show info in options disabled just return
+	if (!global_showinfo) return 0;
 
 	if (Machine->gamedrv->flags &
 			(GAME_NOT_WORKING | GAME_UNEMULATED_PROTECTION | GAME_WRONG_COLORS | GAME_IMPERFECT_COLORS |
