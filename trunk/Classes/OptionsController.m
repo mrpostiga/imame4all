@@ -50,6 +50,7 @@ extern int isIphone4;
 @synthesize scanlineFilterPort;
 
 @synthesize showFPS;
+@synthesize showINFO;
 @synthesize animatedButtons;
 @synthesize fourButtonsLand;
 @synthesize fullLand;
@@ -65,6 +66,10 @@ extern int isIphone4;
 
 @synthesize inputTouchType;
 @synthesize analogDeadZoneValue;
+@synthesize iCadeLayout;
+
+@synthesize SoundKHZ;
+@synthesize SoundSTEREO;
 
 
 - (id)init {
@@ -88,7 +93,8 @@ extern int isIphone4;
 	
 	NSPropertyListFormat format;
 	
-	plistData = [NSData dataWithContentsOfFile:path];
+    NSError *sqerr;
+	plistData = [NSData dataWithContentsOfFile:path options: NSMappedRead error:&sqerr];
 		
 	plist = [NSPropertyListSerialization propertyListFromData:plistData			 
 											 mutabilityOption:NSPropertyListImmutable			 
@@ -126,6 +132,7 @@ extern int isIphone4;
         scanlineFilterLand = 0;
         
         showFPS = 0;
+        showINFO = 1;
         fourButtonsLand = 0;
         animatedButtons = ![[Helper machine] isEqualToString: @"iPhone1,1"] 
 		              && ![[Helper machine] isEqualToString: @"iPhone1,2"] 		               
@@ -161,6 +168,12 @@ extern int isIphone4;
         
         inputTouchType = 1;
         analogDeadZoneValue = 2;		
+        
+        iCadeLayout = 0;
+        
+        SoundKHZ = 3;
+        SoundSTEREO = 2;
+        
 		//[self saveOptions];
 	}
 	else
@@ -181,6 +194,7 @@ extern int isIphone4;
         scanlineFilterLand =  [[[optionsArray objectAtIndex:0] objectForKey:@"ScanlineFilterLand"] intValue];
 
         showFPS =  [[[optionsArray objectAtIndex:0] objectForKey:@"showFPS"] intValue];
+        showINFO =  [[[optionsArray objectAtIndex:0] objectForKey:@"showINFO"] intValue];
         fourButtonsLand =  [[[optionsArray objectAtIndex:0] objectForKey:@"fourButtonsLand"] intValue];
         animatedButtons =  [[[optionsArray objectAtIndex:0] objectForKey:@"animatedButtons"] intValue];	
         fullLand =  [[[optionsArray objectAtIndex:0] objectForKey:@"fullLand"] intValue];
@@ -195,7 +209,12 @@ extern int isIphone4;
         tvoutNative =  [[[optionsArray objectAtIndex:0] objectForKey:@"tvoutNative"] intValue];
         
         inputTouchType =  [[[optionsArray objectAtIndex:0] objectForKey:@"inputTouchType"] intValue];
-        analogDeadZoneValue =  [[[optionsArray objectAtIndex:0] objectForKey:@"analogDeadZoneValue"] intValue];        		
+        analogDeadZoneValue =  [[[optionsArray objectAtIndex:0] objectForKey:@"analogDeadZoneValue"] intValue];    
+        iCadeLayout =  [[[optionsArray objectAtIndex:0] objectForKey:@"iCadeLayout"] intValue];
+
+        SoundKHZ =  [[[optionsArray objectAtIndex:0] objectForKey:@"SoundKHZ"] intValue];
+        SoundSTEREO =  [[[optionsArray objectAtIndex:0] objectForKey:@"SoundSTEREO"] intValue];
+        
 	}
 			
 }
@@ -218,6 +237,7 @@ extern int isIphone4;
 							 [NSString stringWithFormat:@"%d", scanlineFilterLand], @"ScanlineFilterLand",
 
 							 [NSString stringWithFormat:@"%d", showFPS], @"showFPS",							 
+							 [NSString stringWithFormat:@"%d", showINFO], @"showINFO",							 
 							 [NSString stringWithFormat:@"%d", fourButtonsLand], @"fourButtonsLand",							 
 							 [NSString stringWithFormat:@"%d", animatedButtons], @"animatedButtons",							 							 							 											 
 							 [NSString stringWithFormat:@"%d", fullLand], @"fullLand",
@@ -233,7 +253,12 @@ extern int isIphone4;
 							 
 							 [NSString stringWithFormat:@"%d", inputTouchType], @"inputTouchType",
 							 [NSString stringWithFormat:@"%d", analogDeadZoneValue], @"analogDeadZoneValue",
-							 							 
+							 					
+                             [NSString stringWithFormat:@"%d", iCadeLayout], @"iCadeLayout",
+
+                             [NSString stringWithFormat:@"%d", SoundKHZ], @"SoundKHZ",
+                             [NSString stringWithFormat:@"%d", SoundSTEREO], @"SoundSTEREO",
+                             
 							 nil]];	
 
 	
@@ -287,35 +312,41 @@ extern int isIphone4;
 - (id)init {
 
     if (self = [super init]) {
-    
-	   switchKeepAspectPort=nil;
-	   switchKeepAspectLand=nil;
-	   switchSmoothedPort=nil;
-	   switchSmoothedLand=nil;
-	
-	   switchSafeRender=nil;
-	   
-	   switchTvFilterPort=nil;
-	   switchTvFilterLand=nil;
-	   switchScanlineFilterPort=nil;
-	   switchScanlineFilterLand=nil;
-	
-	   switchShowFPS=nil;
-	   switchAnimatedButtons=nil;
-	   switch4buttonsLand=nil;
-	   switchfullLand=nil;
-	   switchfullPort=nil;
-	   
-	   segmentedSkin= nil;
-	   
-	   segmentedWiiDeadZoneValue = nil;
-	   switchTouchDeadZone = nil;
-	   
-	   segmentedOverscanValue = nil;
-	   switchTvoutNative = nil;
-	   
-	   segmentedTouchType = nil;
-	   segmentedAnalogDeadZoneValue = nil;
+        
+        switchKeepAspectPort=nil;
+        switchKeepAspectLand=nil;
+        switchSmoothedPort=nil;
+        switchSmoothedLand=nil;
+        
+        switchSafeRender=nil;
+        
+        switchTvFilterPort=nil;
+        switchTvFilterLand=nil;
+        switchScanlineFilterPort=nil;
+        switchScanlineFilterLand=nil;
+        
+        switchShowFPS=nil;
+        switchShowINFO=nil;
+        switchAnimatedButtons=nil;
+        switch4buttonsLand=nil;
+        switchfullLand=nil;
+        switchfullPort=nil;
+        
+        segmentedSkin= nil;
+        
+        segmentedWiiDeadZoneValue = nil;
+        switchTouchDeadZone = nil;
+        
+        segmentedOverscanValue = nil;
+        switchTvoutNative = nil;
+        
+        segmentedTouchType = nil;
+        segmentedAnalogDeadZoneValue = nil;
+        
+        segmentediCadeLayout=nil;
+        
+        segmentedSoundKHZ=nil;
+        segmentedSoundSTEREO=nil;
     }
 
     return self;
@@ -385,7 +416,7 @@ extern int isIphone4;
    
    switch (indexPath.section) 
    {
-       case 0: 
+       case 0: //Portraint
        {
            switch (indexPath.row) 
            {
@@ -439,7 +470,7 @@ extern int isIphone4;
            }    
            break;
        }
-       case 1:
+       case 1:  //Landscape
        {
            switch (indexPath.row) 
            {
@@ -505,7 +536,7 @@ extern int isIphone4;
            }
            break;
         }    
-        case 2:
+        case 2:  //Input
         {
             switch (indexPath.row) 
             {
@@ -575,10 +606,70 @@ extern int isIphone4;
 
                    break;
                }       
+                case 5:
+                {
+                    cell.text  = @"Control Layout";
+
+                    segmentediCadeLayout = [[UISegmentedControl alloc] initWithItems:
+                       [NSArray arrayWithObjects: @"iCP", @"iCade", nil]];
+                    segmentediCadeLayout.selectedSegmentIndex = [op iCadeLayout];
+                  
+                    CGRect r = segmentediCadeLayout.frame;
+                    r.size.height = 30;
+                    segmentediCadeLayout.frame = r;
+                    
+                    [segmentediCadeLayout addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                    segmentediCadeLayout.segmentedControlStyle = UISegmentedControlStylePlain; 
+                    cell.accessoryView = segmentediCadeLayout;     
+                   break;
+                }                              
+
             }   
             break;
         }        
-        case 3:
+       case 3:  //Sound
+       {
+           switch (indexPath.row) 
+           {
+               case 0:
+               {
+                   cell.text  = @"Sound Rate (kHz)";
+                   
+                   segmentedSoundKHZ = [[UISegmentedControl alloc] initWithItems:
+                                           [NSArray arrayWithObjects: @"11", @"22", @"33", @"44", nil]];
+                   segmentedSoundKHZ.selectedSegmentIndex = [op SoundKHZ];
+                   
+                   CGRect r = segmentedSoundKHZ.frame;
+                   r.size.height = 30;
+                   segmentedSoundKHZ.frame = r;
+                   
+                   [segmentedSoundKHZ addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                   segmentedSoundKHZ.segmentedControlStyle = UISegmentedControlStylePlain; 
+                   cell.accessoryView = segmentedSoundKHZ;     
+                   break;               
+               }
+               case 1:
+               {
+                   cell.text  = @"Sound Stereo";
+                   
+                   segmentedSoundSTEREO = [[UISegmentedControl alloc] initWithItems:
+                                        [NSArray arrayWithObjects: @"Fast", @"Mono", @"Stereo", nil]];
+                   segmentedSoundSTEREO.selectedSegmentIndex = [op SoundSTEREO];
+                   
+                   CGRect r = segmentedSoundSTEREO.frame;
+                   r.size.height = 30;
+                   segmentedSoundSTEREO.frame = r;
+                   
+                   [segmentedSoundSTEREO addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                   segmentedSoundSTEREO.segmentedControlStyle = UISegmentedControlStylePlain; 
+                   cell.accessoryView = segmentedSoundSTEREO;     
+                   break;             
+               } 
+           }
+           break;
+       }
+                   
+        case 4:  //Miscellaneous
         {
             switch (indexPath.row) 
             {
@@ -591,7 +682,16 @@ extern int isIphone4;
                    [switchShowFPS addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
                    break;
                }
-               case 1:
+              case 1:
+               {
+                   cell.text  = @"Show Info/Warnings";
+                   switchShowINFO  = [[UISwitch alloc] initWithFrame:CGRectZero];                
+                   cell.accessoryView = switchShowINFO ;
+                   [switchShowINFO setOn:[op showINFO] animated:NO];
+                   [switchShowINFO addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
+                   break;
+               }
+               case 2:
                {
                    cell.text  = @"Skin";                   
                    segmentedSkin = [[UISegmentedControl alloc] initWithItems:
@@ -612,7 +712,7 @@ extern int isIphone4;
                    cell.accessoryView = segmentedSkin;
                    break;
                }
-               case 2:
+               case 3:
                {
                    cell.text  = @"Native TV-OUT";
                    switchTvoutNative  = [[UISwitch alloc] initWithFrame:CGRectZero];                
@@ -621,7 +721,7 @@ extern int isIphone4;
                    [switchTvoutNative addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
                    break;
                }                
-               case 3:
+               case 4:
                {
                    cell.text  = @"Overscan TV-OUT";                   
                    segmentedOverscanValue = [[UISegmentedControl alloc] initWithItems:
@@ -633,7 +733,7 @@ extern int isIphone4;
                    cell.accessoryView = segmentedOverscanValue;
                    break;
                }               
-               case 4:
+               case 5:
                {
                    cell.text  = @"Safe Render Path";
                    switchSafeRender  = [[UISwitch alloc] initWithFrame:CGRectZero];                
@@ -654,7 +754,7 @@ extern int isIphone4;
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-      return 4;
+      return 5;
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
@@ -664,7 +764,8 @@ extern int isIphone4;
           case 0: return @"Portrait";
           case 1: return @"Landscape";
           case 2: return @"Input";
-          case 3: return @"Miscellaneous";
+          case 3: return @"Game Defaults";  
+          case 4: return @"Miscellaneous";
     }
 }
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -674,8 +775,9 @@ extern int isIphone4;
       {
           case 0: return 5;
           case 1: return 5;
-          case 2: return 5;
-          case 3: return (isIpad | isIphone4) ? 4 : 3;
+          case 2: return 6;
+          case 3: return 2;
+          case 4: return (isIpad | isIphone4) ? 5 : 6;
       }
 }
 
@@ -716,6 +818,8 @@ extern int isIphone4;
      
    if(switchShowFPS!=nil)
      [switchShowFPS release];
+   if(switchShowINFO!=nil)
+     [switchShowINFO release];
    if(switchAnimatedButtons!=nil)
      [switchAnimatedButtons release];
    if(switch4buttonsLand!=nil)
@@ -745,6 +849,14 @@ extern int isIphone4;
 
    if(segmentedAnalogDeadZoneValue!=nil)
     [segmentedAnalogDeadZoneValue release];
+    
+   if(segmentediCadeLayout!=nil)
+    [segmentediCadeLayout release]; 
+
+    if(segmentedSoundKHZ!=nil)
+        [segmentedSoundKHZ release]; 
+    if(segmentedSoundSTEREO!=nil)
+        [segmentedSoundSTEREO release]; 
          
    [super dealloc];
 }
@@ -788,6 +900,9 @@ extern int isIphone4;
 
     if(sender == switchShowFPS)
 	   op.showFPS =  [switchShowFPS isOn];
+
+    if(sender == switchShowINFO)
+	   op.showINFO =  [switchShowINFO isOn];
 	
 	if(sender == switchAnimatedButtons) 
 	   op.animatedButtons=  [switchAnimatedButtons isOn];
@@ -820,8 +935,16 @@ extern int isIphone4;
 	  op.inputTouchType = [segmentedTouchType selectedSegmentIndex];
 	  
 	if(sender == segmentedAnalogDeadZoneValue)
-	   op.analogDeadZoneValue = [segmentedAnalogDeadZoneValue selectedSegmentIndex];  	  
-	   
+	   op.analogDeadZoneValue = [segmentedAnalogDeadZoneValue selectedSegmentIndex];  	
+    
+    if(sender == segmentediCadeLayout)
+        op.iCadeLayout = [segmentediCadeLayout selectedSegmentIndex];
+
+    if(sender == segmentedSoundKHZ)
+        op.SoundKHZ = [segmentedSoundKHZ selectedSegmentIndex];
+    if(sender == segmentedSoundSTEREO)
+        op.SoundSTEREO = [segmentedSoundSTEREO selectedSegmentIndex];
+    
 	[op saveOptions];
 		
 	[op release];

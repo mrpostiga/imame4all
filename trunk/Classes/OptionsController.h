@@ -61,6 +61,12 @@
 
    @public  int inputTouchType;
    @public  int analogDeadZoneValue;
+    
+   @public  int iCadeLayout;
+   @public  int showINFO;
+    
+   @public int SoundKHZ;
+   @public int SoundSTEREO;
 }
 
 - (void)loadOptions;
@@ -95,6 +101,13 @@
 @property (readwrite,assign) int inputTouchType;
 @property (readwrite,assign) int analogDeadZoneValue;
 
+@property (readwrite,assign) int iCadeLayout;
+@property (readwrite,assign) int showINFO;
+
+@property (readwrite,assign) int SoundKHZ;
+@property (readwrite,assign) int SoundSTEREO;
+
+
 @end
 
 
@@ -115,6 +128,7 @@
    UISwitch*		  switchScanlineFilterLand;
 
    UISwitch*		  switchShowFPS;
+   UISwitch*		  switchShowINFO;
    UISwitch*		  switchAnimatedButtons;
    UISwitch*		  switch4buttonsLand;
    UISwitch*		  switchfullLand;
@@ -122,14 +136,19 @@
 
    UISegmentedControl *segmentedWiiDeadZoneValue;
 
-   UISegmentedControl*		  segmentedSkin;
-   UISwitch*		  switchTouchDeadZone;
+   UISegmentedControl *segmentedSkin;
+   UISwitch           *switchTouchDeadZone;
 
-   UISegmentedControl*		  segmentedOverscanValue;
-   UISwitch*		  switchTvoutNative;
+   UISegmentedControl *segmentedOverscanValue;
+   UISwitch           *switchTvoutNative;
 
    UISegmentedControl *segmentedTouchType;
    UISegmentedControl *segmentedAnalogDeadZoneValue;
+   
+   UISegmentedControl *segmentediCadeLayout;
+    
+   UISegmentedControl *segmentedSoundKHZ;
+   UISegmentedControl *segmentedSoundSTEREO;
 
 }
 
