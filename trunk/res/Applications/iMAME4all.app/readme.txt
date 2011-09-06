@@ -391,32 +391,76 @@ PORT CREDITS
 
 
 DEVELOPMENT
-September 5,2011
-- v1.9:  key delay on game selection,added option to set Sound defaults,added option to choose iCade or iControlPad layout,sleep processor between inputs on game select screen,Fixed multiple key presses problems,sound initialisation fixes.
-August 14,2011
-- v1.8.1: iCade & iControlpad compatible button mapping, new A=B+X button option, menu fixes, layout changes.
-August 6,2011
-- Version 1.8: Added iOS4 multitasking, new skin, analog touch stick, stick 2/4/8-way restrictors, stereo support, sound going out of sync fixed, fixed jerky gameplay and more...
-July 17,2011
-- Version 1.7.1: Improved iONS's iCade support, Bringin iMame4all up to App Standards.
-July 10,2011
-- Version 1.7: Added iONS's iCade support, improved TVOUT, improved touch controls.
-November 20,2010
-- Version 1.6.1: Added 240x320,640x480,480x640 fixed resolutions. Let's play some vector games on full portrait (like tempest), also lets 3g users use real full portrait selecting 240x320 resolution.
-November 15,2010
-- Version 1.6: Added full screen portrait. Added landscape-portrait keep aspect ratio option. Reworked some touch controls.
-September 12,2010:
-- Version 1.5: Added new skin (retina) and touch control layout. Added touch deadzone. Added Wii classic stick deadzone selector. Added 8/16/auto color depth (fixes ZeroWing like games missing sprites)
-September 12,2010:
-- Version 1.4: Added Native TV-Out for firmware >=3.2. Added Wii classic analog support. Added support for Wii classics clones.
-September 5,2010:
-- Version 1.3: Added Wii Classic Controller support. Added support for up to 4 WiiMotes/Classic (multiplayer).
-August 29, 2010:
-- Version 1.2 Added 4 new Video Aspect modes: Original View Aspect (fix cropping bug)+(Ratio Not Kept,With Cropping,fixed 320x240),1-4 Buttons selectable from game launcher,Improved WiiMote,Vector games at 640x480.
-August 22, 2010:
-- Version 1.1. Added WiiMote. Fixed cheats,samples,artwork,hiscores.
-August 18, 2010:
-- Version 1.0. First version.
+-----------
+All changes by David Valdeita (aka Seleuco), unless otherwise stated
+Other contributors: Simon Quinn (aka Squid)
+                    Todd Laney
+
+September 5,2011 v1.9:  
+* Key delay on game selection. (Squid)
+* Added option to set Sound defaults. (Squid)
+* Added option to choose iCade or iControlPad. layout (Squid)
+* Sleep processor between inputs on game select screen. (Squid)
+* Fixed multiple key presses problems. (Squid)
+* Sound initialisation fixes. (Squid)
+
+August 14,2011 v1.8.1: 
+* iCade & iControlpad compatible button mapping
+* New A=B+X button option
+* Menu fixes and layout changes.
+
+August 6,2011 v1.8: 
+* Added iOS4 multitasking.
+* New skin 
+* Analog touch stick and stick 2/4/8-way restrictors
+* Stereo support (Squid)
+* Sound iOS engine fixes and sound going out of sync fixed (Squid)
+* Fixed jerky gameplay and more... (Squid)
+
+July 17,2011 v1.7.1: 
+* Improved iONS's iCade support.
+* Bringin iMame4all up to App Standards.
+
+July 10,2011 v1.7: 
+* Added iONS's iCade support
+* Improved TVOUT
+* Improved touch controls.
+
+November 20,2010 v1.6.1: 
+* Added 240x320,640x480,480x640 fixed resolutions. 
+* Fixes full portrait view on some vector games, like tempest, 
+* Lets 3g users use real full portrait selecting 240x320 resolution.
+
+November 15,2010 v1.6: 
+* Added full screen portrait. 
+* Added landscape-portrait keep aspect ratio option. 
+* Reworked some touch controls.
+
+September 12,2010 v1.5: 
+* Added new skin (retina) and touch control layout. 
+* Added touch deadzone and Wii classic stick deadzone selector. 
+* Added 8/16/auto color depth (fixes ZeroWing like games missing sprites)
+
+September 12,2010 v1.4: 
+* Added Native TV-Out for firmware >=3.2. 
+* Added Wii classic analog support. 
+* Added support for Wii classics clones.
+
+September 5,2010 v1.3: 
+* Added Wii Classic Controller support. 
+* Added support for up to 4 WiiMotes/Classic (multiplayer).
+
+August 29, 2010 v1.2:
+* Added 4 new Video Aspect modes: Original View Aspect (fix cropping bug)+(Ratio Not Kept,With Cropping,fixed 320x240)
+* 1-4 Buttons selectable from game launcher
+* Improved WiiMote 
+* Vector games at 640x480.
+
+August 22, 2010 v1.1:
+* Added WiiMote. Fixed cheats, samples, artwork, hiscores.
+
+August 18, 2010 v1.0:
+* First version.
 
 KNOWN PROBLEMS
 ------------------
@@ -440,9 +484,9 @@ KNOWN PROBLEMS
  
 - Not perfect sound or incomplete in some games.
 
-- Memory leaks. In case of errors, reset iOS and try again please ;-).
+- Memory leaks. In case of errors, reset iOS and try again please ;-). Also you can make sure iMAME4all is properly closed and not in the background.
 
-- Some games listed could not work well. The MAME team could do any game not work between versions.
+- Some games listed do not work correctly. The MAME team could do any game not work between versions.
 
 
 INTERESTING WEBPAGES ABOUT MAME
