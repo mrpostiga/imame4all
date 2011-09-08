@@ -391,45 +391,46 @@ PORT CREDITS
 
 
 DEVELOPMENT
------------
+--------------
 All changes by David Valdeita (aka Seleuco), unless otherwise stated
 Other contributors: Simon Quinn (aka Squid)
+                    Bryn Thomson
                     Todd Laney
 
 September 5,2011 v1.9:  
-* Key delay on game selection. (Squid)
-* Added option to set Sound defaults. (Squid)
-* Added option to choose iCade or iControlPad. layout (Squid)
-* Sleep processor between inputs on game select screen. (Squid)
-* Fixed multiple key presses problems. (Squid)
-* Sound initialisation fixes. (Squid)
+* Key delay on game selection (Squid)
+* Added option to set Sound defaults (Squid)
+* Added option to choose iCade or iControlPad layout (Squid)
+* Sleep processor between inputs on game select screen (Squid)
+* Fixed multiple key presses problems (Squid)
+* Sound initialisation fixes (Squid)
 
 August 14,2011 v1.8.1: 
 * iCade & iControlpad compatible button mapping
 * New A=B+X button option
-* Menu fixes and layout changes.
+* Menu fixes and layout changes (Bryn)
 
 August 6,2011 v1.8: 
-* Added iOS4 multitasking.
-* New skin 
+* Added iOS4 multitasking
+* New skin (Bryn)
 * Analog touch stick and stick 2/4/8-way restrictors
-* Stereo support (Squid)
-* Sound iOS engine fixes and sound going out of sync fixed (Squid)
+* Stereo support and selectable kHz rate (Squid)
+* Sound iOS engine fixes and sound going out of sync fixed, removed need for low-latency option (Squid)
 * Fixed jerky gameplay and more... (Squid)
 
 July 17,2011 v1.7.1: 
-* Improved iONS's iCade support.
+* Improved ION's iCade support.
 * Bringin iMame4all up to App Standards.
 
 July 10,2011 v1.7: 
-* Added iONS's iCade support
-* Improved TVOUT
+* Added ION's iCade support.
+* Improved TVOUT.
 * Improved touch controls.
 
 November 20,2010 v1.6.1: 
 * Added 240x320,640x480,480x640 fixed resolutions. 
 * Fixes full portrait view on some vector games, like tempest, 
-* Lets 3g users use real full portrait selecting 240x320 resolution.
+* Lets 3G users use real full portrait selecting 240x320 resolution.
 
 November 15,2010 v1.6: 
 * Added full screen portrait. 
@@ -486,7 +487,7 @@ KNOWN PROBLEMS
 
 - Memory leaks. In case of errors, reset iOS and try again please ;-). Also you can make sure iMAME4all is properly closed and not in the background.
 
-- Some games listed do not work correctly. The MAME team could do any game not work between versions.
+- Some games listed do not work correctly. This is a restriction of the MAME version used in iMAME4all and cannot be fixed.
 
 
 INTERESTING WEBPAGES ABOUT MAME
