@@ -19,6 +19,11 @@ It's actually easier to setup in XCode 4 than earlier versions. The Entitlements
 
 NOTE: The default iMAME4all executable name is "mame", XCode won't accept the name being different than the application so it needs to be called "iMAME4all". 
 
+You'll also need the private frameworks from an iphone O/S firmware. The following directories with files from the iPhone O/S should exist under the project's iphoneos/ directory:
+System/Library/PrivateFrameworks
+System/Library/Frameworks
+usr/lib
+
 To debug iMAME4all on a device you need make sure the resource files are accessible, as XCode will install the application somewhere in the /var/media/Applications/ directory and not in /Applications. Make sure /Applications/iMAME4all.app/ exists with all the files but delete "iMAME4all" exe and "Info.plist" from there. iMAME4all will then run from XCode and pickup the necessary resource files. You'll need to edit "src/iOS/shared.h" definition IMAMEBASEPATH in the MYDEBUG section to point to whatever path XCode allocated on your device.
 
 When swapping between Debug and Release versions make sure the relevant iMAME4all and Info.plist is removed from the other application directory and respring. You can only have one of these on a device at a time and having two will confure the iOS device.
