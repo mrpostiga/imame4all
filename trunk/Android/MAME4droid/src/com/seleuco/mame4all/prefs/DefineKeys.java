@@ -95,9 +95,20 @@ public class DefineKeys extends ListActivity {
 
 	
 	public static final String[] emulatorInputLabels = {
-        "STICK UP","STICK DOWN","STICK LEFT","STICK RIGHT",
-        "STICK B","STICK X","STICK A","STICK Y",
-        "STICK L1","STICK R1","STICK SELECT","STICK START"
+        "STICK UP",
+        "STICK DOWN",
+        "STICK LEFT",
+        "STICK RIGHT",
+        "STICK B",
+        "STICK X",
+        "STICK A",
+        "STICK Y",
+        "STICK L1",
+        "STICK R1",        
+        "STICK SELECT",
+        "STICK START",
+        "EXIT",
+        "OPTION",
 	};
 
 	protected int emulatorInputIndex = 0;

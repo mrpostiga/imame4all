@@ -54,12 +54,46 @@ import com.seleuco.mame4all.helpers.DialogHelper;
 public class InputHandler implements OnTouchListener, OnKeyListener, IController{
 	
 	protected static final int[] emulatorInputValues = {
-		UP_VALUE,DOWN_VALUE,LEFT_VALUE,RIGHT_VALUE, B_VALUE, X_VALUE, A_VALUE, Y_VALUE, L1_VALUE, R1_VALUE, SELECT_VALUE, START_VALUE
+		UP_VALUE,
+		DOWN_VALUE,
+		LEFT_VALUE,
+		RIGHT_VALUE, 
+		B_VALUE, 
+		X_VALUE, 
+		A_VALUE, 
+		Y_VALUE, 
+		L1_VALUE, 
+		R1_VALUE, 
+		SELECT_VALUE, 
+		START_VALUE,
+		L2_VALUE,
+		R2_VALUE		
 	};
 		
+	/*
+	2 = B
+	1 = X
+	B = Y
+	A = A
+	+ = START
+	- = SELECT	 
+	*/
+	
 	public static int[] defaultKeyMapping = {
-		KeyEvent.KEYCODE_DPAD_UP,KeyEvent.KEYCODE_DPAD_DOWN,KeyEvent.KEYCODE_DPAD_LEFT,KeyEvent.KEYCODE_DPAD_RIGHT,
-		KeyEvent.KEYCODE_DPAD_CENTER,KeyEvent.KEYCODE_SEARCH,-1,-1,-1,-1,-1,KeyEvent.KEYCODE_BACK
+		KeyEvent.KEYCODE_DPAD_UP,
+		KeyEvent.KEYCODE_DPAD_DOWN,
+		KeyEvent.KEYCODE_DPAD_LEFT,
+		KeyEvent.KEYCODE_DPAD_RIGHT,
+		KeyEvent.KEYCODE_DPAD_CENTER,
+		KeyEvent.KEYCODE_BACK,
+		KeyEvent.KEYCODE_1,
+		KeyEvent.KEYCODE_C,
+		KeyEvent.KEYCODE_Z,
+		-1,
+		KeyEvent.KEYCODE_P,
+		KeyEvent.KEYCODE_M,
+		KeyEvent.KEYCODE_H,
+		-1
 	};
 			
 	public static int[] keyMapping = new int[emulatorInputValues.length];
@@ -206,23 +240,48 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	}
 	
 	protected boolean handlePADKey(int value, KeyEvent event){
-				
-		setPadData(event,emulatorInputValues[value]);
 		
-		Emulator.setPadData(pad_data);
+		int v = emulatorInputValues[value];
+		
+	    if(v==L2_VALUE)
+	    { 
+			if(!Emulator.isInMAME())
+			{	
+			  mm.showDialog(DialogHelper.DIALOG_EXIT);
+			}  
+	        else
+	        {
+	        	Emulator.setValue(Emulator.EXIT_GAME_KEY, 1);		    	
+		    	try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				Emulator.setValue(Emulator.EXIT_GAME_KEY, 0);
+	        }  
+		}
+		else if(v==R2_VALUE)
+		{
+			 mm.showDialog(DialogHelper.DIALOG_OPTIONS);
+		}
+		else
+		{				
+			setPadData(event,v);			
+			Emulator.setPadData(pad_data);
+		}
    		
 		return true;		
 	}
 			
 	public boolean onKey(View v, int keyCode, KeyEvent event) {
-		//Log.d("JAVA", "onKeyDown=" + keyCode + " " + keyCode + " " + event.getDisplayLabel() + " " + event.getUnicodeChar() + " " + event.getNumber());
+		 //Log.d("TECLA", "onKeyDown=" + keyCode + " " + event.getAction() + " " + event.getDisplayLabel() + " " + event.getUnicodeChar() + " " + event.getNumber());
           
 		 int value = -1;
 		 for(int i=0; i<keyMapping.length; i++)
 			 if(keyMapping[i]==keyCode)
 				 value = i;
 		  
-         if(value >=0 && value <=11)
+         if(value >=0 && value <=13)
 		     if(handlePADKey(value, event))return true;
             
          return false;

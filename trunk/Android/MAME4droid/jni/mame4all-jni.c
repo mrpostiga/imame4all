@@ -356,7 +356,7 @@ JNIEXPORT jint JNICALL Java_com_seleuco_mame4all_Emulator_getValue
   (JNIEnv *env, jclass c, jint key)
 {
 #ifdef DEBUG
-    __android_log_print(ANDROID_LOG_DEBUG, "mame4all-jni", "getValue %d",key);
+   // __android_log_print(ANDROID_LOG_DEBUG, "mame4all-jni", "getValue %d",key);
 #endif
       if(getMyValue!=NULL)
          return getMyValue(key);

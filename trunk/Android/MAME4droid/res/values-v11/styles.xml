@@ -3,14 +3,15 @@
 <resources>
 
 	<style name="ListText">
-		<item name="android:textSize">22sp</item>
+		<item name="android:textSize">26sp</item>
 		<item name="android:textColor">@color/white</item>
 	</style>
 
 	<style name="ListTextSmall">
-		<item name="android:textSize">15sp</item>
+		<item name="android:textSize">18sp</item>
 		<item name="android:textColor">@color/white</item>
 	</style>
+
 
     <style name="Theme.MAME4ALL" parent="android:Theme.Holo.NoActionBar.Fullscreen">
     </style>

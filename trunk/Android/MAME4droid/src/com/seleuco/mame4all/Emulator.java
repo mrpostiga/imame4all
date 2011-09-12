@@ -64,6 +64,12 @@ public class Emulator
 	private static Bitmap emuBitmap = Bitmap.createBitmap(320, 240, Bitmap.Config.RGB_565);
 	private static ByteBuffer screenBuff = null;
 	
+	private static int []screenBuffPx = new int[640*480*3];	
+	public  static int[] getScreenBuffPx() {
+		return screenBuffPx;
+	}
+
+	
 	private static Paint emuPaint = null;
 	private static Paint debugPaint = new Paint();
 	
@@ -117,6 +123,7 @@ public class Emulator
 	    debugPaint.setARGB(255, 255, 255, 255);
 	    debugPaint.setStyle(Style.STROKE);		
 	    debugPaint.setTextSize(16);
+	    //videoT.start();
 	}
 	
 	public static int getEmulatedWidth() {
@@ -229,7 +236,8 @@ public class Emulator
 	}
 	
 	public static void setMAME4all(MAME4all mm) {
-		Emulator.mm = mm;		
+		Emulator.mm = mm;	
+		videoT.setMAME4all(mm);		
 	}
 	
 	//VIDEO
@@ -237,8 +245,23 @@ public class Emulator
 		window_width = w;
 		window_height = h;
 		mtx.setScale((float)(window_width / (float)emu_width), (float)(window_height / (float)emu_height));
-		mm.getEmuView().invalidate();
-		//ensureScreenDrawed();
+		
+		if(mm!=null && mm.getEmuView()!=null)
+		{	
+		   if(mm.getEmuView().isShown())
+			  mm.getEmuView().invalidate();
+	        Thread t = new Thread() {
+	            public void run() {
+	            	try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+	            	ensureScreenDrawed();
+	            }
+	        };
+	        t.start();
+		}
 	}
 	
 	public static void setFrameFiltering(boolean value) {
@@ -261,7 +284,7 @@ public class Emulator
 	synchronized 
 	static void bitblt(ByteBuffer sScreenBuff, boolean inMAME) {
 				
-		try {
+		//try {
 							
 			if(isFrameLimit && inMAME && (isFrameFilter ||  videoRenderMode==PrefsHelper.PREF_RENDER_HW))
 				if(j++%2!=1)return;
@@ -278,15 +301,18 @@ public class Emulator
 			else if(videoRenderMode == PrefsHelper.PREF_RENDER_HW)
 			{
 			   //mm.getEmuView().setWillNotDraw(false);
-			   /*	
-				sScreenBuff.rewind();			
-				emuBitmap.copyPixelsFromBuffer(sScreenBuff);
-			
-				emuBitmap.getPixels(px, 0, emuBitmap.getWidth(), 0, 0, emuBitmap.getWidth(), emuBitmap.getHeight());
-				mm.getEmuViewHW().setPx(px);
-				*/
-
-			    mm.getEmuViewHW().postInvalidate();				
+			   
+			    if(!inMAME)
+			    {
+					sScreenBuff.rewind();			
+					emuBitmap.copyPixelsFromBuffer(sScreenBuff);				
+					emuBitmap.getPixels(screenBuffPx, 0, emuBitmap.getWidth(), 0, 0, emuBitmap.getWidth(), emuBitmap.getHeight());
+					mm.getEmuViewHW().postInvalidate();
+			    }
+			    else
+			    {			    
+			        videoT.update();
+			    }   
 			}
 			else
 			{		    					
@@ -307,17 +333,19 @@ public class Emulator
 				}
 				holder.unlockCanvasAndPost(canvas);				
 			}
-		    
-						
+		/*    						
 		} catch (Throwable t) {
 			Log.getStackTraceString(t);
 		}
+		*/
 	}
 	
 	
 	synchronized 
 	static public void changeVideo(int newWidth, int newHeight){		
 		//Log.d("Thread Video", "changeVideo");
+		
+		Emulator.setPadData(0);
 		
 		if(emu_width!=newWidth || emu_height!=newHeight)
 		{
@@ -382,23 +410,27 @@ public class Emulator
 	
 	//LIVE CYCLE
 	public static void pause(){
-		//Log.d("Thread Video", "PAUSE");
+		//Log.d("EMULATOR", "PAUSE");
 		
 		if(isEmulating)
 		   pauseEmulation(true);
 		
 		if(audioTrack!=null)
 		    audioTrack.pause();
+		
+		videoT.stop();
 	}
 	
 	public static void resume(){
-		//Log.d("Thread Video", "RESUME");
+		//Log.d("EMULATOR", "RESUME");
 		
 		if(audioTrack!=null)
 		    audioTrack.play();
 		
 		if(isEmulating)
 		    pauseEmulation(false);
+		
+		videoT.start();
 	}
 	
 	//EMULATOR

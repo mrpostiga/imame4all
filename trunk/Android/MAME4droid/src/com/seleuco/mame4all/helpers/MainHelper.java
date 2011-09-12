@@ -249,7 +249,7 @@ public class MainHelper {
 				
 				emuView.setVisibility(View.GONE);
 				emuView_HW.setVisibility(View.VISIBLE);
-				
+				emuView_HW.requestFocus();				
 			}
 			else
 			{
@@ -257,7 +257,7 @@ public class MainHelper {
 				  emuView_HW.setVisibility(View.GONE);
 				
 				emuView.setVisibility(View.VISIBLE);	
-
+				emuView.requestFocus();
 			}
 			
 			if(Emulator.getVideoRenderMode() != mm.getPrefsHelper().getVideoRenderMode() 
@@ -407,17 +407,21 @@ public class MainHelper {
 		  emuView_HW.requestLayout();
   				
 		emuView.requestLayout();
+				
 		inputView.invalidate();
 		emuView.invalidate();
 		
 		if(emuView_HW!=null)	
 		  emuView_HW.invalidate();
-		
+
 		Emulator.ensureScreenDrawed();				
 	}
 	
-	public void showDonate(){		
-		Intent browserIntent = new Intent("android.intent.action.VIEW",Uri.parse("https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=seleuco%2enicator%40gmail%2ecom&lc=US&item_name=Seleuco%20Nicator&item_number=ixxxx4all&no_note=0&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHostedGuest"));  
+	public void showWeb(){		
+		Intent browserIntent = new Intent("android.intent.action.VIEW",
+				//Uri.parse("https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=seleuco%2enicator%40gmail%2ecom&lc=US&item_name=Seleuco%20Nicator&item_number=ixxxx4all&no_note=0&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHostedGuest")
+                Uri.parse("http://code.google.com/p/xpectrum/")				
+				);  
 		mm.startActivity(browserIntent);
 	}
 	

@@ -47,7 +47,6 @@ import android.widget.ImageView;
 import com.seleuco.mame4all.Emulator;
 import com.seleuco.mame4all.MAME4all;
 import com.seleuco.mame4all.R;
-import com.seleuco.mame4all.helpers.DialogHelper;
 import com.seleuco.mame4all.input.InputHandler;
 import com.seleuco.mame4all.input.InputValue;
 

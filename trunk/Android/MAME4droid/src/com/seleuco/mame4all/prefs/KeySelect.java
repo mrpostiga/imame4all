@@ -84,9 +84,17 @@ public class KeySelect extends Activity {
 				setFocusableInTouchMode(true);
 				requestFocus();
 			}
-
+            /*
 			@Override
 			public boolean onKeyPreIme (int keyCode, KeyEvent event) {
+
+				setResult(RESULT_OK, new Intent().putExtra("androidKeyCode", keyCode));
+				finish();
+				return true;
+			}
+			*/
+			@Override
+			public boolean onKeyDown (int keyCode, KeyEvent event) {
 
 				setResult(RESULT_OK, new Intent().putExtra("androidKeyCode", keyCode));
 				finish();
