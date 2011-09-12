@@ -1,6 +1,6 @@
-===============================================================
-MAME4droid 1.0 (September 9, 2011) by David Valdeita (Seleuco)
-===============================================================
+=================================================================
+MAME4droid 1.0.2 (September 12, 2011) by David Valdeita (Seleuco)
+=================================================================
 
 
 INTRODUCTION
@@ -19,7 +19,7 @@ Owners of older devices should not expect good performance. Tips to help perform
 
 After installing, place your MAME-titled zipped roms in /sdcard/ROMs/MAME4all/roms folder.
 
-MAME4droid uses only 'gp2x wiz 0.37b11 mame romset'. Google it or use "clrmame.dat" file included in /sdcard/ROMs/MAME4all/ to convert romsets from other MAME versions to the ones used by this version, using ClrMAME Pro utility, available in this URL:
+MAME4droid uses only '0.37b5', 'GP2X WIZ 0.37b11 mame romset'. Use "clrmame.dat" file included in /sdcard/ROMs/MAME4all/ to convert romsets from other MAME versions to the ones used by this version, using ClrMAME Pro utility, available in this URL:
 
 http://mamedev.emulab.it/clrmamepro/
 
@@ -328,7 +328,10 @@ PORT CREDITS
 
 
 DEVELOPMENT
-
+September 1.2, 2011:
+- Version 1.0.2. Minor Bug Fixes. Improve Honeycomb HW acceleration responsiveness .
+September 10, 2011:
+- Version 1.0.1. Minor Bug Fixes. WiiMoteController Remapping Fixed.
 September 7, 2011:
 - Version 1.0. First version.
 

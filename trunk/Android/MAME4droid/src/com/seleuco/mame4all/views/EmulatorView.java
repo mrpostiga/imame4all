@@ -81,9 +81,10 @@ public class EmulatorView extends SurfaceView implements Callback{
 	}
 	
 	protected void init(){
-		this.getHolder().addCallback(this);
-		this.requestFocus();
+		this.getHolder().addCallback(this);		
+		this.setFocusable(true);
 		this.setFocusableInTouchMode(true);
+		this.requestFocus();
 	}
 		
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {

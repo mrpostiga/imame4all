@@ -165,7 +165,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 
 	public int getVideoRenderMode(){
 		//TODO; Poner el modo en funcion de si es honycomb a acelerated!
-		return Integer.valueOf(getSharedPreferences().getString(PREF_GLOBAL_VIDEO_RENDER_MODE,"1")).intValue();	
+		return Integer.valueOf(getSharedPreferences().getString(PREF_GLOBAL_VIDEO_RENDER_MODE,"2")).intValue();	
 	}
 	
 	public boolean isSoundfThreaded(){
@@ -177,7 +177,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	}
 	
 	public boolean isFPSLimit(){
-		return getSharedPreferences().getBoolean(PREF_GLOBAL_FPS_LIMIT,true);
+		return getSharedPreferences().getBoolean(PREF_GLOBAL_FPS_LIMIT,false);
 	}
 	
 	public boolean isDebugEnabled(){

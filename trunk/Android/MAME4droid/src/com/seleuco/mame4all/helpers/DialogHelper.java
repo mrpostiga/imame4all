@@ -111,8 +111,14 @@ public class DialogHelper {
 	    	       .setCancelable(false)
 	    	       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 	    	           public void onClick(DialogInterface dialog, int id) {
-	    	                Emulator.setValue(Emulator.EXIT_GAME_KEY, 1);  
 	    	                Emulator.resume();
+	    		        	Emulator.setValue(Emulator.EXIT_GAME_KEY, 1);		    	
+	    			    	try {
+	    						Thread.sleep(100);
+	    					} catch (InterruptedException e) {
+	    						e.printStackTrace();
+	    					}
+	    					Emulator.setValue(Emulator.EXIT_GAME_KEY, 0);	    	                
 	    	                //dialog.dismiss();
 	    	           }
 	    	       })
@@ -125,7 +131,7 @@ public class DialogHelper {
 	    	dialog = builder.create();
 	        break;
 	    case DIALOG_OPTIONS:	    	
-	    	final CharSequence[] items = {"Help","Settings", "Donate", "Cancel"};
+	    	final CharSequence[] items = {"Help","Settings", "Thanks", "Cancel"};
 	    	builder.setTitle("Choose an option from the menu. Press cancel to go back");
 	    	builder.setItems(items, new DialogInterface.OnClickListener() {
 	    	    public void onClick(DialogInterface dialog, int item) {
@@ -133,18 +139,18 @@ public class DialogHelper {
 	    	          case 0: mm.getMainHelper().showHelp();break;
 	    	          case 1: mm.getMainHelper().showSettings();break;
 	    	          case 2: mm.showDialog(DialogHelper.DIALOG_THANKS);;break;
-	    	          case 3: Emulator.resume();break;
+	    	          case  3: Emulator.resume();break;
 	    	        }
 	    	    }
 	    	});
 	    	dialog = builder.create();
 	        break;
 	    case DIALOG_THANKS:
-	    	builder.setMessage("All my projects come to you free of charge and ad-free, because that's how i like my work to be, but if you want to thank me for my effort or colaborate in future developments, feel free to support my projects.\n\nI would like MAME4droid to be as good as iMAME4all, so i will be adding iMAME4all missing features as native wiimote support (multiplayer), analog touch controller and other features in future versions...")
+	    	builder.setMessage("I am releasing everything for free, in keeping with the licensing MAME terms, which is free for non-commercial use only. This is strictly something I made because I wanted to play with it and have the skills to make it so. That said, if you are thinking on ways to support my development I suggest you to check my other free works for the community.\n\nI would like MAME4droid to be as good as iMAME4all, so i will be adding iMAME4all missing features as native wiimote support (multiplayer), analog touch controller and other features in future versions...")
 	    	       .setCancelable(false)
 	    	       .setPositiveButton("OK", new DialogInterface.OnClickListener() {
 	    	           public void onClick(DialogInterface dialog, int id) {
-	    	        	   mm.getMainHelper().showDonate();
+	    	        	   mm.getMainHelper().showWeb();
 	    	           }
 	    	       });
 
@@ -189,12 +195,6 @@ public class DialogHelper {
 		}	
 	    else if(id==DIALOG_EXIT_GAME)
 		{
-	    	Emulator.setValue(Emulator.EXIT_GAME_KEY, 0);
-	    	try {
-				Thread.sleep(50);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
 	    	Emulator.pause();
 		}
 	    else if(id==DIALOG_OPTIONS)

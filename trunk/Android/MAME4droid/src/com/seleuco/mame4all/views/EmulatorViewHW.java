@@ -32,7 +32,10 @@ package com.seleuco.mame4all.views;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.os.Handler;
+import android.os.Message;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -51,11 +54,10 @@ public class EmulatorViewHW extends View {
 	
 	protected MAME4all mm = null;
 	
-	protected int []px = new int[640*480*3];
 	protected int i = 0;
 	protected int fps = 0;
 	protected long millis;
-	
+
 	public int getScaleType() {
 		return scaleType;
 	}
@@ -84,9 +86,10 @@ public class EmulatorViewHW extends View {
 	}
 	
 	protected void init(){
-		this.requestFocus();
-		this.setFocusableInTouchMode(true);
 		this.setKeepScreenOn(true);
+		this.setFocusable(true);
+		this.setFocusableInTouchMode(true);
+		this.requestFocus();
 	}
 		
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -175,17 +178,20 @@ public class EmulatorViewHW extends View {
 	public void draw(Canvas canvas) {
 		super.draw(canvas);
 		i++;
-		
+
 		if(Emulator.getScreenBuffer()==null)
 			return;
 
 		canvas.concat(Emulator.getMatrix());
-		   
+        
+		/*
 		Emulator.getScreenBuffer().rewind();			
 		Emulator.getEmuBitmap().copyPixelsFromBuffer(Emulator.getScreenBuffer());
 			
-		Emulator.getEmuBitmap().getPixels(px, 0, Emulator.getEmulatedWidth(), 0, 0, Emulator.getEmulatedWidth(), Emulator.getEmulatedHeight());		    
-		canvas.drawBitmap(px, 0, Emulator.getEmulatedWidth(), 0, 0,Emulator.getEmulatedWidth(), Emulator.getEmulatedHeight(), false, null);
+		Emulator.getEmuBitmap().getPixels(px, 0, Emulator.getEmulatedWidth(), 0, 0, Emulator.getEmulatedWidth(), Emulator.getEmulatedHeight());
+		*/
+
+		canvas.drawBitmap(Emulator.getScreenBuffPx(), 0, Emulator.getEmulatedWidth(), 0, 0,Emulator.getEmulatedWidth(), Emulator.getEmulatedHeight(), false, null);
 			
 		if(Emulator.isDebug())
 		{

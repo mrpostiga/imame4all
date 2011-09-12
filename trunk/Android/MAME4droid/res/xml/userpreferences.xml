@@ -9,7 +9,7 @@
 			android:title='Video Render Mode'			
 			android:key="PREF_GLOBAL_VIDEO_RENDER_MODE"
 			android:entryValues="@array/pref_global_video_render_values"
-			android:defaultValue="1" />	
+			android:defaultValue="2" />	
 			
 	    <CheckBoxPreference android:key="PREF_GLOBAL_SOUND_THREADED"
 			android:title="Threaded Sound" android:summary="Enable it to get smoother gameplay in some cases but worse sound quality"
@@ -21,7 +21,7 @@
 
 	   	<CheckBoxPreference android:key="PREF_GLOBAL_FPS_LIMIT"
 			android:title="FPS limit when filtering enabled" android:summary="Enable it to limit frames rendered when filtering is activated to reduce jitter. Disable it to get full FPS if your device is powerful enough"
-			android:defaultValue="true" />
+			android:defaultValue="false" />
 		
 		<CheckBoxPreference android:key="PREF_GLOBAL_DEBUG"
 			android:title="Debug Mode" android:summary="Only for developers"

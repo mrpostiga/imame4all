@@ -33,6 +33,8 @@ package com.seleuco.mame4all;
 
 import java.nio.ByteBuffer;
 
+import com.seleuco.mame4all.helpers.PrefsHelper;
+
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.util.Log;
@@ -45,7 +47,12 @@ public class VideoThread implements Runnable {
 	protected long millis;
 	protected Canvas canvas = null;
 	protected boolean run = false;
-	
+    protected MAME4all mm = null;
+    
+	public void setMAME4all(MAME4all mm) {
+		this.mm = mm;		
+	}
+
 	public VideoThread() {		
 	}
 	
@@ -90,7 +97,7 @@ public class VideoThread implements Runnable {
 		{	
 			//Log.d("Thread Video", "running "+run);
 			
-			try{
+			//try{
 				synchronized(this)
 				{			
 					try {		
@@ -109,41 +116,51 @@ public class VideoThread implements Runnable {
 								
 				if(bf==null || bmp ==null)
 					continue;
-				
-				//Log.d("Thread Video", "Lock "+run);
-				canvas = Emulator.lockCanvas();
-								
-				if(canvas==null)
-				   continue;
-								
-				bf.rewind();			
-				bmp.copyPixelsFromBuffer(bf);
-				i++;
-				//canvas.drawBitmap(emuBitmap, null, frameRect, Emulator.getFramePaint());
-				canvas.concat(Emulator.getMatrix());			
-				canvas.drawBitmap(bmp, 0, 0, Emulator.getEmuPaint());
-								
-				if(Emulator.isDebug())
-				{
-				   canvas.drawText("Threaded fps:"+fps+ " w:"+Emulator.getWindow_width()+" h:"+Emulator.getWindow_height(), 5,  40, Emulator.getDebugPaint());			  
-				   if(System.currentTimeMillis() - millis >= 1000) {fps = i; i=0;millis = System.currentTimeMillis();} 
+		        		
+				if(Emulator.getVideoRenderMode() == PrefsHelper.PREF_RENDER_HW)
+				{	
+					bf.rewind();			
+					bmp.copyPixelsFromBuffer(bf);						
+					bmp.getPixels(Emulator.getScreenBuffPx(), 0, Emulator.getEmulatedWidth(), 0, 0, Emulator.getEmulatedWidth(), Emulator.getEmulatedHeight());
+					mm.getEmuViewHW().postInvalidate();
 				}
-				
-				//Log.d("Thread Video", "UnLock "+run);
-				Emulator.unlockCanvas(canvas);
-				//Log.d("Thread Video", "FIN UnLock "+run);
-			
-			}
-			catch(Exception t)
+				else
+				{					
+					//Log.d("Thread Video", "Lock "+run);
+					canvas = Emulator.lockCanvas();
+									
+					if(canvas==null)
+					   continue;
+									
+					bf.rewind();			
+					bmp.copyPixelsFromBuffer(bf);
+					i++;
+					//canvas.drawBitmap(emuBitmap, null, frameRect, Emulator.getFramePaint());
+					canvas.concat(Emulator.getMatrix());			
+					canvas.drawBitmap(bmp, 0, 0, Emulator.getEmuPaint());
+									
+					if(Emulator.isDebug())
+					{
+					   canvas.drawText("Threaded fps:"+fps+ " w:"+Emulator.getWindow_width()+" h:"+Emulator.getWindow_height(), 5,  40, Emulator.getDebugPaint());			  
+					   if(System.currentTimeMillis() - millis >= 1000) {fps = i; i=0;millis = System.currentTimeMillis();} 
+					}
+					
+					//Log.d("Thread Video", "UnLock "+run);
+					Emulator.unlockCanvas(canvas);
+					//Log.d("Thread Video", "FIN UnLock "+run);
+				}							
+			/*}catch(Exception t)
 			{
 				Log.getStackTraceString(t);
 			}
+			*/
 			
 		}
 		//Log.d("Thread Video", "FIN THREAD "+run);
 	}
 	
 	synchronized public void update() {
+		//Log.d("Thread Video", "Hago update");
 		this.notify();
 	}
 

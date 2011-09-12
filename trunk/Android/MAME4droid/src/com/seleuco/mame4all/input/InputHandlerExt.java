@@ -39,12 +39,12 @@ import com.seleuco.mame4all.helpers.DialogHelper;
 public class InputHandlerExt extends InputHandler {
 	
 
-	protected int [] touchContrData = new int[10];
-	protected InputValue [] touchKeyData = new InputValue[10];
+	protected int [] touchContrData = new int[20];
+	protected InputValue [] touchKeyData = new InputValue[20];
 	
-	protected static int [] newtouches = new int[10];
-	protected static int [] oldtouches = new int[10];
-	protected static boolean [] touchstates = new boolean[10];
+	protected static int [] newtouches = new int[20];
+	protected static int [] oldtouches = new int[20];
+	protected static boolean [] touchstates = new boolean[20];
 	
 	public InputHandlerExt(MAME4all value) {
 		super(value);
@@ -93,6 +93,7 @@ public class InputHandlerExt extends InputHandler {
 			{		
 				//int id = i;
 				int id = actionPointerId;
+				if(id>touchstates.length)continue;//strange but i have this error on my development console
 				touchstates[id] = true;
 				
 				for (int j = 0; j < values.size(); j++) {
@@ -152,7 +153,7 @@ public class InputHandlerExt extends InputHandler {
 			} 
 		}
 
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < touchstates.length; i++) {
 			if (!touchstates[i] && newtouches[i]!=0) {
 				boolean really = true;
 
