@@ -290,6 +290,8 @@ public class MainHelper {
 			InputHandler.keyMapping[i]=Integer.valueOf(keys[i]).intValue();
 		
 		Emulator.setValue(Emulator.FPS_SHOWED_KEY, prefsHelper.isFPSShowed() ? 1 : 0);
+		Emulator.setValue(Emulator.ASMCORES_KEY, prefsHelper.isASMCores() ? 1 : 0);
+		Emulator.setValue(Emulator.INFOWARN_KEY, prefsHelper.isShowInfoWarnings() ? 1 : 0);
 		Emulator.setDebug(prefsHelper.isDebugEnabled());
 		Emulator.setThreadedSound(prefsHelper.isSoundfThreaded());
 		Emulator.setFrameLimit(prefsHelper.isFPSLimit());

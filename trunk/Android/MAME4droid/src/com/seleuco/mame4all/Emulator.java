@@ -55,6 +55,8 @@ public class Emulator
 	final static public int HIDE_LR__KEY = 4;
 	final static public int BPLUSX_KEY = 5;
 	final static public int WAYS_STICK_KEY = 6;
+	final static public int ASMCORES_KEY = 7;
+	final static public int INFOWARN_KEY = 8;
 	
     private static MAME4all mm = null;
     
@@ -174,17 +176,17 @@ public class Emulator
 		return mtx;
 	}
 	
-	synchronized
+	//synchronized
 	public static SurfaceHolder getHolder(){
 		return holder;
 	}
 	
-	synchronized 
+	//synchronized 
 	public static Bitmap getEmuBitmap(){
 		return emuBitmap;
 	}
 	
-	synchronized 
+	//synchronized 
 	public static ByteBuffer getScreenBuffer(){
 		return screenBuff;
 	}
@@ -279,8 +281,7 @@ public class Emulator
 		}
 	}
 	
-	//static int []px = new int[640*480*3];
-		
+	
 	synchronized 
 	static void bitblt(ByteBuffer sScreenBuff, boolean inMAME) {
 				
@@ -344,11 +345,12 @@ public class Emulator
 	synchronized 
 	static public void changeVideo(int newWidth, int newHeight){		
 		//Log.d("Thread Video", "changeVideo");
+
 		
 		Emulator.setPadData(0);
 		
-		if(emu_width!=newWidth || emu_height!=newHeight)
-		{
+		//if(emu_width!=newWidth || emu_height!=newHeight)
+		//{
 			emu_width = newWidth;
 			emu_height = newHeight;
 			emuBitmap = Bitmap.createBitmap(newWidth, newHeight, Bitmap.Config.RGB_565);
@@ -358,7 +360,7 @@ public class Emulator
                 	mm.getMainHelper().updateMAME4all();
                 }
             });
-		}
+		//}
 	}
 	
 	//SOUND

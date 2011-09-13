@@ -44,7 +44,7 @@ CFLAGS += -fpic
 #CFLAGS += -mthumb
 
 #armeabi-v7a (Thumb-2)
-#CFLAGS += -march=armv7-a -mfloat-abi=softfp
+CFLAGS += -march=armv7-a -mfloat-abi=softfp -DARMV7
 #armeabi-v7a con neon (HW FPU)
 #CFLAGS += -march=armv7-a -mfloat-abi=softfp -mfpu=neon
 

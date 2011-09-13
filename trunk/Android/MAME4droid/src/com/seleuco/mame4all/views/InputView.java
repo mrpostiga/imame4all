@@ -60,12 +60,14 @@ public class InputView extends ImageView {
 	protected float dx = 1;
 	protected float dy = 1;
 	
-	BitmapDrawable stick_images[];
-	BitmapDrawable btns_images[][];
+	static BitmapDrawable stick_images[] = null;
+	static BitmapDrawable btns_images[][] = null;
 	  		 
 	public void setMAME4all(MAME4all mm) {
 		this.mm = mm;
-				
+		
+		if(stick_images==null)
+		{
 		stick_images = new BitmapDrawable[9];
 		stick_images[InputHandler.STICK_DOWN] = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.stick_down);
 		stick_images[InputHandler.STICK_DOWN_LEFT] = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.stick_down_left);
@@ -76,7 +78,10 @@ public class InputView extends ImageView {
 		stick_images[InputHandler.STICK_UP] = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.stick_up);
 		stick_images[InputHandler.STICK_UP_LEFT] = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.stick_up_left);
 		stick_images[InputHandler.STICK_UP_RIGHT] = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.stick_up_right);
-				
+		}
+		
+		if(btns_images==null)
+		{
 		btns_images = new BitmapDrawable[InputHandler.NUM_BUTTONS][2];
 		btns_images[InputHandler.BTN_A][InputHandler.BTN_NO_PRESS_STATE] 
 		                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_a);
@@ -126,7 +131,8 @@ public class InputView extends ImageView {
 		btns_images[InputHandler.BTN_SELECT][InputHandler.BTN_NO_PRESS_STATE] 
 			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_select);
 		btns_images[InputHandler.BTN_SELECT][InputHandler.BTN_PRESS_STATE] 
-			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_select_press);		
+			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_select_press);
+		}
 	}
 
 	public InputView(Context context) {

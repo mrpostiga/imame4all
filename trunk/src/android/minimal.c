@@ -43,13 +43,12 @@ extern int m4all_inGame;
 extern int m4all_exitGame;
 extern int m4all_exitPause;
 extern int m4all_waysStick;
+extern int m4all_ASMCores;
 
 int iOS_fixedRes = 0;//cleanup on MAME TODO
 
 void app_MuteSound(void);
 void app_DemuteSound(void);
-void iphone_UpdateScreen(void);
-void iphone_Reset_Views(void);
 
 int droid_video_width = 320;
 int droid_video_height = 240;
@@ -148,6 +147,8 @@ int isEmulating()
 
 void setMyValue(int key,int value){
 
+
+
 	//__android_log_print(ANDROID_LOG_DEBUG, "libMAME4all.so", "setMyValue  %d %d",key,value);
 
 	switch(key)
@@ -156,10 +157,13 @@ void setMyValue(int key,int value){
 	    	global_fps = value;break;
 	    case 2:
 	    	m4all_exitGame = value;break;
+	    case 7:
+	    	m4all_ASMCores = value;break;
 	    case 8:
+	    	global_showinfo = value;break;
+	    case 20:
 	        m4all_HiSpecs = value;
 	}
-
 }
 
 int getMyValue(int key){
@@ -179,7 +183,11 @@ int getMyValue(int key){
 	    	 return m4all_BplusX;
 	    case 6:
 	    	 return m4all_waysStick;
+	    case 7:
+	    	 return m4all_ASMCores;
 	    case 8:
+	    	 return global_showinfo;
+	    case 20:
 	    	return  m4all_HiSpecs;
 	    default :
 	         return -1;

@@ -40,10 +40,12 @@ import com.seleuco.mame4all.input.InputHandler;
 
 public class PrefsHelper implements OnSharedPreferenceChangeListener
 {
-	
+
+	final static public String PREF_GLOBAL_ASMCORES = "PREF_GLOBAL_ASMCORES";
 	final static public String PREF_GLOBAL_VIDEO_RENDER_MODE = "PREF_GLOBAL_VIDEO_RENDER_MODE";
 	final static public String PREF_GLOBAL_SOUND_THREADED = "PREF_GLOBAL_SOUND_THREADED";
 	final static public String PREF_GLOBAL_SHOW_FPS = "PREF_GLOBAL_SHOW_FPS";
+	final static public String PREF_GLOBAL_SHOW_INFOWARNINGS = "PREF_GLOBAL_SHOW_INFOWARNINGS";	
 	final static public String PREF_GLOBAL_FPS_LIMIT = "PREF_GLOBAL_FPS_LIMIT";
 	final static public String PREF_GLOBAL_DEBUG = "PREF_GLOBAL_DEBUG";
 	
@@ -190,5 +192,13 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	
 	public boolean isTouchDZ(){
 		return getSharedPreferences().getBoolean(PREF_TOUCH_DZ,true);
+	}
+	
+	public boolean isASMCores(){
+		return getSharedPreferences().getBoolean(PREF_GLOBAL_ASMCORES,true);
+	}
+	
+	public boolean isShowInfoWarnings(){
+		return getSharedPreferences().getBoolean(PREF_GLOBAL_SHOW_INFOWARNINGS,true);
 	}
 }
