@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string-array name="pref_scaleMode_options">
+		<item>Original Size</item>
+		<item>2X</item>		
+		<item>Scale (keep aspect ratio)</item>
+		<item>Stretch to fit screen</item>
+	</string-array>
+	<string-array name="pref_scaleMode_values">
+		<item>1</item>
+		<item>2</item>
+		<item>3</item>
+		<item>4</item>		
+	</string-array>
+	
+	<string-array name="pref_landscape_controllerType_options">
+		<item>No multitouch capable touch controller</item>
+		<item>Transparent touch controller suited for multitouch</item>
+	</string-array>
+	<string-array name="pref_landscape_controllerType_values">
+		<item>1</item>
+		<item>2</item>
+	</string-array>
+
+	<string-array name="pref_global_video_render_options">
+		<item>Normal</item>
+		<item>Threaded</item>
+		<item>Hardware</item>
+	</string-array>
+	<string-array name="pref_global_video_render_values">
+		<item>1</item>
+		<item>2</item>
+		<item>3</item>
+	</string-array>
+
+	
+</resources>
