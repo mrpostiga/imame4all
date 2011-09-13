@@ -30,6 +30,8 @@ int m4all_clock_sound=80;
 int m4all_cheat=0;
 int m4all_buttons=2;
 int m4all_waysStick = 8;
+int m4all_ASMCores = 1;
+int m4all_cpu_cores = 1;
 
 
 extern int m4all_aspectRatio;
@@ -185,9 +187,9 @@ static void game_list_view(int *pos) {
 		gp2x_gamelist_text_out(35, 110, "NO AVAILABLE GAMES FOUND");
 	}
 #ifdef ARMV7
-	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"MAME4droid. v1.0 by D.Valdeita");
+	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"MAME4droid. v1.1 by D.Valdeita");
 #else
-	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"MAME4droid  v1.0 by D.Valdeita");
+	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"MAME4droid  v1.1 by D.Valdeita");
 #endif
 
 }
@@ -203,6 +205,7 @@ static void game_list_select (int index, char *game, char *emu) {
 			{
 				strcpy(game,_drivers[i].name);
 				strcpy(emu,_drivers[i].exe);
+				m4all_cpu_cores=_drivers[i].cores;
 				break;
 			}
 			aux_pos++;
@@ -805,6 +808,25 @@ void execute_game (char *playemu, char *playgame)
 		args[n]=str[i]; i++; n++;
 	}
 
+	__android_log_print(ANDROID_LOG_DEBUG, "libMAME4all.so", "ASM CORES %d %d\n",m4all_ASMCores,m4all_cpu_cores);
+
+	/* cpu_cores */
+	if(m4all_ASMCores)
+	{
+		if ((m4all_cpu_cores==1) || (m4all_cpu_cores==3) || (m4all_cpu_cores==5))
+		{
+			args[n]="-cyclone"; n++;
+		}
+		if ((m4all_cpu_cores==2) || (m4all_cpu_cores==3))
+		{
+			args[n]="-drz80"; n++;
+		}
+		if ((m4all_cpu_cores==4) || (m4all_cpu_cores==5))
+		{
+			args[n]="-drz80_snd"; n++;
+		}
+	}
+
 	if (m4all_cheat)
 	{
 		args[n]="-cheat"; n++;
@@ -822,6 +844,7 @@ void execute_game (char *playemu, char *playgame)
 	for (i=0; i<n; i++)
 	{
 		printf("%s ",args[i]);
+		__android_log_print(ANDROID_LOG_DEBUG, "libMAME4all.so", "arg: %s\n",args[i]);
 	}
 	printf("\n");
 	
@@ -831,6 +854,7 @@ void execute_game (char *playemu, char *playgame)
 	m4all_BplusX = m4all_buttons==3;
 	m4all_landscape_buttons = m4all_buttons <= 3 ? m4all_buttons : (m4all_buttons - 1) ;
 	//gp2x_set_video_mode(16,320,240);
+
 	my_android_main(n, args);
 
 	if(m4all_HiSpecs)

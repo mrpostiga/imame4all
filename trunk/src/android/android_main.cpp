@@ -107,7 +107,7 @@ int my_android_main (int argc, char **argv)
 	{
 		if (strcasecmp(argv[i],"-log") == 0)
 			errorlog = fopen("error.log","wa");
-#if 0
+#if 1
 		if (strcasecmp(argv[i],"-cyclone") == 0)
 			use_cyclone=1;
 		if (strcasecmp(argv[i],"-drz80") == 0)
@@ -291,7 +291,7 @@ int my_android_main (int argc, char **argv)
         */
         osd_fwrite(options.record, &inp_header, sizeof(INP_HEADER));
     }
-#if 0
+#if 1
 	/* Replace M68000 by CYCLONE */
 	if (use_cyclone)
 	{

@@ -65,7 +65,7 @@ public class VideoThread implements Runnable {
 		   thread = new Thread(this, "video-Thread");
 		   //thread.setPriority(Thread.MAX_PRIORITY);
 	   }	
-	   //Log.d("Thread Video", "Start Nueva Thread");
+	   ////Log.d("Thread Video", "Start Nueva Thread");
 	   thread.start();
 	}
 	
@@ -97,7 +97,7 @@ public class VideoThread implements Runnable {
 		{	
 			//Log.d("Thread Video", "running "+run);
 			
-			//try{
+			try{
 				synchronized(this)
 				{			
 					try {		
@@ -111,9 +111,13 @@ public class VideoThread implements Runnable {
 					}
 				}
 				
+				//Log.d("Thread Video", "Recupero "+run);
+				
 				ByteBuffer bf = Emulator.getScreenBuffer();
 				Bitmap bmp = Emulator.getEmuBitmap();				
-								
+				
+				//Log.d("Thread Video", "salgo Recupero "+bf+" "+bmp);
+				
 				if(bf==null || bmp ==null)
 					continue;
 		        		
@@ -149,11 +153,13 @@ public class VideoThread implements Runnable {
 					Emulator.unlockCanvas(canvas);
 					//Log.d("Thread Video", "FIN UnLock "+run);
 				}							
-			/*}catch(Exception t)
-			{
+			}
+			catch(Exception t)
+			{				
+				//Log.d("Thread Video", "FIN UnLock "+run,t);
 				Log.getStackTraceString(t);
 			}
-			*/
+			
 			
 		}
 		//Log.d("Thread Video", "FIN THREAD "+run);

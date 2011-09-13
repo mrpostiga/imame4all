@@ -3,6 +3,10 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
 	<PreferenceCategory android:title="Global">
+		
+		<CheckBoxPreference android:key="PREF_GLOBAL_ASMCORES"
+			android:title="ASM CPU cores" android:summary="Enable Cyclone (M68000 ASM CPU core) and DrZ80 (Z80 ASM CPU core) using internal compatibility list. Disable it (needs app restart) to get maximum accuracity and compatibility at the expense of performance."
+			android:defaultValue="true" />
 					
 		<ListPreference
 			android:entries="@array/pref_global_video_render_options"
@@ -18,6 +22,10 @@
 	   	<CheckBoxPreference android:key="PREF_GLOBAL_SHOW_FPS"
 			android:title="Show FPS" android:summary="Enable it to turn FPS display on"
 			android:defaultValue="false" />
+	   	
+	   	<CheckBoxPreference android:key="PREF_GLOBAL_SHOW_INFOWARNINGS"
+			android:title="Show Info/Warnings" android:summary="Shows Game Info and any warnings when a game is selected"
+			android:defaultValue="true" />
 
 	   	<CheckBoxPreference android:key="PREF_GLOBAL_FPS_LIMIT"
 			android:title="FPS limit when filtering enabled" android:summary="Enable it to limit frames rendered when filtering is activated to reduce jitter. Disable it to get full FPS if your device is powerful enough"
@@ -93,7 +101,7 @@
 			android:defaultValue="true" />
 
 		<CheckBoxPreference android:key="PREF_LANDSCAPE_BITMAP_FILTERING"
-			android:title="Smooth scaling" android:summary="Select to turn bitmap filtering on, at the expense of performace"
+			android:title="Smooth scaling" android:summary="Select to turn bitmap filtering on, at the expense of performance"
 			android:defaultValue="false" />
 		
 

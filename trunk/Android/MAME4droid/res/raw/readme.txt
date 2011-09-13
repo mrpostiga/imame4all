@@ -1,5 +1,5 @@
 =================================================================
-MAME4droid 1.0.2 (September 12, 2011) by David Valdeita (Seleuco)
+MAME4droid 1.1 (September 13, 2011) by David Valdeita (Seleuco)
 =================================================================
 
 
@@ -106,7 +106,7 @@ limits the joystick's range of motion:
 The most common reason to use a gate in an actual arcade setting is the retrofitting of an older machine that is not compatible with a new 8-way stick. A classic example of this is Pac-Man. The game was originally designed for a 4-way stick, and is programmed to respond only when a new input occurs. If the user is holding the stick in the down position, then suddenly makes a motion to move to the right, what often happens is that the stick first moves into the down-right diagonal, which the game does not recognize as new input since down is still being held. However, right is also now considered held, and when the user completes the motion to move right, it is also not a new input, and Pac-Man will still be moving down.
 
 -Landscape 1-4 Buttons.
-Show 1-4 Buttons: Hide/show Y/A/X buttons if needed. Select A=B+X to use A button as B and X simultaneus press.
+Show 1-4 Buttons: Hide/show Y/A/X buttons if needed. Select A=B+X to use A button as B and X simultaneous press.
 
 - CPU Clock:
 The clock of the CPUs can be adjusted from 50% to 200%. The nominal value is 100% and the CPU is emulated accurately.
@@ -130,16 +130,19 @@ To access the auto-fire configuration, during game press SELECT+START and enter 
 
 GLOBAL OPTIONS
 ----------------
+-ASM CPU cores:Enable Cyclone (M68000 ASM CPU core) and DrZ80 (Z80 ASM CPU core) using internal compatibility list. Disable it (needs app restart) to get maximum accuracity and compatibility at the expense of performance.
 
 -Video render Mode: 
 
-    * Normal: syncronized render, more accurated but may have sound gltches if sync is lost. 
-    * Threaded: less accurated but better sound. 
+    * Normal: synchronized render, more accurate but may have sound glitches if sync is lost. 
+    * Threaded: less accurate but better sound. 
     * HW Accelerated (only for Honeycomb).
 
 -Threaded sound. Worse sound quality but smoother gameplay when frame drops.
 
 -Show FPS: Shows ON/OFF fps.
+
+-Show Info/Warnings: Shows Game Info and any warnings when a game is selected.
 
 -FPS limit when filtering. Set 30fps render limit to get smoother gameplay when smooth scaling is activated and the device isn't powerful enough.
 
@@ -328,7 +331,10 @@ PORT CREDITS
 
 
 DEVELOPMENT
-September 1.2, 2011:
+
+September 13, 2011:
+- Version 1.1. Speed boost in low-end machines. Added ASM 68xxx z80 ASM Cores. Minor Bug Fixes.
+September 12, 2011:
 - Version 1.0.2. Minor Bug Fixes. Improve Honeycomb HW acceleration responsiveness .
 September 10, 2011:
 - Version 1.0.1. Minor Bug Fixes. WiiMoteController Remapping Fixed.
