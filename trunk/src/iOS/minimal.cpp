@@ -310,6 +310,17 @@ void gp2x_gamelist_text_out(int x, int y, char *eltexto)
 	gp2x_text(gp2x_screen15,x,y,texto,255);
 }
 
+void gp2x_gamelist_text_out_color(int x, int y, char *eltexto, int color)
+{
+	char texto[33];
+	strncpy(texto,eltexto,32);
+	texto[32]=0;
+	if (texto[0]!='-')
+		gp2x_text(gp2x_screen15,x+1,y+1,texto,0);
+	gp2x_text(gp2x_screen15,x,y,texto,color);
+}
+
+
 /* Variadic functions guide found at http://www.unixpapa.com/incnote/variadic.html */
 void gp2x_gamelist_text_out_fmt(int x, int y, char* fmt, ...)
 {
