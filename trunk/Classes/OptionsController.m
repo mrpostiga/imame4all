@@ -71,6 +71,7 @@ extern int isIphone4;
 @synthesize SoundKHZ;
 @synthesize SoundSTEREO;
 
+@synthesize buttonReload;
 
 - (id)init {
 
@@ -93,6 +94,8 @@ extern int isIphone4;
 	
 	NSPropertyListFormat format;
 	
+    buttonReload = FALSE;
+    
     NSError *sqerr;
 	plistData = [NSData dataWithContentsOfFile:path options: NSMappedRead error:&sqerr];
 		
@@ -215,6 +218,9 @@ extern int isIphone4;
         SoundKHZ =  [[[optionsArray objectAtIndex:0] objectForKey:@"SoundKHZ"] intValue];
         SoundSTEREO =  [[[optionsArray objectAtIndex:0] objectForKey:@"SoundSTEREO"] intValue];
         
+        buttonReload =  [[[optionsArray objectAtIndex:0] objectForKey:@"buttonReload"] intValue];
+
+        
 	}
 			
 }
@@ -258,6 +264,8 @@ extern int isIphone4;
 
                              [NSString stringWithFormat:@"%d", SoundKHZ], @"SoundKHZ",
                              [NSString stringWithFormat:@"%d", SoundSTEREO], @"SoundSTEREO",
+                             
+                             [NSString stringWithFormat:@"%d", buttonReload], @"buttonReload",
                              
 							 nil]];	
 
@@ -347,6 +355,8 @@ extern int isIphone4;
         
         segmentedSoundKHZ=nil;
         segmentedSoundSTEREO=nil;
+        
+//        buttonReload=nil;
     }
 
     return self;
@@ -745,6 +755,30 @@ extern int isIphone4;
             }
             break;   
         }
+           
+//       case 5:  //Reload ROMS
+//       {
+//           UIButton *buttonReload = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+//            buttonReload.frame = cell.bounds;
+//           [buttonReload setTitle:@"Rescan All ROMS" forState:UIControlStateNormal];
+//           [buttonReload setTitle:@"Rescan All ROMS" forState:UIControlStateSelected];
+//           [buttonReload addTarget:self action:@selector(buttontapped:) forControlEvents:UIControlEventTouchUpInside];
+//           [cell.contentView addSubview:buttonReload];
+//           cell.accessoryView = buttonReload;
+//           
+//           break;
+//       }
+       case 5:  //Reload ROMS
+       {
+           cell.selectionStyle = UITableViewCellSelectionStyleBlue;
+           cell.text = @"Rescan All ROMS";
+           cell.textAlignment = UITextAlignmentCenter;
+           break;
+           
+           break;
+       }
+       
+
    }
      
    [op release];
@@ -752,33 +786,63 @@ extern int isIphone4;
    return cell;    
 }
 
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    NSUInteger section = [indexPath section];
+    
+    switch (section) 
+	{
+    	case 5:
+        {
+            Options *op = [[Options alloc] init];           
+            op.buttonReload = TRUE;
+            
+            [op saveOptions];
+            [op release];
+                                 
+            [tableView deselectRowAtIndexPath:indexPath animated:YES];
+            
+            UIAlertView *warnAlert; 
+            warnAlert = [[UIAlertView alloc] initWithTitle:@"ROM Rescan" 
+                    message:[NSString stringWithFormat: @"The ROM directory has been rescanned"]
+                      delegate:self cancelButtonTitle:@"Dismiss" otherButtonTitles: nil];
+            [warnAlert show];
+            [warnAlert release];
+            
+            break;
+        }
+    }
+}
+
+
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-      return 5;
+      return 6;
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
-		
+    
     switch (section)
     {
-          case 0: return @"Portrait";
-          case 1: return @"Landscape";
-          case 2: return @"Input";
-          case 3: return @"Game Defaults";  
-          case 4: return @"Miscellaneous";
+        case 0: return @"Portrait";
+        case 1: return @"Landscape";
+        case 2: return @"Input";
+        case 3: return @"Game Defaults";  
+        case 4: return @"Miscellaneous";
+        case 5: return @"";
     }
 }
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-   
-      switch (section)
-      {
-          case 0: return 5;
-          case 1: return 5;
-          case 2: return 6;
-          case 3: return 2;
-          case 4: return (isIpad | isIphone4) ? 5 : 6;
-      }
+    
+    switch (section)
+    {
+        case 0: return 5;
+        case 1: return 5;
+        case 2: return 6;
+        case 3: return 2;
+        case 4: return (isIpad | isIphone4) ? 5 : 6;
+        case 5: return 1;
+    }
 }
 
 -(void)viewDidLoad{	
@@ -857,6 +921,9 @@ extern int isIphone4;
         [segmentedSoundKHZ release]; 
     if(segmentedSoundSTEREO!=nil)
         [segmentedSoundSTEREO release]; 
+    
+//    if(buttonReload!=nil)
+//        [buttonReload release];
          
    [super dealloc];
 }
@@ -876,12 +943,6 @@ extern int isIphone4;
 	
 	if(sender==switchSmoothedLand)
 	   op.smoothedLand =  [switchSmoothedLand isOn];
-	
-	/*
-	if(isIpad)
-	   op.safeRenderPath = 1;
-	else
-	*/
 	
 	if(sender == switchSafeRender)
 	   op.safeRenderPath =  [switchSafeRender isOn];
@@ -945,8 +1006,21 @@ extern int isIphone4;
     if(sender == segmentedSoundSTEREO)
         op.SoundSTEREO = [segmentedSoundSTEREO selectedSegmentIndex];
     
+
+    
 	[op saveOptions];
 		
+	[op release];
+}
+
+- (void)buttontapped:(id)sender
+{
+    Options *op = [[Options alloc] init];
+    
+    op.buttonReload = TRUE;
+    
+    [op saveOptions];
+    
 	[op release];
 }
 
