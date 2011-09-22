@@ -603,7 +603,11 @@
 		8E49C78D13F6939700F9D67D /* SKIN_2 in Resources */ = {isa = PBXBuildFile; fileRef = 8E49C78B13F6939700F9D67D /* SKIN_2 */; };
 		8E49C78E13F6939700F9D67D /* SKIN_3 in Resources */ = {isa = PBXBuildFile; fileRef = 8E49C78C13F6939700F9D67D /* SKIN_3 */; };
 		8E8FA5BD13E374FB00F9FCDB /* cinemat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E8FA5BC13E374FB00F9FCDB /* cinemat.cpp */; };
+		8EA88319141AC0DD003D9316 /* FilterController.m in Sources */ = {isa = PBXBuildFile; fileRef = 8EA88318141AC0DD003D9316 /* FilterController.m */; };
 		8EBF352F13F59BFF00E39317 /* AnalogStick.m in Sources */ = {isa = PBXBuildFile; fileRef = 8EBF352E13F59BFF00E39317 /* AnalogStick.m */; };
+		8ECC038F1428FEE700180F69 /* FilterCategoryController.m in Sources */ = {isa = PBXBuildFile; fileRef = 8ECC038E1428FEE700180F69 /* FilterCategoryController.m */; };
+		8ECC0393142928E400180F69 /* FilterYearController.m in Sources */ = {isa = PBXBuildFile; fileRef = 8ECC0392142928E400180F69 /* FilterYearController.m */; };
+		8ED77960141A3ABC0010B629 /* FilterManuController.m in Sources */ = {isa = PBXBuildFile; fileRef = 8ED7795F141A3ABC0010B629 /* FilterManuController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -1474,8 +1478,16 @@
 		8E49C78B13F6939700F9D67D /* SKIN_2 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SKIN_2; path = res/Applications/iMAME4all.app/SKIN_2; sourceTree = "<group>"; };
 		8E49C78C13F6939700F9D67D /* SKIN_3 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SKIN_3; path = res/Applications/iMAME4all.app/SKIN_3; sourceTree = "<group>"; };
 		8E8FA5BC13E374FB00F9FCDB /* cinemat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cinemat.cpp; path = src/vidhrdw/cinemat.cpp; sourceTree = "<group>"; };
+		8EA88317141AC0DD003D9316 /* FilterController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FilterController.h; sourceTree = "<group>"; };
+		8EA88318141AC0DD003D9316 /* FilterController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FilterController.m; sourceTree = "<group>"; };
 		8EBF352D13F59BFF00E39317 /* AnalogStick.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnalogStick.h; sourceTree = "<group>"; };
 		8EBF352E13F59BFF00E39317 /* AnalogStick.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AnalogStick.m; sourceTree = "<group>"; };
+		8ECC038D1428FEE700180F69 /* FilterCategoryController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FilterCategoryController.h; sourceTree = "<group>"; };
+		8ECC038E1428FEE700180F69 /* FilterCategoryController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FilterCategoryController.m; sourceTree = "<group>"; };
+		8ECC0391142928E400180F69 /* FilterYearController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FilterYearController.h; sourceTree = "<group>"; };
+		8ECC0392142928E400180F69 /* FilterYearController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FilterYearController.m; sourceTree = "<group>"; };
+		8ED7795E141A3ABC0010B629 /* FilterManuController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FilterManuController.h; sourceTree = "<group>"; };
+		8ED7795F141A3ABC0010B629 /* FilterManuController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FilterManuController.m; sourceTree = "<group>"; };
 		8EE2B36713DF2A8300E0D549 /* Entitlements.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Entitlements.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -2693,6 +2705,14 @@
 				8E48E82113D5C52E0037027F /* Helper.h */,
 				8E48E82213D5C52E0037027F /* Helper.m */,
 				8E48E82313D5C52E0037027F /* iph_main.m */,
+				8EA88317141AC0DD003D9316 /* FilterController.h */,
+				8EA88318141AC0DD003D9316 /* FilterController.m */,
+				8ECC038D1428FEE700180F69 /* FilterCategoryController.h */,
+				8ECC038E1428FEE700180F69 /* FilterCategoryController.m */,
+				8ED7795E141A3ABC0010B629 /* FilterManuController.h */,
+				8ED7795F141A3ABC0010B629 /* FilterManuController.m */,
+				8ECC0391142928E400180F69 /* FilterYearController.h */,
+				8ECC0392142928E400180F69 /* FilterYearController.m */,
 				8E48E82513D5C52E0037027F /* OptionsController.h */,
 				8E48E82613D5C52E0037027F /* OptionsController.m */,
 				8E48E82713D5C52E0037027F /* ScreenView.h */,
@@ -2747,7 +2767,7 @@
 /* Begin PBXProject section */
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
-			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "iMAME4all" */;
+			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "iMame4all" */;
 			compatibilityVersion = "Xcode 3.1";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
@@ -3373,6 +3393,10 @@
 				8E03D07F13E062D400340580 /* vector.cpp in Sources */,
 				8E8FA5BD13E374FB00F9FCDB /* cinemat.cpp in Sources */,
 				8EBF352F13F59BFF00E39317 /* AnalogStick.m in Sources */,
+				8ED77960141A3ABC0010B629 /* FilterManuController.m in Sources */,
+				8EA88319141AC0DD003D9316 /* FilterController.m in Sources */,
+				8ECC038F1428FEE700180F69 /* FilterCategoryController.m in Sources */,
+				8ECC0393142928E400180F69 /* FilterYearController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3828,7 +3852,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "iMAME4all" */ = {
+		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "iMame4all" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C01FCF4F08A954540054247B /* Debug */,
