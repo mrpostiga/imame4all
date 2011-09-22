@@ -1,6 +1,6 @@
-===========================================================
-iMAME4ALL 1.9 (September 5, 2011) by David Valdeita (Seleuco)
-===========================================================
+===============================================================
+iMAME4ALL 1.10 (September 22, 2011) by David Valdeita (Seleuco)
+===============================================================
 
 
 INTRODUCTION
@@ -23,6 +23,8 @@ Please use "clrmame.dat" file included in /var/mobile/Media/ROMs/iMAME4all to co
 
 http://mamedev.emulab.it/clrmamepro/ 
 
+You can also use "Romcenter" at http://www.romcenter.com to import the "clrmame.dat" to convert romsets.
+
 Official web page for news, source code && additional information:
 http://code.google.com/p/imame4all/
 
@@ -32,6 +34,7 @@ Features
 ------------
 
 Full speed on iPad 2. Almost perfect on iPhone 4 and iPad 1.
+Game Favorites and Filtering
 Autorotate.
 Smoothed image.
 Scanline & TV Filter.
@@ -60,6 +63,9 @@ The emulator controls are the next ones:
 - Button R2: Open help , global options, WiiMote searcher.
 
 NOTE: To type OK when MAME requires it, press LEFT and then RIGHT.
+
+You can remap the MAME controls (except SELECT & START) inside MAME itself. Start a game, press SELECT+START together to bring up the MAME menu and select "Input (general)" to configure the controls for all games or "Input (this game)" to configure the controls just for that game. When you quit the game the settings will be saved. When configuring an input, to clear the selection press the "B" key and then press "Exit".
+
 
 EMULATION OPTIONS
 --------------------
@@ -169,8 +175,20 @@ GLOBAL OPTIONS
 
 -Overscan TV-OUT: You can set the amount of TV overscan correction.
 
+
+FAVORITES & FILTERING
+-----------------------
+
+You can mark (or unmark) your ROMS in the iMAME4all game selection window as favorites by pressing the SELECT/COIN button. A favorite ROM appears in blue in the game list. The favorites are saved to the file:
+/var/mobile/Media/ROMs/iMAME4all/folders/Favorites.ini 
+
+This file is compatible with the standard MAME Favorites.ini file format so you can copy this over from your PC version of MAME to the iOS version.
+
+In the filtering options you can filter your ROMS by favorites, category, manufacturer and year plus you can also filter out ROM clones.
+
+
 WIIMOTE
--------
+---------
 
 iMAME4all lets you use up to 4 WiiMotes or Wii Classic controllers over bluetooth to play (multiplayer). 
 
@@ -197,9 +215,9 @@ home: exit game
 In landscape mode touch anywhere on the screen to show the emulator options.
 
 ICADE
------
+-------
 
-Best way to use iCade with iMAME4All is in fullscreen portrait mode, hit the option button and choose options. The onscreen controls will fade out when you start using the iCade buttons. To get on screen controls back, just touch the screen.
+The best way to use iCade with iMAME4All is in fullscreen portrait mode, hit the option button and choose options. The onscreen controls will fade out when you start using the iCade buttons. To get on screen controls back, just touch the screen.
 
 If the iCade is off (the fake coin slot light is off) just hit an iCade button or move the joystick.(you must have paired the iCade via bluetooth before) 
 
@@ -210,12 +228,13 @@ iCade KEY MAPPINGS
 TOP:  [RED/COIN]	[BLACK/EXIT]	[BLACK/Y]	[WHITE/B]
 BOT:  [RED/START]	[BLACK/OPTION]	[BLACK/A]	[WHITE/X]
 
-Thanks to Todd Laney for sending me patches, and Martijn Bosschaart who has support me to get the iCade HW.
+Thanks to Todd Laney for sending me patches, and Martijn Bosschaart who has supported me to get the iCade HW.
 
 Due to the limitations of the HW not all games are suited, use WiiClassic instead if you get slowdowns or control lag.
 
+
 TV-OUT
--------
+--------
 
 To connect an iPad ot iPhone to your TV or a projector, you can either use the Apple HDMI, Component AV Cable, Apple Composite AV Cable, Apple Dock Connector to VGA Adapter, or other compatible cable.
 
@@ -241,6 +260,7 @@ cheat.dat   -> Cheats definition file
 hiscore.dat -> High Scores definition file
 artwork/    -> Artwork directory
 cfg/        -> MAME configuration files directory
+folders/    -> Favorites.ini file
 frontend/   -> Frontend configuration files
 hi/         -> High Scores directory
 inp/        -> Game recordings directory
@@ -346,6 +366,8 @@ PORT CREDITS
 ----------------
 - Port to iOS by David Valdeita (Seleuco)
 
+- Additional iOS coding by Simon Quinn (Squid)
+
 - Port to GP2X and WIZ by Franxis (fjmar@hotmail.com) based on source code MAME 0.37b5 (dated on july 2000).
 
 - TheGrimReaper (m_acky@hotmail.com) has colaborated with a lot of
@@ -396,6 +418,11 @@ All changes by David Valdeita (aka Seleuco), unless otherwise stated
 Other contributors: Simon Quinn (aka Squid)
                     Bryn Thomson
                     Todd Laney
+
+September 22,2011 v1.10:
+* ROM favorites, use SELECT/COIN to select (Squid)
+* ROM filtering by category, manufacturer, clones and year (Squid)
+* Now displays year and manufacturer in game selection screen (Squid)
 
 September 5,2011 v1.9:  
 * Key delay on game selection (Squid)
