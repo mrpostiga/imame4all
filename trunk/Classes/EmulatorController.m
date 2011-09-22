@@ -37,6 +37,7 @@
 #import "HelpController.h"
 #import "OptionsController.h"
 #import "DonateController.h"
+#import "FilterController.h"
 #import <pthread.h>
 
 
@@ -44,7 +45,8 @@
 
 #define IPHONE_MENU_EXIT                4
 #define IPHONE_MENU_HELP                5
-#define IPHONE_MENU_OPTIONS             6
+#define IPHONE_MENU_FILTER              6
+#define IPHONE_MENU_OPTIONS             7
 #define IPHONE_MENU_DONATE              9
 #define IPHONE_MENU_DOWNLOAD           11
 #define IPHONE_MENU_WIIMOTE            12
@@ -138,7 +140,15 @@ int iOS_analogDeadZoneValue = 2;
 int iOS_iCadeLayout = 1;
 extern int iOS_waysStick;
 
+int global_manufacturer=0;
+int global_category=0;
+int global_filter=1;
+int global_clones=1;
+int global_year=0;
+
 int menu_exit_option = 0;
+
+int game_list_num = 0;
 
 
 #define STICK4WAY (iOS_waysStick == 4 && iOS_inGame)
@@ -262,6 +272,25 @@ void* app_Thread_Start(void* args)
     }
     else if(buttonIndex == 1 + menu_exit_option)
     {
+       iphone_menu = IPHONE_MENU_FILTER;  
+        
+       FilterController *addController=[FilterController alloc];
+
+       //SQ: iOS seems to forget its real parent window and assumes the nav controller.
+       //save this UIView for the filter controller later
+       addController.savedparent = self;
+        
+       //SQ: We want a navigation controller creating for the filter options
+       //The other options don't use the nav controller.
+       UINavigationController *navController = [[[UINavigationController alloc] initWithRootViewController:addController] autorelease];
+       [navController setModalPresentationStyle: UIModalPresentationFormSheet];
+
+       [self presentModalViewController:navController animated:YES];     
+        
+       [addController release];
+    }
+    else if(buttonIndex == 2 + menu_exit_option)
+    {
        iphone_menu = IPHONE_MENU_OPTIONS;
        
        OptionsController *addController =[OptionsController alloc];
@@ -271,7 +300,7 @@ void* app_Thread_Start(void* args)
        [addController release];
     }
 
-    else if(buttonIndex == 2 + menu_exit_option)    
+    else if(buttonIndex == 3 + menu_exit_option)    
     {
        iphone_menu = IPHONE_MENU_DONATE;
        
@@ -284,7 +313,7 @@ void* app_Thread_Start(void* args)
        [addController release];
     }
  
-    else if(buttonIndex == 3 + menu_exit_option)    
+    else if(buttonIndex == 4 + menu_exit_option)    
     {
        iphone_menu = IPHONE_MENU_WIIMOTE;
        
@@ -330,13 +359,13 @@ void* app_Thread_Start(void* args)
     {
 		menu = [[UIActionSheet alloc] initWithTitle:
 			   @"Choose an option from the menu. Press cancel to go back." delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil 
-			   otherButtonTitles:@"Help",@"Options",@"Donate",@"WiiMote",@"Cancel", nil];    
+			   otherButtonTitles:@"Help",@"Filter",@"Options",@"Donate",@"WiiMote",@"Cancel", nil];    
     }
     else
     {
 	    menu = [[UIActionSheet alloc] initWithTitle:
 			   @"Choose an option from the menu. Press cancel to go back." delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil 
-			   otherButtonTitles:@"Exit Game",@"Help",@"Options",@"Donate",@"WiiMote",@"Cancel", nil];
+			   otherButtonTitles:@"Exit Game",@"Help",@"Filter",@"Options",@"Donate",@"WiiMote",@"Cancel", nil];
     }
 	   
 	/*   
@@ -381,6 +410,7 @@ void* app_Thread_Start(void* args)
     [self dismissModalViewControllerAnimated:YES];
 
 	Options *op = [[Options alloc] init];
+    FilterOptions *op2 = [[FilterOptions alloc] init];
 		   
     if(iphone_smooth_port != [op smoothedPort] 
         || iphone_smooth_land != [op smoothedLand] 
@@ -405,6 +435,12 @@ void* app_Thread_Start(void* args)
         || iOS_inputTouchType != [op inputTouchType]
         || iOS_analogDeadZoneValue != [op analogDeadZoneValue]
         || iOS_iCadeLayout != [op iCadeLayout]
+        || global_manufacturer != [op2 flt_manufacturer]
+        || global_category != [op2 flt_category]
+        || global_filter != [op2 flt_filter]
+        || global_clones != [op2 flt_clones]
+        || global_year != [op2 flt_year]
+        || [op buttonReload]
         )
     {
         iphone_keep_aspect_ratio_land = [op keepAspectRatioLand];
@@ -454,13 +490,9 @@ void* app_Thread_Start(void* args)
        {
            overscanTVOUT = [op overscanValue];
            UIAlertView *warnAlert = [[UIAlertView alloc] initWithTitle:@"Pending unplug/plug TVOUT!" 
-															  
  
            message:[NSString stringWithFormat: @"You need to unplug/plug TVOUT for the changes to take effect"]
-														 
-															 delegate:self 
-													cancelButtonTitle:@"Dismiss" 
-													otherButtonTitles: nil];
+										delegate:self cancelButtonTitle:@"Dismiss" otherButtonTitles: nil];
 	
 	       [warnAlert show];
 	       [warnAlert release];
@@ -469,6 +501,12 @@ void* app_Thread_Start(void* args)
        iOS_inputTouchType = [op inputTouchType];
        iOS_analogDeadZoneValue = [op analogDeadZoneValue];
        iOS_iCadeLayout = [op iCadeLayout];
+        
+       global_manufacturer = [op2 flt_manufacturer];
+       global_category = [op2 flt_category];
+       global_filter = [op2 flt_filter];
+       global_clones = [op2 flt_clones];
+       global_year = [op2 flt_year];
               
        [self performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:YES];
        //[self changeUI];
@@ -501,7 +539,11 @@ void* app_Thread_Start(void* args)
     
     global_sound = [op SoundKHZ]+1+([op SoundSTEREO]*4);
     
+    if([op buttonReload]) {
+        game_list_num = 0;
+    }
     
+    [op2 release];
     [op release];
     
     [self endMenu];
@@ -677,6 +719,14 @@ void* app_Thread_Start(void* args)
             
     [op release];
      
+    FilterOptions *op2 = [[FilterOptions alloc] init];
+    global_manufacturer = [op2 flt_manufacturer];
+    global_category = [op2 flt_category];
+    global_filter = [op2 flt_filter];
+    global_clones = [op2 flt_clones];
+    global_year = [op2 flt_year];
+    [op2 release];
+    
     //
     // we want to get keyboard input *only* from an external keyboard (no SW keyboards) the iCade is a bluetooth keyboard
     //
