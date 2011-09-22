@@ -67,6 +67,8 @@
     
    @public int SoundKHZ;
    @public int SoundSTEREO;
+    
+   @public int buttonReload;
 }
 
 - (void)loadOptions;
@@ -106,6 +108,8 @@
 
 @property (readwrite,assign) int SoundKHZ;
 @property (readwrite,assign) int SoundSTEREO;
+
+@property (readwrite,assign) int buttonReload;
 
 
 @end
@@ -149,6 +153,8 @@
     
    UISegmentedControl *segmentedSoundKHZ;
    UISegmentedControl *segmentedSoundSTEREO;
+    
+//   UIButton           *buttonReload;
 
 }
 
