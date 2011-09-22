@@ -92,6 +92,7 @@ extern void set_ram_tweaks(void);
 
 
 extern void gp2x_gamelist_text_out(int x, int y, char *eltexto);
+extern void gp2x_gamelist_text_out_color(int x, int y, char *eltexto, int color);
 extern void gp2x_gamelist_text_out_fmt(int x, int y, char* fmt, ...);
 extern void gp2x_video_wait_vsync();
 
