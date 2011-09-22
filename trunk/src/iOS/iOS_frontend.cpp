@@ -45,9 +45,34 @@ extern int iOS_landscape_buttons;
 
 extern int global_sound;
 
+extern int global_manufacturer;
+extern int global_category;
+extern int global_filter;
+extern int global_clones;
+extern int global_year;
+
+static int local_manufacturer;
+static int local_category;
+static int local_clones;
+static int local_filter;
+static int local_year;
+
 int _master_volume = 100;
 
 extern int iphone_main (int argc, char **argv);
+
+#define MAXFAVS 1000
+static char favarray[MAXFAVS][9];
+
+static int game_list_array[NUMGAMES];
+extern int game_list_num;
+int local_game_list_num;
+
+char manufact_array[][16] = { "All", "Atari", "Capcom", "Cinematronics", "Data East", "Exidy", "Gremlin", "Irem", "Jaleco", "Leland", "Konami", "Midway", "Namco", "NeoGeo", "Nichibutsu", "Nintendo", "Other", "Sega", "SNK", "Stern", "Taito", "Technos", "Tecmo", "Toaplan", "Universal", "Video System", "Williams", "" };
+
+char category_array[][14] = { "All", "Ball & Paddle", "Breakout", "Casino", "Climbing", "Driving", "Fighter", "Maze", 
+    "Mini-Games", "Misc", "Multiplay", "Pinball", "Platform", "Puzzle", "Quiz", "Shooter", 
+    "Sports", "Tabletop", "Wrestling" };
 
 static void load_bmp_8bpp(unsigned char *out, unsigned char *in) 
 {
@@ -75,7 +100,7 @@ static void load_bmp_8bpp(unsigned char *out, unsigned char *in)
 }
 
 static void gp2x_intro_screen(void) {
-	char name[256];
+	char name[1024];
 	FILE *f;
 	gp2x_video_flip();
 	sprintf(name,get_documents_path("skins/iOSsplash.bmp"));
@@ -102,33 +127,226 @@ static void gp2x_intro_screen(void) {
 	}
 }
 
+static void favorites_read(void)
+{
+    //SQ: Read the favorites list from the favorites.ini file
+    FILE *file;
+    char filename[1024];
+    int counter=0;
+    int startread=0;
+    
+    favarray[0][0] = '\0';
+    
+    sprintf(filename,get_documents_path("folders/Favorites.ini"));
+    
+    file = fopen (filename, "r");
+    if ( file != NULL )
+    {
+        char line[256]; /* or other suitable maximum line size */
+
+        while ( fgets(line, sizeof line, file) != NULL ) /* read a line */
+        {
+            if (line[strlen(line) - 1] == '\n') line[strlen(line) - 1] = '\0';
+            if (line[strlen(line) - 1] == '\r') line[strlen(line) - 1] = '\0';
+
+            if (line[0] == '[' || line[0] == '\0' || strlen(line) > 8) continue;
+
+            //Everything checks out so stick the line in the array
+            strcpy(favarray[counter++], line);
+			if(counter == MAXFAVS-2) break;
+        }
+        fclose ( file );
+		favarray[counter][0] = '\0';
+    }
+}
+
+static void favorites_remove(char *game) 
+{
+    //SQ: Scan through the favorites file and remove
+    //the requested line, creating a new file.
+    FILE *file, *file2;
+    char filename[1024], filename2[1024];
+    int counter=0;
+    int startread=0;
+
+    sprintf(filename,get_documents_path("folders/Favorites.ini"));
+    sprintf(filename2, "%s.new", filename);
+    
+    file = fopen (filename, "r");
+    file2 = fopen (filename2, "w");
+    if ( file != NULL && file2 != NULL) {
+        char line[256]; 
+        char line2[256];
+        
+        while ( fgets(line, sizeof line, file) != NULL ) { /* read a line */
+            strcpy(line2, line);
+            
+            if (line[strlen(line) - 1] == '\n') line[strlen(line) - 1] = '\0';
+            if (line[strlen(line) - 1] == '\r') line[strlen(line) - 1] = '\0';
+            
+            if (line[0] != '[' && line[0] != '\0' && strlen(line) <= 8) {
+                if (strcmp(line, game) == 0) {
+                    continue;
+                }                     
+            }
+            fputs(line2, file2); 
+            
+        }
+        fclose (file);
+        fclose (file2);
+        
+        //Move the new file over the old one.
+        rename(filename2, filename);
+    }
+    
+    //SQ:All done so re-read the favorites array
+    favorites_read();
+} 
+
+static void favorites_add(char *game) 
+{
+    //SQ:Add the game to the favorites file
+    FILE *file;
+    char filename[1024];
+    
+    //SQ:Make sure the directory exists before creating a new file
+    mkdir(get_documents_path("folders"), 0777);
+    
+    sprintf(filename,get_documents_path("folders/Favorites.ini"));
+    file = fopen(filename, "a");
+    if (file != NULL) {
+        fputs(game, file);
+        fputc('\n', file);
+        fclose(file);
+    }
+    
+    //SQ:All done so re-read the favorites array
+    favorites_read();
+}
+    
+    
 static void game_list_init(void)
 {
-	int i;
-	DIR *d=opendir(get_documents_path("roms"));
-	char game[32];
-	if (d)
-	{
-		struct dirent *actual=readdir(d);
-		while(actual)
-		{
-			for (i=0;i<NUMGAMES;i++)
-			{
-				if (_drivers[i].available==0)
-				{
-					sprintf(game,"%s.zip",_drivers[i].name);
-					if (strcmp(actual->d_name,game)==0)
-					{
-						_drivers[i].available=1;
-						game_num_avail++;
-						break;
-					}
+	int i, j;
+    int skipflag=0;
+    int counter;
+	int check_neogeo=0, check_other=0;
+
+	//SQ: read the favorites
+    favorites_read();	
+
+    //SQ: Read the directory rom listing into memory to cache it for later filtering
+	//We only cache the game index not the actual rom name
+    if(!game_list_num) {
+        DIR *d=opendir(get_documents_path("roms"));
+        game_num_avail=0;
+        if (d)
+        {
+			char tempstr[50];
+            struct dirent *actual=readdir(d);
+            while(actual)
+            {
+                if(strlen(actual->d_name) > 5) {
+				    strcpy(tempstr, actual->d_name);
+                    tempstr[(strlen(tempstr) - 4)] = '\0';	//remove .zip to compare in loop
+                    for (i=0;i<NUMGAMES;i++) {
+                        if (strcmp(tempstr, _drivers[i].name)==0) {
+    						game_list_array[game_list_num++] = i;
+                            break;
+                        }
+                    }
 				}
+                actual=readdir(d);
 			}
-			actual=readdir(d);
 		}
 		closedir(d);
+        local_game_list_num=game_list_num;
 	}
+
+    //SQ: Reset list, may happen if filter changes
+    for (i=0;i<NUMGAMES;i++) {
+        _drivers[i].available=0;
+    }
+
+	//SQ: Set these flags to save many string comparisons in loop below
+	if (strcmp(manufact_array[global_manufacturer], "NeoGeo") == 0) check_neogeo=1;
+    if (strcmp(manufact_array[global_manufacturer], "Other") == 0) check_other=1;
+    
+    game_num_avail=0;
+    
+	//SQ:game_list_array contains a list of all the ROMS in the /roms directory
+    for(j=0;j<game_list_num;j++) {
+        for (i=0;i<NUMGAMES;i++)
+        {                
+            if (!_drivers[i].available)
+            {
+                if (game_list_array[j] == i)     //Found a matching game
+                {
+                    skipflag=0;
+
+                    //SQ:Are clones to be displayed
+                    if (!global_clones && !skipflag) {
+                        if (_drivers[i].clone) skipflag=1;
+                    }
+
+                    //SQ:If manufacturers is filtered, only display the relevant games
+                    if (global_manufacturer && !skipflag) {
+                        skipflag=1;
+
+						//SQ:Check for Neogeo games if Neogeo selected, special case as its driver specific
+                		if (check_neogeo) {
+                        	if (strcmp(_drivers[i].exe, "neomame") == 0) skipflag=0;   
+						} 
+                		else if (check_other) {	//SQ:find all manufacturers that aren't in the list
+							int x=0, mfound=0;
+							while(true) {
+							    if (strstr(_drivers[i].manufacturer, manufact_array[x])) {
+									mfound=1;
+									break;
+								}
+								x++;
+								if(manufact_array[x][0] == '\0') break;
+							}
+							if(!mfound) skipflag=0;
+						}
+                        else if (strstr(_drivers[i].manufacturer, manufact_array[global_manufacturer])) skipflag=0;
+                    }        
+
+                    //SQ:Check category filter
+                    if (global_category && !skipflag) {
+                        if (!strstr(_drivers[i].category, category_array[global_category])) skipflag=1;
+                    }        
+                    
+					//SQ:Filter by year
+					if(global_year && !skipflag) {
+						if((global_year + 1974) != _drivers[i].year) skipflag=1;
+					}
+                    
+                    //SQ:Show only favorites
+                    if(global_filter == 1 && !skipflag) {	
+                        skipflag=1;
+                        counter=0;
+                        while(true) {
+                            if (favarray[counter][0] == '\0') break;	//Null is the array terminator
+                            if (strcasecmp(favarray[counter], _drivers[i].name) == 0) {
+                                skipflag=0;
+                                break;
+                            }
+                            counter++;
+                        }
+                    }
+
+                    //SQ:Everything matches so add to list
+                    if(!skipflag) {                       
+                        _drivers[i].available=1;
+                        game_num_avail++;
+                    }
+                    break;
+                }
+            }
+        }
+	}
+    
 }
 
 
@@ -139,12 +357,13 @@ static void game_list_init(int argc)
 }
 
 static void game_list_view(int *pos) {
-
+   
 	int i;
 	int view_pos;
 	int aux_pos=0;
 	int screen_y = 45;
 	int screen_x = 38;
+    char tempstr[255];
 
 	/* Draw background image */
 	load_bmp_8bpp(gp2x_screen8,gp2xmenu_bmp);
@@ -170,15 +389,30 @@ static void game_list_view(int *pos) {
 	/* Show List */
 	for (i=0;i<NUMGAMES;i++) {
 		if (_drivers[i].available==1) {
-			if (aux_pos>=view_pos && aux_pos<=view_pos+20) {
-				gp2x_gamelist_text_out( screen_x, screen_y, _drivers[i].description);
-				if (aux_pos==*pos) {
-					gp2x_gamelist_text_out( screen_x-10, screen_y,">" );
-					gp2x_gamelist_text_out( screen_x-13, screen_y-1,"-" );
-				}
-				screen_y+=8;
-			}
-			aux_pos++;
+            if (aux_pos>=view_pos && aux_pos<=view_pos+20) {
+                //Check if the game is a favorite
+                int foundfav=0;
+                int counter=0;
+                while(true) {
+                    if (favarray[counter][0] == '\0') break;	//Null is the array terminator
+                    if (strcasecmp(favarray[counter], _drivers[i].name) == 0) {
+                        foundfav=1;
+                        break;
+                    }
+                    counter++;
+                }           
+                if(foundfav) {
+                    gp2x_gamelist_text_out_color( screen_x, screen_y, _drivers[i].description, 3); //light blue
+                } else {
+                    gp2x_gamelist_text_out( screen_x, screen_y, _drivers[i].description);  //white
+                }
+                if (aux_pos==*pos) {
+                    gp2x_gamelist_text_out( screen_x-10, screen_y,">" );
+                    gp2x_gamelist_text_out( screen_x-13, screen_y-1,"-" );
+                }
+                screen_y+=8;
+            }
+            aux_pos++;
 		}
 	}
 
@@ -186,8 +420,29 @@ static void game_list_view(int *pos) {
 	{
 		gp2x_gamelist_text_out(35, 110, "NO AVAILABLE GAMES FOUND");
 	}
-
-	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"iMAME4all v1.9.0 by D.Valdeita");
+    
+    //Print the filter on the bottom line if it is set
+    if(global_manufacturer || global_category || global_year) {
+        char tempstr2[5];
+        strcpy(tempstr, "Filter:");
+        if (global_year) {
+            sprintf(tempstr2, "%d", global_year+1974);
+            strcat(tempstr, tempstr2);
+            strcat(tempstr, "/");
+        }
+        if(global_category) {
+            strcat(tempstr, category_array[global_category]);
+            strcat(tempstr, "/");
+        }
+        if(global_manufacturer) {
+            strcat(tempstr, manufact_array[global_manufacturer]);
+            strcat(tempstr, "/");
+        }
+        tempstr[strlen(tempstr)-1] = '\0';
+        gp2x_gamelist_text_out( screen_x-20, (29*8)-6,tempstr);
+    } else {
+        gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"iMAME4all v1.10.0 by D.Valdeita");
+    }
 }
 
 static void game_list_select (int index, char *game, char *emu) {
@@ -220,6 +475,24 @@ static char *game_list_description (int index)
 			}
 			aux_pos++;
 		   }
+	}
+	return ((char *)0);
+}
+
+
+static char *game_list_manufacturer (int index)
+{
+	int i;
+	int aux_pos=0;
+	for (i=0;i<NUMGAMES;i++) {
+		if (_drivers[i].available==1) {
+			if(aux_pos==index) {
+                char tempstr[255];
+                sprintf(tempstr, "%d %s", _drivers[i].year, _drivers[i].manufacturer);
+				return(tempstr);
+			}
+			aux_pos++;
+        }
 	}
 	return ((char *)0);
 }
@@ -258,10 +531,14 @@ static int show_options(char *game)
 		load_bmp_8bpp(gp2x_screen8,gp2xmenu_bmp);
 
 		/* Draw the options */
-		gp2x_gamelist_text_out(x_Pos,y_Pos,"Selected Game:\0");
 		strncpy (text,game_list_description(last_game_selected),33);
 		text[32]='\0';
-		gp2x_gamelist_text_out(x_Pos,y_Pos+10,text);
+		gp2x_gamelist_text_out(x_Pos,y_Pos,text);
+        
+        strncpy (text,game_list_manufacturer(last_game_selected),33);
+        text[32]='\0';
+        gp2x_gamelist_text_out(x_Pos,y_Pos+10,text);
+        
 
 		/* (1) Video Aspect */
 		switch (iOS_video_aspect)
@@ -598,6 +875,20 @@ static void select_game(char *emu, char *game)
 	/* Wait until user selects a game */
 	while(1)
 	{
+        
+        if(local_manufacturer != global_manufacturer || local_clones != global_clones 
+			|| local_filter != global_filter || local_category != global_category
+            || local_year != global_year
+            || local_game_list_num != game_list_num) {
+            game_list_init();
+            last_game_selected=0;
+            local_manufacturer = global_manufacturer;
+            local_clones = global_clones;
+            local_filter = global_filter;
+            local_category = global_category;
+            local_year = global_year;
+        }
+        
 		game_list_view(&last_game_selected);
 		gp2x_video_flip();
 
@@ -611,7 +902,13 @@ static void select_game(char *emu, char *game)
 			if( (gp2x_joystick_read(0)&0x8c0ff55)) {
                 usleep(100000);
             }
-			while(!(ExKey=gp2x_joystick_read(0)&0x8c0ff55))
+			while(!(ExKey=gp2x_joystick_read(0)&0x8c0ff55)
+                  && local_manufacturer == global_manufacturer
+				  && local_clones == global_clones
+  			      && local_filter == global_filter
+				  && local_category == global_category
+                  && local_year == global_year
+                  && local_game_list_num == game_list_num)
 			{
                 keydelay=1;
                 usleep(1000);
@@ -629,6 +926,30 @@ static void select_game(char *emu, char *game)
 		else if ((ExKey & GP2X_L) || ExKey & GP2X_LEFT) last_game_selected-=21;
 		else if ((ExKey & GP2X_R) || ExKey & GP2X_RIGHT) last_game_selected+=21;
 		//if ((ExKey & GP2X_L) && (ExKey & GP2X_R)) gp2x_exit();
+        
+        //Set or clear favorite setting for this game
+        if (ExKey & GP2X_SELECT) {
+            //Check if the game is already a favorite
+            game_list_select(last_game_selected, game, emu);
+            
+            int foundfav=0;
+            int counter=0;
+            while(true) {
+                if (favarray[counter][0] == '\0') break;	//Null is the array terminator
+                if (strcasecmp(favarray[counter], game) == 0) {
+                    foundfav=1;
+                    break;
+                }
+                counter++;
+            }     
+            
+            if(foundfav) {
+                favorites_remove(game);
+            } else {
+                favorites_add(game);
+            }
+            
+        }
 
 		if (((ExKey & GP2X_A) || (ExKey & GP2X_B) || (ExKey & GP2X_PUSH) || (ExKey & GP2X_START)) && game_num_avail!=0)
 		{
@@ -891,6 +1212,12 @@ extern "C" int mimain (int argc, char **argv)
 	/* Show intro screen */
 	gp2x_intro_screen();
 
+    local_manufacturer = global_manufacturer;
+    local_clones = global_clones;
+    local_filter = global_filter;
+    local_category = global_category;
+    local_year = global_year;
+    
 	/* Initialize list of available games */
 	game_list_init(argc);
 
