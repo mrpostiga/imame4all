@@ -51,6 +51,15 @@
 - (void)deleteBackward;
 
 @end
+
+typedef enum {
+    UIModalPresentationFullScreen = 0,
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_3_2
+    UIModalPresentationPageSheet,
+    UIModalPresentationFormSheet,
+    UIModalPresentationCurrentContext,
+#endif
+} UIModalPresentationStyle;
 #endif
 
 @interface EmulatorController : UIViewController <UIActionSheetDelegate, UIKeyInput>
