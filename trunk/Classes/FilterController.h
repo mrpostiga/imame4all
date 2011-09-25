@@ -14,7 +14,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  */
-
+#import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
 
 #define MANUFACTURER_LIST @"All", @"Atari", @"Capcom", @"Cinematronics", @"Data East", @"Exidy", @"Gremlin", @"Irem", @"Jaleco", @"Leland", @"Konami", @"Midway", @"Namco", @"NeoGeo", @"Nichibutsu", @"Nintendo", @"Other", @"Sega", @"SNK", @"Stern", @"Taito", @"Technos", @"Tecmo", @"Toaplan", @"Universal", @"Video System", @"Williams"
