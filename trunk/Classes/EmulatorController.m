@@ -406,7 +406,7 @@ void* app_Thread_Start(void* args)
 }
 
 -(void)done:(id)sender {
-
+    
     [self dismissModalViewControllerAnimated:YES];
 
 	Options *op = [[Options alloc] init];
@@ -541,8 +541,11 @@ void* app_Thread_Start(void* args)
     
     if([op buttonReload]) {
         game_list_num = 0;
+        op.buttonReload = FALSE;
+        [op saveOptions];
+        
     }
-    
+        
     [op2 release];
     [op release];
     
