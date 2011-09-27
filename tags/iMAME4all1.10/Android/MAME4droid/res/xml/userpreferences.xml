@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+	<PreferenceCategory android:title="Global">
+		
+		<CheckBoxPreference android:key="PREF_GLOBAL_ASMCORES"
+			android:title="ASM CPU cores" android:summary="Enable Cyclone (M68000 ASM CPU core) and DrZ80 (Z80 ASM CPU core) using internal compatibility list. Disable it (needs app restart) to get maximum accuracity and compatibility at the expense of performance."
+			android:defaultValue="true" />
+					
+		<ListPreference
+			android:entries="@array/pref_global_video_render_options"
+			android:title='Video Render Mode'			
+			android:key="PREF_GLOBAL_VIDEO_RENDER_MODE"
+			android:entryValues="@array/pref_global_video_render_values"
+			android:defaultValue="2" />	
+			
+	    <CheckBoxPreference android:key="PREF_GLOBAL_SOUND_THREADED"
+			android:title="Threaded Sound" android:summary="Enable it to get smoother gameplay in some cases but worse sound quality"
+			android:defaultValue="true" />
+						
+	   	<CheckBoxPreference android:key="PREF_GLOBAL_SHOW_FPS"
+			android:title="Show FPS" android:summary="Enable it to turn FPS display on"
+			android:defaultValue="false" />
+	   	
+	   	<CheckBoxPreference android:key="PREF_GLOBAL_SHOW_INFOWARNINGS"
+			android:title="Show Info/Warnings" android:summary="Shows Game Info and any warnings when a game is selected"
+			android:defaultValue="true" />
+
+	   	<CheckBoxPreference android:key="PREF_GLOBAL_FPS_LIMIT"
+			android:title="FPS limit when filtering enabled" android:summary="Enable it to limit frames rendered when filtering is activated to reduce jitter. Disable it to get full FPS if your device is powerful enough"
+			android:defaultValue="false" />
+		
+		<CheckBoxPreference android:key="PREF_GLOBAL_DEBUG"
+			android:title="Debug Mode" android:summary="Only for developers"
+			android:defaultValue="false" />
+			
+	</PreferenceCategory>
+
+
+	<PreferenceCategory android:title="Input Settings">
+		<PreferenceScreen android:key="defineKeys"
+			android:title="Define Keys" android:summary="Select to map emulator stick and buttons to physical keys. (Xperia Play and any other devices with physical keyboards users should configure their buttons or keys here)" />
+
+		<PreferenceScreen android:key="defaultsKeys"
+			android:title="Restore Keys" android:summary="Restore keys to default values" />
+			
+		<com.seleuco.mame4all.prefs.TrackBallPrefScreen
+			android:key="PREF_TRACKBALL_SENSITIVITY" android:title="Trackball sensitivity"
+			android:summary="Set trackball persistance"
+			android:defaultValue="3" />
+			
+		<CheckBoxPreference android:key="PREF_TRACKBALL_NOMOVE"
+			android:title="Trackball fire only mode" android:summary="Enable to disable trackball movement"
+			android:defaultValue="false" />
+			
+		<CheckBoxPreference android:key="PREF_ANIMATED_INPUT"
+			android:title="Animated" android:summary="Animated touch control. Disable for performance."
+			android:defaultValue="true" />	
+
+		<CheckBoxPreference android:key="PREF_TOUCH_DZ"
+			android:title="Touch Dead Zone" android:summary="Enable Touch Dead Zone."
+			android:defaultValue="true" />	
+						
+		<!--  
+		<ListPreference
+			android:entries="@array/pref_landscape_controllerType_options"
+			android:title='Landscape touch controller'			
+			android:key="PREF_LANDSCAPE_CONTROLLER_TYPE"
+			android:entryValues="@array/pref_landscape_controllerType_values"
+			android:defaultValue="1" />	 -->
+
+	</PreferenceCategory>
+
+	<PreferenceCategory android:title="Portrait Display Settings">
+
+		<ListPreference android:entries="@array/pref_scaleMode_options"
+			android:title='Scaling mode' android:key="PREF_PORTRAIT_SCALING_MODE"
+			android:entryValues="@array/pref_scaleMode_values"
+			android:defaultValue="3" />
+
+		<CheckBoxPreference android:key="PREF_PORTRAIT_TOUCH_CONTROLLER"
+			android:title="Touch controller visible" android:summary="Disable to get more room for scaling if not need it"
+			android:defaultValue="true" />
+
+		<CheckBoxPreference android:key="PREF_PORTRAIT_BITMAP_FILTERING"
+			android:title="Smooth scaling" android:summary="Select to turn bitmap filtering on, at the expense of performance"
+			android:defaultValue="false" />
+
+	</PreferenceCategory>
+
+	<PreferenceCategory android:title="Lansdscape Display Settings">
+			
+		<ListPreference android:entries="@array/pref_scaleMode_options"
+			android:title='Scaling mode' android:key="PREF_LANDSCAPE_SCALING_MODE"
+			android:entryValues="@array/pref_scaleMode_values"
+			android:defaultValue="3" />
+
+		<CheckBoxPreference android:key="PREF_LANDSCAPE_TOUCH_CONTROLLER"
+			android:title="Touch controller visible" android:summary="Disable to get more room for scaling if not need it"
+			android:defaultValue="true" />
+
+		<CheckBoxPreference android:key="PREF_LANDSCAPE_BITMAP_FILTERING"
+			android:title="Smooth scaling" android:summary="Select to turn bitmap filtering on, at the expense of performance"
+			android:defaultValue="false" />
+		
+
+	</PreferenceCategory>
+
+</PreferenceScreen>
