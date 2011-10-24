@@ -142,7 +142,7 @@ public class VideoThread implements Runnable {
 					//canvas.drawBitmap(emuBitmap, null, frameRect, Emulator.getFramePaint());
 					canvas.concat(Emulator.getMatrix());			
 					canvas.drawBitmap(bmp, 0, 0, Emulator.getEmuPaint());
-									
+														
 					if(Emulator.isDebug())
 					{
 					   canvas.drawText("Threaded fps:"+fps+ " w:"+Emulator.getWindow_width()+" h:"+Emulator.getWindow_height(), 5,  40, Emulator.getDebugPaint());			  

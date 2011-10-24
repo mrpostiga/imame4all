@@ -7,6 +7,22 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#undef com_seleuco_mame4all_Emulator_FPS_SHOWED_KEY
+#define com_seleuco_mame4all_Emulator_FPS_SHOWED_KEY 1L
+#undef com_seleuco_mame4all_Emulator_EXIT_GAME_KEY
+#define com_seleuco_mame4all_Emulator_EXIT_GAME_KEY 2L
+#undef com_seleuco_mame4all_Emulator_LAND_BUTTONS_KEY
+#define com_seleuco_mame4all_Emulator_LAND_BUTTONS_KEY 3L
+#undef com_seleuco_mame4all_Emulator_HIDE_LR__KEY
+#define com_seleuco_mame4all_Emulator_HIDE_LR__KEY 4L
+#undef com_seleuco_mame4all_Emulator_BPLUSX_KEY
+#define com_seleuco_mame4all_Emulator_BPLUSX_KEY 5L
+#undef com_seleuco_mame4all_Emulator_WAYS_STICK_KEY
+#define com_seleuco_mame4all_Emulator_WAYS_STICK_KEY 6L
+#undef com_seleuco_mame4all_Emulator_ASMCORES_KEY
+#define com_seleuco_mame4all_Emulator_ASMCORES_KEY 7L
+#undef com_seleuco_mame4all_Emulator_INFOWARN_KEY
+#define com_seleuco_mame4all_Emulator_INFOWARN_KEY 8L
 /*
  * Class:     com_seleuco_mame4all_Emulator
  * Method:    init
@@ -46,6 +62,14 @@ JNIEXPORT jint JNICALL Java_com_seleuco_mame4all_Emulator_getValue
  */
 JNIEXPORT void JNICALL Java_com_seleuco_mame4all_Emulator_setValue
   (JNIEnv *, jclass, jint, jint);
+
+/*
+ * Class:     com_seleuco_mame4all_Emulator
+ * Method:    setAnalogData
+ * Signature: (FF)V
+ */
+JNIEXPORT void JNICALL Java_com_seleuco_mame4all_Emulator_setAnalogData
+  (JNIEnv *, jclass, jfloat, jfloat);
 
 #ifdef __cplusplus
 }

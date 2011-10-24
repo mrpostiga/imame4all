@@ -54,7 +54,9 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	protected ListPreference mPrefGlobalVideoRenderMode;
 	protected ListPreference mPrefPortraitMode;
     protected ListPreference mPrefLandsMode;
-    //protected ListPreference mPrefLandsControllerType;
+    protected ListPreference mPrefControllerType;
+    protected ListPreference mPrefExtInput;
+    protected ListPreference mPrefAnalogDZ;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -69,8 +71,9 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 		mPrefGlobalVideoRenderMode = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GLOBAL_VIDEO_RENDER_MODE);
         mPrefPortraitMode = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_PORTRAIT_SCALING_MODE);
         mPrefLandsMode = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_LANDSCAPE_SCALING_MODE);
-        //mPrefLandsControllerType = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_LANDSCAPE_CONTROLLER_TYPE);
-    
+        mPrefControllerType = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_CONTROLLER_TYPE);
+        mPrefExtInput = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_INPUT_EXTERNAL);
+        mPrefAnalogDZ = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_ANALOG_DZ);        
 	}
 	
 	  @Override
@@ -82,7 +85,9 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	        mPrefGlobalVideoRenderMode.setSummary("Current value is '" + mPrefGlobalVideoRenderMode.getEntry()+"'"); 
 	        mPrefPortraitMode.setSummary("Current value is '" + mPrefPortraitMode.getEntry()+"'"); 
 	        mPrefLandsMode.setSummary("Current value is '" + mPrefLandsMode.getEntry()+"'"); 
-	        //mPrefLandsControllerType.setSummary("Current value is '" + mPrefLandsControllerType.getEntry()+"'");
+	        mPrefControllerType.setSummary("Current value is '" + mPrefControllerType.getEntry()+"'");
+	        mPrefExtInput.setSummary("Current value is '" + mPrefExtInput.getEntry()+"'");
+	        mPrefAnalogDZ.setSummary("Current value is '" + mPrefAnalogDZ.getEntry()+"'");
 	        	        
 	        // Set up a listener whenever a key changes            
 	        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
@@ -111,13 +116,21 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	        {
 	        	mPrefLandsMode.setSummary("Current value is '" + mPrefLandsMode.getEntry()+"'");	
 	        }
-	        /*else if(key.equals(PrefsHelper.PREF_LANDSCAPE_CONTROLLER_TYPE))
+	        else if(key.equals(PrefsHelper.PREF_CONTROLLER_TYPE))
 	        {	
-	            mPrefLandsControllerType.setSummary("Current values is '" + mPrefLandsControllerType.getEntry()+"'");
+	            mPrefControllerType.setSummary("Current values is '" + mPrefControllerType.getEntry()+"'");
 	        }
-	        */else if(key.equals(PrefsHelper.PREF_GLOBAL_VIDEO_RENDER_MODE))
+	        else if(key.equals(PrefsHelper.PREF_GLOBAL_VIDEO_RENDER_MODE))
 	        {	
 	        	mPrefGlobalVideoRenderMode.setSummary("Current value is '" + mPrefGlobalVideoRenderMode.getEntry()+"'"); 
+	        }
+	        else if(key.equals(PrefsHelper.PREF_INPUT_EXTERNAL))
+	        {	
+	        	mPrefExtInput.setSummary("Current value is '" + mPrefExtInput.getEntry()+"'"); 
+	        }
+	        else if(key.equals(PrefsHelper.PREF_ANALOG_DZ))
+	        {	
+	        	mPrefAnalogDZ.setSummary("Current value is '" + mPrefAnalogDZ.getEntry()+"'"); 
 	        }
 	    }
 

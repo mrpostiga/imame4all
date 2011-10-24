@@ -333,7 +333,7 @@ void parse_cmdline (int argc, char **argv, int game_index)
 	sprintf(memcarddir_buf,"%smemcard",globalpath);
 	sprintf(stadir_buf,"%ssta",globalpath);
 	sprintf(artworkdir_buf,"%sartwork",globalpath);
-	sprintf(cheatdir_buf,"%scheat",globalpath);
+	sprintf(cheatdir_buf,"%s",globalpath);
 
 	/* set default subdirectories */
 	nvdir      = get_string ("directory", "nvram",   NULL, nvdir_buf);

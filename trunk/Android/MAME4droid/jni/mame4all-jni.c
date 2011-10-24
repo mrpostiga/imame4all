@@ -52,6 +52,8 @@ void (*setGlobalPath)(const char *path) = NULL;
 void  (*setMyValue)(int key, int value)=NULL;
 int  (*getMyValue)(int key)=NULL;
 
+void  (*setMyAnalogData)(float v1,float v2)=NULL;
+
 /* Callbacks to Android */
 jmethodID android_dumpVideo;
 jmethodID android_changeVideo;
@@ -73,7 +75,7 @@ static unsigned char audioByteBuffer[882 * 2 * 2 * 10];
 static pthread_t main_tid;
 
 
-static void load_xpectrumlib(const char *str)
+static void load_lib(const char *str)
 {
 
     char str2[256];
@@ -104,6 +106,8 @@ static void load_xpectrumlib(const char *str)
 
     setMyValue = dlsym(libdl, "setMyValue"); 
     getMyValue = dlsym(libdl, "getMyValue"); 
+
+    setMyAnalogData = dlsym(libdl, "setMyAnalogData"); 
 }
 
 void myJNI_initVideo(void *buffer)
@@ -300,7 +304,7 @@ JNIEXPORT void JNICALL Java_com_seleuco_mame4all_Emulator_init
 
     const char *str1 = (*env)->GetStringUTFChars(env, s1, 0);
 
-    load_xpectrumlib(str1);
+    load_lib(str1);
 
     (*env)->ReleaseStringUTFChars(env, s1, str1);
     
@@ -373,4 +377,13 @@ JNIEXPORT void JNICALL Java_com_seleuco_mame4all_Emulator_setValue
     if(setMyValue!=NULL)
       setMyValue(key,value);
 }
+
+JNIEXPORT void JNICALL Java_com_seleuco_mame4all_Emulator_setAnalogData
+  (JNIEnv *env, jclass c, jfloat v1, jfloat v2)
+{
+    if(setMyAnalogData!=NULL)
+       setMyAnalogData(v1,v2);
+}
+
+
 

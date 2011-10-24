@@ -14,6 +14,7 @@
 
 
     <style name="Theme.MAME4ALL" parent="android:Theme.Holo.NoActionBar.Fullscreen">
+        <!--  <item name="android:windowBackground">@null</item>--> 
     </style>
     
     <style name="Theme.MAME4ALL.TitleBar" parent="android:Theme.Holo.NoActionBar.Fullscreen">

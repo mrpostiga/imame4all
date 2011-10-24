@@ -187,9 +187,9 @@ static void game_list_view(int *pos) {
 		gp2x_gamelist_text_out(35, 110, "NO AVAILABLE GAMES FOUND");
 	}
 #ifdef ARMV7
-	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"MAME4droid. v1.1 by D.Valdeita");
+	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"MAME4droid. v1.2 by D.Valdeita");
 #else
-	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"MAME4droid  v1.1 by D.Valdeita");
+	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"MAME4droid  v1.2 by D.Valdeita");
 #endif
 
 }
@@ -817,14 +817,17 @@ void execute_game (char *playemu, char *playgame)
 		{
 			args[n]="-cyclone"; n++;
 		}
+
 		if ((m4all_cpu_cores==2) || (m4all_cpu_cores==3))
 		{
 			args[n]="-drz80"; n++;
 		}
+		/*
 		if ((m4all_cpu_cores==4) || (m4all_cpu_cores==5))
 		{
 			args[n]="-drz80_snd"; n++;
 		}
+		*/
 	}
 
 	if (m4all_cheat)

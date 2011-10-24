@@ -274,7 +274,35 @@ public class MainHelper {
 			}    
 					
 	}
-
+	
+	public void setBorder(){
+		
+		int size = mm.getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK; 
+		
+		if((size  == Configuration.SCREENLAYOUT_SIZE_LARGE || size  == Configuration.SCREENLAYOUT_SIZE_XLARGE) 
+			&& mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_PORTRAIT)
+			{
+		        LayoutParams lp  = (LayoutParams) mm.getEmuView().getLayoutParams();
+		        LayoutParams lp2 = null;
+				View v =  mm.findViewById(R.id.EmulatorFrame);
+				if(mm.getEmuViewHW()!=null)
+					lp2 =(LayoutParams) mm.getEmuViewHW().getLayoutParams();
+			    if(mm.getPrefsHelper().isPortraitTouchController())
+			    {					
+			       v.setBackgroundDrawable(mm.getResources().getDrawable(R.drawable.border));
+			       lp.setMargins(15, 15, 15, 15);
+			       if(lp2!=null)lp2.setMargins(15, 15, 15, 15);
+			    }   
+			    else
+			    {
+			    	v.setBackgroundDrawable(null);
+			    	v.setBackgroundColor(R.color.emu_back_color);
+			    	lp.setMargins(0, 0, 0, 0);
+			    	if(lp2!=null)lp2.setMargins(0, 0, 0, 0);
+			    }			    
+			}		   	
+	}
+	
 	
 	public void updateMAME4all(){
 		
@@ -295,6 +323,8 @@ public class MainHelper {
 		Emulator.setDebug(prefsHelper.isDebugEnabled());
 		Emulator.setThreadedSound(prefsHelper.isSoundfThreaded());
 		Emulator.setFrameLimit(prefsHelper.isFPSLimit());
+		
+		setBorder();
 		
 		updateVideoRender();
 		
@@ -421,8 +451,8 @@ public class MainHelper {
 	
 	public void showWeb(){		
 		Intent browserIntent = new Intent("android.intent.action.VIEW",
-				//Uri.parse("https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=seleuco%2enicator%40gmail%2ecom&lc=US&item_name=Seleuco%20Nicator&item_number=ixxxx4all&no_note=0&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHostedGuest")
-                Uri.parse("http://code.google.com/p/xpectrum/")				
+				Uri.parse("https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=seleuco%2enicator%40gmail%2ecom&lc=US&item_name=Seleuco%20Nicator&item_number=ixxxx4all&no_note=0&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHostedGuest")
+                //Uri.parse("http://code.google.com/p/xpectrum/")				
 				);  
 		mm.startActivity(browserIntent);
 	}

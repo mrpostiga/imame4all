@@ -581,7 +581,7 @@ static void poll_joystick(void)
 
 void osd_poll_joysticks(void)
 {
-	sched_yield();//???
+	//sched_yield();//???
 
 	updatekeyboard();
 

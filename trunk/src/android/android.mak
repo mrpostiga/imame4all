@@ -12,6 +12,8 @@ OBJC = $(OBJ)/android/minimal.o \
 	$(OBJ)/android/android_main.o $(OBJ)/android/video.o $(OBJ)/android/blit.o \
 	$(OBJ)/android/sound.o $(OBJ)/android/input.o $(OBJ)/android/fileio.o \
 	$(OBJ)/android/config.o $(OBJ)/android/fronthlp.o \
+	$(OBJ)/android/memcmp.o $(OBJ)/android/memcpy.o $(OBJ)/android/memset.o \
+	$(OBJ)/android/strcmp.o $(OBJ)/android/strlen.o $(OBJ)/android/strncmp.o \
 	$(OBJ)/android/shared.o $(OBJ)/android/android_frontend.o $(OBJ)/android/wiimote.o
 	
 

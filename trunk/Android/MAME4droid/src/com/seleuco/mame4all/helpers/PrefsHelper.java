@@ -49,11 +49,11 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String PREF_GLOBAL_FPS_LIMIT = "PREF_GLOBAL_FPS_LIMIT";
 	final static public String PREF_GLOBAL_DEBUG = "PREF_GLOBAL_DEBUG";
 	
-	final static public String PREF_PORTRAIT_SCALING_MODE = "PREF_PORTRAIT_SCALING_MODE";
+	final static public String PREF_PORTRAIT_SCALING_MODE = "PREF_PORTRAIT_SCALING_MODE_2";
 	final static public String PREF_PORTRAIT_TOUCH_CONTROLLER = "PREF_PORTRAIT_TOUCH_CONTROLLER";
 	final static public String PREF_PORTRAIT_BITMAP_FILTERING = "PREF_PORTRAIT_BITMAP_FILTERING";
 	
-	final static public String PREF_LANDSCAPE_SCALING_MODE = "PREF_LANDSCAPE_SCALING_MODE";
+	final static public String PREF_LANDSCAPE_SCALING_MODE = "PREF_LANDSCAPE_SCALING_MODE_2";
 	final static public String PREF_LANDSCAPE_TOUCH_CONTROLLER = "PREF_LANDSCAPE_TOUCH_CONTROLLER";
 	final static public String PREF_LANDSCAPE_BITMAP_FILTERING = "PREF_LANDSCAPE_BITMAP_FILTERING";
 	final static public String PREF_LANDSCAPE_CONTROLLER_TYPE = "PREF_LANDSCAPE_CONTROLLER_TYPE";
@@ -64,10 +64,30 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String  PREF_TRACKBALL_NOMOVE = "PREF_TRACKBALL_NOMOVE";
 	final static public String  PREF_ANIMATED_INPUT = "PREF_ANIMATED_INPUT";
 	final static public String  PREF_TOUCH_DZ = "PREF_TOUCH_DZ";
+	final static public String  PREF_CONTROLLER_TYPE = "PREF_CONTROLLER_TYPE";
+	final static public String  PREF_INPUT_EXTERNAL = "PREF_INPUT_EXTERNAL";
+	final static public String  PREF_ANALOG_DZ = "PREF_ANALOG_DZ";
+	final static public String  PREF_VIBRATE = "PREF_VIBRATE";
 	
 	final static public int  PREF_RENDER_NORMAL = 1;
 	final static public int  PREF_RENDER_THREADED = 2;
 	final static public int  PREF_RENDER_HW = 3;
+	
+	final static public int  PREF_DIGITAL = 1;
+	final static public int  PREF_ANALOG_FAST = 2;
+	final static public int  PREF_ANALOG_PRETTY = 3;
+
+	final static public int  PREF_INPUT_DEFAULT = 1;
+	final static public int  PREF_INPUT_ICADE = 2;
+	final static public int  PREF_INPUT_ICP = 3;
+	
+	final public static int PREF_ORIGINAL = 1;
+	final public static int PREF_15X = 2;	
+	final public static int PREF_20X = 3;
+	final public static int PREF_25X = 4;	
+	final public static int PREF_SCALE = 5;
+	final public static int PREF_STRETCH = 6;
+	
 	
 	protected MAME4all mm = null;
 	
@@ -100,11 +120,11 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	}
 
 	public int getPortraitScaleMode(){
-		return Integer.valueOf(getSharedPreferences().getString(PREF_PORTRAIT_SCALING_MODE,"3")).intValue();	
+		return Integer.valueOf(getSharedPreferences().getString(PREF_PORTRAIT_SCALING_MODE,"5")).intValue();	
 	}
 	
 	public int getLandscapeScaleMode(){
-		return Integer.valueOf(getSharedPreferences().getString(PREF_LANDSCAPE_SCALING_MODE,"3")).intValue();	
+		return Integer.valueOf(getSharedPreferences().getString(PREF_LANDSCAPE_SCALING_MODE,"5")).intValue();	
 	}
 	
 	public boolean isPortraitTouchController(){
@@ -200,5 +220,21 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	
 	public boolean isShowInfoWarnings(){
 		return getSharedPreferences().getBoolean(PREF_GLOBAL_SHOW_INFOWARNINGS,true);
+	}
+	
+	public int getControllerType(){
+		return Integer.valueOf(getSharedPreferences().getString(PREF_CONTROLLER_TYPE,"1")).intValue();	
+	}
+	
+	public int getInputExternal(){
+		return Integer.valueOf(getSharedPreferences().getString(PREF_INPUT_EXTERNAL,"1")).intValue();	
+	}
+	
+	public int getAnalogDZ(){
+		return Integer.valueOf(getSharedPreferences().getString(PREF_ANALOG_DZ,"1")).intValue();	
+	}
+	
+	public boolean isVibrate(){
+		return getSharedPreferences().getBoolean(PREF_VIBRATE,true);
 	}
 }

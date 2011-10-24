@@ -47,6 +47,7 @@ import android.widget.ImageView;
 import com.seleuco.mame4all.Emulator;
 import com.seleuco.mame4all.MAME4all;
 import com.seleuco.mame4all.R;
+import com.seleuco.mame4all.helpers.PrefsHelper;
 import com.seleuco.mame4all.input.InputHandler;
 import com.seleuco.mame4all.input.InputValue;
 
@@ -69,15 +70,15 @@ public class InputView extends ImageView {
 		if(stick_images==null)
 		{
 		stick_images = new BitmapDrawable[9];
-		stick_images[InputHandler.STICK_DOWN] = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.stick_down);
-		stick_images[InputHandler.STICK_DOWN_LEFT] = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.stick_down_left);
-		stick_images[InputHandler.STICK_DOWN_RIGHT] = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.stick_down_right);
-		stick_images[InputHandler.STICK_LEFT] = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.stick_left);
-		stick_images[InputHandler.STICK_NONE] = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.stick_none);
-		stick_images[InputHandler.STICK_RIGHT] = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.stick_right);
-		stick_images[InputHandler.STICK_UP] = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.stick_up);
-		stick_images[InputHandler.STICK_UP_LEFT] = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.stick_up_left);
-		stick_images[InputHandler.STICK_UP_RIGHT] = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.stick_up_right);
+		stick_images[InputHandler.STICK_DOWN] = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.dpad_down);
+		stick_images[InputHandler.STICK_DOWN_LEFT] = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.dpad_down_left);
+		stick_images[InputHandler.STICK_DOWN_RIGHT] = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.dpad_down_right);
+		stick_images[InputHandler.STICK_LEFT] = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.dpad_left);
+		stick_images[InputHandler.STICK_NONE] = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.dpad_none);
+		stick_images[InputHandler.STICK_RIGHT] = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.dpad_right);
+		stick_images[InputHandler.STICK_UP] = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.dpad_up);
+		stick_images[InputHandler.STICK_UP_LEFT] = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.dpad_up_left);
+		stick_images[InputHandler.STICK_UP_RIGHT] = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.dpad_up_right);
 		}
 		
 		if(btns_images==null)
@@ -282,11 +283,15 @@ public class InputView extends ImageView {
         {
         	InputValue v = data.get(i); 
         	BitmapDrawable d = null;
-        	if(v.getType()==InputHandler.TYPE_STICK_IMG && canvas.getClipBounds().intersect(v.getRect()))
+        	if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL && v.getType()==InputHandler.TYPE_STICK_IMG && canvas.getClipBounds().intersect(v.getRect()))
         	{
                //canvas.drawBitmap(stick_images[mm.getInputHandler().getStick_state()].getBitmap(), null, v.getRect(), null);
         	   d = stick_images[mm.getInputHandler().getStick_state()];
         	}
+        	else if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL && v.getType()==InputHandler.TYPE_ANALOG_RECT && canvas.getClipBounds().intersect(v.getRect()) )
+        	{
+        		mm.getInputHandler().getAnalogStick().draw(canvas);
+        	}        	
         	else if(v.getType()==InputHandler.TYPE_BUTTON_IMG && canvas.getClipBounds().intersect(v.getRect()) )
         	{
         	   //canvas.drawBitmap(btns_images[v.getValue()][mm.getInputHandler().getBtnStates()[v.getValue()]].getBitmap(), null, v.getRect(), null);
@@ -303,13 +308,16 @@ public class InputView extends ImageView {
         	          if(b==InputHandler.BTN_R1 && Emulator.getValue(Emulator.HIDE_LR__KEY)==1)continue;
         	   }
         	   d = btns_images[v.getValue()][mm.getInputHandler().getBtnStates()[v.getValue()]];
-        	}        	
+        	} 
+
+        	
         	if(d!=null)
         	{
         		//d.setBounds(v.getRect());
         		d.draw(canvas);
         	}
         }
+        
         
         if(Emulator.isDebug())
         {
@@ -321,8 +329,16 @@ public class InputView extends ImageView {
 			{
 			   InputValue v = ids.get(i);
 			   Rect r = v.getRect();
-			   if(r!=null  && (v.getType()==InputHandler.TYPE_STICK_RECT || v.getType()==InputHandler.TYPE_BUTTON_RECT))
-			      canvas.drawRect(r, p2);
+			   if(r!=null  )
+			   {
+
+			       if (v.getType()==InputHandler.TYPE_BUTTON_RECT)
+			    	  canvas.drawRect(r, p2);
+			       else if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL && v.getType()==InputHandler.TYPE_STICK_RECT)
+			    	   canvas.drawRect(r, p2);
+			       else if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL && v.getType()==InputHandler.TYPE_ANALOG_RECT)
+			    	   canvas.drawRect(r, p2);
+			   }  
 			}
         }	
 	}	
