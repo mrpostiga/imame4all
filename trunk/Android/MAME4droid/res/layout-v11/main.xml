@@ -7,15 +7,15 @@
 
 	<FrameLayout android:id="@+id/EmulatorFrame"
 		android:layout_width="fill_parent"
-		android:layout_height="wrap_content" android:layout_weight="1.0" android:background="@drawable/border">
+		android:layout_height="wrap_content" android:layout_weight="1.0">
 
 		<com.seleuco.mame4all.views.EmulatorView
 			android:id="@+id/EmulatorView" android:layout_height="wrap_content"
-			android:layout_width="wrap_content" android:layout_gravity="center" android:layout_margin="15px"/>
+			android:layout_width="wrap_content" android:layout_gravity="center"/>
 		
 		<com.seleuco.mame4all.views.EmulatorViewHW
 			android:id="@+id/EmulatorViewHW" android:layout_height="wrap_content"
-			android:layout_width="wrap_content" android:layout_gravity="center" android:visibility="gone" android:layout_margin="15px"/>			
+			android:layout_width="wrap_content" android:layout_gravity="center" android:visibility="gone"/>			
 
 	</FrameLayout>
 

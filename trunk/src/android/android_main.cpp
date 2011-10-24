@@ -320,7 +320,18 @@ int my_android_main (int argc, char **argv)
 				*type=((*type)&(~0xff))|CPU_DRZ80;
 			}
 		}
+
+		for (i=0;i<MAX_CPU;i++)
+		{
+			int *type=(int*)&(drivers[game_index]->drv->cpu[i].cpu_type);
+			if ((((*type)&0xff)==CPU_DRZ80) && ((*type)&CPU_AUDIO_CPU))
+			{
+				*type=((*type)&(~0xff))|CPU_Z80;
+			}
+		}
+
 	}
+
 #endif
     // Remove the mouse usage for certain games
     if ( (strcasecmp(drivers[game_index]->name,"hbarrel")==0) || (strcasecmp(drivers[game_index]->name,"hbarrelw")==0) ||

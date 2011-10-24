@@ -35,6 +35,7 @@ import android.view.MotionEvent;
 import com.seleuco.mame4all.Emulator;
 import com.seleuco.mame4all.MAME4all;
 import com.seleuco.mame4all.helpers.DialogHelper;
+import com.seleuco.mame4all.helpers.PrefsHelper;
 
 public class InputHandlerExt extends InputHandler {
 	
@@ -84,8 +85,8 @@ public class InputHandlerExt extends InputHandler {
 			int y = (int) event.getY(i);
 			
 			if(actionEvent == MotionEvent.ACTION_UP 
-					|| (actionEvent == MotionEvent.ACTION_POINTER_UP && actionPointerId==pid) 
-					|| actionEvent == MotionEvent.ACTION_CANCEL)
+			   || (actionEvent == MotionEvent.ACTION_POINTER_UP && actionPointerId==pid) 
+			   || actionEvent == MotionEvent.ACTION_CANCEL)
 			{
                 //nada
 			}	
@@ -124,7 +125,7 @@ public class InputHandlerExt extends InputHandler {
 										 mm.showDialog(DialogHelper.DIALOG_OPTIONS);
 									 }
 								}
-								else
+								else if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL)
 								{
 									 newtouches[id] = getStickValue(iv.getValue());
 								}

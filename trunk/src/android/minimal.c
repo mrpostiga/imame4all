@@ -45,6 +45,9 @@ extern int m4all_exitPause;
 extern int m4all_waysStick;
 extern int m4all_ASMCores;
 
+extern float joy_analog_x[4];
+extern float joy_analog_y[4];
+
 int iOS_fixedRes = 0;//cleanup on MAME TODO
 
 void app_MuteSound(void);
@@ -192,6 +195,12 @@ int getMyValue(int key){
 	    default :
 	         return -1;
 	}
+
+}
+
+void setMyAnalogData(float v1, float v2){
+	joy_analog_x[0]=v1;
+	joy_analog_y[0]=v2;
 
 }
 

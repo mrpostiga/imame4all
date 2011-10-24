@@ -9,8 +9,14 @@ package com.seleuco.mame4all;
 
 public final class R {
     public static final class array {
+        public static final int pref_controller_type_options=0x7f060006;
+        public static final int pref_controller_type_values=0x7f060007;
+        public static final int pref_dz_options=0x7f06000a;
+        public static final int pref_dz_values=0x7f06000b;
         public static final int pref_global_video_render_options=0x7f060004;
         public static final int pref_global_video_render_values=0x7f060005;
+        public static final int pref_input_external_options=0x7f060008;
+        public static final int pref_input_external_values=0x7f060009;
         public static final int pref_landscape_controllerType_options=0x7f060002;
         public static final int pref_landscape_controllerType_values=0x7f060003;
         public static final int pref_scaleMode_options=0x7f060000;
@@ -74,7 +80,7 @@ containing a value of this type.
     }
     public static final class drawable {
         public static final int back_portrait=0x7f020000;
-        public static final int black=0x7f020020;
+        public static final int black=0x7f02002f;
         public static final int border=0x7f020001;
         public static final int button_a=0x7f020002;
         public static final int button_a_press=0x7f020003;
@@ -96,18 +102,33 @@ containing a value of this type.
         public static final int button_x_press=0x7f020013;
         public static final int button_y=0x7f020014;
         public static final int button_y_press=0x7f020015;
-        public static final int icon=0x7f020016;
-        public static final int stick_down=0x7f020017;
-        public static final int stick_down_left=0x7f020018;
-        public static final int stick_down_right=0x7f020019;
-        public static final int stick_left=0x7f02001a;
-        public static final int stick_none=0x7f02001b;
-        public static final int stick_right=0x7f02001c;
-        public static final int stick_up=0x7f02001d;
-        public static final int stick_up_left=0x7f02001e;
-        public static final int stick_up_right=0x7f02001f;
-        public static final int translucent=0x7f020021;
-        public static final int transparent=0x7f020022;
+        public static final int crt_1=0x7f020016;
+        public static final int crt_2=0x7f020017;
+        public static final int dpad_down=0x7f020018;
+        public static final int dpad_down_left=0x7f020019;
+        public static final int dpad_down_right=0x7f02001a;
+        public static final int dpad_left=0x7f02001b;
+        public static final int dpad_none=0x7f02001c;
+        public static final int dpad_right=0x7f02001d;
+        public static final int dpad_up=0x7f02001e;
+        public static final int dpad_up_left=0x7f02001f;
+        public static final int dpad_up_right=0x7f020020;
+        public static final int icon=0x7f020021;
+        public static final int scanline_1=0x7f020022;
+        public static final int scanline_2=0x7f020023;
+        public static final int stick_down=0x7f020024;
+        public static final int stick_down_left=0x7f020025;
+        public static final int stick_down_right=0x7f020026;
+        public static final int stick_inner=0x7f020027;
+        public static final int stick_left=0x7f020028;
+        public static final int stick_none=0x7f020029;
+        public static final int stick_outer=0x7f02002a;
+        public static final int stick_right=0x7f02002b;
+        public static final int stick_up=0x7f02002c;
+        public static final int stick_up_left=0x7f02002d;
+        public static final int stick_up_right=0x7f02002e;
+        public static final int translucent=0x7f020030;
+        public static final int transparent=0x7f020031;
     }
     public static final class id {
         public static final int ButtonContinue=0x7f0b0005;
@@ -162,6 +183,8 @@ containing a value of this type.
     public static final class style {
         public static final int ListText=0x7f090000;
         public static final int ListTextSmall=0x7f090001;
+        /**   <item name="android:windowBackground">@null</item>
+         */
         public static final int Theme_MAME4ALL=0x7f090002;
         public static final int Theme_MAME4ALL_TitleBar=0x7f090003;
     }

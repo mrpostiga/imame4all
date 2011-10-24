@@ -39,16 +39,13 @@ import android.view.SurfaceHolder.Callback;
 
 import com.seleuco.mame4all.Emulator;
 import com.seleuco.mame4all.MAME4all;
+import com.seleuco.mame4all.helpers.PrefsHelper;
 
 
 public class EmulatorView extends SurfaceView implements Callback{
 	
-	final public static int MODE_ORIGINAL = 1;	
-	final public static int MODE_2X = 2;
-	final public static int MODE_SCALE = 3;
-	final public static int MODE_STRETCH = 4;
-	
-	protected int scaleType = MODE_ORIGINAL;
+
+	protected int scaleType = PrefsHelper.PREF_ORIGINAL;
 	
 	protected MAME4all mm = null;
 
@@ -93,19 +90,32 @@ public class EmulatorView extends SurfaceView implements Callback{
 		int heightSize = 1;
 		
 	
-		if (scaleType == MODE_STRETCH)// FILL ALL
+		if (scaleType == PrefsHelper.PREF_STRETCH)// FILL ALL
 		{
 			widthSize = MeasureSpec.getSize(widthMeasureSpec);
 			heightSize = MeasureSpec.getSize(heightMeasureSpec);
-		} else if (scaleType == MODE_ORIGINAL || scaleType == MODE_SCALE || scaleType == MODE_2X) {
+		} else {
 			
 			int emu_w = Emulator.getEmulatedWidth();
 		    int emu_h = Emulator.getEmulatedHeight();
 		    
-		    if(scaleType == MODE_2X)
+		    
+		    if(scaleType == PrefsHelper.PREF_15X)
+		    {
+		    	emu_w = (int)(emu_w * 1.5f);
+		    	emu_h = (int)(emu_h * 1.5f);
+		    }
+		    
+		    if(scaleType == PrefsHelper.PREF_20X)
 		    {
 		    	emu_w = emu_w * 2;
 		    	emu_h = emu_h * 2;
+		    }
+		    
+		    if(scaleType == PrefsHelper.PREF_25X)
+		    {
+		    	emu_w = (int)(emu_w * 2.5f);
+		    	emu_h = (int)(emu_h * 2.5f);
 		    }
 		    
 			int w = emu_w;
@@ -119,7 +129,7 @@ public class EmulatorView extends SurfaceView implements Callback{
 
 			float scale = 1.0f;
 
-			if (scaleType == MODE_SCALE)
+			if (scaleType == PrefsHelper.PREF_SCALE)
 				scale = Math.min((float) widthSize / (float) w,
 						(float) heightSize / (float) h);
 

@@ -131,7 +131,7 @@ public class DialogHelper {
 	    	dialog = builder.create();
 	        break;
 	    case DIALOG_OPTIONS:	    	
-	    	final CharSequence[] items = {"Help","Settings", "Thanks", "Cancel"};
+	    	final CharSequence[] items = {"Help","Settings", "Support", "Cancel"};
 	    	builder.setTitle("Choose an option from the menu. Press cancel to go back");
 	    	builder.setItems(items, new DialogInterface.OnClickListener() {
 	    	    public void onClick(DialogInterface dialog, int item) {
@@ -146,7 +146,7 @@ public class DialogHelper {
 	    	dialog = builder.create();
 	        break;
 	    case DIALOG_THANKS:
-	    	builder.setMessage("I am releasing everything for free, in keeping with the licensing MAME terms, which is free for non-commercial use only. This is strictly something I made because I wanted to play with it and have the skills to make it so. That said, if you are thinking on ways to support my development I suggest you to check my other free works for the community.\n\nI would like MAME4droid to be as good as iMAME4all, so i will be adding iMAME4all missing features as native wiimote support (multiplayer), analog touch controller and other features in future versions...")
+	    	builder.setMessage("I am releasing everything for free, in keeping with the licensing MAME terms, which is free for non-commercial use only. This is strictly something I made because I wanted to play with it and have the skills to make it so. That said, if you are thinking on ways to support my development I suggest you to check my support page of other free works for the community.")
 	    	       .setCancelable(false)
 	    	       .setPositiveButton("OK", new DialogInterface.OnClickListener() {
 	    	           public void onClick(DialogInterface dialog, int id) {

@@ -37,9 +37,11 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
+import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.Handler;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -50,8 +52,11 @@ import android.view.View.OnTouchListener;
 import com.seleuco.mame4all.Emulator;
 import com.seleuco.mame4all.MAME4all;
 import com.seleuco.mame4all.helpers.DialogHelper;
+import com.seleuco.mame4all.helpers.PrefsHelper;
 
 public class InputHandler implements OnTouchListener, OnKeyListener, IController{
+	
+	AnalogStick analogStick = new AnalogStick();
 	
 	protected static final int[] emulatorInputValues = {
 		UP_VALUE,
@@ -103,12 +108,16 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 				
 	protected ArrayList<InputValue> values = new ArrayList<InputValue>();
 	
-	protected long pad_data = 0;
+	protected int pad_data = 0;
 	
 	protected int newtouch;
 	protected int oldtouch;
 	protected boolean touchstate;
 
+	private boolean up_icade = false;
+	private boolean down_icade = false;
+	private boolean left_icade = false;
+	private boolean right_icade = false;
 	
 	protected  int trackballSensitivity = 30;
 	protected  boolean trackballEnabled = true;
@@ -127,6 +136,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	final public static int TYPE_BUTTON_IMG = 5;
 	final public static int TYPE_SWITCH  = 6;
 	final public static int TYPE_OPACITY = 7;
+	final public static int TYPE_ANALOG_RECT = 8;
 	
 	
 	protected int stick_state;
@@ -185,6 +195,8 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		stick_state = old_stick_state = STICK_NONE;
 		for(int i=0; i<NUM_BUTTONS; i++)
 			btnStates[i] = old_btnStates[i] = BTN_NO_PRESS_STATE;
+		
+		analogStick.setMAME4all(mm);
 	}
 	
 	public int setInputHandlerState(int value){
@@ -276,6 +288,12 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	public boolean onKey(View v, int keyCode, KeyEvent event) {
 		 //Log.d("TECLA", "onKeyDown=" + keyCode + " " + event.getAction() + " " + event.getDisplayLabel() + " " + event.getUnicodeChar() + " " + event.getNumber());
           
+		 if(mm.getPrefsHelper().getInputExternal() != PrefsHelper.PREF_INPUT_DEFAULT)
+		 {	 
+			this.handleIcade(event);
+			return true;
+	     }
+		
 		 int value = -1;
 		 for(int i=0; i<keyMapping.length; i++)
 			 if(keyMapping[i]==keyCode)
@@ -368,7 +386,9 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	
 	protected void handleImageStates(){
 		
-		if(!mm.getPrefsHelper().isAnimatedInput())
+		PrefsHelper pH = mm.getPrefsHelper();
+		
+		if(!pH.isAnimatedInput() && !pH.isVibrate())
 		   return;
 		
 	    switch ((int)pad_data & (UP_VALUE|DOWN_VALUE|LEFT_VALUE|RIGHT_VALUE))
@@ -388,14 +408,39 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 			
 		for (int j = 0; j < values.size(); j++) {
 			InputValue iv = values.get(j);
-			if(iv.getType()==TYPE_STICK_IMG)
+			if(iv.getType()==TYPE_STICK_IMG && pH.getControllerType() == PrefsHelper.PREF_DIGITAL)
 			{
 				if(stick_state != old_stick_state)
 				{
-					mm.getInputView().invalidate(iv.getRect());
+					if(pH.isAnimatedInput())
+					   mm.getInputView().invalidate(iv.getRect());					
+					if(pH.isVibrate())
+					{
+						Vibrator v = (Vibrator) mm.getSystemService(Context.VIBRATOR_SERVICE);
+						if(v!=null)v.vibrate(15);
+					}
 					old_stick_state = stick_state;
 				}
 			}
+			else if(iv.getType()==TYPE_ANALOG_RECT && pH.getControllerType() != PrefsHelper.PREF_DIGITAL)
+			{
+				if(stick_state != old_stick_state)
+				{
+					if(pH.isAnimatedInput() && pH.getControllerType()==PrefsHelper.PREF_ANALOG_FAST)
+					{
+					    if(pH.isDebugEnabled())
+					      mm.getInputView().invalidate();
+					    else
+						  mm.getInputView().invalidate(iv.getRect());
+					}   
+					if(pH.isVibrate())
+					{
+						Vibrator v = (Vibrator) mm.getSystemService(Context.VIBRATOR_SERVICE);
+						if(v!=null)v.vibrate(15);
+					}
+					old_stick_state = stick_state;
+				}
+			}			
 			else if(iv.getType()==TYPE_BUTTON_IMG)
 			{
 				int i = iv.getValue();
@@ -404,8 +449,14 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 				
 				if(btnStates[iv.getValue()]!=old_btnStates[iv.getValue()])
 			    {
-			    	mm.getInputView().invalidate(iv.getRect());
-			    	old_btnStates[iv.getValue()] = btnStates[iv.getValue()]; 
+			    	if(pH.isAnimatedInput())
+					    mm.getInputView().invalidate(iv.getRect());			    	 
+			    	if(pH.isVibrate())
+			    	{
+			    	   Vibrator v = (Vibrator) mm.getSystemService(Context.VIBRATOR_SERVICE);
+			    	   if(v!=null)v.vibrate(15);
+			    	}
+			    	old_btnStates[iv.getValue()] = btnStates[iv.getValue()];
 			    }
 			}							
 		}
@@ -456,10 +507,9 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 									 mm.showDialog(DialogHelper.DIALOG_OPTIONS);
 								}
 							}   
-							else
+							else if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL)
 							{	
 							   newtouch = getStickValue(iv.getValue());
-
 							}   
 							
 							if (oldtouch != newtouch) 
@@ -503,7 +553,9 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		{
 		    if(state == STATE_SHOWING_CONTROLLER)
 		    {	
-		    	 return handleTouchController(event);
+		    	if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL)
+		    		pad_data = analogStick.handleMotion(event, pad_data); 	 		    	
+		    	return handleTouchController(event);
 		    }
 		    return false;
 		}
@@ -547,10 +599,10 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 
 			if (x < -gap) {
 				newtrack |= LEFT_VALUE;
-				// System.out.println("left");
+				// System.out.println("left_icade");
 			} else if (x > gap) {
 				newtrack |= RIGHT_VALUE;
-				// System.out.println("right");
+				// System.out.println("right_icade");
 			}
 
 			// System.out.println("Set Pad "+pad_data+
@@ -584,7 +636,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		if (values != null) {
 			for (int i = 0; i < values.size(); i++) {
 
-				Rect r = values.get(i).newFixedRect();
+				Rect r = values.get(i).newFixedRect();				
 				if (r != null) {
 					/*
 					if(mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_PORTRAIT)
@@ -599,10 +651,17 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 					r.bottom = (int) (r.bottom * dy);
 					//values.get(i).setRect(r);
 				}
+				
+				if(values.get(i).getType() == TYPE_ANALOG_RECT)
+				   analogStick.setStickArea(r);
 			}
 		}
 	}
 	
+	public AnalogStick getAnalogStick() {
+		return analogStick;
+	}
+
 	public int getOpacity(){
 		
 		ArrayList<InputValue> data = null;
@@ -777,4 +836,189 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		   sb.append("]" );
 		   Log.d("touch", sb.toString());
 		}
+		
+	protected void handleIcade(KeyEvent event)
+	{ 
+
+		int action = event.getAction();
+		if(action != KeyEvent.ACTION_DOWN)
+			return;
+	    
+		int ways = Emulator.getValue(Emulator.WAYS_STICK_KEY);
+		boolean b = Emulator.isInMAME();
+			    
+	    int keyCode = event.getKeyCode();
+	    
+	    boolean bCadeLayout = mm.getPrefsHelper().getInputExternal() == PrefsHelper.PREF_INPUT_ICADE;
+	    
+	    switch (keyCode)
+	    {
+	        // joystick up_icade
+	        case KeyEvent.KEYCODE_W:              
+	            if(ways==4 && b)
+	            {
+	               pad_data &= ~LEFT_VALUE;
+	               pad_data &= ~RIGHT_VALUE;
+	            }            
+	            if(!(ways==2 && b))
+	              pad_data |= UP_VALUE;
+	            up_icade = true;     
+	            break;
+	        case KeyEvent.KEYCODE_E:
+	            if(ways==4 && b)
+	            {
+	               if(left_icade)pad_data |= LEFT_VALUE;
+	               if(right_icade)pad_data |= RIGHT_VALUE;
+	            }            
+	            pad_data &= ~UP_VALUE;
+	            up_icade = false;
+	            break;
+	            
+	        // joystick down_icade
+	        case KeyEvent.KEYCODE_X:
+	            if(ways==4 && b)
+	            {
+	               pad_data &= ~LEFT_VALUE;
+	               pad_data &= ~RIGHT_VALUE;
+	            }            
+	            if(!(ways==2 && b))
+	               pad_data |= DOWN_VALUE;
+	            down_icade = true;   
+	            break;
+	        case KeyEvent.KEYCODE_Z:
+	            if(ways==4 && b)
+	            {
+	               if(left_icade)pad_data |= LEFT_VALUE;
+	               if(right_icade)pad_data |= RIGHT_VALUE;
+	            }
+	            pad_data &= ~DOWN_VALUE;
+	            down_icade = false;   
+	            break;
+	            
+	        // joystick right_icade
+	        case KeyEvent.KEYCODE_D:            
+	            if(ways==4 && b)
+	            {
+	               pad_data &= ~UP_VALUE;
+	               pad_data &= ~DOWN_VALUE;
+	            }
+	            pad_data |= RIGHT_VALUE;
+	            right_icade = true;
+	            break;
+	        case KeyEvent.KEYCODE_C:
+	            if(ways==4 && b)
+	            {
+	               if(up_icade)pad_data |= UP_VALUE;
+	               if(down_icade)pad_data |= DOWN_VALUE;
+	            }
+	            pad_data &= ~RIGHT_VALUE;
+	            right_icade = false;
+	            break;
+	            
+	        // joystick left_icade
+	        case KeyEvent.KEYCODE_A:            
+	            if(ways==4 && b)
+	            {
+	               pad_data &= ~UP_VALUE;
+	               pad_data &= ~DOWN_VALUE;
+	            }
+	            pad_data |= LEFT_VALUE;
+	            left_icade = true;
+	            break;
+	        case KeyEvent.KEYCODE_Q:
+	            if(ways==4 && b)
+	            {
+	               if(up_icade)pad_data |= UP_VALUE;
+	               if(down_icade)pad_data |= DOWN_VALUE;
+	            }
+	            pad_data &= ~LEFT_VALUE;
+	            left_icade = false;
+	            break;
+	            
+	        // Y / UP
+	        case KeyEvent.KEYCODE_I:
+	            pad_data |= Y_VALUE;
+	            break;
+	        case KeyEvent.KEYCODE_M:
+	            pad_data &= ~Y_VALUE;
+	            break;
+	            
+	        // X / DOWN
+	        case KeyEvent.KEYCODE_L:
+	            pad_data |= X_VALUE;
+	            break;
+	        case KeyEvent.KEYCODE_V:
+	            pad_data &= ~X_VALUE;
+	            break;
+	            
+	        // A / LEFT
+	        case KeyEvent.KEYCODE_K:
+	            pad_data |= A_VALUE;
+	            break;
+	        case KeyEvent.KEYCODE_P:
+	            pad_data &= ~A_VALUE;
+	            break;
+	            
+	        // B / RIGHT
+	        case KeyEvent.KEYCODE_O:
+	            pad_data |= B_VALUE;
+	            break;
+	        case KeyEvent.KEYCODE_G:
+	            pad_data &= ~B_VALUE;
+	            break;
+	            
+	        // SELECT / COIN
+	        case KeyEvent.KEYCODE_Y:
+	            pad_data |= SELECT_VALUE;
+	            break;
+	        case KeyEvent.KEYCODE_T:
+	            pad_data &= ~SELECT_VALUE;
+	            break;
+	            
+	        // START
+	        case KeyEvent.KEYCODE_U:
+	            if(bCadeLayout) { 
+	                pad_data |= L1_VALUE;
+	            }
+	            else {
+	                pad_data |= START_VALUE;
+	            }
+	            break;
+	        case KeyEvent.KEYCODE_F:
+	            if(bCadeLayout) { 
+	                pad_data &= ~L1_VALUE;
+	            }
+	            else {
+	                pad_data &= ~START_VALUE;
+	            }
+	            break;
+	            
+	        // 
+	        case KeyEvent.KEYCODE_H:
+	            if(bCadeLayout) { 
+	                pad_data |= START_VALUE;
+	            }
+	            else {
+	                pad_data |= L1_VALUE;
+	            }
+	            break;
+	        case KeyEvent.KEYCODE_R:
+	            if(bCadeLayout) { 
+	                pad_data &= ~START_VALUE;
+	            }
+	            else {
+	                pad_data &= ~L1_VALUE;
+	            }
+	            break;
+	            
+	        // 
+	        case KeyEvent.KEYCODE_J:
+	            pad_data |= R1_VALUE;
+	            break;
+	        case KeyEvent.KEYCODE_N:
+	            pad_data &= ~R1_VALUE;
+	            break;
+	    }
+		Emulator.setPadData(pad_data);
+	}
 }

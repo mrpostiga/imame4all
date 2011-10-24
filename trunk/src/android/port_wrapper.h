@@ -8,6 +8,8 @@
 #define free(size) gp2x_free(size)
 */
 
+//#define free(size) /* */
+
 #define printf gp2x_printf
 //#define printf if(0)printf
 

@@ -1,5 +1,5 @@
 =================================================================
-MAME4droid 1.1 (September 13, 2011) by David Valdeita (Seleuco)
+MAME4droid 1.2 (October 22, 2011) by David Valdeita (Seleuco)
 =================================================================
 
 
@@ -41,7 +41,10 @@ Autorotate.
 HW Keys remapping.
 Touch Controller can be shown/hidden.
 Smooth image.
-Animated touch stick.
+Digital or Analog touch selectable.
+Animated touch stick or DPAD.
+iON's iCade and iCP (as iCade mode) external controllers supported. 
+Wiimote support using WiiCrotroller Market app.
 1 to 6 buttons optionally shown.
 Options for video aspect ratio, scaling, rotate.
 Adjustable CPU, Audio clock.
@@ -158,12 +161,30 @@ GLOBAL OPTIONS
 
 -Animated. Animates ON/OFF DPad/Stick. Disable to for better performance.
 
--Touch Dead Zone: Enable/Disable a deadzone on DPAD touch center. It could be better for some games. Disable if you don't like it.
+-Vibrate on keypress. Enable/Disable to let device vibrate when buttons or dpad/stick is touched.
+
+-Touch Type:
+
+     * Digital (DPAD). The controller is a digital DPAD. Some games need it or are better suited for this kind of controller.
+     * Analog (Performance). The controller is a full analog stick, but drawed for performance.
+     * Analog (Pretty). The controller is a full analog stick. 
+
+-Digital Touch Dead Zone: Enable/Disable a deadzone on DPAD touch center. It could be better for some games. Disable if you don't like it.
+
+-Analog Touch Dead Zone: Select the deadzone amount on stick touch center.
+
+-External Controller
+
+   * Default. Select this value to use an external keyboard or devices based on keyboard IMES like WiiController.
+   * iCade. Select this value to use iON's iCade controller. You should be bluetooth paired before.
+   * iCP. Select this value to use ICP layout. iCP should be configured on iCade mode. 
 
 -Scaling Mode:  
      
      * Original.
-     * 2X: Double original size. 
+     * 1.5X: 1.5 original size. 
+     * 2X: Double original size.
+     * 2.5X: 2.5 original size. 
      * Keep Aspect: keeps the aspect ratio
      * Stretch to fit screen, will use all available screen.
 
@@ -331,7 +352,10 @@ PORT CREDITS
 
 
 DEVELOPMENT
-
+October 22, 2011:
+- Version 1.2 added Analog or DPAD touch control (selectable), iCade+ICP support, vibrate on keypress, more scaling options.
+September 14, 2011:
+- Version 1.1.1 Disabled ASM z80 ASM Core for Sound CPUs. It was causing problems with some ROMs.
 September 13, 2011:
 - Version 1.1. Speed boost in low-end machines. Added ASM 68xxx z80 ASM Cores. Minor Bug Fixes.
 September 12, 2011:

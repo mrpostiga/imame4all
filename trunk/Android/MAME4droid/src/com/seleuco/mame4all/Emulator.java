@@ -467,4 +467,5 @@ public class Emulator
 	
 	public static native void setValue(int key, int value);
 	
+	public static native void setAnalogData(float v1, float v2);
 }

@@ -55,29 +55,46 @@
 			android:defaultValue="false" />
 			
 		<CheckBoxPreference android:key="PREF_ANIMATED_INPUT"
-			android:title="Animated" android:summary="Animated touch control. Disable for performance."
+			android:title="Animated" android:summary="Animated touch control. Disable for huge performance boost."
 			android:defaultValue="true" />	
+			
+		<CheckBoxPreference android:key="PREF_VIBRATE"
+			android:title="Vibrate on keypress" android:summary="Enable to vibrate when touch."
+			android:defaultValue="true" />		
+
+		<ListPreference
+			android:entries="@array/pref_controller_type_options"
+			android:title='Touch Type'			
+			android:key="PREF_CONTROLLER_TYPE"
+			android:entryValues="@array/pref_controller_type_values"
+			android:defaultValue="1" />		
 
 		<CheckBoxPreference android:key="PREF_TOUCH_DZ"
-			android:title="Touch Dead Zone" android:summary="Enable Touch Dead Zone."
-			android:defaultValue="true" />	
+			android:title="Digital Touch Dead Zone" android:summary="Enable Touch Dead Zone."
+			android:defaultValue="true" />
+			
+	    <ListPreference
+			android:entries="@array/pref_dz_options"
+			android:title='Analog Touch Dead Zone'			
+			android:key="PREF_ANALOG_DZ"
+			android:entryValues="@array/pref_dz_values"
+			android:defaultValue="2" />			
 						
-		<!--  
 		<ListPreference
-			android:entries="@array/pref_landscape_controllerType_options"
-			android:title='Landscape touch controller'			
-			android:key="PREF_LANDSCAPE_CONTROLLER_TYPE"
-			android:entryValues="@array/pref_landscape_controllerType_values"
-			android:defaultValue="1" />	 -->
+			android:entries="@array/pref_input_external_options"
+			android:title='External Controller'			
+			android:key="PREF_INPUT_EXTERNAL"
+			android:entryValues="@array/pref_input_external_values"
+			android:defaultValue="1" />
 
 	</PreferenceCategory>
 
 	<PreferenceCategory android:title="Portrait Display Settings">
 
 		<ListPreference android:entries="@array/pref_scaleMode_options"
-			android:title='Scaling mode' android:key="PREF_PORTRAIT_SCALING_MODE"
+			android:title='Scaling mode' android:key="PREF_PORTRAIT_SCALING_MODE_2"
 			android:entryValues="@array/pref_scaleMode_values"
-			android:defaultValue="3" />
+			android:defaultValue="5" />
 
 		<CheckBoxPreference android:key="PREF_PORTRAIT_TOUCH_CONTROLLER"
 			android:title="Touch controller visible" android:summary="Disable to get more room for scaling if not need it"
@@ -92,9 +109,9 @@
 	<PreferenceCategory android:title="Lansdscape Display Settings">
 			
 		<ListPreference android:entries="@array/pref_scaleMode_options"
-			android:title='Scaling mode' android:key="PREF_LANDSCAPE_SCALING_MODE"
+			android:title='Scaling mode' android:key="PREF_LANDSCAPE_SCALING_MODE_2"
 			android:entryValues="@array/pref_scaleMode_values"
-			android:defaultValue="3" />
+			android:defaultValue="5" />
 
 		<CheckBoxPreference android:key="PREF_LANDSCAPE_TOUCH_CONTROLLER"
 			android:title="Touch controller visible" android:summary="Disable to get more room for scaling if not need it"
