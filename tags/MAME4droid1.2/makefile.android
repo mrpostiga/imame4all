@@ -1,0 +1,113 @@
+#http://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html#Option-Summary
+
+//BASE_DEV=/home/david/Projects/android/android-ndk-r6/platforms/android-8/arch-arm
+BASE_DEV=/home/david/Projects/android/android-ndk-r6/platforms/android-5/arch-arm
+PREFIX=/home/david/Projects/android/android-ndk-r6/toolchains/arm-linux-androideabi-4.4.3/prebuilt/linux-x86/bin/arm-linux-androideabi-
+         
+TARGET = mame
+
+# set this the operating system you're building for
+# (actually you'll probably need your own main makefile anyways)
+# MAMEOS = msdos
+MAMEOS = android
+
+# extension for executables
+# EXE = .exe
+EXE =
+
+# CPU core include paths
+VPATH=src $(wildcard src/cpu/*)
+
+# compiler, linker and utilities
+
+AR = $(PREFIX)ar
+CC = $(PREFIX)gcc
+CPP = $(PREFIX)gcc
+LD =  $(PREFIX)gcc
+ASM = $(PREFIX)gcc
+
+MD = @mkdir
+RM = @rm -f
+
+EMULATOR = $(TARGET)$(EXE)
+
+DEFS = -DGP2X -DLSB_FIRST -DALIGN_INTS -DALIGN_SHORTS -DINLINE="static __inline" -Dasm="__asm__ __volatile__" -DMAME_UNDERCLOCK -DMAME_FASTSOUND -DENABLE_AUTOFIRE -DBIGCASE
+
+CFLAGS =
+CFLAGS += $(DEVLIBS)
+CFLAGS += -Isrc -Isrc/$(MAMEOS) -Isrc/zlib
+CFLAGS += -fsigned-char -finline  -fno-common -fno-builtin
+CFLAGS += -Wno-sign-compare -Wunused -Wpointer-arith -Wcast-align -Waggregate-return -Wshadow
+CFLAGS += -O3 -ffast-math -fweb -frename-registers -falign-functions=16 -fsingle-precision-constant
+CFLAGS += -mstructure-size-boundary=32 -mthumb-interwork
+CFLAGS += -fpic
+#CFLAGS += -mthumb
+
+#armeabi-v7a (Thumb-2)
+CFLAGS += -march=armv7-a -mfloat-abi=softfp -DARMV7
+#armeabi-v7a con neon (HW FPU)
+#CFLAGS += -march=armv7-a -mfloat-abi=softfp -mfpu=neon
+
+CFLAGS += --sysroot $(BASE_DEV) 
+
+LDFLAGS +=  $(CFLAGS) -s
+#LDFLAGS = -static -lpthread
+
+LDFLAGS += -Wl,--fix-cortex-a8
+LDFLAGS += -lc -lm 
+LDFLAGS += -llog -lgcc
+LDFLAGS += -shared   
+# -lz 
+#LDFLAGS += -nostdlib  
+
+
+#LIBS = -lm -lpthread 
+
+OBJ = obj_$(TARGET)_$(MAMEOS)
+OBJDIRS = $(OBJ) $(OBJ)/cpu $(OBJ)/sound $(OBJ)/$(MAMEOS) \
+	$(OBJ)/drivers $(OBJ)/machine $(OBJ)/vidhrdw $(OBJ)/sndhrdw \
+	$(OBJ)/zlib 
+
+all:	maketree $(EMULATOR)
+
+# include the various .mak files
+include src/core.mak
+include src/$(TARGET).mak
+include src/rules.mak
+include src/sound.mak
+include src/$(MAMEOS)/$(MAMEOS).mak
+
+# combine the various definitions to one
+CDEFS = $(DEFS) $(COREDEFS) $(CPUDEFS) $(SOUNDDEFS)
+
+$(EMULATOR): $(OBJC) $(COREOBJS) $(OSOBJS) $(DRVOBJS)
+	$(LD) $(LDFLAGS) $(OBJC) $(COREOBJS) $(OSOBJS) $(LIBS) $(DRVOBJS) -o libMAME4all.so
+
+$(OBJ)/%.o: src/%.c
+	@echo Compiling $<...
+	$(CC) $(CDEFS) $(CFLAGS) -c $< -o $@
+
+$(OBJ)/%.o: src/%.cpp
+	@echo Compiling $<...
+	$(CPP) $(CDEFS) $(CFLAGS) -fno-rtti -c $< -o $@
+	
+$(OBJ)/%.o: %.m
+	@echo Compiling $<...
+	$(CC) $(CDEFS) $(CFLAGS) -c $< -o $@	
+
+$(OBJ)/%.o: src/%.s
+	@echo Compiling $<...
+	$(CPP) $(CDEFS) $(CFLAGS) -c $< -o $@
+
+$(OBJ)/%.o: src/%.S
+	@echo Compiling $<...
+	$(CPP) $(CDEFS) $(CFLAGS) -c $< -o $@
+
+$(sort $(OBJDIRS)):
+	$(MD) $@
+
+maketree: $(sort $(OBJDIRS))
+
+clean:
+	$(RM) -r $(OBJ)
+	$(RM) $(EMULATOR)

@@ -1,0 +1,40 @@
+0,653,115,115//DownLeft*
+112,653,71,115//Down*
+180,653,85,115//DownRight*
+0,592,150,61//Left*
+150,592,120,61//Right*
+0,507,115,85//UpLeft*
+112,495,70,96//Up*
+180,507,85,85//UpRight*
+7,66,103,43//select*
+915,66,103,43//start*
+908,238,116,118//lpad
+908,356,116,114//rpad
+0,0,0,0//menu (select+ start) YO b + up
+840,640,30,110//button down left* X + A
+870,630,110,120//buttondown*  --> X
+912,610,110,70//button down right X + B
+730,640,110,110//buton left * --> A
+912,500,110,130//button right* -> B
+770,610,110,30//button up left* --> Y + A
+770,500,110,110//button up* --> Y
+880,500,30,110//button up right* Y + B
+7,16,103,43//lpad2
+915,16,103,43//rpad2
+0,0,0,0//showkyboard*
+900,510,127,127//B img
+860,620,127,127//X img
+740,620,127,127//A img
+775,510,127,127//Y img
+45,517,205,205//DPad img
+0,66,117,58//select img
+908,66,117,58//start img
+905,235,122,122//L1 img
+905,356,122,122//R1 img
+0,16,117,58//L2 img
+908,16,117,58//R2 img    
+0,480,300,290//StickWindow
+13,487,270,270//StickArea
+60//radio_stick
+50
+
