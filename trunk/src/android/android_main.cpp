@@ -89,6 +89,7 @@ int my_android_main (int argc, char **argv)
     char *playbackname = NULL;
     int use_cyclone=0;
     int use_drz80=0;
+    int use_drz80_sound=0;
     extern int video_scale;
 	extern int video_border;
 	extern int video_aspect;
@@ -112,6 +113,8 @@ int my_android_main (int argc, char **argv)
 			use_cyclone=1;
 		if (strcasecmp(argv[i],"-drz80") == 0)
 			use_drz80=1;
+		if (strcasecmp(argv[i],"-drz80_snd") == 0)
+			use_drz80_sound=1;
 #endif
 		if (strcasecmp(argv[i],"-scale") == 0)
 			video_scale=1;
@@ -308,6 +311,17 @@ int my_android_main (int argc, char **argv)
 			}
 		}
 	}
+	else
+	{
+		for (i=0;i<MAX_CPU;i++)
+		{
+			int *type=(int*)&(drivers[game_index]->drv->cpu[i].cpu_type);
+			if (((*type)&0xff)==CPU_CYCLONE)
+			{
+				*type=((*type)&(~0xff))|CPU_M68010;
+			}
+		}
+	}
 
 	/* Replace Z80 by DRZ80 */
 	if (use_drz80)
@@ -315,12 +329,38 @@ int my_android_main (int argc, char **argv)
 		for (i=0;i<MAX_CPU;i++)
 		{
 			int *type=(int*)&(drivers[game_index]->drv->cpu[i].cpu_type);
-			if (((*type)&0xff)==CPU_Z80)
+			if (((*type)&0xff)==CPU_Z80 && !((*type)&CPU_AUDIO_CPU))
 			{
 				*type=((*type)&(~0xff))|CPU_DRZ80;
 			}
 		}
+	}
+	else
+	{
+		for (i=0;i<MAX_CPU;i++)
+		{
+			int *type=(int*)&(drivers[game_index]->drv->cpu[i].cpu_type);
+			if ((((*type)&0xff)==CPU_DRZ80) && !((*type)&CPU_AUDIO_CPU))
+			{
+				*type=((*type)&(~0xff))|CPU_Z80;
+			}
+		}
+	}
 
+	/* Replace Z80 by DRZ80 */
+	if (use_drz80_sound)
+	{
+		for (i=0;i<MAX_CPU;i++)
+		{
+			int *type=(int*)&(drivers[game_index]->drv->cpu[i].cpu_type);
+			if ((((*type)&0xff)==CPU_Z80) && ((*type)&CPU_AUDIO_CPU))
+			{
+				*type=((*type)&(~0xff))|CPU_DRZ80;
+			}
+		}
+	}
+	else
+	{
 		for (i=0;i<MAX_CPU;i++)
 		{
 			int *type=(int*)&(drivers[game_index]->drv->cpu[i].cpu_type);
@@ -329,8 +369,8 @@ int my_android_main (int argc, char **argv)
 				*type=((*type)&(~0xff))|CPU_Z80;
 			}
 		}
-
 	}
+
 
 #endif
     // Remove the mouse usage for certain games
