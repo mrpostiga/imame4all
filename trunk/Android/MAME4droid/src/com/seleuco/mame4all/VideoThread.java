@@ -126,7 +126,7 @@ public class VideoThread implements Runnable {
 					bf.rewind();			
 					bmp.copyPixelsFromBuffer(bf);						
 					bmp.getPixels(Emulator.getScreenBuffPx(), 0, Emulator.getEmulatedWidth(), 0, 0, Emulator.getEmulatedWidth(), Emulator.getEmulatedHeight());
-					mm.getEmuViewHW().postInvalidate();
+					mm.getEmuView().postInvalidate();
 				}
 				else
 				{					

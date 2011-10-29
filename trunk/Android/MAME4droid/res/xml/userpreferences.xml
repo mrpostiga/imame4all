@@ -26,10 +26,6 @@
 	   	<CheckBoxPreference android:key="PREF_GLOBAL_SHOW_INFOWARNINGS"
 			android:title="Show Info/Warnings" android:summary="Shows Game Info and any warnings when a game is selected"
 			android:defaultValue="true" />
-
-	   	<CheckBoxPreference android:key="PREF_GLOBAL_FPS_LIMIT"
-			android:title="FPS limit when filtering enabled" android:summary="Enable it to limit frames rendered when filtering is activated to reduce jitter. Disable it to get full FPS if your device is powerful enough"
-			android:defaultValue="false" />
 		
 		<CheckBoxPreference android:key="PREF_GLOBAL_DEBUG"
 			android:title="Debug Mode" android:summary="Only for developers"
@@ -67,7 +63,7 @@
 			android:title='Touch Type'			
 			android:key="PREF_CONTROLLER_TYPE"
 			android:entryValues="@array/pref_controller_type_values"
-			android:defaultValue="1" />		
+			android:defaultValue="2" />		
 
 		<CheckBoxPreference android:key="PREF_TOUCH_DZ"
 			android:title="Digital Touch Dead Zone" android:summary="Enable Touch Dead Zone."
@@ -95,6 +91,11 @@
 			android:title='Scaling mode' android:key="PREF_PORTRAIT_SCALING_MODE_2"
 			android:entryValues="@array/pref_scaleMode_values"
 			android:defaultValue="5" />
+			
+		<ListPreference android:entries="@array/pref_filter_options"
+			android:title='Filter overlay' android:key="PREF_PORTRAIT_FILTER_2"
+			android:entryValues="@array/pref_filter_values"
+			android:defaultValue="1" />	
 
 		<CheckBoxPreference android:key="PREF_PORTRAIT_TOUCH_CONTROLLER"
 			android:title="Touch controller visible" android:summary="Disable to get more room for scaling if not need it"
@@ -112,7 +113,12 @@
 			android:title='Scaling mode' android:key="PREF_LANDSCAPE_SCALING_MODE_2"
 			android:entryValues="@array/pref_scaleMode_values"
 			android:defaultValue="5" />
-
+		
+		<ListPreference android:entries="@array/pref_filter_options"
+			android:title='Filter overlay' android:key="PREF_LANDSCAPE_FILTER_2"
+			android:entryValues="@array/pref_filter_values"
+			android:defaultValue="1" />
+			
 		<CheckBoxPreference android:key="PREF_LANDSCAPE_TOUCH_CONTROLLER"
 			android:title="Touch controller visible" android:summary="Disable to get more room for scaling if not need it"
 			android:defaultValue="true" />
@@ -120,8 +126,7 @@
 		<CheckBoxPreference android:key="PREF_LANDSCAPE_BITMAP_FILTERING"
 			android:title="Smooth scaling" android:summary="Select to turn bitmap filtering on, at the expense of performance"
 			android:defaultValue="false" />
-		
-
+	
 	</PreferenceCategory>
 
 </PreferenceScreen>

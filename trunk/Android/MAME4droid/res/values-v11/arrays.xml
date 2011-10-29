@@ -1,5 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+	<string-array name="pref_filter_options">
+	    <item>None</item>
+		<item>Scanline 1</item>
+		<item>Scanline 2</item>	
+		<item>CRT 1</item>
+		<item>CRT 2</item>		
+	</string-array>
+	<string-array name="pref_filter_values">
+		<item>1</item>
+		<item>2</item>
+		<item>3</item>
+		<item>4</item>
+		<item>5</item>													
+	</string-array>
+	
 	<string-array name="pref_scaleMode_options">
 		<item>Original Size</item>
 		<item>1.5X</item>	
@@ -27,14 +43,16 @@
 	</string-array>
 
 	<string-array name="pref_global_video_render_options">
-		<item>Normal</item>
-		<item>Threaded</item>
-		<item>Hardware</item>
+		<item>SW (Compatibility)</item>
+		<item>SW (+Threaded)</item>
+		<item>GL (Faster)</item>
+		<item>2D HW (Experimental)</item>
 	</string-array>
 	<string-array name="pref_global_video_render_values">
 		<item>1</item>
 		<item>2</item>
 		<item>3</item>
+		<item>4</item>		
 	</string-array>
 	
 	<string-array name="pref_controller_type_options">

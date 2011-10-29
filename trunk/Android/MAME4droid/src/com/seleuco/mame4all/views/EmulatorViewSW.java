@@ -33,26 +33,23 @@ package com.seleuco.mame4all.views;
 import java.util.ArrayList;
 
 import android.content.Context;
-import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.view.View;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.view.SurfaceHolder.Callback;
 
 import com.seleuco.mame4all.Emulator;
 import com.seleuco.mame4all.MAME4all;
 import com.seleuco.mame4all.helpers.PrefsHelper;
 
 
-public class EmulatorViewHW extends View implements IEmuView{
+public class EmulatorViewSW extends SurfaceView implements Callback, IEmuView{
 	
-	
+
 	protected int scaleType = PrefsHelper.PREF_ORIGINAL;
 	
 	protected MAME4all mm = null;
-	
-	protected int i = 0;
-	protected int fps = 0;
-	protected long millis;
 
 	public int getScaleType() {
 		return scaleType;
@@ -66,23 +63,24 @@ public class EmulatorViewHW extends View implements IEmuView{
 		this.mm = mm;
 	}
 	
-	public EmulatorViewHW(Context context) {
+	public EmulatorViewSW(Context context) {
 		super(context);
 		init();
 	}
 
-	public EmulatorViewHW(Context context, AttributeSet attrs) {
+	public EmulatorViewSW(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		init();
 	}
 
-	public EmulatorViewHW(Context context, AttributeSet attrs, int defStyle) {
+	public EmulatorViewSW(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 		init();
+
 	}
 	
 	protected void init(){
-		this.setKeepScreenOn(true);
+		this.getHolder().addCallback(this);		
 		this.setFocusable(true);
 		this.setFocusableInTouchMode(true);
 		this.requestFocus();
@@ -97,37 +95,29 @@ public class EmulatorViewHW extends View implements IEmuView{
 	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
 
 		super.onSizeChanged(w, h, oldw, oldh);
-		Emulator.setWindowSize(w, h);
+		Emulator.setWindowSize(w, h);		
+	}
+
+	//@Override
+	public void surfaceChanged(SurfaceHolder holder, int format, int width,
+			int height) {
+		//Emulator.setHolder(holder);		
+	}
+
+	//@Override
+	public void surfaceCreated(SurfaceHolder holder) {
+		//Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+		Emulator.setHolder(holder);		
+	}
+
+	//@Override
+	public void surfaceDestroyed(SurfaceHolder holder) {
+		Emulator.setHolder(null);		
 	}
 	
 	@Override
 	public boolean onTrackballEvent(MotionEvent event) {
 		return mm.getInputHandler().onTrackballEvent(event);
 	}
-	
-	@Override
-	public void draw(Canvas canvas) {
-		super.draw(canvas);
-		i++;
 
-		if(Emulator.getScreenBuffer()==null)
-			return;
-
-		canvas.concat(Emulator.getMatrix());
-        
-		/*
-		Emulator.getScreenBuffer().rewind();			
-		Emulator.getEmuBitmap().copyPixelsFromBuffer(Emulator.getScreenBuffer());
-			
-		Emulator.getEmuBitmap().getPixels(px, 0, Emulator.getEmulatedWidth(), 0, 0, Emulator.getEmulatedWidth(), Emulator.getEmulatedHeight());
-		*/
-
-		canvas.drawBitmap(Emulator.getScreenBuffPx(), 0, Emulator.getEmulatedWidth(), 0, 0,Emulator.getEmulatedWidth(), Emulator.getEmulatedHeight(), false, null);
-			
-		if(Emulator.isDebug())
-		{
-		    canvas.drawText("HW "+canvas.isHardwareAccelerated()+" fps:"+fps, 5, 40, Emulator.getDebugPaint());		  
-		    if(System.currentTimeMillis() - millis >= 1000) {fps = i; i=0;millis = System.currentTimeMillis();} 		
-		}	
-	}
 }

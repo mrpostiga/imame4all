@@ -36,6 +36,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -46,18 +47,18 @@ import android.os.Environment;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.View;
-import android.view.WindowManager;
+import android.view.View.MeasureSpec;
 import android.widget.FrameLayout.LayoutParams;
 
 import com.seleuco.mame4all.Emulator;
 import com.seleuco.mame4all.HelpActivity;
 import com.seleuco.mame4all.MAME4all;
+import com.seleuco.mame4all.R;
 import com.seleuco.mame4all.input.InputHandler;
 import com.seleuco.mame4all.prefs.UserPreferences;
-import com.seleuco.mame4all.views.EmulatorView;
-import com.seleuco.mame4all.views.EmulatorViewHW;
+import com.seleuco.mame4all.views.FilterView;
+import com.seleuco.mame4all.views.IEmuView;
 import com.seleuco.mame4all.views.InputView;
-import com.seleuco.mame4all.R;
 
 public class MainHelper {
 	
@@ -236,44 +237,42 @@ public class MainHelper {
 	    mm.startActivity(intent);
 	}
 	
-	public void updateVideoRender(){
+	public boolean updateOverlayFilter(){
 		
-			EmulatorView emuView =  mm.getEmuView();
-			EmulatorViewHW emuView_HW = mm.getEmuViewHW();
-			
-			if(mm.getPrefsHelper().getVideoRenderMode() == PrefsHelper.PREF_RENDER_HW )
-			{	        
-				mm.getWindow().setFlags(
-		                WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
-		                WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
-				
-				emuView.setVisibility(View.GONE);
-				emuView_HW.setVisibility(View.VISIBLE);
-				emuView_HW.requestFocus();				
-			}
-			else
-			{
-				if(emuView_HW!=null)
-				  emuView_HW.setVisibility(View.GONE);
-				
-				emuView.setVisibility(View.VISIBLE);	
-				emuView.requestFocus();
-			}
-			
-			if(Emulator.getVideoRenderMode() != mm.getPrefsHelper().getVideoRenderMode() 
-			     && (Emulator.getVideoRenderMode() == PrefsHelper.PREF_RENDER_HW  || 
-			         mm.getPrefsHelper().getVideoRenderMode() == PrefsHelper.PREF_RENDER_HW)
-		      )
-			{
-				Emulator.setVideoRenderMode(mm.getPrefsHelper().getVideoRenderMode());
-				reload();
-			}
-			else
-			{
-			    Emulator.setVideoRenderMode(mm.getPrefsHelper().getVideoRenderMode());
-			}    
+        int type = -1;        
+        
+        if(getscrOrientation() == Configuration.ORIENTATION_PORTRAIT)
+        	type = mm.getPrefsHelper().getPortraitOverlayFilterType();
+        else
+        	type = mm.getPrefsHelper().getLandscapeOverlayFilterType();
 					
+		if(Emulator.getOverlayFilterType() != type)
+		{
+			Emulator.setOverlayFilterType(type);
+			reload();				
+			return true;
+		}
+		else
+		{
+			Emulator.setOverlayFilterType(type);
+		    return false;
+		}    					
 	}
+
+	public boolean updateVideoRender (){
+		
+		if(Emulator.getVideoRenderMode() != mm.getPrefsHelper().getVideoRenderMode())
+		{
+			Emulator.setVideoRenderMode(mm.getPrefsHelper().getVideoRenderMode());
+			reload();				
+			return true;
+		}
+		else
+		{
+		    Emulator.setVideoRenderMode(mm.getPrefsHelper().getVideoRenderMode());
+		    return false;
+		}    					
+    }
 	
 	public void setBorder(){
 		
@@ -283,22 +282,24 @@ public class MainHelper {
 			&& mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_PORTRAIT)
 			{
 		        LayoutParams lp  = (LayoutParams) mm.getEmuView().getLayoutParams();
-		        LayoutParams lp2 = null;
 				View v =  mm.findViewById(R.id.EmulatorFrame);
-				if(mm.getEmuViewHW()!=null)
-					lp2 =(LayoutParams) mm.getEmuViewHW().getLayoutParams();
+				LayoutParams lp2 = null;
+				if(mm.getFilterView()!=null)
+                   lp2 = (LayoutParams)mm.getFilterView().getLayoutParams();
 			    if(mm.getPrefsHelper().isPortraitTouchController())
 			    {					
 			       v.setBackgroundDrawable(mm.getResources().getDrawable(R.drawable.border));
 			       lp.setMargins(15, 15, 15, 15);
-			       if(lp2!=null)lp2.setMargins(15, 15, 15, 15);
+			       if(lp2!=null)
+			    	 lp2.setMargins(15, 15, 15, 15);
 			    }   
 			    else
 			    {
 			    	v.setBackgroundDrawable(null);
 			    	v.setBackgroundColor(R.color.emu_back_color);
 			    	lp.setMargins(0, 0, 0, 0);
-			    	if(lp2!=null)lp2.setMargins(0, 0, 0, 0);
+				    if(lp2!=null)
+					  lp2.setMargins(0, 0, 0, 0);
 			    }			    
 			}		   	
 	}
@@ -306,8 +307,12 @@ public class MainHelper {
 	
 	public void updateMAME4all(){
 		
-		EmulatorView emuView =  mm.getEmuView();
-		EmulatorViewHW emuView_HW = mm.getEmuViewHW();
+		if(updateVideoRender())return;
+		if(updateOverlayFilter())return;
+		
+		View emuView =  mm.getEmuView();
+		FilterView filterView = mm.getFilterView();
+
 		InputView inputView =  mm.getInputView();
 		InputHandler inputHandler = mm.getInputHandler();
 		PrefsHelper prefsHelper = mm.getPrefsHelper();
@@ -322,12 +327,9 @@ public class MainHelper {
 		Emulator.setValue(Emulator.INFOWARN_KEY, prefsHelper.isShowInfoWarnings() ? 1 : 0);
 		Emulator.setDebug(prefsHelper.isDebugEnabled());
 		Emulator.setThreadedSound(prefsHelper.isSoundfThreaded());
-		Emulator.setFrameLimit(prefsHelper.isFPSLimit());
-		
+
 		setBorder();
-		
-		updateVideoRender();
-		
+				
 		inputHandler.setTrackballSensitivity( prefsHelper.getTrackballSensitivity());
 		inputHandler.setTrackballEnabled(!prefsHelper.isTrackballNoMove());
 				
@@ -335,9 +337,10 @@ public class MainHelper {
 		
 		if(this.getscrOrientation() == Configuration.ORIENTATION_PORTRAIT)
 		{
-			emuView.setScaleType(prefsHelper.getPortraitScaleMode());
-			if(emuView_HW!=null)
-			   emuView_HW.setScaleType(prefsHelper.getPortraitScaleMode());	
+			((IEmuView)emuView).setScaleType(prefsHelper.getPortraitScaleMode());
+			if(filterView!=null)
+			   filterView.setScaleType(mm.getPrefsHelper().getPortraitScaleMode());
+
 			Emulator.setFrameFiltering(prefsHelper.isPortraitBitmapFiltering());
 			
 			if(state == InputHandler.STATE_SHOWING_CONTROLLER && !prefsHelper.isPortraitTouchController())
@@ -367,9 +370,10 @@ public class MainHelper {
 		}
 		else
 		{
-			emuView.setScaleType(mm.getPrefsHelper().getLandscapeScaleMode());
-			if(emuView_HW!=null)
-			   emuView_HW.setScaleType(mm.getPrefsHelper().getLandscapeScaleMode());
+			((IEmuView)emuView).setScaleType(mm.getPrefsHelper().getLandscapeScaleMode());
+			if(filterView!=null)
+			   filterView.setScaleType(mm.getPrefsHelper().getLandscapeScaleMode());
+			
 			Emulator.setFrameFiltering(mm.getPrefsHelper().isLandscapeBitmapFiltering());
 			
 			if(state == InputHandler.STATE_SHOWING_CONTROLLER && !prefsHelper.isLandscapeTouchController())
@@ -432,21 +436,16 @@ public class MainHelper {
 		if (op != -1 && (state == InputHandler.STATE_SHOWING_CONTROLLER) )
 			inputView.setAlpha(op);
 
-
-		inputView.requestLayout();
-		
-		if(emuView_HW!=null)
-		  emuView_HW.requestLayout();
-  				
+		inputView.requestLayout();		  				
 		emuView.requestLayout();
+		if(filterView!=null)
+		   filterView.requestLayout();
 				
 		inputView.invalidate();
 		emuView.invalidate();
-		
-		if(emuView_HW!=null)	
-		  emuView_HW.invalidate();
-
-		Emulator.ensureScreenDrawed();				
+		if(filterView!=null)
+		   filterView.invalidate();
+		//Emulator.ensureScreenDrawed();				
 	}
 	
 	public void showWeb(){		
@@ -475,4 +474,93 @@ public class MainHelper {
 		}   
 	}
 	
+	public ArrayList<Integer> measureWindow(int widthMeasureSpec, int heightMeasureSpec, int scaleType) {
+		   
+		int widthSize = 1;
+		int heightSize = 1;
+		
+	
+		if (scaleType == PrefsHelper.PREF_STRETCH)// FILL ALL
+		{
+			widthSize = MeasureSpec.getSize(widthMeasureSpec);
+			heightSize = MeasureSpec.getSize(heightMeasureSpec);
+		} 
+		else 
+		{
+			
+			int emu_w = Emulator.getEmulatedWidth();
+		    int emu_h = Emulator.getEmulatedHeight();
+		    
+		    
+		    if(scaleType == PrefsHelper.PREF_15X)
+		    {
+		    	emu_w = (int)(emu_w * 1.5f);
+		    	emu_h = (int)(emu_h * 1.5f);
+		    }
+		    
+		    if(scaleType == PrefsHelper.PREF_20X)
+		    {
+		    	emu_w = emu_w * 2;
+		    	emu_h = emu_h * 2;
+		    }
+		    
+		    if(scaleType == PrefsHelper.PREF_25X)
+		    {
+		    	emu_w = (int)(emu_w * 2.5f);
+		    	emu_h = (int)(emu_h * 2.5f);
+		    }
+		    
+			int w = emu_w;
+			int h = emu_h;
+
+			widthSize = MeasureSpec.getSize(widthMeasureSpec);
+			heightSize = MeasureSpec.getSize(heightMeasureSpec);
+						
+			if(heightSize==0)heightSize=1;
+			if(widthSize==0)widthSize=1;
+
+			float scale = 1.0f;
+
+			if (scaleType == PrefsHelper.PREF_SCALE)
+				scale = Math.min((float) widthSize / (float) w,
+						(float) heightSize / (float) h);
+
+			w = (int) (w * scale);
+			h = (int) (h * scale);
+
+			float desiredAspect = (float) emu_w / (float) emu_h;
+
+			widthSize = Math.min(w, widthSize);
+			heightSize = Math.min(h, heightSize);
+
+			float actualAspect = (float) (widthSize / heightSize);
+
+			if (Math.abs(actualAspect - desiredAspect) > 0.0000001) {
+
+				boolean done = false;
+
+				// Try adjusting emu_width to be proportional to emu_height
+				int newWidth = (int) (desiredAspect * heightSize);
+
+				if (newWidth <= widthSize) {
+					widthSize = newWidth;
+					done = true;
+				}
+
+				// Try adjusting emu_height to be proportional to emu_width
+				if (!done) {
+					int newHeight = (int) (widthSize / desiredAspect);
+					if (newHeight <= heightSize) {
+						heightSize = newHeight;
+					}
+				}
+			}
+		}
+		
+		ArrayList<Integer> l = new ArrayList<Integer>();
+		l.add(new Integer(widthSize));
+		l.add(new Integer(heightSize));
+		return l;
+		
+	}		
 }

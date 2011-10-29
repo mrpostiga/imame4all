@@ -182,7 +182,6 @@ public class DialogHelper {
 
 	}
 
-
 	public void prepareDialog(int id, Dialog dialog) {
 		
 		if(id==DIALOG_ERROR)
