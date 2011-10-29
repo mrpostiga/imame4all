@@ -31,7 +31,7 @@ int m4all_cheat=0;
 int m4all_buttons=2;
 int m4all_waysStick = 8;
 int m4all_ASMCores = 1;
-int m4all_cpu_cores = 1;
+int m4all_cpu_cores = 0;
 
 
 extern int m4all_aspectRatio;
@@ -39,7 +39,6 @@ extern int m4all_cropVideo;
 extern int m4all_fixedRes;
 extern int emulated_width;
 extern int emulated_height;
-extern int safe_render_path;
 extern int m4all_HiSpecs;
 extern int m4all_hide_LR;
 extern int m4all_BplusX;
@@ -184,12 +183,12 @@ static void game_list_view(int *pos) {
 
 	if (game_num_avail==0)
 	{
-		gp2x_gamelist_text_out(35, 110, "NO AVAILABLE GAMES FOUND");
+		gp2x_gamelist_text_out(35, 110, "NO AVAILABLE ROMS FOUND");
 	}
 #ifdef ARMV7
-	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"MAME4droid. v1.2 by D.Valdeita");
+	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"MAME4droid. v1.3 by D.Valdeita");
 #else
-	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"MAME4droid  v1.2 by D.Valdeita");
+	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"MAME4droid  v1.3 by D.Valdeita");
 #endif
 
 }
@@ -234,27 +233,23 @@ static int show_options(char *game)
 	unsigned long ExKey=0;
 	int selected_option=0;
 	int x_Pos = 41;
-	int y_Pos = 48;
-	int options_count = 11;
+	int y_Pos = 43;
+	int options_count = 12;
 	char text[256];
 	FILE *f;
 	int i=0;
 
-	if(!safe_render_path)
-	  while(ExKey=gp2x_joystick_read(0)&0x8c0ff55){};
+	while(ExKey=gp2x_joystick_read(0)&0x8c0ff55){
+		gp2x_video_flip();
+	};
 
 	/* Read game configuration */
-	sprintf(text,get_documents_path("frontend/%s_v4.cfg"),game);
+	sprintf(text,get_documents_path("frontend/%s_v5.cfg"),game);
 	f=fopen(text,"r");
 	if (f) {
-		fscanf(f,"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",&m4all_video_aspect,&m4all_video_rotate,&m4all_video_sync,
-		&m4all_frameskip,&m4all_sound,&m4all_buttons,&m4all_clock_cpu,&m4all_clock_sound,&i,&m4all_cheat,&m4all_video_depth,&m4all_waysStick);
+		fscanf(f,"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",&m4all_video_aspect,&m4all_video_rotate,&m4all_video_sync,
+		&m4all_frameskip,&m4all_sound,&m4all_buttons,&m4all_clock_cpu,&m4all_clock_sound,&i,&m4all_cheat,&m4all_video_depth,&m4all_waysStick,&m4all_cpu_cores);
 		fclose(f);
-	}
-
-	if(!safe_render_path && m4all_video_aspect!=3 && m4all_video_aspect!=4)
-	{
-	   m4all_video_aspect=3;
 	}
 
 	while(1)
@@ -364,32 +359,42 @@ static int show_options(char *game)
 		/* (10) Audio Clock */
 		gp2x_gamelist_text_out_fmt(x_Pos,y_Pos+120,"Audio Clock   %d%%",m4all_clock_sound);
 
+		/* (11) CPU ASM Cores */
 
-		/* (11) Cheats */
-		if (m4all_cheat)
-			gp2x_gamelist_text_out(x_Pos,y_Pos+130,"Cheats        ON");
+		if(m4all_ASMCores)
+		{
+			switch (m4all_cpu_cores)
+			{
+				case 0: gp2x_gamelist_text_out(x_Pos,y_Pos+130, "CPU ASM cores None"); break;
+				case 1: gp2x_gamelist_text_out(x_Pos,y_Pos+130, "CPU ASM cores Cyclone"); break;
+				case 2: gp2x_gamelist_text_out(x_Pos,y_Pos+130, "CPU ASM cores DrZ80"); break;
+				case 3: gp2x_gamelist_text_out(x_Pos,y_Pos+130, "CPU ASM cores Cyclone+DrZ80"); break;
+				case 4: gp2x_gamelist_text_out(x_Pos,y_Pos+130, "CPU ASM cores DrZ80(snd)"); break;
+				case 5: gp2x_gamelist_text_out(x_Pos,y_Pos+130, "CPU ASM cores Cyclone+DrZ80(snd)"); break;
+				case 6: gp2x_gamelist_text_out(x_Pos,y_Pos+130, "CPU ASM cores All"); break;
+			}
+		}
 		else
-			gp2x_gamelist_text_out(x_Pos,y_Pos+130,"Cheats        OFF");
+		{
+			gp2x_gamelist_text_out(x_Pos,y_Pos+130, "CPU ASM cores None");
+		}
+
+		/* (12) Cheats */
+		if (m4all_cheat)
+			gp2x_gamelist_text_out(x_Pos,y_Pos+140,"Cheats        ON");
+		else
+			gp2x_gamelist_text_out(x_Pos,y_Pos+140,"Cheats        OFF");
+
 	
-		gp2x_gamelist_text_out(x_Pos,y_Pos+150,"Press B to confirm, X to return\0");
+		gp2x_gamelist_text_out(x_Pos,y_Pos+160,"Press B to confirm, X to return\0");
 
 		/* Show currently selected item */
 		gp2x_gamelist_text_out(x_Pos-16,y_Pos+(selected_option*10)+30," >");
 
 		gp2x_video_flip();
 
-		if(safe_render_path)
-		{
-		   while(gp2x_joystick_read(0)&0x8c0ff55) { gp2x_timer_delay(150); }
-		   while(!(ExKey=gp2x_joystick_read(0)&0x8c0ff55)) { }
-		}
-		else
-		{
-		   //ExKey=gp2x_joystick_read(0);
-		   //gp2x_timer_delay(150);
-		   gp2x_timer_delay(150);
-		   ExKey=gp2x_joystick_read(0)&0x8c0ff55;
-		}
+		gp2x_timer_delay(150);
+		ExKey=gp2x_joystick_read(0)&0x8c0ff55;
 
 		if(ExKey & GP2X_DOWN){
 			selected_option++;
@@ -404,45 +409,18 @@ static int show_options(char *game)
 		{
 			switch(selected_option) {
 			case 0:
-				/*
-				if(!safe_render_path)
-				{
-					iOS_video_aspect=3;
-					break;
-				}
-				*/
 				if((ExKey & GP2X_R) || (ExKey & GP2X_RIGHT))
 				{
-
-					if(safe_render_path)
-					{
-						m4all_video_aspect++;
-						if (m4all_video_aspect>6)
-							m4all_video_aspect=0;
-					}
-					else
-					{
-						m4all_video_aspect++;
-						if (m4all_video_aspect>4)
-							m4all_video_aspect=3;
-					}
-
-
+					m4all_video_aspect++;
+					if (m4all_video_aspect>6)
+						m4all_video_aspect=0;
 				}
 				else
 				{
-					if(safe_render_path)
-					{
-						m4all_video_aspect--;
-						if (m4all_video_aspect<0)
-							m4all_video_aspect=6;
-					}
-					else
-					{
-						m4all_video_aspect--;
-						if (m4all_video_aspect<3)
-							m4all_video_aspect=4;
-					}
+
+					m4all_video_aspect--;
+					if (m4all_video_aspect<0)
+						m4all_video_aspect=6;
 				}
 				break;
 			case 1:
@@ -553,6 +531,9 @@ static int show_options(char *game)
 				}
 				break;
 			case 10:
+				m4all_cpu_cores=(m4all_cpu_cores+1)%7;
+				break;
+			case 11:
 				m4all_cheat=!m4all_cheat;
 				break;
 			}
@@ -561,11 +542,11 @@ static int show_options(char *game)
 		if ((ExKey & GP2X_A) || (ExKey & GP2X_B) || (ExKey & GP2X_PUSH) || (ExKey & GP2X_START))
 		{
 			/* Write game configuration */
-			sprintf(text,get_documents_path("frontend/%s_v4.cfg"),game);
+			sprintf(text,get_documents_path("frontend/%s_v5.cfg"),game);
 			f=fopen(text,"w");
 			if (f) {
-				fprintf(f,"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",m4all_video_aspect,m4all_video_rotate,m4all_video_sync,
-				m4all_frameskip,m4all_sound,m4all_buttons,m4all_clock_cpu,m4all_clock_sound,i,m4all_cheat,m4all_video_depth,m4all_waysStick);
+				fprintf(f,"%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",m4all_video_aspect,m4all_video_rotate,m4all_video_sync,
+				m4all_frameskip,m4all_sound,m4all_buttons,m4all_clock_cpu,m4all_clock_sound,i,m4all_cheat,m4all_video_depth,m4all_waysStick,m4all_cpu_cores);
 				fclose(f);
 				sync();
 			}
@@ -596,8 +577,10 @@ static void select_game(char *emu, char *game)
 	/* Clean screen */
 	gp2x_video_flip();
 
-	if(!safe_render_path)
-	   while(ExKey=gp2x_joystick_read(0)&0x8c0ff55){};
+
+	while(ExKey=gp2x_joystick_read(0)&0x8c0ff55){
+		gp2x_video_flip();
+	};
 
 	/* Wait until user selects a game */
 	while(1)
@@ -605,20 +588,8 @@ static void select_game(char *emu, char *game)
 		game_list_view(&last_game_selected);
 		gp2x_video_flip();
 
-        if(safe_render_path)
-        {
-			if( (gp2x_joystick_read(0)&0x8c0ff55))
-				gp2x_timer_delay(100);
-			while(!(ExKey=gp2x_joystick_read(0)&0x8c0ff55))
-			{
-				if ((ExKey & GP2X_L) && (ExKey & GP2X_R)) { gp2x_exit(); }
-			}
-        }
-        else
-        {
-			gp2x_timer_delay(100);
-        	ExKey=gp2x_joystick_read(0);
-        }
+		gp2x_timer_delay(100);
+       	ExKey=gp2x_joystick_read(0);
 
 		if (ExKey & GP2X_UP) last_game_selected--;
 		else if (ExKey & GP2X_DOWN) last_game_selected++;
@@ -641,16 +612,9 @@ static void select_game(char *emu, char *game)
 			m4all_cheat=0;
             m4all_waysStick = 8;
 
-			if(!safe_render_path)
-			{
-				m4all_sound = 1;
-				m4all_video_depth=8;
-			}
-			else
-			{
-				m4all_sound = 4;
-				m4all_video_depth=16;
-			}
+			m4all_sound = 4;
+			m4all_video_depth=16;
+
 			if(m4all_HiSpecs)
 			{
 				m4all_clock_cpu= 100;
@@ -712,9 +676,9 @@ void execute_game (char *playemu, char *playgame)
     if (m4all_video_aspect==0)
 	{
     	m4all_aspectRatio = 1;
-}else if(m4all_video_aspect==1){
+    }else if(m4all_video_aspect==1){
 		m4all_cropVideo = 1;
-}else if(m4all_video_aspect==2){
+    }else if(m4all_video_aspect==2){
 		m4all_cropVideo = 2;
     }else if(m4all_video_aspect==3){
 		m4all_fixedRes = 1;
@@ -813,21 +777,20 @@ void execute_game (char *playemu, char *playgame)
 	/* cpu_cores */
 	if(m4all_ASMCores)
 	{
-		if ((m4all_cpu_cores==1) || (m4all_cpu_cores==3) || (m4all_cpu_cores==5))
+		if ((m4all_cpu_cores==1) || (m4all_cpu_cores==3) || (m4all_cpu_cores==5) || (m4all_cpu_cores==6))
 		{
 			args[n]="-cyclone"; n++;
 		}
 
-		if ((m4all_cpu_cores==2) || (m4all_cpu_cores==3))
+		if ((m4all_cpu_cores==2) || (m4all_cpu_cores==3) || (m4all_cpu_cores==6))
 		{
 			args[n]="-drz80"; n++;
 		}
-		/*
-		if ((m4all_cpu_cores==4) || (m4all_cpu_cores==5))
+
+		if ((m4all_cpu_cores==4) || (m4all_cpu_cores==5) || (m4all_cpu_cores==6))
 		{
 			args[n]="-drz80_snd"; n++;
 		}
-		*/
 	}
 
 	if (m4all_cheat)
@@ -895,16 +858,8 @@ extern "C" int android_main  (int argc, char **argv)
 	gp2x_init(1000,8,22050,16,0,60);
 
 	//hack: por defecto lentos van a 11000
-	if(!safe_render_path)
-	{
-		m4all_sound = 1;
-		m4all_video_depth = 8;
-	}
-	else
-	{
-		m4all_sound = 4;
-		m4all_video_depth = 16;
-	}
+	m4all_sound = 4;
+	m4all_video_depth = 16;
 
 	if(m4all_HiSpecs)
 	{
@@ -954,7 +909,6 @@ extern "C" int android_main  (int argc, char **argv)
 	
 	/* Execute Game */
 	execute_game (playemu,playgame);
-
 
 
 	}

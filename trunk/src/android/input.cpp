@@ -187,7 +187,7 @@ static void updatekeyboard(void)
 
 	key[KEY_ESC]=m4all_exitGame;//iOS
 
-	key[KEY_P]=((ExKey1 & GP2X_L) && (ExKey1 & GP2X_R) && (!(ExKey1 & GP2X_START)));
+	//key[KEY_P]=((ExKey1 & GP2X_L) && (ExKey1 & GP2X_R) && (!(ExKey1 & GP2X_START)));
 
     key[KEY_F11]=(((ExKey1 & GP2X_L) && (ExKey1 & GP2X_START)) || ((ExKey1 & GP2X_R) && (ExKey1 & GP2X_SELECT)));
     key[KEY_LSHIFT]=((ExKey1 & GP2X_L) && (ExKey1 & GP2X_START));
@@ -581,7 +581,7 @@ static void poll_joystick(void)
 
 void osd_poll_joysticks(void)
 {
-	//sched_yield();//???
+	sched_yield();//???
 
 	updatekeyboard();
 

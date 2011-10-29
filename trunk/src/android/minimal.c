@@ -239,7 +239,7 @@ int master_volume;
 
 unsigned long gp2x_joystick_read(int n)
 {
-  unsigned long res=0;
+    unsigned long res=0;
 	res = gp2x_pad_status;
 		
 	/* GP2X F200 Push Button */
