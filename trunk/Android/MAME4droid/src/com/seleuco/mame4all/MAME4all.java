@@ -34,10 +34,15 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Shader;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.FrameLayout;
 
 import com.seleuco.mame4all.helpers.DialogHelper;
 import com.seleuco.mame4all.helpers.MainHelper;
@@ -45,16 +50,17 @@ import com.seleuco.mame4all.helpers.MenuHelper;
 import com.seleuco.mame4all.helpers.PrefsHelper;
 import com.seleuco.mame4all.input.InputHandler;
 import com.seleuco.mame4all.input.InputHandlerFactory;
-import com.seleuco.mame4all.views.EmulatorView;
-import com.seleuco.mame4all.views.EmulatorViewHW;
+import com.seleuco.mame4all.views.FilterView;
+import com.seleuco.mame4all.views.IEmuView;
 import com.seleuco.mame4all.views.InputView;
 
 public class MAME4all extends Activity {
-		
-	protected EmulatorView emuView = null;
-	protected EmulatorViewHW emuView_HW = null;
+
+	protected View emuView = null;
 
 	protected InputView inputView = null;
+	
+	protected FilterView filterView = null;
 	
 	protected MainHelper mainHelper = null;
 	protected MenuHelper menuHelper = null;
@@ -79,18 +85,18 @@ public class MAME4all extends Activity {
 		return dialogHelper;
 	}
     
-	public EmulatorView getEmuView() {
+	public View getEmuView() {
 		return emuView;
-	}
-	
-	public EmulatorViewHW getEmuViewHW() {
-		return emuView_HW;
 	}
 	
 	public InputView getInputView() {
 		return inputView;
 	}
 
+	public FilterView getFilterView() {
+		return filterView;
+	}
+	
     public InputHandler getInputHandler() {
 		return inputHandler;
 	}
@@ -113,9 +119,7 @@ public class MAME4all extends Activity {
         
         //para saber at runtime si es llarge
         //Configuration config = getResources().getConfiguration();
-          
-  
-        
+                  
         setContentView(R.layout.main);
             
         prefsHelper = new PrefsHelper(this);
@@ -133,37 +137,88 @@ public class MAME4all extends Activity {
                 
         //inputHandler = new InputHandler(this);
         inputHandler = InputHandlerFactory.createInputHandler(this);
-        
-        emuView = (EmulatorView) this.findViewById(R.id.EmulatorView);
-        emuView_HW = (EmulatorViewHW) this.findViewById(R.id.EmulatorViewHW);
+                
+        FrameLayout fl = (FrameLayout)this.findViewById(R.id.EmulatorFrame);
+               
+        if(prefsHelper.getVideoRenderMode()==PrefsHelper.PREF_RENDER_GL)
+        {
+        	this.getLayoutInflater().inflate(R.layout.emuview_gl, fl);
+        	emuView = this.findViewById(R.id.EmulatorViewGL);
+        }
+        else if (prefsHelper.getVideoRenderMode()==PrefsHelper.PREF_RENDER_HW)
+        {
+        	this.getLayoutInflater().inflate(R.layout.emuview_hw, fl);
+        	emuView = this.findViewById(R.id.EmulatorViewHW);     
+        	/*
+			getWindow().setFlags(
+	                WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+	                WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
+	                */
+        }
+        else
+        {
+        	this.getLayoutInflater().inflate(R.layout.emuview_sw, fl);
+        	emuView = this.findViewById(R.id.EmulatorViewSW);        	
+        }
+               
         inputView = (InputView) this.findViewById(R.id.InputView);
                 
-        emuView.setMAME4all(this);
-        if(emuView_HW!=null)
-           emuView_HW.setMAME4all(this);
+        ((IEmuView)emuView).setMAME4all(this);
+
         inputView.setMAME4all(this);
         
         Emulator.setMAME4all(this);        
-        
-        mainHelper.updateMAME4all();
-              
-        emuView.setOnKeyListener(inputHandler);
-        emuView.setOnTouchListener(inputHandler);
-      
-        if(emuView_HW!=null)
-        {	
-           emuView_HW.setOnKeyListener(inputHandler);
-           emuView_HW.setOnTouchListener(inputHandler);
-        }   
-               
-        inputView.setOnTouchListener(inputHandler);	  
-        
+         
+        /*
         if(mainHelper.getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE)
-        {	        
+        {*/        
         	View frame = this.findViewById(R.id.EmulatorFrame);
 	        frame.setOnTouchListener(inputHandler);        	
+        //}
+        
+        if((prefsHelper.getPortraitOverlayFilterType()!=PrefsHelper.PREF_FILTER_NONE && mainHelper.getscrOrientation() == Configuration.ORIENTATION_PORTRAIT)
+        		||
+           (prefsHelper.getLandscapeOverlayFilterType()!=PrefsHelper.PREF_FILTER_NONE && mainHelper.getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE))
+        {	
+            int type;
+            
+            if(mainHelper.getscrOrientation() == Configuration.ORIENTATION_PORTRAIT)
+            	type = prefsHelper.getPortraitOverlayFilterType();
+            else
+            	type = prefsHelper.getLandscapeOverlayFilterType();
+           
+            int dwb_id = -1;
+            
+            switch(type){
+	            case 2: dwb_id = R.drawable.scanline_1;break;
+	            case 3: dwb_id = R.drawable.scanline_2;break;
+	            case 4: dwb_id = R.drawable.crt_1;break;
+	            case 5: dwb_id = R.drawable.crt_2;break;
+            }	
+            
+            if(dwb_id!=-1)
+            {
+	        	getLayoutInflater().inflate(R.layout.filterview, fl);
+	            filterView = (FilterView)this.findViewById(R.id.FilterView);
+	            Bitmap bmp = BitmapFactory.decodeResource(getResources(),dwb_id);
+	            BitmapDrawable bitmapDrawable = new BitmapDrawable(bmp);
+	            bitmapDrawable.setTileModeXY(Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+	            bitmapDrawable.setAlpha((int)((type> 3 ? 0.16f : 0.35f) *255));
+	            filterView.setBackgroundDrawable(bitmapDrawable);
+	
+	            //filterView.setAlpha(type> 3 ? 0.16f : 0.35f);
+	            
+	            filterView.setMAME4all(this);
+            }
         }
-                
+        
+        mainHelper.updateMAME4all();
+        
+        emuView.setOnKeyListener(inputHandler);
+        emuView.setOnTouchListener(inputHandler);
+                     
+        inputView.setOnTouchListener(inputHandler);	 
+        
         Emulator.emulate(mainHelper.getLibDir(),mainHelper.getResDir());     
         
     }

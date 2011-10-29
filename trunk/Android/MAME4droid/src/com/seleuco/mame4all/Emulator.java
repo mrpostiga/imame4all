@@ -41,10 +41,10 @@ import android.graphics.Paint.Style;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
-import android.util.Log;
 import android.view.SurfaceHolder;
 
 import com.seleuco.mame4all.helpers.PrefsHelper;
+import com.seleuco.mame4all.views.EmulatorViewGL;
 
 public class Emulator 
 {
@@ -71,7 +71,11 @@ public class Emulator
 		return screenBuffPx;
 	}
 
-	
+	private static boolean frameFiltering = false;	
+	public static boolean isFrameFiltering() {
+		return frameFiltering;
+	}
+
 	private static Paint emuPaint = null;
 	private static Paint debugPaint = new Paint();
 	
@@ -94,13 +98,19 @@ public class Emulator
 	
 	private static boolean isThreadedSound  = false;
 	private static boolean isDebug = false;
-	private static boolean isFrameLimit = false;
-	private static boolean isFrameFilter = false;
 	private static int videoRenderMode  =  PrefsHelper.PREF_RENDER_THREADED;
 	private static boolean inMAME = false;
-	
 	public static boolean isInMAME() {
 		return inMAME;
+	}
+	private static int overlayFilterType  =  PrefsHelper.PREF_FILTER_NONE;
+	
+	public static int getOverlayFilterType() {
+		return overlayFilterType;
+	}
+
+	public static void setOverlayFilterType(int overlayFilterType) {
+		Emulator.overlayFilterType = overlayFilterType;
 	}
 
 	static long j = 0;
@@ -152,10 +162,6 @@ public class Emulator
 		Emulator.isDebug = isDebug;
 	}
 	
-	public static void setFrameLimit(boolean isFrameLimit) {
-		Emulator.isFrameLimit = isFrameLimit;
-	}
-
 	public static int getVideoRenderMode() {
 		return Emulator.videoRenderMode;
 	}
@@ -203,7 +209,7 @@ public class Emulator
 			//holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 			holder.setKeepScreenOn(true);
 			videoT.start();
-			ensureScreenDrawed();
+			//ensureScreenDrawed();
 			//Log.d("Thread Video", "Salgo start");
 		}
 		else
@@ -214,11 +220,6 @@ public class Emulator
 			//Log.d("Thread Video", "Salgo stop");
 		}
 		
-	}
-	
-	public static void ensureScreenDrawed(){
-		if(getScreenBuffer()!=null  && !inMAME)
-			   bitblt(getScreenBuffer(), false);		
 	}
 	
 	public static Canvas lockCanvas(){
@@ -244,32 +245,18 @@ public class Emulator
 	
 	//VIDEO
 	public static void setWindowSize(int w, int h) {
+		
 		window_width = w;
 		window_height = h;
+		
+		if(videoRenderMode == PrefsHelper.PREF_RENDER_GL)
+			return;				
+
 		mtx.setScale((float)(window_width / (float)emu_width), (float)(window_height / (float)emu_height));
-		
-		if(mm!=null && mm.getEmuView()!=null)
-		{	
-		   if(mm.getEmuView().isShown())
-			  mm.getEmuView().invalidate();
-	        Thread t = new Thread() {
-	            public void run() {
-	            	try {
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-	            	ensureScreenDrawed();
-	            }
-	        };
-	        t.start();
-		}
 	}
-	
+
 	public static void setFrameFiltering(boolean value) {
-		
-		isFrameFilter = value;
-		
+	    frameFiltering = value;			
 		if(value)
 		{
 			emuPaint = new Paint();
@@ -286,34 +273,22 @@ public class Emulator
 	static void bitblt(ByteBuffer sScreenBuff, boolean inMAME) {
 				
 		//try {
-							
-			if(isFrameLimit && inMAME && (isFrameFilter ||  videoRenderMode==PrefsHelper.PREF_RENDER_HW))
-				if(j++%2!=1)return;
-			//if(System.nanoTime() - nanos < 33333333) {return;}else{nanos = System.nanoTime();}
-			
+										
 			screenBuff = sScreenBuff;
 			Emulator.inMAME = inMAME;
 			   
-			
-			if(videoRenderMode == PrefsHelper.PREF_RENDER_THREADED && inMAME)
+			if(videoRenderMode == PrefsHelper.PREF_RENDER_GL){
+				//if(mm.getEmuView() instanceof EmulatorViewGL)
+				((EmulatorViewGL)mm.getEmuView()).requestRender();
+			}
+			else if(videoRenderMode == PrefsHelper.PREF_RENDER_THREADED)
 			{			
 				videoT.update();
 			}
 			else if(videoRenderMode == PrefsHelper.PREF_RENDER_HW)
 			{
-			   //mm.getEmuView().setWillNotDraw(false);
-			   
-			    if(!inMAME)
-			    {
-					sScreenBuff.rewind();			
-					emuBitmap.copyPixelsFromBuffer(sScreenBuff);				
-					emuBitmap.getPixels(screenBuffPx, 0, emuBitmap.getWidth(), 0, 0, emuBitmap.getWidth(), emuBitmap.getHeight());
-					mm.getEmuViewHW().postInvalidate();
-			    }
-			    else
-			    {			    
-			        videoT.update();
-			    }   
+			   //mm.getEmuView().setWillNotDraw(false);	    
+			    videoT.update();		 
 			}
 			else
 			{		    					
@@ -345,7 +320,6 @@ public class Emulator
 	synchronized 
 	static public void changeVideo(int newWidth, int newHeight){		
 		//Log.d("Thread Video", "changeVideo");
-
 		
 		Emulator.setPadData(0);
 		
@@ -353,8 +327,16 @@ public class Emulator
 		//{
 			emu_width = newWidth;
 			emu_height = newHeight;
+			
 			emuBitmap = Bitmap.createBitmap(newWidth, newHeight, Bitmap.Config.RGB_565);
-			mtx.setScale((float)(window_width / (float)emu_width), (float)(window_height / (float)emu_height));
+			mtx.setScale((float)(window_width / (float)emu_width), (float)(window_height / (float)emu_height));				
+			
+			if(videoRenderMode == PrefsHelper.PREF_RENDER_GL)
+			{
+				GLRenderer r = (GLRenderer)((EmulatorViewGL)mm.getEmuView()).getRender();				
+				if(r!=null)r.changedEmulatedSize();	
+			}
+			
 			mm.runOnUiThread(new Runnable() {
                 public void run() {
                 	mm.getMainHelper().updateMAME4all();

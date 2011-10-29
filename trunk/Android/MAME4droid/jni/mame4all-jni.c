@@ -118,7 +118,7 @@ void myJNI_initVideo(void *buffer)
 #ifdef DEBUG
     __android_log_print(ANDROID_LOG_DEBUG, "mame4all-jni", "initVideo");
 #endif
-    tmp = (*env)->NewDirectByteBuffer(env, buffer, 640 * 480 * 2);
+    tmp = (*env)->NewDirectByteBuffer(env, buffer, 1024 * 512 * 2);//640,480 power 2
     videoBuffer = (jobject)(*env)->NewGlobalRef(env, tmp);
 
     if(!videoBuffer) __android_log_print(ANDROID_LOG_ERROR, "mame4all-jni", "yikes, unable to initialize video buffer");

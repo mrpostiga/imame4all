@@ -1,5 +1,5 @@
 =================================================================
-MAME4droid 1.2 (October 22, 2011) by David Valdeita (Seleuco)
+MAME4droid 1.3 (October 28, 2011) by David Valdeita (Seleuco)
 =================================================================
 
 
@@ -41,6 +41,7 @@ Autorotate.
 HW Keys remapping.
 Touch Controller can be shown/hidden.
 Smooth image.
+Overlay Filters, scalines, CRT..
 Digital or Analog touch selectable.
 Animated touch stick or DPAD.
 iON's iCade and iCP (as iCade mode) external controllers supported. 
@@ -121,6 +122,17 @@ run correctly. Also the clock can be overclocked up to 200% to avoid slowdowns i
 The clock of the audio CPUs can also be adjusted from 50% to 200%. The nominal value is 100%. It can be underclocked
 and overclocked as well.
 
+- CPU ASM CORES:
+The following combinations of CPU ASM cores are available:
+Cyclone: It is the M68000 ASM CPU core, faster than the C one. Enable it because it seems to have perfect compatibility.
+DrZ80: It is the Z80 ASM CPU core, faster than the C one. The compatibility is very limited, use it if the desired game runs ok.
+Cyclone+DrZ80: Both ASM CPU cores are activated. More faster.
+Drz80(snd): DrZ80 is only used for the sound CPUs.
+Cyclone+DrZ80(snd): Both ASM cores are activated, DRz80 only for the sound CPUs.
+ALL: All ASM cores are activated.
+None: None of the ASM CPU cores are activated. Slower.
+Note that this configuration is automatically adjusted in each game according to an internal compatibility list.
+
 - Cheats:
 ON: The cheats are enabled. To access in game press SELECT+START and enter the "Cheats" menu.
 OFF: The cheats are disabled.
@@ -137,17 +149,16 @@ GLOBAL OPTIONS
 
 -Video render Mode: 
 
-    * Normal: synchronized render, more accurate but may have sound glitches if sync is lost. 
-    * Threaded: less accurate but better sound. 
-    * HW Accelerated (only for Honeycomb).
+    * SW: synchronized render, more accurate but may have sound glitches if sync is lost. Higher device compatibility.
+    * SW Threaded: less accurate but better sound. Also higher compatibility.
+    * GL. Open GL ES 1.0 or upper. This should be your choice if it works fine for you. Faster rendering even with image filtering.
+    * 2D HW Accelerated (only for Honeycomb). Experimental render. Not recommended.
 
 -Threaded sound. Worse sound quality but smoother gameplay when frame drops.
 
 -Show FPS: Shows ON/OFF fps.
 
 -Show Info/Warnings: Shows Game Info and any warnings when a game is selected.
-
--FPS limit when filtering. Set 30fps render limit to get smoother gameplay when smooth scaling is activated and the device isn't powerful enough.
 
 -Debug Mode. Enable debug mode. Only for developers.
 
@@ -187,6 +198,8 @@ GLOBAL OPTIONS
      * 2.5X: 2.5 original size. 
      * Keep Aspect: keeps the aspect ratio
      * Stretch to fit screen, will use all available screen.
+     
+-Filter overlay. Applies an image filter (scanlines or CRT) at the expense of performance.      
 
 -Touch controller visible: Hide/Show the touch controller. Disable if you want to use an external controller like a keyboard or Wiimote.
 
@@ -352,6 +365,9 @@ PORT CREDITS
 
 
 DEVELOPMENT
+October 28, 2011:
+- Version 1.3 added new OpenGL ES video render option (much faster render even with image filters), scanlines or CRT like overlay filters,
+CPU ASM core selector per game, fixed battery drain when paused...
 October 22, 2011:
 - Version 1.2 added Analog or DPAD touch control (selectable), iCade+ICP support, vibrate on keypress, more scaling options.
 September 14, 2011:

@@ -54,6 +54,8 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	protected ListPreference mPrefGlobalVideoRenderMode;
 	protected ListPreference mPrefPortraitMode;
     protected ListPreference mPrefLandsMode;
+	protected ListPreference mPrefPortraitFilterType;
+    protected ListPreference mPrefLandsFilterType;
     protected ListPreference mPrefControllerType;
     protected ListPreference mPrefExtInput;
     protected ListPreference mPrefAnalogDZ;
@@ -71,6 +73,8 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 		mPrefGlobalVideoRenderMode = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GLOBAL_VIDEO_RENDER_MODE);
         mPrefPortraitMode = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_PORTRAIT_SCALING_MODE);
         mPrefLandsMode = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_LANDSCAPE_SCALING_MODE);
+        mPrefPortraitFilterType = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_PORTRAIT_FILTER_TYPE);
+        mPrefLandsFilterType = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_LANDSCAPE_FILTER_TYPE);        
         mPrefControllerType = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_CONTROLLER_TYPE);
         mPrefExtInput = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_INPUT_EXTERNAL);
         mPrefAnalogDZ = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_ANALOG_DZ);        
@@ -85,6 +89,8 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	        mPrefGlobalVideoRenderMode.setSummary("Current value is '" + mPrefGlobalVideoRenderMode.getEntry()+"'"); 
 	        mPrefPortraitMode.setSummary("Current value is '" + mPrefPortraitMode.getEntry()+"'"); 
 	        mPrefLandsMode.setSummary("Current value is '" + mPrefLandsMode.getEntry()+"'"); 
+	        mPrefPortraitFilterType.setSummary("Current value is '" + mPrefPortraitFilterType.getEntry()+"'"); 
+	        mPrefLandsFilterType.setSummary("Current value is '" + mPrefLandsFilterType.getEntry()+"'"); 	        
 	        mPrefControllerType.setSummary("Current value is '" + mPrefControllerType.getEntry()+"'");
 	        mPrefExtInput.setSummary("Current value is '" + mPrefExtInput.getEntry()+"'");
 	        mPrefAnalogDZ.setSummary("Current value is '" + mPrefAnalogDZ.getEntry()+"'");
@@ -116,6 +122,14 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	        {
 	        	mPrefLandsMode.setSummary("Current value is '" + mPrefLandsMode.getEntry()+"'");	
 	        }
+	        if (key.equals(PrefsHelper.PREF_PORTRAIT_FILTER_TYPE)) 
+	        {
+	        	mPrefPortraitFilterType.setSummary("Current value is '" + mPrefPortraitFilterType.getEntry()+"'"); 
+	        }
+	        else if(key.equals(PrefsHelper.PREF_LANDSCAPE_FILTER_TYPE))
+	        {
+	        	mPrefLandsFilterType.setSummary("Current value is '" + mPrefLandsFilterType.getEntry()+"'");	
+	        }	        
 	        else if(key.equals(PrefsHelper.PREF_CONTROLLER_TYPE))
 	        {	
 	            mPrefControllerType.setSummary("Current values is '" + mPrefControllerType.getEntry()+"'");

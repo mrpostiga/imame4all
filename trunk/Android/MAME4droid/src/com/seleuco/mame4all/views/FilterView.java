@@ -33,27 +33,19 @@ package com.seleuco.mame4all.views;
 import java.util.ArrayList;
 
 import android.content.Context;
-import android.graphics.Canvas;
 import android.util.AttributeSet;
-import android.view.MotionEvent;
 import android.view.View;
 
-import com.seleuco.mame4all.Emulator;
 import com.seleuco.mame4all.MAME4all;
 import com.seleuco.mame4all.helpers.PrefsHelper;
 
 
-public class EmulatorViewHW extends View implements IEmuView{
-	
+public class FilterView extends View implements IEmuView{
 	
 	protected int scaleType = PrefsHelper.PREF_ORIGINAL;
-	
+		
 	protected MAME4all mm = null;
 	
-	protected int i = 0;
-	protected int fps = 0;
-	protected long millis;
-
 	public int getScaleType() {
 		return scaleType;
 	}
@@ -66,68 +58,24 @@ public class EmulatorViewHW extends View implements IEmuView{
 		this.mm = mm;
 	}
 	
-	public EmulatorViewHW(Context context) {
+	public FilterView(Context context) {
 		super(context);
 		init();
 	}
 
-	public EmulatorViewHW(Context context, AttributeSet attrs) {
+	public FilterView(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		init();
-	}
-
-	public EmulatorViewHW(Context context, AttributeSet attrs, int defStyle) {
-		super(context, attrs, defStyle);
 		init();
 	}
 	
 	protected void init(){
-		this.setKeepScreenOn(true);
-		this.setFocusable(true);
-		this.setFocusableInTouchMode(true);
-		this.requestFocus();
+		this.setFocusable(false);
+		this.setFocusableInTouchMode(false);
 	}
 		
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		ArrayList<Integer> l = mm.getMainHelper().measureWindow(widthMeasureSpec, heightMeasureSpec, scaleType);
 		setMeasuredDimension(l.get(0).intValue(),l.get(1).intValue());
 	}
-		
-	@Override
-	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
 
-		super.onSizeChanged(w, h, oldw, oldh);
-		Emulator.setWindowSize(w, h);
-	}
-	
-	@Override
-	public boolean onTrackballEvent(MotionEvent event) {
-		return mm.getInputHandler().onTrackballEvent(event);
-	}
-	
-	@Override
-	public void draw(Canvas canvas) {
-		super.draw(canvas);
-		i++;
-
-		if(Emulator.getScreenBuffer()==null)
-			return;
-
-		canvas.concat(Emulator.getMatrix());
-        
-		/*
-		Emulator.getScreenBuffer().rewind();			
-		Emulator.getEmuBitmap().copyPixelsFromBuffer(Emulator.getScreenBuffer());
-			
-		Emulator.getEmuBitmap().getPixels(px, 0, Emulator.getEmulatedWidth(), 0, 0, Emulator.getEmulatedWidth(), Emulator.getEmulatedHeight());
-		*/
-
-		canvas.drawBitmap(Emulator.getScreenBuffPx(), 0, Emulator.getEmulatedWidth(), 0, 0,Emulator.getEmulatedWidth(), Emulator.getEmulatedHeight(), false, null);
-			
-		if(Emulator.isDebug())
-		{
-		    canvas.drawText("HW "+canvas.isHardwareAccelerated()+" fps:"+fps, 5, 40, Emulator.getDebugPaint());		  
-		    if(System.currentTimeMillis() - millis >= 1000) {fps = i; i=0;millis = System.currentTimeMillis();} 		
-		}	
-	}
 }
