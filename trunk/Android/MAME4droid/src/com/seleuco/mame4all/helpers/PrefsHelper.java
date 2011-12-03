@@ -40,14 +40,15 @@ import com.seleuco.mame4all.input.InputHandler;
 
 public class PrefsHelper implements OnSharedPreferenceChangeListener
 {
-
+	final static public String PREF_ROMsDIR = "PREF_ROMsDIR";
+	
 	final static public String PREF_GLOBAL_ASMCORES = "PREF_GLOBAL_ASMCORES";
 	final static public String PREF_GLOBAL_VIDEO_RENDER_MODE = "PREF_GLOBAL_VIDEO_RENDER_MODE";
 	final static public String PREF_GLOBAL_SOUND_THREADED = "PREF_GLOBAL_SOUND_THREADED";
 	final static public String PREF_GLOBAL_SHOW_FPS = "PREF_GLOBAL_SHOW_FPS";
 	final static public String PREF_GLOBAL_SHOW_INFOWARNINGS = "PREF_GLOBAL_SHOW_INFOWARNINGS";	
 	final static public String PREF_GLOBAL_DEBUG = "PREF_GLOBAL_DEBUG";
-	
+		
 	final static public String PREF_PORTRAIT_SCALING_MODE = "PREF_PORTRAIT_SCALING_MODE_2";
 	final static public String PREF_PORTRAIT_FILTER_TYPE = "PREF_PORTRAIT_FILTER_2";
 	final static public String PREF_PORTRAIT_TOUCH_CONTROLLER = "PREF_PORTRAIT_TOUCH_CONTROLLER";
@@ -247,5 +248,16 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	
 	public boolean isVibrate(){
 		return getSharedPreferences().getBoolean(PREF_VIBRATE,true);
+	}
+	
+	public String getROMsDIR(){
+		return getSharedPreferences().getString(PREF_ROMsDIR,null);
+	}
+	
+	public void setROMsDIR(String value){
+		//PreferenceManager.getDefaultSharedPreferences(this);
+		SharedPreferences.Editor editor =  getSharedPreferences().edit();
+		editor.putString(PREF_ROMsDIR, value);
+		editor.commit();
 	}
 }

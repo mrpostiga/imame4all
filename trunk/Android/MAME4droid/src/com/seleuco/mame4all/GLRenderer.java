@@ -238,7 +238,9 @@ public class GLRenderer implements Renderer {
        // Log.v("mm","onDrawFrame called "+shortBuffer);
     			
     	if(shortBuffer==null){
-            shortBuffer = Emulator.getScreenBuffer().asShortBuffer();
+    		ByteBuffer buf = Emulator.getScreenBuffer();
+    		if(buf==null)return;
+            shortBuffer = buf.asShortBuffer();
     	}
     	
     	if(mTex==-1 || smooth!=isSmooth()) mTex = loadTexture(gl);  
@@ -265,19 +267,23 @@ public class GLRenderer implements Renderer {
     			 Emulator.getEmulatedWidth(),Emulator.getEmulatedHeight(), 0,  GL10.GL_RGB,
                 GL10.GL_UNSIGNED_SHORT_5_6_5, shortBuffer);
         */
-		gl.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, 0, 0, Emulator.getEmulatedWidth(), Emulator.getEmulatedHeight(), 
+        
+        int width = Emulator.getEmulatedWidth();
+        int height = Emulator.getEmulatedHeight();
+        
+		gl.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, 0, 0, width, height, 
 				GL10.GL_RGB, GL10.GL_UNSIGNED_SHORT_5_6_5, shortBuffer);
         
 		if((gl instanceof GL11Ext) && !force10)
 		{
 	        mCrop[0] = 0; // u
-	        mCrop[1] = Emulator.getEmulatedHeight(); // v
-	        mCrop[2] = Emulator.getEmulatedWidth(); // w
-	        mCrop[3] = -Emulator.getEmulatedHeight(); // h
+	        mCrop[1] = height; // v
+	        mCrop[2] = width; // w
+	        mCrop[3] = -height; // h
 	        
 	        ((GL11) gl).glTexParameteriv(GL10.GL_TEXTURE_2D,GL11Ext.GL_TEXTURE_CROP_RECT_OES, mCrop, 0);
 	                               
-	        ((GL11Ext) gl).glDrawTexiOES(0, 0, 0, Emulator.getWindow_width(),Emulator.getWindow_height());
+	        ((GL11Ext) gl).glDrawTexiOES(0, 0, 0, Emulator.getWindow_width()/*+1*/,Emulator.getWindow_height()/*+1*/);
 		}
 		else
 		{	

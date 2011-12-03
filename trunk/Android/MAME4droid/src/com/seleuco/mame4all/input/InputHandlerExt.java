@@ -131,9 +131,9 @@ public class InputHandlerExt extends InputHandler {
 								}
 					            
 								if(oldtouches[id] != newtouches[id])	            
-					            	pad_data &= ~(oldtouches[id]);
+					            	pad_data[0] &= ~(oldtouches[id]);
 					            
-								pad_data |= newtouches[id];
+								pad_data[0] |= newtouches[id];
 							}
 							break;
 						} else if (iv.getType() == TYPE_SWITCH) {
@@ -166,7 +166,7 @@ public class InputHandlerExt extends InputHandler {
 
 				if (really)
 				{
-					pad_data &= ~(newtouches[i]);
+					pad_data[0] &= ~(newtouches[i]);
 				}
 				
 				newtouches[i] = 0;
@@ -176,7 +176,7 @@ public class InputHandlerExt extends InputHandler {
 		
 		handleImageStates();
 		
-		Emulator.setPadData(pad_data);
+		Emulator.setPadData(0,pad_data[0]);
 		return true;
 	}
 }

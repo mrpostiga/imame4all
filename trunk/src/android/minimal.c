@@ -81,13 +81,14 @@ unsigned char  			*gp2x_dualcore_ram;
 unsigned long  			 gp2x_dualcore_ram_size;
 
 unsigned long gp2x_pad_status = 0;
+unsigned long gp2x_joy_status[4];
 
 
 //////////////////////// android
 
 unsigned short screenbuffer[640 * 480];
 char globalpath[247]="/sdcard/ROMs/MAME4all/";
-static int __emulation_paused = 0;
+
 
 //android callbacks
 
@@ -125,21 +126,21 @@ void setGlobalPath(const char *path){
 	strcpy(globalpath,path);
 }
 
-void setPadStatus(unsigned long pad_status)
+void setPadStatus(int i, unsigned long pad_status)
 {
-	gp2x_pad_status = pad_status;
+	if(i==0 && num_of_joys==0)
+	   gp2x_pad_status = pad_status;
+
+	gp2x_joy_status[i]=pad_status;
+
+	if(i==1 && pad_status && GP2X_SELECT && num_of_joys<2)
+		num_of_joys = 2;
+	else if(i==2 && pad_status && GP2X_SELECT && num_of_joys<3)
+		num_of_joys = 3;
+	else if(i==2 && pad_status && GP2X_SELECT && num_of_joys<4)
+		num_of_joys = 4;
+
 	//__android_log_print(ANDROID_LOG_DEBUG, "libMAME4all.so", "set_pad %ld",pad_status);
-}
-
-void setEmulationPause(unsigned char b)
-{
-	__android_log_print(ANDROID_LOG_DEBUG, "libMAME4all.so", "setEmulationPause %d",b);
-
-	if(b==0)
-	{
-	   m4all_exitPause = 1;
-	}
-	__emulation_paused = b;
 }
 
 int isEmulating()
@@ -164,6 +165,8 @@ void setMyValue(int key,int value){
 	    	m4all_ASMCores = value;break;
 	    case 8:
 	    	global_showinfo = value;break;
+	    case 9:
+	 	   m4all_exitPause = value;break;
 	    case 20:
 	        m4all_HiSpecs = value;
 	}
@@ -198,21 +201,13 @@ int getMyValue(int key){
 
 }
 
-void setMyAnalogData(float v1, float v2){
-	joy_analog_x[0]=v1;
-	joy_analog_y[0]=v2;
-
+void setMyAnalogData(int i, float v1, float v2){
+	joy_analog_x[i]=v1;
+	joy_analog_y[i]=v2;
 }
 
 void dump_video()
 {
-
-	 while(__emulation_paused)
-	 {
-		 sched_yield();
-		 usleep(100);
-	 }
-
 	 dumpVideo_callback(m4all_inGame);
 }
 
@@ -250,7 +245,8 @@ unsigned long gp2x_joystick_read(int n)
 	{
 	  	/* Check USB Joypad */
 		//printf("%d %d\n",num_of_joys,n);
-		res |= iOS_wiimote_check(&joys[n]);
+		//res |= iOS_wiimote_check(&joys[n]);
+		res |= gp2x_joy_status[n];
 	}
   	
 	return res;
