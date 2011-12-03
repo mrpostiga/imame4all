@@ -186,9 +186,9 @@ static void game_list_view(int *pos) {
 		gp2x_gamelist_text_out(35, 110, "NO AVAILABLE ROMS FOUND");
 	}
 #ifdef ARMV7
-	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"MAME4droid. v1.3 by D.Valdeita");
+	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"MAME4droid. v1.4 by D.Valdeita");
 #else
-	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"MAME4droid  v1.3 by D.Valdeita");
+	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"MAME4droid  v1.4 by D.Valdeita");
 #endif
 
 }

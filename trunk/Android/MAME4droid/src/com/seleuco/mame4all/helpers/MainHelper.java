@@ -66,7 +66,6 @@ public class MainHelper {
 	final static public  int SUBACTIVITY_HELP = 2;
 	final static public  int BUFFER_SIZE = 1024*48;
 	
-	final static public  String ROMS_DIR = "/ROMs/MAME4all/";
 	final static public  String MAGIC_FILE = "dont-delete-00001.bin";
 	
 	protected MAME4all mm = null;
@@ -87,22 +86,26 @@ public class MainHelper {
 		return lib_dir;
 	}
 	
-	public String getResDir()
+
+	public String getDefaultROMsDIR()
 	{
-		String res_dir;
+		String res_dir = null;
+				
 		try {
-			res_dir = Environment.getExternalStorageDirectory().getCanonicalPath()+ROMS_DIR;
+			res_dir = Environment.getExternalStorageDirectory().getCanonicalPath()+"/ROMs/MAME4all/";
 		} catch (IOException e) {
 			
 			e.printStackTrace();
-			res_dir = "/sdcard"+ROMS_DIR;
+			res_dir = "/sdcard/ROMs/MAME4all/";
 		}
-
+	
 		return res_dir;
 	}
+
 	
-	public boolean ensureResDir(){
-		File res_dir = new File(getResDir());
+	public boolean ensureROMsDir(String roms_dir){
+				
+		File res_dir = new File(roms_dir);
 		
 		boolean created = false;
 		
@@ -110,8 +113,8 @@ public class MainHelper {
 		{
 			if(!res_dir.mkdirs())
 			{
-				mm.getDialogHelper().setErrorMsg("Can't find/create:\n '"+getResDir()+"'");
-				mm.showDialog(DialogHelper.DIALOG_ERROR);
+				mm.getDialogHelper().setErrorMsg("Can't find/create:\n '"+roms_dir+"'\nIs it writeable?");
+				mm.showDialog(DialogHelper.DIALOG_ERROR_WRITING);
 				return false;				
 			}
 			else
@@ -120,15 +123,15 @@ public class MainHelper {
 			}
 		}
 		
-		String str_sav_dir = getResDir()+"saves/";
+		String str_sav_dir = roms_dir+"saves/";
 		File sav_dir = new File(str_sav_dir);
 		if(sav_dir.exists() == false)
 		{
 			
 			if(!sav_dir.mkdirs())
 			{
-				mm.getDialogHelper().setErrorMsg("Can't find/create:\n'"+str_sav_dir+"'");
-				mm.showDialog(DialogHelper.DIALOG_ERROR);
+				mm.getDialogHelper().setErrorMsg("Can't find/create:\n'"+str_sav_dir+"'\nIs it writeable");
+				mm.showDialog(DialogHelper.DIALOG_ERROR_WRITING);
 				return false;				
 			}
 		}
@@ -136,7 +139,7 @@ public class MainHelper {
 		if(created )
 		{
 			
-			mm.getDialogHelper().setInfoMsg("Created: \n'"+getResDir()+"'\nPut your zipped ROMs on it!.\n\nMAME4droid uses only 'gp2x wiz 0.37b11 MAME romset'. Google it or use clrmame.dat file included  to convert romsets from other MAME versions. See  help.");
+			mm.getDialogHelper().setInfoMsg("Created: \n'"+roms_dir+"'\nCopy or move your zipped ROMs under './MAME4All/roms' directory!.\n\nMAME4droid uses only 'gp2x wiz 0.37b11 MAME romset'. Google it or use clrmame.dat file included  to convert romsets from other MAME versions. See  help.");
 			mm.showDialog(DialogHelper.DIALOG_INFO);
 
 		}
@@ -148,7 +151,9 @@ public class MainHelper {
 		
 		try {
 			
-			File fm = new File(getResDir()+ File.separator + "saves/" + MAGIC_FILE);
+			String roms_dir = mm.getPrefsHelper().getROMsDIR();
+			
+			File fm = new File(roms_dir + File.separator + "saves/" + MAGIC_FILE);
 			if(fm.exists())
 				return;
 			
@@ -167,7 +172,7 @@ public class MainHelper {
 			while ((entry = zis.getNextEntry()) != null) {
 				if (!entry.isDirectory()) {
 
-					String destination = this.getResDir();
+					String destination = roms_dir;
 					String destFN = destination + File.separator + entry.getName();
 					// Write the file to the file system
 					FileOutputStream fos = new FileOutputStream(destFN);
@@ -180,7 +185,7 @@ public class MainHelper {
 				}
 				else
 				{
-					File f = new File(getResDir()+ File.separator + entry.getName());
+					File f = new File(roms_dir+ File.separator + entry.getName());
 					f.mkdirs();
 				}
 				

@@ -31,6 +31,9 @@
 			android:title="Debug Mode" android:summary="Only for developers"
 			android:defaultValue="false" />
 			
+		<PreferenceScreen android:key="changeRomPath"
+			android:title="Change ROMs Path" android:summary="Change MAME4all/roms location. You have to move ROM files manually." />	
+			
 	</PreferenceCategory>
 
 

@@ -154,7 +154,27 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 			
 			if (pref.getKey().equals("defineKeys")) {
 				startActivityForResult(new Intent(this, DefineKeys.class), 1);
-			}                              
+			}
+			else if (pref.getKey().equals("changeRomPath")) {
+				 AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			    	builder.setMessage("Are you sure to change? (needs app restart)")
+		    	       .setCancelable(false)
+		    	       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+		    	           public void onClick(DialogInterface dialog, int id) {
+		    					SharedPreferences.Editor editor =  settings.edit();
+		    					editor.putString(PrefsHelper.PREF_ROMsDIR, null);
+		    					editor.commit();
+		    	                //android.os.Process.killProcess(android.os.Process.myPid());  
+		    	           }
+		    	       })
+		    	       .setNegativeButton("No", new DialogInterface.OnClickListener() {
+		    	           public void onClick(DialogInterface dialog, int id) {
+		    	                dialog.cancel();
+		    	           }
+		    	       });
+			    	Dialog dialog = builder.create();
+			    	dialog.show();				
+			}
 			else if (pref.getKey().equals("defaultsKeys")) {
 
 				 AlertDialog.Builder builder = new AlertDialog.Builder(this);

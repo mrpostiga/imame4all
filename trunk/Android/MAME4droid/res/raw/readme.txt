@@ -1,5 +1,5 @@
 =================================================================
-MAME4droid 1.3 (October 28, 2011) by David Valdeita (Seleuco)
+MAME4droid 1.4 (November 27, 2011) by David Valdeita (Seleuco)
 =================================================================
 
 
@@ -46,6 +46,7 @@ Digital or Analog touch selectable.
 Animated touch stick or DPAD.
 iON's iCade and iCP (as iCade mode) external controllers supported. 
 Wiimote support using WiiCrotroller Market app.
+Local multiplayer.
 1 to 6 buttons optionally shown.
 Options for video aspect ratio, scaling, rotate.
 Adjustable CPU, Audio clock.
@@ -161,6 +162,8 @@ GLOBAL OPTIONS
 -Show Info/Warnings: Shows Game Info and any warnings when a game is selected.
 
 -Debug Mode. Enable debug mode. Only for developers.
+
+.Change ROMs path: Change current ROMs path. You need to restart app. You must move roms from older folder to the new one also.
 
 -Define Keys. Let you define or map the HW keys to emulator controls. (Xperia Play and any other devices with physical keyboards users should configure their buttons or keys here)
 
@@ -365,6 +368,9 @@ PORT CREDITS
 
 
 DEVELOPMENT
+November 27, 2011:
+- Version 1.4 added local multiplayer (using external IME app as Wiimote Controller or equivalent), added option to change default 
+rom path, fixed thread being suspended when emulator paused.
 October 28, 2011:
 - Version 1.3 added new OpenGL ES video render option (much faster render even with image filters), scanlines or CRT like overlay filters,
 CPU ASM core selector per game, fixed battery drain when paused...

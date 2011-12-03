@@ -39,6 +39,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -69,6 +70,12 @@ public class MAME4all extends Activity {
 	
 	protected InputHandler inputHandler = null;
 	
+	protected FileExplorer fileExplore = null;
+	
+	public FileExplorer getFileExplore() {
+		return fileExplore;
+	}
+
 	public MenuHelper getMenuHelper() {
 		return menuHelper;
 	}
@@ -106,6 +113,8 @@ public class MAME4all extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
+		Log.d("EMULATOR", "onCreate");
+        
        // getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         
        /*
@@ -128,11 +137,8 @@ public class MAME4all extends Activity {
         
         mainHelper = new MainHelper(this);
         
-        if(!mainHelper.ensureResDir())
-        	return;
-        
-        mainHelper.copyFiles();
-        
+        fileExplore = new FileExplorer(this);
+                
         menuHelper = new MenuHelper(this);
                 
         //inputHandler = new InputHandler(this);
@@ -218,9 +224,21 @@ public class MAME4all extends Activity {
         emuView.setOnTouchListener(inputHandler);
                      
         inputView.setOnTouchListener(inputHandler);	 
-        
-        Emulator.emulate(mainHelper.getLibDir(),mainHelper.getResDir());     
-        
+               
+		if(prefsHelper.getROMsDIR()==null)
+		{
+            showDialog(DialogHelper.DIALOG_ROMs_DIR);                      
+		}
+		else
+		{
+			getMainHelper().ensureROMsDir(prefsHelper.getROMsDIR());
+			runMAME4all();	
+		}                 
+    }
+    
+    public void runMAME4all(){
+	    getMainHelper().copyFiles();
+    	Emulator.emulate(mainHelper.getLibDir(),prefsHelper.getROMsDIR());	
     }
     
 	//MENU STUFF
@@ -265,6 +283,7 @@ public class MAME4all extends Activity {
 	//LIVE CYCLE
 	@Override
 	protected void onResume() {
+		Log.d("EMULATOR", "onResume");				
 		super.onResume();
 		if(prefsHelper!=null)
 		   prefsHelper.resume();
@@ -274,6 +293,7 @@ public class MAME4all extends Activity {
 	
 	@Override
 	protected void onPause() {
+		Log.d("EMULATOR", "onPause");
 		super.onPause();
 		if(prefsHelper!=null)
 		   prefsHelper.pause();
@@ -283,12 +303,14 @@ public class MAME4all extends Activity {
 	
 	@Override
 	protected void onStart() {
+		Log.d("EMULATOR", "onStart");		
 		super.onStart();
 		//System.out.println("OnStart");
 	}
 
 	@Override
 	protected void onStop() {
+		Log.d("EMULATOR", "onStop");			
 		super.onStop();
 		//System.out.println("OnStop");
 	}
@@ -296,6 +318,7 @@ public class MAME4all extends Activity {
 	//Dialog Stuff
 	@Override
 	protected Dialog onCreateDialog(int id) {
+
 		if(dialogHelper!=null)
 		{	
 			Dialog d = dialogHelper.createDialog(id);

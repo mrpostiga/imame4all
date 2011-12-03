@@ -40,12 +40,14 @@ import com.seleuco.mame4all.MAME4all;
 public class DialogHelper {
 	
 	public final static int DIALOG_EXIT = 1;
-	public final static int DIALOG_ERROR = 2;
+	public final static int DIALOG_ERROR_WRITING = 2;
 	public final static int DIALOG_INFO = 3;
 	public final static int DIALOG_EXIT_GAME = 4;
 	public final static int DIALOG_OPTIONS = 5;
 	public final static int DIALOG_THANKS = 6;
 	public final static int DIALOG_FULLSCREEN = 7;
+	public final static int DIALOG_LOAD_FILE_EXPLORER = 8;
+	public final static int DIALOG_ROMs_DIR = 9;
 	
 	protected MAME4all mm = null;
 	
@@ -65,9 +67,36 @@ public class DialogHelper {
 	}
 	
 	public Dialog createDialog(int id) {
+		
+		if(id==DialogHelper.DIALOG_LOAD_FILE_EXPLORER)
+		{	
+		   return mm.getFileExplore().create();
+		}	
+		
 	    Dialog dialog;
 	    AlertDialog.Builder builder = new AlertDialog.Builder(mm);
 	    switch(id) {
+	    case DIALOG_ROMs_DIR:
+	    	
+	    	builder.setMessage("Do you want to use default ROMs Path? (recomended)")
+	    	       .setCancelable(false)
+	    	       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+	    	           public void onClick(DialogInterface dialog, int id) {
+	    	        	   if(mm.getMainHelper().ensureROMsDir(mm.getMainHelper().getDefaultROMsDIR()))
+	    	        	   {	    	        	   
+	    	        	      mm.getPrefsHelper().setROMsDIR(mm.getMainHelper().getDefaultROMsDIR());
+	    	        	      mm.runMAME4all();
+	    	        	   }                              
+	    	           }
+	    	       })
+	    	       .setNegativeButton("No", new DialogInterface.OnClickListener() {
+	    	           public void onClick(DialogInterface dialog, int id) {	    	        	   
+	    	               dialog.cancel();
+	    	               mm.showDialog(DialogHelper.DIALOG_LOAD_FILE_EXPLORER);
+	    	           }
+	    	       });
+	    	dialog = builder.create();
+	        break;	    
 	    case DIALOG_EXIT:
 	    	
 	    	builder.setMessage("Are you sure you want to exit?")
@@ -85,12 +114,13 @@ public class DialogHelper {
 	    	       });
 	    	dialog = builder.create();
 	        break;
-	    case DIALOG_ERROR:
+	    case DIALOG_ERROR_WRITING:
 	    	builder.setMessage("Error")
 	    	       .setCancelable(false)
 	    	       .setPositiveButton("OK", new DialogInterface.OnClickListener() {
 	    	           public void onClick(DialogInterface dialog, int id) {
-	    	                System.exit(0);
+	    	                //System.exit(0);
+	    	        	   mm.showDialog(DialogHelper.DIALOG_LOAD_FILE_EXPLORER);
 	    	           }
 	    	       });
 
@@ -184,7 +214,7 @@ public class DialogHelper {
 
 	public void prepareDialog(int id, Dialog dialog) {
 		
-		if(id==DIALOG_ERROR)
+		if(id==DIALOG_ERROR_WRITING)
 		{
 			((AlertDialog)dialog).setMessage(errorMsg);
 		}

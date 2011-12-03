@@ -45,14 +45,13 @@
 int  (*android_main)(int argc, char **argv)=NULL;
 void (*setAudioCallbacks)(void *func1,void *func2,void *func3)= NULL;
 void (*setVideoCallbacks)(void *func1,void *func2,void *func3) = NULL;
-void (*setPadStatus)(unsigned long pad_status) = NULL;
-void (*setEmulationPause)(unsigned char b) = NULL;
+void (*setPadStatus)(int i, unsigned long pad_status) = NULL;
 void (*setGlobalPath)(const char *path) = NULL;
 
 void  (*setMyValue)(int key, int value)=NULL;
 int  (*getMyValue)(int key)=NULL;
 
-void  (*setMyAnalogData)(float v1,float v2)=NULL;
+void  (*setMyAnalogData)(int i, float v1,float v2)=NULL;
 
 /* Callbacks to Android */
 jmethodID android_dumpVideo;
@@ -102,7 +101,6 @@ static void load_lib(const char *str)
     setAudioCallbacks = dlsym(libdl, "setAudioCallbacks");    
     setPadStatus = dlsym(libdl, "setPadStatus");    
     setGlobalPath = dlsym(libdl, "setGlobalPath"); 
-    setEmulationPause = dlsym(libdl, "setEmulationPause"); 
 
     setMyValue = dlsym(libdl, "setMyValue"); 
     getMyValue = dlsym(libdl, "getMyValue"); 
@@ -339,21 +337,22 @@ JNIEXPORT void JNICALL Java_com_seleuco_mame4all_Emulator_init
 }
 
 JNIEXPORT void JNICALL Java_com_seleuco_mame4all_Emulator_setPadData
-  (JNIEnv *env, jclass c, jlong jl)
+  (JNIEnv *env, jclass c, jint i,  jlong jl)
 {
     //long 	jlong 	signed 64 bits ??? valdria con un jint
     //__android_log_print(ANDROID_LOG_INFO, "mame4all-jni", "setPadData");
 
     unsigned long l = (unsigned long)jl;
 
-    setPadStatus(l);
+    if(setPadStatus!=NULL)
+       setPadStatus(i,l);
 }
 
-JNIEXPORT void JNICALL Java_com_seleuco_mame4all_Emulator_pauseEmulation
-  (JNIEnv *env, jclass c, jboolean b)
+JNIEXPORT void JNICALL Java_com_seleuco_mame4all_Emulator_setAnalogData
+  (JNIEnv *env, jclass c, jint i, jfloat v1, jfloat v2)
 {
-   if(setEmulationPause!=NULL) //LOADED
-       setEmulationPause((unsigned char)b);
+    if(setMyAnalogData!=NULL)
+       setMyAnalogData(i,v1,v2);
 }
 
 JNIEXPORT jint JNICALL Java_com_seleuco_mame4all_Emulator_getValue
@@ -378,12 +377,6 @@ JNIEXPORT void JNICALL Java_com_seleuco_mame4all_Emulator_setValue
       setMyValue(key,value);
 }
 
-JNIEXPORT void JNICALL Java_com_seleuco_mame4all_Emulator_setAnalogData
-  (JNIEnv *env, jclass c, jfloat v1, jfloat v2)
-{
-    if(setMyAnalogData!=NULL)
-       setMyAnalogData(v1,v2);
-}
 
 
 

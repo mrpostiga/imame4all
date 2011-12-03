@@ -57,10 +57,14 @@ public class Emulator
 	final static public int WAYS_STICK_KEY = 6;
 	final static public int ASMCORES_KEY = 7;
 	final static public int INFOWARN_KEY = 8;
+	final static public int EXIT_PAUSE = 9;
 	
     private static MAME4all mm = null;
     
     private static boolean isEmulating = false;
+    private static boolean paused = false;
+    private static Object lock1 = new Object();
+    private static Object lock2 = new Object();
 	
 	private static SurfaceHolder holder = null;
 	private static Bitmap emuBitmap = Bitmap.createBitmap(320, 240, Bitmap.Config.RGB_565);
@@ -123,6 +127,7 @@ public class Emulator
 			
 	static
 	{
+		
 		try
 		{		
 		    System.loadLibrary("mame4all-jni");		  
@@ -131,7 +136,7 @@ public class Emulator
 		{
 		   e.printStackTrace();	
 		}
-		
+				
 	    debugPaint.setARGB(255, 255, 255, 255);
 	    debugPaint.setStyle(Style.STROKE);		
 	    debugPaint.setTextSize(16);
@@ -197,29 +202,30 @@ public class Emulator
 		return screenBuff;
 	}
 	
-	synchronized 
+	
 	public static void setHolder(SurfaceHolder value) {
 		
 		//Log.d("Thread Video", "Set holder nuevo "+values+" ant "+holder);
-		
-		if(value!=null)
+		synchronized(lock1)
 		{
-			holder = value;
-			holder.setFormat(PixelFormat.OPAQUE);
-			//holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-			holder.setKeepScreenOn(true);
-			videoT.start();
-			//ensureScreenDrawed();
-			//Log.d("Thread Video", "Salgo start");
-		}
-		else
-		{
-			videoT.stop();
-			holder=null;
-
-			//Log.d("Thread Video", "Salgo stop");
-		}
-		
+			if(value!=null)
+			{
+				holder = value;
+				holder.setFormat(PixelFormat.OPAQUE);
+				//holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+				holder.setKeepScreenOn(true);
+				videoT.start();
+				//ensureScreenDrawed();
+				//Log.d("Thread Video", "Salgo start");
+			}
+			else
+			{
+				videoT.stop();
+				holder=null;
+	
+				//Log.d("Thread Video", "Salgo stop");
+			}
+		}		
 	}
 	
 	public static Canvas lockCanvas(){
@@ -269,9 +275,23 @@ public class Emulator
 	}
 	
 	
-	synchronized 
+	//synchronized 
 	static void bitblt(ByteBuffer sScreenBuff, boolean inMAME) {
-				
+		
+		if(paused) //locks are expensive
+		{
+			synchronized(lock2)					
+			{
+				try 
+				{
+					if(paused)
+					   lock2.wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+	    }
+		synchronized(lock1){
 		//try {
 										
 			screenBuff = sScreenBuff;
@@ -314,14 +334,17 @@ public class Emulator
 			Log.getStackTraceString(t);
 		}
 		*/
+		}
 	}
 	
 	
-	synchronized 
+	//synchronized 
 	static public void changeVideo(int newWidth, int newHeight){		
 		//Log.d("Thread Video", "changeVideo");
+		synchronized(lock1){
 		
-		Emulator.setPadData(0);
+		for(int i=0;i<4;i++)
+			Emulator.setPadData(i,0);
 		
 		//if(emu_width!=newWidth || emu_height!=newHeight)
 		//{
@@ -342,7 +365,8 @@ public class Emulator
                 	mm.getMainHelper().updateMAME4all();
                 }
             });
-		//}
+		//}		  
+		  }
 	}
 	
 	//SOUND
@@ -397,7 +421,10 @@ public class Emulator
 		//Log.d("EMULATOR", "PAUSE");
 		
 		if(isEmulating)
-		   pauseEmulation(true);
+		{		    
+			//pauseEmulation(true);
+			paused = true;
+		}   
 		
 		if(audioTrack!=null)
 		    audioTrack.pause();
@@ -412,7 +439,14 @@ public class Emulator
 		    audioTrack.play();
 		
 		if(isEmulating)
-		    pauseEmulation(false);
+		{				
+		    //pauseEmulation(false);
+			Emulator.setValue(Emulator.EXIT_PAUSE, 1);	
+			synchronized(lock2){				
+				paused = false;
+				lock2.notify();
+		    }		    
+		}    
 		
 		videoT.start();
 	}
@@ -434,20 +468,18 @@ public class Emulator
 
 		//t.setPriority(Thread.MIN_PRIORITY);
 		//t.setPriority(Thread.MAX_PRIORITY);
-		t.start();
-		
+		t.start();		
 	}
 	
 	//native
 	protected static native void init(String libPath,String resPath);
-		
-	protected static native void pauseEmulation(boolean b);
+			
+	public static native void setPadData(int i, long data);
 	
-	public static native void setPadData(long data);
+	public static native void setAnalogData(int i, float v1, float v2);
 	
 	public static native int getValue(int key);
 	
 	public static native void setValue(int key, int value);
-	
-	public static native void setAnalogData(float v1, float v2);
+		
 }

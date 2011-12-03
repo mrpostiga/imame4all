@@ -50,7 +50,7 @@ public class KeySelect extends Activity {
 		super.onCreate(icicle);
 
 		emulatorInputIndex = getIntent().getIntExtra("emulatorInputIndex", 0);
-		setTitle("Press button for \""+DefineKeys.emulatorInputLabels[emulatorInputIndex]+"\"");
+		setTitle("Press button for \""+ListKeys.emulatorInputLabels[emulatorInputIndex]+"\"");
 
 
 		final Button chancelButton = new Button(this) {

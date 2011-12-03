@@ -132,7 +132,7 @@ public class AnalogStick implements IController{
 			int ways = Emulator.getValue(Emulator.WAYS_STICK_KEY);
 			boolean b = Emulator.isInMAME();
 						
-			Emulator.setAnalogData(rx,ry * -1.0f);
+			Emulator.setAnalogData(0,rx,ry * -1.0f);
 			
 	 		float v = ang;
 	 		
@@ -246,7 +246,7 @@ public class AnalogStick implements IController{
 	 	}
 	 	else
 	 	{
-	 		Emulator.setAnalogData(0.0f,0.0f);
+	 		Emulator.setAnalogData(0,0.0f,0.0f);
 	 	     
 	 	    pad_data &= ~UP_VALUE;
 	 	    pad_data &= ~DOWN_VALUE;

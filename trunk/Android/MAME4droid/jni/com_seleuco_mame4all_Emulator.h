@@ -33,19 +33,19 @@ JNIEXPORT void JNICALL Java_com_seleuco_mame4all_Emulator_init
 
 /*
  * Class:     com_seleuco_mame4all_Emulator
- * Method:    pauseEmulation
- * Signature: (Z)V
+ * Method:    setPadData
+ * Signature: (IJ)V
  */
-JNIEXPORT void JNICALL Java_com_seleuco_mame4all_Emulator_pauseEmulation
-  (JNIEnv *, jclass, jboolean);
+JNIEXPORT void JNICALL Java_com_seleuco_mame4all_Emulator_setPadData
+  (JNIEnv *, jclass, jint, jlong);
 
 /*
  * Class:     com_seleuco_mame4all_Emulator
- * Method:    setPadData
- * Signature: (J)V
+ * Method:    setAnalogData
+ * Signature: (IFF)V
  */
-JNIEXPORT void JNICALL Java_com_seleuco_mame4all_Emulator_setPadData
-  (JNIEnv *, jclass, jlong);
+JNIEXPORT void JNICALL Java_com_seleuco_mame4all_Emulator_setAnalogData
+  (JNIEnv *, jclass, jint, jfloat, jfloat);
 
 /*
  * Class:     com_seleuco_mame4all_Emulator
@@ -62,14 +62,6 @@ JNIEXPORT jint JNICALL Java_com_seleuco_mame4all_Emulator_getValue
  */
 JNIEXPORT void JNICALL Java_com_seleuco_mame4all_Emulator_setValue
   (JNIEnv *, jclass, jint, jint);
-
-/*
- * Class:     com_seleuco_mame4all_Emulator
- * Method:    setAnalogData
- * Signature: (FF)V
- */
-JNIEXPORT void JNICALL Java_com_seleuco_mame4all_Emulator_setAnalogData
-  (JNIEnv *, jclass, jfloat, jfloat);
 
 #ifdef __cplusplus
 }
