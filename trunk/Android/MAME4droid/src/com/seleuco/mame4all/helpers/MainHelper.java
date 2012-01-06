@@ -45,7 +45,6 @@ import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Environment;
 import android.view.Display;
-import android.view.Gravity;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.widget.FrameLayout.LayoutParams;
@@ -54,6 +53,7 @@ import com.seleuco.mame4all.Emulator;
 import com.seleuco.mame4all.HelpActivity;
 import com.seleuco.mame4all.MAME4all;
 import com.seleuco.mame4all.R;
+import com.seleuco.mame4all.input.ControlCustomizer;
 import com.seleuco.mame4all.input.InputHandler;
 import com.seleuco.mame4all.prefs.UserPreferences;
 import com.seleuco.mame4all.views.FilterView;
@@ -331,10 +331,16 @@ public class MainHelper {
 		Emulator.setValue(Emulator.ASMCORES_KEY, prefsHelper.isASMCores() ? 1 : 0);
 		Emulator.setValue(Emulator.INFOWARN_KEY, prefsHelper.isShowInfoWarnings() ? 1 : 0);
 		Emulator.setDebug(prefsHelper.isDebugEnabled());
+		Emulator.setValue(Emulator.IDLE_WAIT,prefsHelper.isIdleWait() ? 1 : 0);
 		Emulator.setThreadedSound(prefsHelper.isSoundfThreaded());
 
 		setBorder();
-				
+		
+	    if(prefsHelper.isTiltSensor())
+	    	inputHandler.getTiltSensor().enable();
+	    else
+	    	inputHandler.getTiltSensor().disable();
+					
 		inputHandler.setTrackballSensitivity( prefsHelper.getTrackballSensitivity());
 		inputHandler.setTrackballEnabled(!prefsHelper.isTrackballNoMove());
 				
@@ -342,6 +348,7 @@ public class MainHelper {
 		
 		if(this.getscrOrientation() == Configuration.ORIENTATION_PORTRAIT)
 		{
+				        
 			((IEmuView)emuView).setScaleType(prefsHelper.getPortraitScaleMode());
 			if(filterView!=null)
 			   filterView.setScaleType(mm.getPrefsHelper().getPortraitScaleMode());
@@ -370,8 +377,18 @@ public class MainHelper {
 			   	inputView.setImageDrawable(mm.getResources().getDrawable(R.drawable.back_portrait));				
 			   	inputHandler.readControllerValues(R.raw.controller_portrait);
 			}
+			else
+			{
+				
+			}
 			
-			//Emulator.setEmuSize(prefshelper.isPortraitCropX(), prefshelper.isPortraitCropY());
+			if(ControlCustomizer.isEnabled() )
+			{
+				ControlCustomizer.setEnabled(false);
+				mm.getDialogHelper().setInfoMsg("Control layout customization is only allowed in landscape mode");
+				mm.showDialog(DialogHelper.DIALOG_INFO);
+			}
+			
 		}
 		else
 		{
@@ -390,9 +407,6 @@ public class MainHelper {
 			state = mm.getInputHandler().getInputHandlerState();
 			
 		    inputView.bringToFront();
-		    LayoutParams lp  = (LayoutParams) emuView.getLayoutParams();
-			lp.gravity = Gravity.CENTER;
-			lp.leftMargin = 0;
 			
 			if(state == InputHandler.STATE_SHOWING_NONE)
 			{	
@@ -404,37 +418,25 @@ public class MainHelper {
 			}   
 
 			if(state == InputHandler.STATE_SHOWING_CONTROLLER)
-			{			    	
-			    		
-				int i = prefsHelper.getLandscapeControllerType();
-				
-				if(i==1)										
-				{				   	
-					/*
-					inputView.setImageDrawable(mm.getResources().getDrawable(R.drawable.controller_fs1));
-			    									
-				   	//inputHandler.readControllerValues(R.raw.controller_fs1);
-						
-					lp.gravity = Gravity.CENTER | Gravity.RIGHT;
-					
-					//150 480x320 800x480
-                    //
-					
-					//lp.leftMargin = 220; //TODO calcular
-										
-					lp.leftMargin = (int)((mm.getWindowManager().getDefaultDisplay().getWidth() / 480f) * 140);
-					
-				   	emuView.setLayoutParams(lp);				   	
-				   	emuView.bringToFront();
-				   	*/
-				}
-				else
+			{			    				    		
+				inputView.setImageDrawable(null);
+			   	inputHandler.readControllerValues(R.raw.controller_landscape);			   	    
+								
+				if(ControlCustomizer.isEnabled())
 				{
-					inputView.setImageDrawable(null);
-			   	    inputHandler.readControllerValues(R.raw.controller_landscape);			   	    
-				}
+				   mm.getEmuView().setVisibility(View.INVISIBLE);
+				   mm.getInputView().requestFocus();
+				}   
 			}
-
+			else
+			{
+				if(ControlCustomizer.isEnabled())
+				{
+					ControlCustomizer.setEnabled(false);
+					mm.getDialogHelper().setInfoMsg("Control layout customization is only allowed when touch controller is visible");
+					mm.showDialog(DialogHelper.DIALOG_INFO);
+				}
+			}			
 		}
 		
 		int op = inputHandler.getOpacity();
@@ -449,8 +451,7 @@ public class MainHelper {
 		inputView.invalidate();
 		emuView.invalidate();
 		if(filterView!=null)
-		   filterView.invalidate();
-		//Emulator.ensureScreenDrawed();				
+		   filterView.invalidate();				
 	}
 	
 	public void showWeb(){		

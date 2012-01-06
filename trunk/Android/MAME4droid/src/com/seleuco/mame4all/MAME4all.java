@@ -49,6 +49,7 @@ import com.seleuco.mame4all.helpers.DialogHelper;
 import com.seleuco.mame4all.helpers.MainHelper;
 import com.seleuco.mame4all.helpers.MenuHelper;
 import com.seleuco.mame4all.helpers.PrefsHelper;
+import com.seleuco.mame4all.input.ControlCustomizer;
 import com.seleuco.mame4all.input.InputHandler;
 import com.seleuco.mame4all.input.InputHandlerFactory;
 import com.seleuco.mame4all.views.FilterView;
@@ -196,10 +197,10 @@ public class MAME4all extends Activity {
             int dwb_id = -1;
             
             switch(type){
-	            case 2: dwb_id = R.drawable.scanline_1;break;
-	            case 3: dwb_id = R.drawable.scanline_2;break;
-	            case 4: dwb_id = R.drawable.crt_1;break;
-	            case 5: dwb_id = R.drawable.crt_2;break;
+	            case 2: case 3: dwb_id = R.drawable.scanline_1;break;
+	            case 4: case 5: dwb_id = R.drawable.scanline_2;break;
+	            case 6: case 7: dwb_id = R.drawable.crt_1;break;
+	            case 8: case 9: dwb_id = R.drawable.crt_2;break;
             }	
             
             if(dwb_id!=-1)
@@ -209,7 +210,25 @@ public class MAME4all extends Activity {
 	            Bitmap bmp = BitmapFactory.decodeResource(getResources(),dwb_id);
 	            BitmapDrawable bitmapDrawable = new BitmapDrawable(bmp);
 	            bitmapDrawable.setTileModeXY(Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
-	            bitmapDrawable.setAlpha((int)((type> 3 ? 0.16f : 0.35f) *255));
+	            //bitmapDrawable.setAlpha((int)((type> 3 ? 0.16f : 0.35f) *255));
+	            int alpha = 0;
+	            if(type==2)
+	            	alpha = 130;
+	            else if(type==3)
+	            	alpha = 180;	            
+	            else if(type==4)
+	            	alpha = 100;
+	            else if(type==5)
+	            	alpha = 150;	            
+	            else if(type==6)	            	
+	            	alpha = 50;
+	            else if(type==7)	            	
+	            	alpha = 130;	            
+	            else if(type==8)
+	            	alpha = 50;
+	            else if(type==9)
+	            	alpha = 120;	            
+	            bitmapDrawable.setAlpha(alpha);
 	            filterView.setBackgroundDrawable(bitmapDrawable);
 	
 	            //filterView.setAlpha(type> 3 ? 0.16f : 0.35f);
@@ -217,23 +236,28 @@ public class MAME4all extends Activity {
 	            filterView.setMAME4all(this);
             }
         }
-        
-        mainHelper.updateMAME4all();
-        
+                
         emuView.setOnKeyListener(inputHandler);
         emuView.setOnTouchListener(inputHandler);
                      
-        inputView.setOnTouchListener(inputHandler);	 
+        inputView.setOnTouchListener(inputHandler);
+        inputView.setOnKeyListener(inputHandler);
+        
+        mainHelper.updateMAME4all();
                
-		if(prefsHelper.getROMsDIR()==null)
-		{
-            showDialog(DialogHelper.DIALOG_ROMs_DIR);                      
-		}
-		else
-		{
-			getMainHelper().ensureROMsDir(prefsHelper.getROMsDIR());
-			runMAME4all();	
-		}                 
+        if(!Emulator.isEmulating())
+        {
+			if(prefsHelper.getROMsDIR()==null)
+			{	            
+				if(DialogHelper.savedDialog==DialogHelper.DIALOG_NONE)
+				showDialog(DialogHelper.DIALOG_ROMs_DIR);                      
+			}
+			else
+			{
+				getMainHelper().ensureROMsDir(prefsHelper.getROMsDIR());
+				runMAME4all();	
+			}
+        }
     }
     
     public void runMAME4all(){
@@ -287,7 +311,17 @@ public class MAME4all extends Activity {
 		super.onResume();
 		if(prefsHelper!=null)
 		   prefsHelper.resume();
-		Emulator.resume();
+				
+		if(DialogHelper.savedDialog!=-1)
+			showDialog(DialogHelper.savedDialog);
+		else if(!ControlCustomizer.isEnabled())
+		  Emulator.resume();
+		
+		if(inputHandler!= null)
+		{
+			if(inputHandler.getTiltSensor()!=null)
+			   inputHandler.getTiltSensor().enable();
+		}
 		//System.out.println("OnResume");
 	}
 	
@@ -297,7 +331,19 @@ public class MAME4all extends Activity {
 		super.onPause();
 		if(prefsHelper!=null)
 		   prefsHelper.pause();
-		Emulator.pause();
+		if(!ControlCustomizer.isEnabled())		
+		   Emulator.pause();
+		if(inputHandler!= null)
+		{
+			if(inputHandler.getTiltSensor()!=null)
+			   inputHandler.getTiltSensor().disable();
+		}	
+		
+		if(dialogHelper!=null)
+		{
+			dialogHelper.removeDialogs();
+		}
+				
 		//System.out.println("OnPause");
 	}
 	
@@ -310,7 +356,7 @@ public class MAME4all extends Activity {
 
 	@Override
 	protected void onStop() {
-		Log.d("EMULATOR", "onStop");			
+		Log.d("EMULATOR", "onStop");
 		super.onStop();
 		//System.out.println("OnStop");
 	}
@@ -329,7 +375,6 @@ public class MAME4all extends Activity {
 
 	@Override
 	protected void onPrepareDialog(int id, Dialog dialog) {
-		super.onPrepareDialog(id, dialog);
 		if(dialogHelper!=null)
 		   dialogHelper.prepareDialog(id, dialog);
 	}

@@ -48,6 +48,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String PREF_GLOBAL_SHOW_FPS = "PREF_GLOBAL_SHOW_FPS";
 	final static public String PREF_GLOBAL_SHOW_INFOWARNINGS = "PREF_GLOBAL_SHOW_INFOWARNINGS";	
 	final static public String PREF_GLOBAL_DEBUG = "PREF_GLOBAL_DEBUG";
+	final static public String PREF_GLOBAL_IDLE_WAIT = "PREF_GLOBAL_IDLE_WAIT"; 
 		
 	final static public String PREF_PORTRAIT_SCALING_MODE = "PREF_PORTRAIT_SCALING_MODE_2";
 	final static public String PREF_PORTRAIT_FILTER_TYPE = "PREF_PORTRAIT_FILTER_2";
@@ -62,6 +63,8 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 		
 	final static public String  PREF_DEFINED_KEYS = "PREF_DEFINED_KEYS";
 	
+	final static public String  PREF_DEFINED_CONTROL_LAYOUT = "PREF_DEFINED_CONTROL_LAYOUT";
+	
 	final static public String  PREF_TRACKBALL_SENSITIVITY = "PREF_TRACKBALL_SENSITIVITY";
 	final static public String  PREF_TRACKBALL_NOMOVE = "PREF_TRACKBALL_NOMOVE";
 	final static public String  PREF_ANIMATED_INPUT = "PREF_ANIMATED_INPUT";
@@ -70,6 +73,10 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String  PREF_INPUT_EXTERNAL = "PREF_INPUT_EXTERNAL";
 	final static public String  PREF_ANALOG_DZ = "PREF_ANALOG_DZ";
 	final static public String  PREF_VIBRATE = "PREF_VIBRATE";
+	
+	final static public String  PREF_TILT_SENSOR = "PREF_TILT_SENSOR";
+	final static public String  PREF_TILT_DZ = "PREF_TILT_DZ";
+	final static public String  PREF_TILT_SENSITIVITY = "PREF_TILT_SENSITIVITY";
 	
 	final static public int  PREF_RENDER_NORMAL = 1;
 	final static public int  PREF_RENDER_THREADED = 2;
@@ -146,8 +153,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	public boolean isPortraitTouchController(){
 		return getSharedPreferences().getBoolean(PREF_PORTRAIT_TOUCH_CONTROLLER,true);
 	}
-	
-	
+		
 	public boolean isPortraitBitmapFiltering(){
 		return getSharedPreferences().getBoolean(PREF_PORTRAIT_BITMAP_FILTERING,false);
 	}	
@@ -159,25 +165,6 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	public boolean isLandscapeBitmapFiltering(){
 		return getSharedPreferences().getBoolean(PREF_LANDSCAPE_BITMAP_FILTERING,false);
 	}
-	
-	public int getLandscapeControllerType(){
-		/*
-		return Integer.valueOf(getSharedPreferences().getString(PREF_LANDSCAPE_CONTROLLER_TYPE,"1")).intValue();
-		*/
-		return 2;
-	}
-
-	/*
-	public boolean isPortraitCropX(){
-		//HVGA 480x320 -> No crop
-		Display d = mm.getWindowManager().getDefaultDisplay();
-		boolean def = true;
-		if((d.getHeight()==480 && d.getWidth()==320) || (d.getHeight()==320 && d.getWidth()==480))
-		    def = false;//Esta guarreria la hago por culpa de los tontos que no ven la opcion de crop
-		
-		return getSharedPreferences().getBoolean(PREF_PORTRAIT_CROP_X,def);
-	}
-    */
 	
 	public String getDefinedKeys(){
 		
@@ -202,7 +189,6 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	}
 
 	public int getVideoRenderMode(){
-		//TODO; Poner el modo en funcion de si es honycomb a acelerated!
 		return Integer.valueOf(getSharedPreferences().getString(PREF_GLOBAL_VIDEO_RENDER_MODE,"2")).intValue();	
 	}
 	
@@ -218,6 +204,10 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 		return getSharedPreferences().getBoolean(PREF_GLOBAL_DEBUG,false);
 	}
 
+	public boolean isIdleWait(){
+		return getSharedPreferences().getBoolean(PREF_GLOBAL_IDLE_WAIT,true);
+	}
+	
 	public boolean isAnimatedInput(){
 		return getSharedPreferences().getBoolean(PREF_ANIMATED_INPUT,true);
 	}
@@ -260,4 +250,27 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 		editor.putString(PREF_ROMsDIR, value);
 		editor.commit();
 	}
+	
+	public String getDefinedControlLayout(){
+		return getSharedPreferences().getString(PREF_DEFINED_CONTROL_LAYOUT,null);
+	}
+	
+	public void setDefinedControlLayout(String value){
+		SharedPreferences.Editor editor =  getSharedPreferences().edit();
+		editor.putString(PREF_DEFINED_CONTROL_LAYOUT, value);
+		editor.commit();
+	}
+	
+	public boolean isTiltSensor(){
+		return getSharedPreferences().getBoolean(PREF_TILT_SENSOR,false);
+	}
+	
+	public int getTiltSensitivity(){	
+		return getSharedPreferences().getInt(PREF_TILT_SENSITIVITY,6);
+	}
+	
+	public int getTiltDZ(){
+		return Integer.valueOf(getSharedPreferences().getString(PREF_TILT_DZ,"3")).intValue();	
+	}		
+	
 }

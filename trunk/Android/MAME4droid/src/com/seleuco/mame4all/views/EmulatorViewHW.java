@@ -123,6 +123,9 @@ public class EmulatorViewHW extends View implements IEmuView{
 		*/
 
 		canvas.drawBitmap(Emulator.getScreenBuffPx(), 0, Emulator.getEmulatedWidth(), 0, 0,Emulator.getEmulatedWidth(), Emulator.getEmulatedHeight(), false, null);
+		
+					
+		//canvas.drawBitmap(Emulator.getEmuBitmap(), 0, 0, Emulator.getEmuPaint());
 			
 		if(Emulator.isDebug())
 		{

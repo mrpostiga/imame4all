@@ -243,12 +243,13 @@ public class GLRenderer implements Renderer {
             shortBuffer = buf.asShortBuffer();
     	}
     	
-    	if(mTex==-1 || smooth!=isSmooth()) mTex = loadTexture(gl);  
+    	if(mTex==-1 || smooth!=isSmooth()) 
+    		mTex = loadTexture(gl);  
     	
         gl.glActiveTexture(mTex);
         gl.glClientActiveTexture(mTex);
 
-        shortBuffer.position(0);
+        shortBuffer.rewind();
 
         gl.glBindTexture(GL10.GL_TEXTURE_2D, mTex);
         
@@ -258,7 +259,7 @@ public class GLRenderer implements Renderer {
         	
         	gl.glTexImage2D(GL10.GL_TEXTURE_2D, 0,  GL10.GL_RGB,
                 Emulator.getEmulatedWidth() > 512 ? 1024 : 512,512, 0,  GL10.GL_RGB,
-                GL10.GL_UNSIGNED_SHORT_5_6_5, shortBuffer);
+                GL10.GL_UNSIGNED_SHORT_5_6_5 , shortBuffer);
             textureInit = true;
         }
        
@@ -270,9 +271,8 @@ public class GLRenderer implements Renderer {
         
         int width = Emulator.getEmulatedWidth();
         int height = Emulator.getEmulatedHeight();
-        
-		gl.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, 0, 0, width, height, 
-				GL10.GL_RGB, GL10.GL_UNSIGNED_SHORT_5_6_5, shortBuffer);
+                
+		gl.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, 0, 0, width, height, GL10.GL_RGB, GL10.GL_UNSIGNED_SHORT_5_6_5, shortBuffer);
         
 		if((gl instanceof GL11Ext) && !force10)
 		{

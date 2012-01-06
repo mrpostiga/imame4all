@@ -51,6 +51,7 @@ public class InputHandlerExt extends InputHandler {
 		super(value);
 	}
 	
+	
 	@Override
 	protected boolean handleTouchController(MotionEvent event) {
 
@@ -96,11 +97,14 @@ public class InputHandlerExt extends InputHandler {
 				int id = actionPointerId;
 				if(id>touchstates.length)continue;//strange but i have this error on my development console
 				touchstates[id] = true;
+				//newtouches[id] = 0;
 				
 				for (int j = 0; j < values.size(); j++) {
 					InputValue iv = values.get(j);
 										
 					if (iv.getRect().contains(x, y)) {
+						
+						//Log.d("touch","HIT "+iv.getType()+" "+iv.getRect()+ " "+iv.getOrigRect());
 						
 						if (iv.getType() == TYPE_BUTTON_RECT || iv.getType() == TYPE_STICK_RECT) {
 						
@@ -112,7 +116,7 @@ public class InputHandlerExt extends InputHandler {
 															
 								if(iv.getType() == TYPE_BUTTON_RECT)
 								{	
-								     newtouches[id] = getButtonValue(iv.getValue(),true);
+								     newtouches[id] |= getButtonValue(iv.getValue(),true);
 									 if(iv.getValue()==BTN_L2)
 									 { 
 									    if(!Emulator.isInMAME())
@@ -125,7 +129,8 @@ public class InputHandlerExt extends InputHandler {
 										 mm.showDialog(DialogHelper.DIALOG_OPTIONS);
 									 }
 								}
-								else if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL)
+								else if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL
+										&& !(TiltSensor.isEnabled() && Emulator.isInMAME()))
 								{
 									 newtouches[id] = getStickValue(iv.getValue());
 								}
@@ -135,8 +140,9 @@ public class InputHandlerExt extends InputHandler {
 					            
 								pad_data[0] |= newtouches[id];
 							}
-							break;
-						} else if (iv.getType() == TYPE_SWITCH) {
+							if(Emulator.getValue(Emulator.BPLUSX_KEY)==1 && (iv.getValue()==BTN_B || iv.getValue()==BTN_X))
+							   break;
+						}/* else if (iv.getType() == TYPE_SWITCH) {
 							if (event.getAction() == MotionEvent.ACTION_DOWN) {
 																
 								for (int ii = 0; ii < 10; ii++) 
@@ -148,7 +154,7 @@ public class InputHandlerExt extends InputHandler {
 								mm.getMainHelper().updateMAME4all();
 								return true;
 							}
-						}
+						}*/
 					}
 				}	                	            
 			} 

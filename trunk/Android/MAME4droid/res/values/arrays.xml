@@ -3,17 +3,25 @@
 	
 	<string-array name="pref_filter_options">
 	    <item>None</item>
-		<item>Scanline 1</item>
-		<item>Scanline 2</item>	
-		<item>CRT 1</item>
-		<item>CRT 2</item>		
+		<item>Scanline 1 Low</item>
+	    <item>Scanline 1 High</item>
+		<item>Scanline 2 Low</item>	
+		<item>Scanline 2 High</item>
+		<item>CRT 1 Low</item>
+		<item>CRT 1 High</item>
+		<item>CRT 2 Low</item>
+		<item>CRT 2 High</item>		
 	</string-array>
 	<string-array name="pref_filter_values">
 		<item>1</item>
 		<item>2</item>
 		<item>3</item>
 		<item>4</item>
-		<item>5</item>													
+		<item>5</item>
+		<item>6</item>
+		<item>7</item>
+		<item>8</item>
+		<item>9</item>														
 	</string-array>
 
 	<string-array name="pref_scaleMode_options">

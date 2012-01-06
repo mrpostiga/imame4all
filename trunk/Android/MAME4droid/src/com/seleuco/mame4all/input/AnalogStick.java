@@ -112,10 +112,8 @@ public class AnalogStick implements IController{
 		 calculateStickPosition(ptCenter);
 	}
 	
-	 protected int updateAnalog(int pad_data)
-	 {
-
-	     
+	protected int updateAnalog(int pad_data)
+	{	     
 		 switch(mm.getPrefsHelper().getAnalogDZ())
 	     {
 	       case 0: deadZone = 0.01f;break;

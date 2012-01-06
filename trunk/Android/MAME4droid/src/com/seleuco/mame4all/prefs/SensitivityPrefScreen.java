@@ -40,7 +40,7 @@ import android.widget.TextView;
 
 import com.seleuco.mame4all.R;
 
-public class TrackBallPrefScreen extends DialogPreference implements
+public class SensitivityPrefScreen extends DialogPreference implements
 		SeekBar.OnSeekBarChangeListener {
 	private SeekBar seekBar;
 	private TextView valueView;
@@ -48,7 +48,7 @@ public class TrackBallPrefScreen extends DialogPreference implements
 	private int oldValue, newValue;
 
 	
-	public TrackBallPrefScreen(Context context, AttributeSet attrs) {
+	public SensitivityPrefScreen(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		
 		//minValue = attrs.getAttributeIntValue("", "minValue", 1);

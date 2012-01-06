@@ -33,12 +33,17 @@ package com.seleuco.mame4all.helpers;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.view.View;
 
 import com.seleuco.mame4all.Emulator;
 import com.seleuco.mame4all.MAME4all;
+import com.seleuco.mame4all.input.ControlCustomizer;
 
 public class DialogHelper {
 	
+	public static int savedDialog = DialogHelper.DIALOG_NONE;
+
+	public final static int DIALOG_NONE = -1;
 	public final static int DIALOG_EXIT = 1;
 	public final static int DIALOG_ERROR_WRITING = 2;
 	public final static int DIALOG_INFO = 3;
@@ -48,18 +53,19 @@ public class DialogHelper {
 	public final static int DIALOG_FULLSCREEN = 7;
 	public final static int DIALOG_LOAD_FILE_EXPLORER = 8;
 	public final static int DIALOG_ROMs_DIR = 9;
+	public final static int DIALOG_FINISH_CUSTOM_LAYOUT = 10;
 	
 	protected MAME4all mm = null;
 	
-	protected String errorMsg;
-	protected String infoMsg;
+	static protected String errorMsg;
+	static protected String infoMsg;
 	
 	public void setErrorMsg(String errorMsg) {
-		this.errorMsg = errorMsg;
+		DialogHelper.errorMsg = errorMsg;
 	}
 
 	public void setInfoMsg(String infoMsg) {
-		this.infoMsg = infoMsg;
+		DialogHelper.infoMsg = infoMsg;
 	}
 		
 	public DialogHelper(MAME4all value){
@@ -76,22 +82,55 @@ public class DialogHelper {
 	    Dialog dialog;
 	    AlertDialog.Builder builder = new AlertDialog.Builder(mm);
 	    switch(id) {
+	    case DIALOG_FINISH_CUSTOM_LAYOUT:
+	    	
+	    	builder.setMessage("Do you want to save changes?")
+	    	       .setCancelable(false)
+	    	       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+	    	           public void onClick(DialogInterface dialog, int id) {
+	    	        	   DialogHelper.savedDialog = DIALOG_NONE;  
+	    	        	   mm.removeDialog(DIALOG_FINISH_CUSTOM_LAYOUT);
+	    				   ControlCustomizer.setEnabled(false);
+	    				   mm.getInputHandler().getControlCustomizer().saveDefinedControlLayout();
+	    				   mm.getEmuView().setVisibility(View.VISIBLE);
+	    				   mm.getEmuView().requestFocus();
+	    				   Emulator.resume();
+	    				   mm.getInputView().invalidate();	    				   
+	    	           }
+	    	       })
+	    	       .setNegativeButton("No", new DialogInterface.OnClickListener() {
+	    	           public void onClick(DialogInterface dialog, int id) {
+	    	        	   DialogHelper.savedDialog = DIALOG_NONE;  
+	    	        	   mm.removeDialog(DIALOG_FINISH_CUSTOM_LAYOUT);
+	    				   ControlCustomizer.setEnabled(false);
+	    				   mm.getInputHandler().getControlCustomizer().discardDefinedControlLayout();
+	    				   mm.getEmuView().setVisibility(View.VISIBLE);
+	    				   mm.getEmuView().requestFocus();
+	    				   Emulator.resume();
+	    				   mm.getInputView().invalidate();
+	    	           }
+	    	       });
+	    	dialog = builder.create();
+	        break;
 	    case DIALOG_ROMs_DIR:
 	    	
 	    	builder.setMessage("Do you want to use default ROMs Path? (recomended)")
 	    	       .setCancelable(false)
 	    	       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 	    	           public void onClick(DialogInterface dialog, int id) {
+	    	        	   DialogHelper.savedDialog = DIALOG_NONE;
+	    	        	   mm.removeDialog(DIALOG_ROMs_DIR);
 	    	        	   if(mm.getMainHelper().ensureROMsDir(mm.getMainHelper().getDefaultROMsDIR()))
 	    	        	   {	    	        	   
 	    	        	      mm.getPrefsHelper().setROMsDIR(mm.getMainHelper().getDefaultROMsDIR());
 	    	        	      mm.runMAME4all();
-	    	        	   }                              
+	    	        	   }	    	        	   
 	    	           }
 	    	       })
 	    	       .setNegativeButton("No", new DialogInterface.OnClickListener() {
-	    	           public void onClick(DialogInterface dialog, int id) {	    	        	   
-	    	               dialog.cancel();
+	    	           public void onClick(DialogInterface dialog, int id) {
+	    	        	   DialogHelper.savedDialog = DIALOG_NONE;	    	        	   
+	    	        	   mm.removeDialog(DIALOG_ROMs_DIR);
 	    	               mm.showDialog(DialogHelper.DIALOG_LOAD_FILE_EXPLORER);
 	    	           }
 	    	       });
@@ -120,6 +159,8 @@ public class DialogHelper {
 	    	       .setPositiveButton("OK", new DialogInterface.OnClickListener() {
 	    	           public void onClick(DialogInterface dialog, int id) {
 	    	                //System.exit(0);
+	    	               DialogHelper.savedDialog = DIALOG_NONE;
+	    	               mm.removeDialog(DIALOG_ERROR_WRITING);
 	    	        	   mm.showDialog(DialogHelper.DIALOG_LOAD_FILE_EXPLORER);
 	    	           }
 	    	       });
@@ -131,6 +172,9 @@ public class DialogHelper {
 	    	       .setCancelable(false)
 	    	       .setPositiveButton("OK", new DialogInterface.OnClickListener() {
 	    	           public void onClick(DialogInterface dialog, int id) {
+	    	                DialogHelper.savedDialog = DIALOG_NONE;
+	    	                Emulator.resume();
+	    	                mm.removeDialog(DIALOG_INFO);
 	    	           }
 	    	       });
 
@@ -141,6 +185,7 @@ public class DialogHelper {
 	    	       .setCancelable(false)
 	    	       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 	    	           public void onClick(DialogInterface dialog, int id) {
+	    	                DialogHelper.savedDialog = DIALOG_NONE;
 	    	                Emulator.resume();
 	    		        	Emulator.setValue(Emulator.EXIT_GAME_KEY, 1);		    	
 	    			    	try {
@@ -149,13 +194,14 @@ public class DialogHelper {
 	    						e.printStackTrace();
 	    					}
 	    					Emulator.setValue(Emulator.EXIT_GAME_KEY, 0);	    	                
-	    	                //dialog.dismiss();
+	    					mm.removeDialog(DIALOG_EXIT_GAME);
 	    	           }
 	    	       })
 	    	       .setNegativeButton("No", new DialogInterface.OnClickListener() {
 	    	           public void onClick(DialogInterface dialog, int id) {
-	    	        	   Emulator.resume(); 
-	    	        	   dialog.cancel();
+	    	        	   Emulator.resume();
+	    	        	   DialogHelper.savedDialog = DIALOG_NONE;
+	    	        	   mm.removeDialog(DIALOG_EXIT_GAME);
 	    	           }
 	    	       });
 	    	dialog = builder.create();
@@ -163,16 +209,29 @@ public class DialogHelper {
 	    case DIALOG_OPTIONS:	    	
 	    	final CharSequence[] items = {"Help","Settings", "Support", "Cancel"};
 	    	builder.setTitle("Choose an option from the menu. Press cancel to go back");
+	    	builder.setCancelable(true);
 	    	builder.setItems(items, new DialogInterface.OnClickListener() {
 	    	    public void onClick(DialogInterface dialog, int item) {
 	    	        switch (item){
 	    	          case 0: mm.getMainHelper().showHelp();break;
 	    	          case 1: mm.getMainHelper().showSettings();break;
-	    	          case 2: mm.showDialog(DialogHelper.DIALOG_THANKS);;break;
-	    	          case  3: Emulator.resume();break;
+	    	          case 2: mm.showDialog(DialogHelper.DIALOG_THANKS);break;
+	    	          case 3: 
+	    	        	  Emulator.resume();
+	    	        	  break;
 	    	        }
-	    	    }
+  	        	    DialogHelper.savedDialog = DIALOG_NONE;
+  	        	    mm.removeDialog(DIALOG_OPTIONS);
+	    	    }	    	 
 	    	});
+	    	builder.setOnCancelListener(new  DialogInterface.OnCancelListener() {				
+				@Override
+				public void onCancel(DialogInterface dialog) {
+  	        	    DialogHelper.savedDialog = DIALOG_NONE;
+  	        	    Emulator.resume();
+  	        	    mm.removeDialog(DIALOG_OPTIONS);
+				}
+			});
 	    	dialog = builder.create();
 	        break;
 	    case DIALOG_THANKS:
@@ -180,7 +239,9 @@ public class DialogHelper {
 	    	       .setCancelable(false)
 	    	       .setPositiveButton("OK", new DialogInterface.OnClickListener() {
 	    	           public void onClick(DialogInterface dialog, int id) {
+	     	        	   DialogHelper.savedDialog = DIALOG_NONE;
 	    	        	   mm.getMainHelper().showWeb();
+	     	        	   mm.removeDialog(DIALOG_THANKS);
 	    	           }
 	    	       });
 
@@ -189,6 +250,7 @@ public class DialogHelper {
 	    case DIALOG_FULLSCREEN:	    	
 	    	final CharSequence[] items2 = {"Options","Exit","Cancel"};
 	    	builder.setTitle("Choose an option from the menu. Press cancel to go back");
+	    	builder.setCancelable(true);
 	    	builder.setItems(items2, new DialogInterface.OnClickListener() {
 	    	    public void onClick(DialogInterface dialog, int item) {
 	    	        switch (item){
@@ -201,13 +263,28 @@ public class DialogHelper {
                         break;
 	    	          case 2: Emulator.resume();break;
 	    	        }
+	    	        DialogHelper.savedDialog = DIALOG_NONE;
+	    	        mm.removeDialog(DIALOG_FULLSCREEN);
 	    	    }
 	    	});
+	    	builder.setOnCancelListener(new  DialogInterface.OnCancelListener() {				
+				@Override
+				public void onCancel(DialogInterface dialog) {
+  	        	    DialogHelper.savedDialog = DIALOG_NONE;
+  	        	    Emulator.resume();
+  	        	    mm.removeDialog(DIALOG_FULLSCREEN);
+				}
+			});
 	    	dialog = builder.create();
 	        break;	         
 	    default:
 	        dialog = null;
 	    }
+	    /*
+	    if(dialog!=null)
+	    {
+	    	dialog.setCanceledOnTouchOutside(false);
+	    }*/
 	    return dialog;
 
 	}
@@ -217,23 +294,54 @@ public class DialogHelper {
 		if(id==DIALOG_ERROR_WRITING)
 		{
 			((AlertDialog)dialog).setMessage(errorMsg);
+			DialogHelper.savedDialog = DIALOG_ERROR_WRITING;
 		}
 		else if(id==DIALOG_INFO)
 		{
 			((AlertDialog)dialog).setMessage(infoMsg);
-		}	
+	    	Emulator.pause();
+	        DialogHelper.savedDialog = DIALOG_INFO;
+		}
+	    else if(id==DIALOG_THANKS)
+		{
+	    	Emulator.pause();
+	        DialogHelper.savedDialog = DIALOG_THANKS;
+		}		
 	    else if(id==DIALOG_EXIT_GAME)
 		{
 	    	Emulator.pause();
+	        DialogHelper.savedDialog = DIALOG_EXIT_GAME;
 		}
 	    else if(id==DIALOG_OPTIONS)
 		{
-	    	 Emulator.pause();
+	    	Emulator.pause();
+	    	DialogHelper.savedDialog = DIALOG_OPTIONS;
 		}
 	    else if(id==DIALOG_FULLSCREEN)
 		{
-	    	 Emulator.pause();
+	    	Emulator.pause();
+	    	DialogHelper.savedDialog = DIALOG_FULLSCREEN;
 		}
+	    else if(id==DIALOG_ROMs_DIR)
+		{
+	    	DialogHelper.savedDialog = DIALOG_ROMs_DIR;
+		}
+	    else if(id==DIALOG_LOAD_FILE_EXPLORER)
+		{
+	    	DialogHelper.savedDialog = DIALOG_LOAD_FILE_EXPLORER;
+		}
+	    else if(id==DIALOG_FINISH_CUSTOM_LAYOUT)
+		{
+	    	DialogHelper.savedDialog = DIALOG_FINISH_CUSTOM_LAYOUT;
+		}		
 	}
         
+	public void removeDialogs() {
+		if(savedDialog==DIALOG_FINISH_CUSTOM_LAYOUT)
+		{
+		    mm.removeDialog(DIALOG_FINISH_CUSTOM_LAYOUT);
+			DialogHelper.savedDialog = DIALOG_NONE;  
+		}
+	}
+	
 }
