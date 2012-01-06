@@ -1,5 +1,5 @@
 =================================================================
-MAME4droid 1.4 (November 27, 2011) by David Valdeita (Seleuco)
+MAME4droid 1.5.2 (January 05, 2012) by David Valdeita (Seleuco)
 =================================================================
 
 
@@ -44,8 +44,10 @@ Smooth image.
 Overlay Filters, scalines, CRT..
 Digital or Analog touch selectable.
 Animated touch stick or DPAD.
+Button Layout customizable control. 
 iON's iCade and iCP (as iCade mode) external controllers supported. 
 Wiimote support using WiiCrotroller Market app.
+Tilt Sensor as left/right.
 Local multiplayer.
 1 to 6 buttons optionally shown.
 Options for video aspect ratio, scaling, rotate.
@@ -163,15 +165,17 @@ GLOBAL OPTIONS
 
 -Debug Mode. Enable debug mode. Only for developers.
 
-.Change ROMs path: Change current ROMs path. You need to restart app. You must move roms from older folder to the new one also.
+-Change ROMs path: Change current ROMs path. You need to restart app. You must move roms from older folder to the new one also.
+
+-Save battery. Do process sleep on idle times. It depends on internal timer device resolution. Disable if you get jitter. 
 
 -Define Keys. Let you define or map the HW keys to emulator controls. (Xperia Play and any other devices with physical keyboards users should configure their buttons or keys here)
 
 -Restore Keys. Restore key mappings to defaults.
 
--Trackball sensitivity: Set trackball persistance.
+-Customize touch layout: Select to customize landscape touch control layout. You should press 'back' when you finish.
 
--Trackball fire only: Disable trackball movement.
+-Default touch layout. Restore landscape control layout to default values.
 
 -Animated. Animates ON/OFF DPad/Stick. Disable to for better performance.
 
@@ -191,7 +195,17 @@ GLOBAL OPTIONS
 
    * Default. Select this value to use an external keyboard or devices based on keyboard IMES like WiiController.
    * iCade. Select this value to use iON's iCade controller. You should be bluetooth paired before.
-   * iCP. Select this value to use ICP layout. iCP should be configured on iCade mode. 
+   * iCP. Select this value to use ICP layout. iCP should be configured on iCade mode.
+   
+-Tilt sensor. Enable to use tilt sensor as left/right.
+
+-Tilt sensor dead zone.  Select the deadzone amount on tilt sensor.
+
+-Tilt sensor sensitivity: Set tilt sensor sensitivity.  
+
+-Trackball sensitivity: Set trackball persistance.
+
+-Trackball fire only: Disable trackball movement.
 
 -Scaling Mode:  
      
@@ -368,6 +382,12 @@ PORT CREDITS
 
 
 DEVELOPMENT
+January 05,2012:
+- Version 1.5.2 Added new battery save option (hacks). Fixed some dialogs issues. Improve ICS support.
+December 30,2011:
+- Version 1.5.1 fixed dpad/coin button portrait responsiveness, fixed tilted games using gl video render.
+December 18,2011:
+- Version 1.5 added new landscape customizable button layout control, added tilt sensor as left/right.
 November 27, 2011:
 - Version 1.4 added local multiplayer (using external IME app as Wiimote Controller or equivalent), added option to change default 
 rom path, fixed thread being suspended when emulator paused.

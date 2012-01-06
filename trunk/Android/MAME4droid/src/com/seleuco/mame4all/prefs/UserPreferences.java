@@ -44,6 +44,7 @@ import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 
 import com.seleuco.mame4all.helpers.PrefsHelper;
+import com.seleuco.mame4all.input.ControlCustomizer;
 import com.seleuco.mame4all.input.InputHandler;
 import com.seleuco.mame4all.R;
 
@@ -59,6 +60,7 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
     protected ListPreference mPrefControllerType;
     protected ListPreference mPrefExtInput;
     protected ListPreference mPrefAnalogDZ;
+    protected ListPreference mPrefTiltDZ;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +80,7 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
         mPrefControllerType = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_CONTROLLER_TYPE);
         mPrefExtInput = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_INPUT_EXTERNAL);
         mPrefAnalogDZ = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_ANALOG_DZ);        
+        mPrefTiltDZ = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_TILT_DZ);
 	}
 	
 	  @Override
@@ -94,7 +97,8 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	        mPrefControllerType.setSummary("Current value is '" + mPrefControllerType.getEntry()+"'");
 	        mPrefExtInput.setSummary("Current value is '" + mPrefExtInput.getEntry()+"'");
 	        mPrefAnalogDZ.setSummary("Current value is '" + mPrefAnalogDZ.getEntry()+"'");
-	        	        
+	        mPrefTiltDZ.setSummary("Current value is '" + mPrefTiltDZ.getEntry()+"'");
+	        
 	        // Set up a listener whenever a key changes            
 	        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
 	    }
@@ -145,6 +149,10 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	        else if(key.equals(PrefsHelper.PREF_ANALOG_DZ))
 	        {	
 	        	mPrefAnalogDZ.setSummary("Current value is '" + mPrefAnalogDZ.getEntry()+"'"); 
+	        }
+	        else if(key.equals(PrefsHelper.PREF_TILT_DZ))
+	        {	
+	        	mPrefTiltDZ.setSummary("Current value is '" + mPrefTiltDZ.getEntry()+"'"); 
 	        }
 	    }
 
@@ -205,7 +213,30 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 			    	Dialog dialog = builder.create();
 			    	dialog.show();
 			}
-			
+			else if (pref.getKey().equals("customControlLayout")) {
+				ControlCustomizer.setEnabled(true);
+				finish();
+			}
+			else if (pref.getKey().equals("defaultControlLayout")) {
+
+				 AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			    	builder.setMessage("Are you sure to restore?")
+		    	       .setCancelable(false)
+		    	       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+		    	           public void onClick(DialogInterface dialog, int id) {
+		    					SharedPreferences.Editor editor =  settings.edit();
+		    					editor.putString(PrefsHelper.PREF_DEFINED_CONTROL_LAYOUT, null);
+		    					editor.commit();
+		    	           }
+		    	       })
+		    	       .setNegativeButton("No", new DialogInterface.OnClickListener() {
+		    	           public void onClick(DialogInterface dialog, int id) {
+		    	                dialog.cancel();
+		    	           }
+		    	       });
+			    	Dialog dialog = builder.create();
+			    	dialog.show();
+			}			
 			return super.onPreferenceTreeClick(preferenceScreen, pref);
 		}
 	    

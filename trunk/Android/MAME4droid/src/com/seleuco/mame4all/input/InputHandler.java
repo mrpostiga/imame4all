@@ -56,8 +56,18 @@ import com.seleuco.mame4all.helpers.PrefsHelper;
 
 public class InputHandler implements OnTouchListener, OnKeyListener, IController{
 	
-	AnalogStick analogStick = new AnalogStick();
+	protected AnalogStick analogStick = new AnalogStick();
+	protected  TiltSensor tiltSensor = new TiltSensor();
+	protected ControlCustomizer controlCustomizer = new ControlCustomizer();
 	
+	public TiltSensor getTiltSensor() {
+		return tiltSensor;
+	}
+	
+	public ControlCustomizer getControlCustomizer() {
+		return controlCustomizer;
+	}
+
 	protected static final int[] emulatorInputValues = {
 		UP_VALUE,
 		DOWN_VALUE,
@@ -151,8 +161,10 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 			
 	public static int[] keyMapping = new int[emulatorInputValues.length * 4];
 	
-	protected float dx;
-	protected float dy;
+	protected int ax = 0;
+	protected int ay = 0;
+	protected float dx = 1;
+	protected float dy = 1;
 				
 	protected ArrayList<InputValue> values = new ArrayList<InputValue>();
 	
@@ -251,6 +263,8 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
     	}
 		
 		analogStick.setMAME4all(mm);
+		tiltSensor.setMAME4all(mm);
+		controlCustomizer.setMAME4all(mm);
 	}
 	
 	public int setInputHandlerState(int value){
@@ -261,13 +275,8 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		return state;
 	}
 	
-	public void changeState(){
-		
-						                  
-		boolean isTouchController = mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_PORTRAIT ?
-				                    mm.getPrefsHelper().isPortraitTouchController():
-				                    mm.getPrefsHelper().isLandscapeTouchController();
-		
+	public void changeState()
+	{
 	    if(state == STATE_SHOWING_CONTROLLER)
 	    {				    	
 	    	for(int i=0;i<4;i++)
@@ -280,8 +289,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	    }
 	    else
 	    {
-	    	if(isTouchController)
-	    	    state = STATE_SHOWING_CONTROLLER;
+	    	state = STATE_SHOWING_CONTROLLER;
 	    }	    	    	
 	}
 	
@@ -293,7 +301,9 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		this.trackballEnabled = trackballEnabled;
 	}
 	
-	public void setFixFactor(float dx, float dy){
+	public void setFixFactor(int ax, int ay, float dx, float dy){
+		this.ax = ax;
+		this.ay = ay;
 		this.dx = dx;
 		this.dy = dy;
 		fixControllerCoords(values);
@@ -345,6 +355,15 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 			
 	public boolean onKey(View v, int keyCode, KeyEvent event) {
 		 //Log.d("TECLA", "onKeyDown=" + keyCode + " " + event.getAction() + " " + event.getDisplayLabel() + " " + event.getUnicodeChar() + " " + event.getNumber());
+		
+		 if(ControlCustomizer.isEnabled())
+		 {
+			 if(keyCode == KeyEvent.KEYCODE_BACK)
+			 {	 
+				 mm.showDialog(DialogHelper.DIALOG_FINISH_CUSTOM_LAYOUT);
+			 }	 
+			 return true;
+		 }
           
 		 if(mm.getPrefsHelper().getInputExternal() != PrefsHelper.PREF_INPUT_DEFAULT)
 		 {	 
@@ -566,7 +585,8 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 									 mm.showDialog(DialogHelper.DIALOG_OPTIONS);
 								}
 							}   
-							else if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL)
+							else if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL
+									&& !(TiltSensor.isEnabled() && Emulator.isInMAME()))
 							{	
 							   newtouch = getStickValue(iv.getValue());
 							}   
@@ -577,6 +597,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 						}
 						break;
 					} 
+					/*
                    else if (iv.getType() == TYPE_SWITCH) {
 						if (event.getAction() == MotionEvent.ACTION_DOWN) {
 							touchstate = false;
@@ -586,6 +607,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 							return true;
 						}
 					}
+					*/
 				}
 			}			
 		}
@@ -606,17 +628,23 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	
 	public boolean onTouch(View v, MotionEvent event) {
 		
-		//System.out.println(event.getRawX()+" "+event.getX()+" "+event.getRawY()+" "+event.getY());
+		//Log.d("touch",event.getRawX()+" "+event.getX()+" "+event.getRawY()+" "+event.getY());
 		
         if(v == mm.getInputView())
 		{
-		    if(state == STATE_SHOWING_CONTROLLER)
+		    if(ControlCustomizer.isEnabled())
 		    {	
-		    	if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL)
-		    		pad_data[0] = analogStick.handleMotion(event, pad_data[0]); 	 		    	
-		    	return handleTouchController(event);
+		    	controlCustomizer.handleMotion(event);
+		    	return true;
 		    }
-		    return false;
+        	/*if(state == STATE_SHOWING_CONTROLLER)
+		    {*/	
+		    	if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL && !(TiltSensor.isEnabled() && Emulator.isInMAME()))
+		    		pad_data[0] = analogStick.handleMotion(event, pad_data[0]); 	 		    	
+		    	handleTouchController(event);
+		    	return true;
+		    /*}*/
+		    //return false;
 		}
         else
         {
@@ -694,25 +722,11 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 
 		if (values != null) {
 			for (int i = 0; i < values.size(); i++) {
-
-				Rect r = values.get(i).newFixedRect();				
-				if (r != null) {
-					/*
-					if(mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_PORTRAIT)
-					{
-						r.top -= 240;
-					    r.bottom -= 240;
-					}
-					*/
-					r.right = (int) (r.right * dx);
-					r.left = (int) (r.left * dx);
-					r.top = (int) (r.top * dy);
-					r.bottom = (int) (r.bottom * dy);
-					//values.get(i).setRect(r);
-				}
+				
+				values.get(i).setFixData(dx, dy, ax, ay);
 				
 				if(values.get(i).getType() == TYPE_ANALOG_RECT)
-				   analogStick.setStickArea(r);
+				   analogStick.setStickArea(values.get(i).getRect());
 			}
 		}
 	}
@@ -740,6 +754,8 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	public void readControllerValues(int v){
 		readInputValues(v,values);
 		fixControllerCoords(values);
+		if(controlCustomizer!=null)
+		   controlCustomizer.readDefinedControlLayout();
 	}
 	
 	protected void readInputValues(int id, ArrayList<InputValue> values)
@@ -752,7 +768,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	     InputValue iv = null;
 	     values.clear();
 	     
-	     int i=0;
+	     //int i=0;
 	     try{
 		     String s = br.readLine();
 		     while(s!=null)
@@ -774,7 +790,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		    	 		    
                     //values.
 		    		
-		    	    s = br.readLine();i++;		    	    
+		    	    s = br.readLine();//i++;		    	    
 		    	    if(j!=0)
 		    	    {			    	       				    	    	
 		    	       iv = new InputValue(data,mm);				    	    

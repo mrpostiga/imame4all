@@ -29,6 +29,7 @@
 //TODO
 int  global_fps = 1;
 int  global_showinfo = 1;
+int  global_idle_wait = 0;
 
 int emulated_width;
 int emulated_height;
@@ -166,7 +167,9 @@ void setMyValue(int key,int value){
 	    case 8:
 	    	global_showinfo = value;break;
 	    case 9:
-	 	   m4all_exitPause = value;break;
+	 	    m4all_exitPause = value;break;
+	    case 10:
+	    	global_idle_wait = value;break;
 	    case 20:
 	        m4all_HiSpecs = value;
 	}
@@ -277,9 +280,10 @@ void gp2x_sound_volume(int l, int r)
 
 void gp2x_timer_delay(unsigned long ticks)
 {
-	unsigned long long ini=gp2x_timer_read();
+	//unsigned long long ini=gp2x_timer_read();
 	//printf("ini %ld %ld %d\n",gp2x_timer_read(),ini,(gp2x_timer_read()-ini));
-	while (gp2x_timer_read()-ini<ticks){/*nope*/};
+	//while (gp2x_timer_read()-ini<ticks){/*nope*/};
+	usleep(ticks*1000UL);
 }
 
 
@@ -719,8 +723,7 @@ void* threaded_sound_play(void* args)
 			__android_log_print(ANDROID_LOG_DEBUG, "MAME4all.so", "dequeue:%d ",len);
 			//dumpSound_callback(buf,len);
 		}
-		else
-			sched_yield();
+		//else sched_yield();
 	}
 }
 

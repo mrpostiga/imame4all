@@ -236,6 +236,9 @@ public class FileExplorer {
 						if(res_dir.startsWith("//"))
 							res_dir = res_dir.substring(1);
 						
+						DialogHelper.savedDialog = DialogHelper.DIALOG_NONE;
+						mm.removeDialog(DialogHelper.DIALOG_LOAD_FILE_EXPLORER);
+						
 						if (mm.getMainHelper().ensureROMsDir(res_dir)) {
 							mm.getPrefsHelper().setROMsDIR(res_dir);
 							mm.runMAME4all();
@@ -245,6 +248,7 @@ public class FileExplorer {
 					}
 				});
 
+		builder.setCancelable(false);
 		dialog = builder.show();
 		return dialog;
 	}

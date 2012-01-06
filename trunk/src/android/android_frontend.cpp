@@ -88,7 +88,6 @@ static void gp2x_intro_screen(void) {
 	{
 		load_bmp_8bpp(gp2x_screen8,gp2xsplash_bmp);
 		gp2x_video_flip();
-
 		int ExKey=gp2x_joystick_read(0);
 		if(ExKey!=0)break;
 		gp2x_timer_delay(50);
@@ -186,9 +185,9 @@ static void game_list_view(int *pos) {
 		gp2x_gamelist_text_out(35, 110, "NO AVAILABLE ROMS FOUND");
 	}
 #ifdef ARMV7
-	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"MAME4droid. v1.4 by D.Valdeita");
+	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"MAME4droid. v1.5 by D.Valdeita");
 #else
-	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"MAME4droid  v1.4 by D.Valdeita");
+	gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"MAME4droid  v1.5 by D.Valdeita");
 #endif
 
 }
@@ -241,6 +240,7 @@ static int show_options(char *game)
 
 	while(ExKey=gp2x_joystick_read(0)&0x8c0ff55){
 		gp2x_video_flip();
+		gp2x_timer_delay(1);
 	};
 
 	/* Read game configuration */
@@ -580,6 +580,7 @@ static void select_game(char *emu, char *game)
 
 	while(ExKey=gp2x_joystick_read(0)&0x8c0ff55){
 		gp2x_video_flip();
+		gp2x_timer_delay(1);
 	};
 
 	/* Wait until user selects a game */

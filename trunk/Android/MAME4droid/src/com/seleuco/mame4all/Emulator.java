@@ -49,6 +49,7 @@ import com.seleuco.mame4all.views.EmulatorViewGL;
 public class Emulator 
 {
 	 
+	
 	final static public int FPS_SHOWED_KEY = 1;
 	final static public int EXIT_GAME_KEY = 2;	
 	final static public int LAND_BUTTONS_KEY = 3;
@@ -58,11 +59,16 @@ public class Emulator
 	final static public int ASMCORES_KEY = 7;
 	final static public int INFOWARN_KEY = 8;
 	final static public int EXIT_PAUSE = 9;
+	final static public int IDLE_WAIT = 10;
 	
     private static MAME4all mm = null;
     
     private static boolean isEmulating = false;
-    private static boolean paused = false;
+    public static boolean isEmulating() {
+		return isEmulating;
+	}
+
+	private static boolean paused = false;
     private static Object lock1 = new Object();
     private static Object lock2 = new Object();
 	
@@ -359,7 +365,7 @@ public class Emulator
 				GLRenderer r = (GLRenderer)((EmulatorViewGL)mm.getEmuView()).getRender();				
 				if(r!=null)r.changedEmulatedSize();	
 			}
-			
+	    				
 			mm.runOnUiThread(new Runnable() {
                 public void run() {
                 	mm.getMainHelper().updateMAME4all();
@@ -474,9 +480,9 @@ public class Emulator
 	//native
 	protected static native void init(String libPath,String resPath);
 			
-	public static native void setPadData(int i, long data);
+	synchronized public static native void setPadData(int i, long data);
 	
-	public static native void setAnalogData(int i, float v1, float v2);
+	synchronized public static native void setAnalogData(int i, float v1, float v2);
 	
 	public static native int getValue(int key);
 	

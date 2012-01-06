@@ -2,8 +2,12 @@
 #include <math.h>
 #include "vidhrdw/vector.h"
 #include "dirty.h"
+#include <time.h>
+#include <unistd.h>
+#include <android/log.h>
 
 extern int  global_fps;
+extern int  global_idle_wait;
 extern int isIpad;
 extern int emulated_width;
 extern int emulated_height;
@@ -247,6 +251,11 @@ static void select_display_mode(int width,int height,int depth,int attributes,in
 	{
 		logerror("Game needs %d-bit colors.\n",depth);
 	}
+
+	////hack
+	if(width %2 !=0)
+		width+=1;
+	///
 
 	emulated_width = width;
 	emulated_height = height;
@@ -959,11 +968,32 @@ void osd_update_video_and_audio(struct osd_bitmap *bitmap)
 				target = this_frame_base + frameskip_counter * TICKS_PER_SEC/video_fps;
 				if ((curr < target) && (target-curr<TICKS_PER_SEC))
 				{
+					//__android_log_print(ANDROID_LOG_DEBUG, "ns", "Entro %lld",target-curr);
+					//int a = target - curr;
+					//int ii = 0;
 					do
 					{
                         //sched_yield();
+					    //__android_log_print(ANDROID_LOG_DEBUG, "ns", "A -> target - curr %lu",target-curr);
+
+						if(global_idle_wait && (target-curr >= 2) && (target-curr<TICKS_PER_SEC))
+						{
+
+							struct  timespec req={0},rem={0};
+							req.tv_sec=0;
+							req.tv_nsec=1000000UL;
+							//__android_log_print(ANDROID_LOG_DEBUG, "ns", "he esperado %ld",1000000UL);
+							nanosleep(&req,&rem);
+							//ii++;
+							//sleep(0);
+
+						}
+
 						curr = ticker();
+					    //__android_log_print(ANDROID_LOG_DEBUG, "ns", "B target - curr %lu",target-curr);
 					} while ((curr < target) && (target-curr<TICKS_PER_SEC));
+					//if(target-curr!=0)
+					  //__android_log_print(ANDROID_LOG_DEBUG, "ns", "SALGO %lld %d % d",target-curr, a, ii);
 				}
 			}
 			profiler_mark(PROFILER_END);
