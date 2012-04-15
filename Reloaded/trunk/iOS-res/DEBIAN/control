@@ -1,0 +1,13 @@
+Package: com.seleuco.mame4ios
+Name: MAME4iOS
+Version: 1.1-0
+Architecture: iphoneos-arm
+Description: Multiple Arcade Machine Emulator.
+ V1.1: Upgraded to MAME 0.139u1. Added 4/3, pixel aspect video aspects (now works MAME menu aspect ratio selector),improved iPad touch control layout, improved ROM manager, Added emulated resolution selector to improve artwork rendering, added configuration input menus, added missing options like frameskip.
+ V1.0: WIP
+Homepage: http://code.google.com/p/imame4all
+Maintainer: seleuco.nicator@gmail.com 
+Author: David Valdeita (Seleuco)
+Section: Games 
+Depends: ch.ringwald.btstack (>= 0.2)
+
