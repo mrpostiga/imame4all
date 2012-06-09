@@ -52,6 +52,9 @@ extern int  myosd_vis_video_height;
 extern int  myosd_in_menu;
 extern int  myosd_res;
 extern int  myosd_force_pxaspect;
+extern int  myosd_num_of_joys;
+extern int  myosd_video_threaded;
+extern int  myosd_service;
 
 extern unsigned long myosd_pad_status;
 extern int myosd_last_game_selected;
@@ -60,6 +63,7 @@ extern void myosd_init(void);
 extern void myosd_deinit(void);
 extern void myosd_video_flip(void);
 extern unsigned long myosd_joystick_read(int n);
+extern float myosd_joystick_read_analog(int n, char axis);
 extern void myosd_set_video_mode(int width,int height,int vis_width, int vis_height);
 extern void myosd_closeSound(void);
 extern void myosd_openSound(int rate,int stereo);

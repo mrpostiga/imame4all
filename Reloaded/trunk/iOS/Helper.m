@@ -246,9 +246,9 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
                                                         if(WIIMOTE_DBG)printf("open control channel\n");
                                                         bt_send_cmd(&l2cap_create_channel, event_addr, 0x11);
                                                         struct wiimote_t *wm = NULL;  
-                                                        wm = &joys[num_of_joys];
+                                                        wm = &joys[myosd_num_of_joys];
                                                         memset(wm, 0, sizeof(struct wiimote_t));
-                                                        wm->unid = num_of_joys;                                                        
+                                                        wm->unid = myosd_num_of_joys;                                                        
                                                         wm->i_source_cid = source_cid;
                                                         memcpy(&wm->addr,&event_addr,BD_ADDR_LEN);
                                                         if(WIIMOTE_DBG)printf("addr %02x:%02x:%02x:%02x:%02x:%02x\n", wm->addr[0], wm->addr[1], wm->addr[2],wm->addr[3], wm->addr[4], wm->addr[5]);                                                    
@@ -259,12 +259,12 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
                                                                                                         
                                                         //inicializamos el wiimote!   
                                                         struct wiimote_t *wm = NULL;  
-                                                        wm = &joys[num_of_joys];                                                                                                                                                                  
+                                                        wm = &joys[myosd_num_of_joys];                                                                                                                                                                  
                                                         wm->wiiMoteConHandle = wiiMoteConHandle; 
                                                         wm->c_source_cid = source_cid;                                                           
                                                         wm->state = WIIMOTE_STATE_CONNECTED;
-                                                        num_of_joys++;
-                                                        if(WIIMOTE_DBG)printf("Devices Number: %d\n",num_of_joys);
+                                                        myosd_num_of_joys++;
+                                                        if(WIIMOTE_DBG)printf("Devices Number: %d\n",myosd_num_of_joys);
                                                         wiimote_handshake(wm,-1,NULL,-1);                                                                                                                                                                                                                                                                      
                                                 }
                                         }
@@ -548,13 +548,13 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
 		//[inqViewControl release];
 		//inqViewControl = nil;
 		int i=0;
-		while(i!=num_of_joys){
+		while(i!=myosd_num_of_joys){
 			[inqViewControl removeDeviceForAddress:&joys[i].addr];
 			i++;
 			
 		}
 			
-		num_of_joys=0;
+		myosd_num_of_joys=0;
 	    bt_send_cmd(&btstack_set_power_mode, HCI_POWER_OFF );
 	    bt_close();
 	    activated= false;

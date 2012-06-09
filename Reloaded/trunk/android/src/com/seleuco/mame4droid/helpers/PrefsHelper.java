@@ -55,6 +55,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String PREF_GLOBAL_DEBUG = "PREF_GLOBAL_DEBUG";
 	final static public String PREF_GLOBAL_IDLE_WAIT = "PREF_GLOBAL_IDLE_WAIT"; 
 	final static public String PREF_GLOBAL_FORCE_PXASPECT = "PREF_GLOBAL_FORCE_PXASPECT";
+	final static public String PREF_GLOBAL_SUSPEND_NOTIFICATION = "PREF_GLOBAL_SUSPEND_NOTIFICATION";
 	
 	final static public String PREF_PORTRAIT_SCALING_MODE = "PREF_PORTRAIT_SCALING_MODE_2";
 	final static public String PREF_PORTRAIT_FILTER_TYPE = "PREF_PORTRAIT_FILTER_2";
@@ -75,7 +76,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String  PREF_TRACKBALL_NOMOVE = "PREF_TRACKBALL_NOMOVE";
 	final static public String  PREF_ANIMATED_INPUT = "PREF_ANIMATED_INPUT";
 	final static public String  PREF_TOUCH_DZ = "PREF_TOUCH_DZ";
-	final static public String  PREF_CONTROLLER_TYPE = "PREF_CONTROLLER_TYPE";
+	final static public String  PREF_CONTROLLER_TYPE = "PREF_CONTROLLER_TYPE_2";
 	final static public String  PREF_STICK_TYPE = "PREF_STICK_TYPE";
 	final static public String  PREF_NUMBUTTONS = "PREF_NUMBUTTONS";
 	final static public String  PREF_INPUT_EXTERNAL = "PREF_INPUT_EXTERNAL";
@@ -91,18 +92,24 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String  PREF_VIDEO_THREAD_PRIORITY="PREF_VIDEO_THREAD_PRIORITY";
 	final static public String  PREF_MAIN_THREAD_PRIORITY="PREF_MAIN_THREAD_PRIORITY";
 	final static public String  PREF_SOUND_LATENCY="PREF_SOUND_LATENCY";
+	
+	final static public String PREF_THREADED_VIDEO ="PREF_THREADED_VIDEO";
+	final static public String PREF_DOUBLE_BUFFER ="PREF_DOUBLE_BUFFER";
 
+	final static public String  PREF_FORCE_GLES10 = "PREF_FORCE_GLES10";
+	final static public String  PREF_PXASP1 = "PREF_PXASP1";
+	
 	final static public int  LOW = 1;
 	final static public int  NORMAL = 2;
 	final static public int  HIGHT = 2;
 	
 	final static public int  PREF_RENDER_SW = 1;
 	final static public int  PREF_RENDER_GL = 2;	
-
 	
-	final static public int  PREF_DIGITAL = 1;
-	final static public int  PREF_ANALOG_FAST = 2;
-	final static public int  PREF_ANALOG_PRETTY = 3;
+	final static public int  PREF_DIGITAL_DPAD = 1;
+	final static public int  PREF_DIGITAL_STICK = 2;
+	final static public int  PREF_ANALOG_FAST = 3;
+	final static public int  PREF_ANALOG_PRETTY = 4;
 
 	final static public int  PREF_INPUT_DEFAULT = 1;
 	final static public int  PREF_INPUT_ICADE = 2;
@@ -222,6 +229,10 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	public boolean isForcedPixelAspect(){
 		return getSharedPreferences().getBoolean(PREF_GLOBAL_FORCE_PXASPECT,false);
 	}
+	
+	public boolean isNotifyWhenSuspend(){
+		return getSharedPreferences().getBoolean(PREF_GLOBAL_SUSPEND_NOTIFICATION,true);
+	}
 
 	public int getFrameSkipValue(){
 		return Integer.valueOf(getSharedPreferences().getString(PREF_GLOBAL_FRAMESKIP,"-1")).intValue();	
@@ -273,7 +284,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	}
 	
 	public int getControllerType(){
-		return Integer.valueOf(getSharedPreferences().getString(PREF_CONTROLLER_TYPE,"2")).intValue();	
+		return Integer.valueOf(getSharedPreferences().getString(PREF_CONTROLLER_TYPE,"3")).intValue();	
 	}
 
 	public int getStickWays(){
@@ -349,5 +360,21 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	
 	public int getSoundLatency(){
 		return Integer.valueOf(getSharedPreferences().getString(PREF_SOUND_LATENCY,"2")).intValue();	
+	}
+	
+	public boolean isThreadedVideo(){
+		return getSharedPreferences().getBoolean(PREF_THREADED_VIDEO,true);
+	}
+	
+	public boolean isDoubleBuffer(){
+		return getSharedPreferences().getBoolean(PREF_DOUBLE_BUFFER,true);
+	}
+	
+	public boolean isForcedGLES10(){
+		return getSharedPreferences().getBoolean(PREF_FORCE_GLES10,false);
+	}
+	
+	public boolean isPlayerXasPlayer1(){
+		return getSharedPreferences().getBoolean(PREF_PXASP1,false);
 	}
 }

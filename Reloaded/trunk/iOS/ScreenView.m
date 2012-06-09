@@ -118,7 +118,7 @@ void iphone_UpdateScreen()
         rotateTransform = CGAffineTransformIdentity;
         self.affineTransform = rotateTransform;
                        		
-		if(iphone_smooth_land && iphone_is_landscape || iphone_smooth_port && !iphone_is_landscape)
+		if((iphone_smooth_land && iphone_is_landscape) || (iphone_smooth_port && !iphone_is_landscape))
 		{
 		   [self setMagnificationFilter:kCAFilterLinear];
   	       [self setMinificationFilter:kCAFilterLinear];

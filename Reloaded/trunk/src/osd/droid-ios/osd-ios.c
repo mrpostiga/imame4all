@@ -48,7 +48,12 @@ int  myosd_in_menu = 0;
 int  myosd_res = 1;
 int  myosd_force_pxaspect = 0;
 
-int num_of_joys=0;
+int  myosd_pxasp1 = 1;
+int  myosd_service = 0;
+
+int myosd_video_threaded=1;
+
+int myosd_num_of_joys=0;
 
 int m4all_BplusX = 0;
 int m4all_hide_LR = 0;
@@ -137,7 +142,7 @@ void myosd_set_video_mode(int width,int height,int vis_width,int vis_height)
   	 myosd_video_flip();
 }
 
-
+/*
 unsigned long myosd_joystick_read(int n)
 {
     unsigned long res=0;
@@ -146,15 +151,67 @@ unsigned long myosd_joystick_read(int n)
 	if ((res & MYOSD_VOL_UP) && (res & MYOSD_VOL_DOWN))
 	  		res |= MYOSD_PUSH;
 
-	if (num_of_joys>n)
+	if (myosd_num_of_joys>n)
 	{
-	  	/* Check USB Joypad */
 		//printf("%d %d\n",num_of_joys,n);
 		res |= iOS_wiimote_check(&joys[n]);
 		res |= myosd_joy_status[n];
 	}
   	
 	return res;
+}
+*/
+
+unsigned long myosd_joystick_read(int n)
+{
+    unsigned long res=0;
+
+    if(n==0 || myosd_pxasp1 && (myosd_num_of_joys==0 || myosd_num_of_joys==1))
+    {
+       res = myosd_pad_status;
+
+       if(myosd_pxasp1 && myosd_num_of_joys==1)
+       {
+    	   res |= iOS_wiimote_check(&joys[0]);
+    	   res |= myosd_joy_status[0];
+       }
+    }
+
+	if (n<myosd_num_of_joys)
+	{
+	   res |= iOS_wiimote_check(&joys[n]);
+	   res |= myosd_joy_status[n];
+	}
+
+	return res;
+}
+
+float myosd_joystick_read_analog(int n, char axis)
+{
+	float res = 0.0;
+
+    if(n==0 || myosd_pxasp1 && (myosd_num_of_joys==0 || myosd_num_of_joys==1))
+    {
+       if(myosd_pxasp1 && myosd_num_of_joys==1)
+          iOS_wiimote_check(&joys[0]);
+
+       if(axis=='x')
+		   res = joy_analog_x[0];
+	   else if (axis=='y')
+		   res = joy_analog_y[0];
+
+	}
+
+	if (n<myosd_num_of_joys)
+	{
+	 	iOS_wiimote_check(&joys[n]);
+	   	if(axis=='x')
+			res = joy_analog_x[n];
+		else if (axis=='y')
+			res = joy_analog_y[n];
+	}
+
+    return res;
 }
 
 void myosd_init(void)

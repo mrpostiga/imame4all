@@ -1,5 +1,5 @@
 =================================================================
-MAME4iOS Reloaded (0.139u1 ) 1.0 WIP (April 08, 2012) 
+MAME4iOS Reloaded (0.139u1 ) 1.3 WIP (June 02, 2012) 
 by David Valdeita (Seleuco)
 =================================================================
 
@@ -71,31 +71,43 @@ NOTE: To type OK when MAME requires it, press LEFT and then RIGHT.
 
 GLOBAL OPTIONS
 ----------------
+
 -Smoothed image. Enable to apply a smoothing image filter over the emulator screen.
 
 -CRT Filter. Enable to apply a CRT like filter over the image.
 
 -Sacanline Filter. Enable to apply a scanline filter over the image.
 
+-Full Screen (Landscape); Uses all available screen or shows the emulator windowed.
+
 -Keep Aspect. 'Enabled' keeps the aspect ratio; 'Disabled' will use all available screen.
 
--Safe Render Path (iPhone only). Enable at the expenses of performance for maximun compability. Slow in 3G (not recomended unless you find any problem).
-
--Full Screen (Landscape); Uses all available screen or shows the emulator windowed.
 
 -Animated. Animates ON/OFF DPad/Stick. Disable to gain performance.
 
--Touch Type: Set the touch stick to works as analog stick or as digital stick.
+-Touch Type: Set the touch stick to works as analog stick, digital stick or dpad.
 
 -Stick Type: limits the joystick's range of motion: 8-way,4-way,2-way The most common reason to use a gate in an actual arcade setting is the retrofitting of an older machine that is not compatible with  a new 8-way stick. A classic example of this is Pac-Man. The game was originally designed for a 4-way stick, and is programmed  to respond only when a new input occurs. If the user is holding the stick in the down position, then suddenly makes a motion  to move to the right, what often happens is that the stick first moves into the down-right diagonal, which the game  does not recognize as new input since down is still being held. However, right is also now considered held, and when the user  completes the motion to move right, it is also not a new input, and Pac-Man will still be moving down.
 
 -Buttons  / Button A = B + X. Show 1-4/6 Buttons: Hide/show B/Y/A/X/L/R buttons if needed. Select A=B+X to use A button as B and X simultaneous press.
 
+-Analog Touch DZ: Analog touch stick deadzone selector.  Lower to gets more sensitivity.
+
+-Digital Touch DZ: Enable/Disable a deadzone on DPAD touch center. It could be better for some games. Disable if you don't like it.
+
+-Wii Classic DZ: Wii classic stick deadzone selector. Upper if you have problems with stick (controller going crazy). Lower to gets more sensitivity.
+
 -Control Layout: Configures bluetooth control layout for iCade or iControlPad.
+
+-P4,P3,P2 as P1. Send Player 1 input data to Player2,3,4 so you can use the 2-4 players at the same time. Funny :). It makes some weird problems with some roms like D&D.
+
 
 -Sound Rate: Set the default rate for games.
 
--Sound Stereo: Set the default number of channels for sound, you can also select "Fast" for faster performance but lower quality and mono.
+-Sound Enable: Enable sound output.
+
+-Cheats: Enables the reading of the cheat database, if present, and the Cheat menu in the user interface.
+
 
 -Show FPS: Shows ON/OFF fps.
 
@@ -111,28 +123,23 @@ GLOBAL OPTIONS
 
 -Show Info/Warnings: Shows Game Info and any warnings when a game is selected.
 
--Digital Touch DZ: Enable/Disable a deadzone on DPAD touch center. It could be better for some games. Disable if you don't like it.
-
--Analog Touch DZ: Analog touch stick deadzone selector.  Lower to gets more sensitivity.
-
--Wii Classic DZ: Wii classic stick deadzone selector. Upper if you have problems with stick (controller going crazy). Lower to gets more sensitivity.
-
 -Skin: Let's you select skin (retina or not). Retina skin looks better but needs more resources.
 
 -Native TV-OUT:  If you like iPad 2 TVOUT mirror or you use and external 3rd party TVOUT app, you can turn off iMame4All native TVOUT.
 
 -Overscan TV-OUT: You can set the amount of TV overscan correction.
 
+
 WIIMOTE
 ---------
 
-iMAME4all lets you use up to 4 WiiMotes or Wii Classic controllers over bluetooth to play (multiplayer). 
+MAME4iOS lets you use up to 4 WiiMotes or Wii Classic controllers over bluetooth to play (multiplayer). 
 
-iMAME4all uses btstack project to support WiiMote:
+MAME4iOS uses btstack project to support WiiMote:
 
 http://code.google.com/p/btstack/
 
-To use WiiMote you have to first launch iMAME4all menu pressing R2 button, and select WiiMote option. Then, press to find first WiiMote and make your WiiMote discoverable by pressing the 1+2 buttons at the same time. 
+To use WiiMote you have to first launch MAME4iOS menu pressing R2 button, and select WiiMote option. Then, press to find first WiiMote and make your WiiMote discoverable by pressing the 1+2 buttons at the same time. 
 
 You can add new WiiMote anytime, selecting WiiMote option again. If a WiiMote is disconnected (battery drained) you can reconnect it or connect another WiiMote and continue playing.
 
@@ -151,7 +158,7 @@ In landscape mode touch anywhere on the screen to show the emulator options.
 ICADE
 -------
 
-The best way to use iCade with iMAME4All is in fullscreen portrait mode, hit the option button and choose options. The onscreen controls will fade out when you start using the iCade buttons. To get on screen controls back, just touch the screen.
+The best way to use iCade with MAME4iOS is in fullscreen portrait mode, hit the option button and choose options. The onscreen controls will fade out when you start using the iCade buttons. To get on screen controls back, just touch the screen.
 
 If the iCade is off (the fake coin slot light is off) just hit an iCade button or move the joystick.(you must have paired the iCade via bluetooth before) 
 
@@ -174,14 +181,14 @@ To connect an iPad ot iPhone to your TV or a projector, you can either use the A
 
 Use TV Out settings to set up how iPad or iPhone plays videos on your TV.
 
-When the cable is connected to a TV or projector, iMAME4all will automatically use it when playing a game.
+When the cable is connected to a TV or projector, MAME4iOS will automatically use it when playing a game.
 
 Set the TV signal to NTSC or PAL: Choose Video > TV Signal and select NTSC or PAL. NTSC and PAL are TV broadcast standards, used in different regions. If you are in the Americas, NTSC is probably the correct choice. Elsewhere, try PAL. If you're not sure, check the documentation that came with your TV or projector.
 
 
 You can set the amount of overscan corrections in options menu.
 
-If you like iPad 2 TVOUT mirror or you use and external 3rd party TVOUT app, you can turn off iMame4All native TVOUT in options menu.
+If you like iPad 2 TVOUT mirror or you use and external 3rd party TVOUT app, you can turn off MAME4iOS native TVOUT in options menu.
 
 
 INSTALLATION
@@ -237,6 +244,7 @@ PORT CREDITS
 
 DEVELOPMENT
 
+- 2012-06-02 Version 1.2. Fixed compatibility issue with iOS 5.1.1 jailbreak. Added local multiplayer (up to 4 players). Added true analog control (selectable as option). Fixed Taito X system. Added P1 Player as P2,P3,P4 input option. Some bug fixes. 
 - 2012-04-08 Version 1.1. Upgraded to MAME 0.139u1. Added 4/3, pixel aspect video aspects (now works MAME menu aspect ratio selector),
 improved iPad touch control layout, improved ROM manager, Added emulated resolution selector to improve artwork rendering, added configuration input menus, 
 added missing options like frameskip.
@@ -244,8 +252,6 @@ added missing options like frameskip.
 
 KNOWN PROBLEMS
 ------------------
-
-stuff pending: Don't work true analog control, Don't work local multiplayer.
 
 - Preferences couldn't be saved. Check for write permissions. chmod 777 if needed:
   Just go to MAME4iOS.app file in your iDevice directory and set the permissions to 777.

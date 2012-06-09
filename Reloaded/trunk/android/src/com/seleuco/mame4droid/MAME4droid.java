@@ -56,6 +56,37 @@ import com.seleuco.mame4droid.views.FilterView;
 import com.seleuco.mame4droid.views.IEmuView;
 import com.seleuco.mame4droid.views.InputView;
 
+import android.app.*;
+import android.content.*;
+
+final class NotificationHelper
+{
+        private static NotificationManager notificationManager = null;
+
+		public static void addNotification(Context ctx, String onShow, String title, String message)
+        {
+                if(notificationManager == null)
+                        notificationManager = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+                int icon = R.drawable.icon_sb; // TODO: don't hard-code
+                long when = System.currentTimeMillis();
+                Notification notification = new Notification(icon, /*onShow*/null, when);
+                notification.flags |= Notification.FLAG_ONGOING_EVENT | Notification.FLAG_AUTO_CANCEL;
+                CharSequence contentTitle = title;
+                CharSequence contentText = message;
+                Intent notificationIntent = new Intent(ctx, MAME4droid.class);
+                PendingIntent contentIntent = PendingIntent.getActivity(ctx, 0, notificationIntent, 0);
+
+                notification.setLatestEventInfo(ctx, contentTitle, contentText, contentIntent);
+                notificationManager.notify(1, notification);
+        }
+       
+        public static void removeNotification()
+        {
+                if(notificationManager != null)
+                        notificationManager.cancel(1);
+        }
+}
+
 public class MAME4droid extends Activity {
 
 	protected View emuView = null;
@@ -312,6 +343,8 @@ public class MAME4droid extends Activity {
 			if(inputHandler.getTiltSensor()!=null)
 			   inputHandler.getTiltSensor().enable();
 		}
+		
+		NotificationHelper.removeNotification();
 		//System.out.println("OnResume");
 	}
 	
@@ -333,7 +366,10 @@ public class MAME4droid extends Activity {
 		{
 			dialogHelper.removeDialogs();
 		}
-				
+		
+		if(prefsHelper.isNotifyWhenSuspend())
+		  NotificationHelper.addNotification(getApplicationContext(), "MAME4droid was suspended!", "MAME4droid was suspended", "Press to return to MAME4droid");
+		
 		//System.out.println("OnPause");
 	}
 	

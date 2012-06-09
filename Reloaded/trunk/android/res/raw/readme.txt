@@ -1,5 +1,5 @@
 =================================================================
-MAME4droid Reloaded (0.139 ) 1.1.2 (April 15, 2012) 
+MAME4droid Reloaded (0.139 ) 1.2.1 (June 08, 2012) 
 by David Valdeita (Seleuco)
 =================================================================
 
@@ -130,14 +130,17 @@ GLOBAL OPTIONS
 -Touch Type:
 
      * Digital (DPAD). The controller is a digital DPAD. Some games need it or are better suited for this kind of controller.
-     * Analog (Performance). The controller is a full analog stick, but drawed for performance.
-     * Analog (Pretty). The controller is a full analog stick. 
+     * Digital Stick (Old One). This is the old one faked analog stick.
+     * Analog-Digital. (Performance). The controller is a full analog stick, MAME map it to a digital stick if needed. It's painted for performance.
+     * Analog-Digital (Pretty). The controller is a full analog stick. 
 
 -Stick Type: limits the joystick's range of motion: 8-way,4-way,2-way The most common reason to use a gate in an actual arcade setting is the retrofitting of an older machine that is not compatible with  a new 8-way stick. A classic example of this is Pac-Man. The game was originally designed for a 4-way stick, and is programmed  to respond only when a new input occurs. If the user is holding the stick in the down position, then suddenly makes a motion  to move to the right, what often happens is that the stick first moves into the down-right diagonal, which the game  does not recognize as new input since down is still being held. However, right is also now considered held, and when the user  completes the motion to move right, it is also not a new input, and Pac-Man will still be moving down.
 
 -Digital Touch Dead Zone: Enable/Disable a deadzone on DPAD touch center. It could be better for some games. Disable if you don't like it.
 
 -Analog Touch Dead Zone: Select the deadzone amount on stick touch center.
+
+-P4,P3,P2 as P1. Send Player 1 input data to Player2,3,4 so you can use the 2-4 players at the same time. Funny :). It makes some weird problems with some roms like D&D.
 
 -Trackball sensitivity: Set trackball persistance.
 
@@ -164,11 +167,17 @@ GLOBAL OPTIONS
 
 -Smooth scaling: Turn on bitmap filtering at the expense of performance.
 
+-Threaded Video render. Enable it to use a dedicate thread to do the video rendering (performance gain on double core devices). Disable if you have stuttering.
+
 -Video thread priority. Set to default value unless you have problems. You need to restart.
+
+-Double buffer. Avoids flickering at the expenses of performance.
 
 -Main thread priority. Set to default value unless you have problems. You need to restart.
 
--Sound Latency. Set the audio buffer. Set to high if you have sound glitches. Lower is better. 
+-Sound Latency. Set the audio buffer. Set to high if you have sound glitches. Lower is better.
+
+-Force OpenGL ES 1.0. Enable it to use the old OpenGL 1.0 render path. Select it if you have performance problems with 2.0 render path. 
 
 -Debug Mode. Enable debug mode. Only for developers.
 
@@ -225,6 +234,9 @@ PORT CREDITS
 
 DEVELOPMENT
 
+- 2012-06-08 Version 1.2.1 Added default button mapping for dual stick ROMs like robotron. Added selectable suspend notification.Some bug Fixes.
+- 2012-05-08 Version 1.2. Added local multiplayer (up to 4 players). Added true analog control (It makes more playable analog games like StarWars and lightgun games like owolf). 
+  Fixed Taito X system (now Superman works). Added P1 Player as P2,P3,P4 input option. Some bug fixes.
 - 2012-04-15 Version 1.1.2. Added touch button size selector, fixed artifacts\improved scaling on auto resolution mode, fixed some Opengl issues.   
 - 2012-04-05 Version 1.1.1 Upgraded to MAME 0.139u1 to fix savestate problems with drivers using OKI audio. Enabled SH2 core, now works CPS3. 
   Added speed hacks to make playable same games, accessible through MAME menu pressing coin+start in game. Added force pixel aspect option. Some bug fixes.
@@ -236,9 +248,8 @@ Added emulated resolution selector to improve artwork rendering.
 KNOWN PROBLEMS
 ------------------
 
-Don't implemented true analog control yet.
-Don't implemented local multiplayer yet.
-
+on ICS 4.0.4 use performance governor and disable save battery hacks if you have stutter gameplay. 
+also ICS has some bugs thats made sound stutter in 4.0 to 4.0.3.
 
 INTERESTING WEBPAGES ABOUT MAME
 -----------------------------------

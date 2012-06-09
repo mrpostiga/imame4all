@@ -66,7 +66,11 @@
 			
 	    <CheckBoxPreference android:key="PREF_GLOBAL_FORCE_PXASPECT"
 			android:title="Force Pixel Aspect" android:summary="Enable it to force pixel aspect ratio bypassing MAME video selection"
-			android:defaultValue="false" />			
+			android:defaultValue="false" />
+	    
+	    <CheckBoxPreference android:key="PREF_GLOBAL_SUSPEND_NOTIFICATION"
+			android:title="Notification Icon" android:summary="Enable it to show a notification icon when MAME4droid is suspended"
+			android:defaultValue="true" />			    			
 						
 	</PreferenceCategory>
 	
@@ -123,9 +127,9 @@
 		<ListPreference
 			android:entries="@array/pref_controller_type_options"
 			android:title='Touch type'			
-			android:key="PREF_CONTROLLER_TYPE"
+			android:key="PREF_CONTROLLER_TYPE_2"
 			android:entryValues="@array/pref_controller_type_values"
-			android:defaultValue="2" />
+			android:defaultValue="3" />
 		
 		<ListPreference
 			android:entries="@array/pref_stick_options"
@@ -144,6 +148,11 @@
 			android:key="PREF_ANALOG_DZ"
 			android:entryValues="@array/pref_dz_values"
 			android:defaultValue="2" />
+	    
+	    <CheckBoxPreference android:key="PREF_PXASP1"
+			android:title="P4,P3,P2 as P1" android:summary="Send Player 1 input to Player 2,3,4. Could cause problems in some ROMs"
+			android:defaultValue="False" />
+	            
     </PreferenceCategory>	    
 	    			
 	<PreferenceCategory android:title="Hardware Trackball">			
@@ -224,12 +233,20 @@
 	
 	</PreferenceCategory>
 
-    <PreferenceCategory android:title="Advanced">
-			
+    <PreferenceCategory android:title="Advanced (could needs app restart)">
+        
+        <CheckBoxPreference android:key="PREF_THREADED_VIDEO"
+			android:title="Threaded Video Render" android:summary="Performance boost on double core devices"
+			android:defaultValue="True" />	
+			      			
 		<ListPreference android:entries="@array/pref_low_norm_or_hight_options"
 			android:title='Video Thread Priority' android:key="PREF_VIDEO_THREAD_PRIORITY"
 			android:entryValues="@array/pref_low_norm_or_hight_values"
 			android:defaultValue="2" />
+		
+        <CheckBoxPreference android:key="PREF_DOUBLE_BUFFER"
+			android:title="Double Buffer" android:summary="Avoids flickering at the expense of performance"
+			android:defaultValue="True" />  		
 		
 		<ListPreference android:entries="@array/pref_low_norm_or_hight_options"
 			android:title='Main Thread Priority' android:key="PREF_MAIN_THREAD_PRIORITY"
@@ -239,7 +256,11 @@
 		<ListPreference android:entries="@array/pref_low_norm_or_hight_options"
 			android:title='Sound Latency' android:key="PREF_SOUND_LATENCY"
 			android:entryValues="@array/pref_low_norm_or_hight_values"
-			android:defaultValue="2" />		
+			android:defaultValue="2" />
+		
+        <CheckBoxPreference android:key="PREF_FORCE_GLES10"
+			android:title="Force OpenGL ES 1.0" android:summary="Forces OpenGL ES 1.0 render path"
+			android:defaultValue="False" />				
 			
 		<CheckBoxPreference android:key="PREF_GLOBAL_DEBUG"
 			android:title="Debug mode" android:summary="Only for developers"

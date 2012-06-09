@@ -358,6 +358,9 @@ public class MainHelper {
 		Emulator.setValue(Emulator.EMU_RESOLUTION,prefsHelper.getEmulatedResolution());
 		Emulator.setValue(Emulator.FORCE_PXASPECT,prefsHelper.isForcedPixelAspect() ? 1 : 0);
 		
+		Emulator.setValue(Emulator.DOUBLE_BUFFER,mm.getPrefsHelper().isDoubleBuffer() ? 1 : 0);
+		Emulator.setValue(Emulator.PXASP1,mm.getPrefsHelper().isPlayerXasPlayer1() ? 1 : 0);
+		
 		setBorder();
 		
 	    if(prefsHelper.isTiltSensor())

@@ -42,18 +42,15 @@ int  myosd_vis_video_height = 0;
 int  myosd_in_menu = 0;
 int  myosd_res = 1;
 int  myosd_force_pxaspect = 0;
+int  myosd_waysStick;
+int  myosd_pxasp1 = 0;
+int  myosd_service = 0;
 
-int num_of_joys=0;
+int myosd_num_of_joys=1;
+int myosd_video_threaded=1;
 
-int m4all_BplusX = 0;
-//int m4all_hide_LR = 0;
-//int m4all_landscape_buttons = 2;
-int m4all_hide_LR = 0;
-int m4all_landscape_buttons = 4;
-/*extern */int myosd_waysStick;
-/*extern */float joy_analog_x[4];
-/*extern */float joy_analog_y[4];
-
+float joy_analog_x[4];
+float joy_analog_y[4];
 
 static int lib_inited = 0;
 static int soundInit = 0;
@@ -74,6 +71,7 @@ static pthread_mutex_t cond_mutex     = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t  condition_var   = PTHREAD_COND_INITIALIZER;
 
 void change_pause(int value);
+void setDblBuffer(void);
 
 
 void (*dumpVideo_callback)(int emulating) = NULL;
@@ -107,17 +105,17 @@ extern "C" void setAudioCallbacks(void (*open_sound_java)(int,int), void (*dump_
 extern "C"
 void setPadStatus(int i, unsigned long pad_status)
 {
-	if(i==0 && num_of_joys==0)
+	if(i==0)
 	   myosd_pad_status = pad_status;
 
 	myosd_joy_status[i]=pad_status;
 
-	if(i==1 && pad_status && MYOSD_SELECT && num_of_joys<2)
-		num_of_joys = 2;
-	else if(i==2 && pad_status && MYOSD_SELECT && num_of_joys<3)
-		num_of_joys = 3;
-	else if(i==2 && pad_status && MYOSD_SELECT && num_of_joys<4)
-		num_of_joys = 4;
+	if(i==1 && pad_status && MYOSD_SELECT && myosd_num_of_joys<2)
+		myosd_num_of_joys = 2;
+	else if(i==2 && pad_status && MYOSD_SELECT && myosd_num_of_joys<3)
+		myosd_num_of_joys = 3;
+	else if(i==3 && pad_status && MYOSD_SELECT && myosd_num_of_joys<4)
+		myosd_num_of_joys = 4;
 
 	//__android_log_print(ANDROID_LOG_DEBUG, "libMAME4droid.so", "set_pad %ld",pad_status);
 }
@@ -175,6 +173,13 @@ void setMyValue(int key,int value){
 	    	myosd_res = value;break;
 	    case 21:
 	    	myosd_force_pxaspect = value;break;
+	    case 22:
+	    	myosd_video_threaded = value;break;
+	    case 23:
+	    	dbl_buff = value;setDblBuffer();break;
+	    case 24:
+	    	myosd_pxasp1 = value;break;
+
 	}
 }
 
@@ -188,12 +193,6 @@ int getMyValue(int key){
 	         return myosd_fps;
 	    case 2:
 	         return myosd_exitGame;
-	    case 3:
-	    	 return m4all_landscape_buttons;
-	    case 4:
-	    	 return m4all_hide_LR;
-	    case 5:
-	    	 return m4all_BplusX;
 	    case 6:
 	    	 return myosd_waysStick;
 	    case 7:
@@ -212,6 +211,7 @@ extern "C"
 void setMyAnalogData(int i, float v1, float v2){
 	joy_analog_x[i]=v1;
 	joy_analog_y[i]=v2;
+	//__android_log_print(ANDROID_LOG_DEBUG, "MAME4droid.so", "set analog %d %f %f",i,v1,v2);
 }
 
 static void dump_video(void)
@@ -236,20 +236,49 @@ void myosd_video_flip(void)
 unsigned long myosd_joystick_read(int n)
 {
     unsigned long res=0;
-	res = myosd_pad_status;
-		
-	if ((res & MYOSD_VOL_UP) && (res & MYOSD_VOL_DOWN))
-	  		res |= MYOSD_PUSH;
 
-	if (num_of_joys>n)
+	if(myosd_num_of_joys==1)
 	{
-	  	/* Check USB Joypad */
-		//printf("%d %d\n",num_of_joys,n);
-		//res |= iOS_wiimote_check(&joys[n]);
-		res |= myosd_joy_status[n];
+        if(myosd_pxasp1 || n==0)
+		   res = myosd_pad_status;
+	}
+	else
+	{
+	   if (n<myosd_num_of_joys)
+	   {
+		  //res |= iOS_wiimote_check(&joys[n]);
+		  res |= myosd_joy_status[n];
+	   }
 	}
   	
 	return res;
+}
+
+float myosd_joystick_read_analog(int n, char axis)
+{
+	float res = 0.0;
+
+	if(myosd_num_of_joys==1)
+	{
+		if(myosd_pxasp1 || n==0)
+		{
+			if(axis=='x')
+				res = joy_analog_x[0];
+			else if (axis=='y')
+				res = joy_analog_y[0];
+		}
+	}
+	else
+	{
+	    if (n<myosd_num_of_joys)
+		{
+		    if(axis=='x')
+				res = joy_analog_x[n];
+			else if (axis=='y')
+				res = joy_analog_y[n];
+		}
+	}
+    return res;
 }
 
 void myosd_set_video_mode(int width,int height,int vis_width, int vis_height)
@@ -272,6 +301,13 @@ void myosd_set_video_mode(int width,int height,int vis_width, int vis_height)
   	myosd_video_flip();
 }
 
+void setDblBuffer(){
+	if(dbl_buff)
+	   myosd_screen15=prev_screenbuffer;
+	else
+       myosd_screen15=screenbuffer;
+}
+
 void myosd_init(void)
 {
     if (!lib_inited )
@@ -279,10 +315,7 @@ void myosd_init(void)
 #ifdef ANDROID
 		__android_log_print(ANDROID_LOG_DEBUG, "MAME4droid.so", "init");
 #endif
-		if(dbl_buff)
-		   myosd_screen15=prev_screenbuffer;
-		else
-	       myosd_screen15=screenbuffer;
+		setDblBuffer();
 
 	   if(initVideo_callback!=NULL)
           initVideo_callback((void *)&screenbuffer);

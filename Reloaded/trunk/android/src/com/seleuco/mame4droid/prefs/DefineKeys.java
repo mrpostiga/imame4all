@@ -49,11 +49,9 @@ public class DefineKeys extends ListActivity {
 	
 	public static final String[] playerLabels = {
         "Player 1",
-        /*
         "Player 2",
         "Player 3",
-        "Player 4",
-        */
+        "Player 4",        
 	};
 
 	@Override

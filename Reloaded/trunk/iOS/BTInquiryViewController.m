@@ -486,7 +486,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 			} else {
 				switch (inquiryState){
 					case kInquiryInactive:
-					    if (num_of_joys==4)
+					    if (myosd_num_of_joys==4)
 					    {
 					       label = @"Maximun devices connected!";
 					    }
@@ -567,7 +567,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 				if (connectedDevice) {
 					// DISCONNECT button 
 					[delegate disconnectDevice:self device:connectedDevice];
-				} else if (num_of_joys<4){
+				} else if (myosd_num_of_joys<4){
 					// Find more devices
 					[self myStartInquiry];
 				}

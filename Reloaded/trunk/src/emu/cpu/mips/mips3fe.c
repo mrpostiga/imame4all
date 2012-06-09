@@ -19,13 +19,13 @@
     FUNCTION PROTOTYPES
 ***************************************************************************/
 
-static int describe_instruction_special(mips3_state *mips, UINT32 op, opcode_desc *desc);
-static int describe_instruction_regimm(mips3_state *mips, UINT32 op, opcode_desc *desc);
-static int describe_instruction_idt(mips3_state *mips, UINT32 op, opcode_desc *desc);
-static int describe_instruction_cop0(mips3_state *mips, UINT32 op, opcode_desc *desc);
-static int describe_instruction_cop1(mips3_state *mips, UINT32 op, opcode_desc *desc);
-static int describe_instruction_cop1x(mips3_state *mips, UINT32 op, opcode_desc *desc);
-static int describe_instruction_cop2(mips3_state *mips, UINT32 op, opcode_desc *desc);
+static int describe_instruction_special(mips3_state *mipsaa, UINT32 op, opcode_desc *desc);
+static int describe_instruction_regimm(mips3_state *mipsaa, UINT32 op, opcode_desc *desc);
+static int describe_instruction_idt(mips3_state *mipsaa, UINT32 op, opcode_desc *desc);
+static int describe_instruction_cop0(mips3_state *mipsaa, UINT32 op, opcode_desc *desc);
+static int describe_instruction_cop1(mips3_state *mipsaa, UINT32 op, opcode_desc *desc);
+static int describe_instruction_cop1x(mips3_state *mipsaa, UINT32 op, opcode_desc *desc);
+static int describe_instruction_cop2(mips3_state *mipsaa, UINT32 op, opcode_desc *desc);
 
 
 
@@ -40,11 +40,11 @@ static int describe_instruction_cop2(mips3_state *mips, UINT32 op, opcode_desc *
 
 int mips3fe_describe(void *param, opcode_desc *desc, const opcode_desc *prev)
 {
-	mips3_state *mips = (mips3_state *)param;
+	mips3_state *mipsaa = (mips3_state *)param;
 	UINT32 op, opswitch;
 
 	/* compute the physical PC */
-	if (!mips3com_translate_address(mips, ADDRESS_SPACE_PROGRAM, TRANSLATE_FETCH, &desc->physpc))
+	if (!mips3com_translate_address(mipsaa, ADDRESS_SPACE_PROGRAM, TRANSLATE_FETCH, &desc->physpc))
 	{
 		/* uh-oh: a page fault; leave the description empty and just if this is the first instruction, leave it empty and */
 		/* mark as needing to validate; otherwise, just end the sequence here */
@@ -53,7 +53,7 @@ int mips3fe_describe(void *param, opcode_desc *desc, const opcode_desc *prev)
 	}
 
 	/* fetch the opcode */
-	op = desc->opptr.l[0] = memory_decrypted_read_dword(mips->program, desc->physpc);
+	op = desc->opptr.l[0] = memory_decrypted_read_dword(mipsaa->program, desc->physpc);
 
 	/* all instructions are 4 bytes and default to a single cycle each */
 	desc->length = 4;
@@ -64,27 +64,27 @@ int mips3fe_describe(void *param, opcode_desc *desc, const opcode_desc *prev)
 	switch (opswitch)
 	{
 		case 0x00:	/* SPECIAL */
-			return describe_instruction_special(mips, op, desc);
+			return describe_instruction_special(mipsaa, op, desc);
 
 		case 0x01:	/* REGIMM */
-			return describe_instruction_regimm(mips, op, desc);
+			return describe_instruction_regimm(mipsaa, op, desc);
 
 		case 0x10:	/* COP0 */
-			return describe_instruction_cop0(mips, op, desc);
+			return describe_instruction_cop0(mipsaa, op, desc);
 
 		case 0x11:	/* COP1 */
-			return describe_instruction_cop1(mips, op, desc);
+			return describe_instruction_cop1(mipsaa, op, desc);
 
 		case 0x12:	/* COP2 */
-			return describe_instruction_cop2(mips, op, desc);
+			return describe_instruction_cop2(mipsaa, op, desc);
 
 		case 0x13:	/* COP1X - MIPS IV */
-			if (mips->flavor < MIPS3_TYPE_MIPS_IV)
+			if (mipsaa->flavor < MIPS3_TYPE_MIPS_IV)
 				return FALSE;
-			return describe_instruction_cop1x(mips, op, desc);
+			return describe_instruction_cop1x(mipsaa, op, desc);
 
 		case 0x1c:	/* IDT-specific opcodes: mad/madu/mul on R4640/4650, msub on RC32364 */
-			return describe_instruction_idt(mips, op, desc);
+			return describe_instruction_idt(mipsaa, op, desc);
 
 		case 0x02:	/* J */
 			desc->flags |= OPFLAG_IS_UNCONDITIONAL_BRANCH | OPFLAG_END_SEQUENCE;
@@ -218,7 +218,7 @@ int mips3fe_describe(void *param, opcode_desc *desc, const opcode_desc *prev)
 			return TRUE;
 
 		case 0x33:	/* PREF */
-			if (mips->flavor < MIPS3_TYPE_MIPS_IV)
+			if (mipsaa->flavor < MIPS3_TYPE_MIPS_IV)
 				return FALSE;
 		case 0x2f:	/* CACHE */
 			/* effective no-op */
@@ -235,7 +235,7 @@ int mips3fe_describe(void *param, opcode_desc *desc, const opcode_desc *prev)
     'special' group
 -------------------------------------------------*/
 
-static int describe_instruction_special(mips3_state *mips, UINT32 op, opcode_desc *desc)
+static int describe_instruction_special(mips3_state *mipsaa, UINT32 op, opcode_desc *desc)
 {
 	switch (op & 63)
 	{
@@ -254,7 +254,7 @@ static int describe_instruction_special(mips3_state *mips, UINT32 op, opcode_des
 
 		case 0x0a:	/* MOVZ - MIPS IV */
 		case 0x0b:	/* MOVN - MIPS IV */
-			if (mips->flavor < MIPS3_TYPE_MIPS_IV)
+			if (mipsaa->flavor < MIPS3_TYPE_MIPS_IV)
 				return FALSE;
 			desc->regin[0] |= REGFLAG_R(RDREG);
 		case 0x04:	/* SLLV */
@@ -297,7 +297,7 @@ static int describe_instruction_special(mips3_state *mips, UINT32 op, opcode_des
 			return TRUE;
 
 		case 0x01:	/* MOVF - MIPS IV */
-			if (mips->flavor < MIPS3_TYPE_MIPS_IV)
+			if (mipsaa->flavor < MIPS3_TYPE_MIPS_IV)
 				return FALSE;
 			desc->regin[0] |= REGFLAG_R(RSREG);
 			desc->regin[2] |= REGFLAG_FCC;
@@ -387,7 +387,7 @@ static int describe_instruction_special(mips3_state *mips, UINT32 op, opcode_des
     'regimm' group
 -------------------------------------------------*/
 
-static int describe_instruction_regimm(mips3_state *mips, UINT32 op, opcode_desc *desc)
+static int describe_instruction_regimm(mips3_state *mipsaa, UINT32 op, opcode_desc *desc)
 {
 	switch (RTREG)
 	{
@@ -445,10 +445,10 @@ static int describe_instruction_regimm(mips3_state *mips, UINT32 op, opcode_desc
     IDT-specific group
 -------------------------------------------------*/
 
-static int describe_instruction_idt(mips3_state *mips, UINT32 op, opcode_desc *desc)
+static int describe_instruction_idt(mips3_state *mipsaa, UINT32 op, opcode_desc *desc)
 {
 	/* only on the R4650 */
-	if (mips->flavor != MIPS3_TYPE_R4650)
+	if (mipsaa->flavor != MIPS3_TYPE_R4650)
 		return FALSE;
 
 	switch (op & 0x1f)
@@ -477,7 +477,7 @@ static int describe_instruction_idt(mips3_state *mips, UINT32 op, opcode_desc *d
     COP0 group
 -------------------------------------------------*/
 
-static int describe_instruction_cop0(mips3_state *mips, UINT32 op, opcode_desc *desc)
+static int describe_instruction_cop0(mips3_state *mipsaa, UINT32 op, opcode_desc *desc)
 {
 	/* any COP0 instruction can potentially cause an exception */
 	desc->flags |= OPFLAG_CAN_CAUSE_EXCEPTION;
@@ -553,7 +553,7 @@ static int describe_instruction_cop0(mips3_state *mips, UINT32 op, opcode_desc *
     COP1 group
 -------------------------------------------------*/
 
-static int describe_instruction_cop1(mips3_state *mips, UINT32 op, opcode_desc *desc)
+static int describe_instruction_cop1(mips3_state *mipsaa, UINT32 op, opcode_desc *desc)
 {
 	/* any COP1 instruction can potentially cause an exception */
 //  desc->flags |= OPFLAG_CAN_CAUSE_EXCEPTION;
@@ -602,7 +602,7 @@ static int describe_instruction_cop1(mips3_state *mips, UINT32 op, opcode_desc *
 			{
 				case 0x12:	/* MOVZ - MIPS IV */
 				case 0x13:	/* MOVN - MIPS IV */
-					if (mips->flavor < MIPS3_TYPE_MIPS_IV)
+					if (mipsaa->flavor < MIPS3_TYPE_MIPS_IV)
 						return FALSE;
 				case 0x00:	/* ADD */
 				case 0x01:	/* SUB */
@@ -614,7 +614,7 @@ static int describe_instruction_cop1(mips3_state *mips, UINT32 op, opcode_desc *
 
 				case 0x15:	/* RECIP - MIPS IV */
 				case 0x16:	/* RSQRT - MIPS IV */
-					if (mips->flavor < MIPS3_TYPE_MIPS_IV)
+					if (mipsaa->flavor < MIPS3_TYPE_MIPS_IV)
 						return FALSE;
 				case 0x04:	/* SQRT */
 				case 0x05:	/* ABS */
@@ -637,7 +637,7 @@ static int describe_instruction_cop1(mips3_state *mips, UINT32 op, opcode_desc *
 					return TRUE;
 
 				case 0x11:	/* MOVT/F - MIPS IV */
-					if (mips->flavor < MIPS3_TYPE_MIPS_IV)
+					if (mipsaa->flavor < MIPS3_TYPE_MIPS_IV)
 						return FALSE;
 					desc->regin[1] |= REGFLAG_CPR1(FSREG);
 					desc->regin[2] |= REGFLAG_FCC;
@@ -672,7 +672,7 @@ static int describe_instruction_cop1(mips3_state *mips, UINT32 op, opcode_desc *
     COP1X group
 -------------------------------------------------*/
 
-static int describe_instruction_cop1x(mips3_state *mips, UINT32 op, opcode_desc *desc)
+static int describe_instruction_cop1x(mips3_state *mipsaa, UINT32 op, opcode_desc *desc)
 {
 	/* any COP1 instruction can potentially cause an exception */
 //  desc->flags |= OPFLAG_CAN_CAUSE_EXCEPTION;
@@ -716,7 +716,7 @@ static int describe_instruction_cop1x(mips3_state *mips, UINT32 op, opcode_desc 
     COP2 group
 -------------------------------------------------*/
 
-static int describe_instruction_cop2(mips3_state *mips, UINT32 op, opcode_desc *desc)
+static int describe_instruction_cop2(mips3_state *mipsaa, UINT32 op, opcode_desc *desc)
 {
 	/* any COP2 instruction can potentially cause an exception */
 	desc->flags |= OPFLAG_CAN_CAUSE_EXCEPTION;

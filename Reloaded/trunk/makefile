@@ -15,13 +15,30 @@ OSD = droid-ios
 #OSD = osdmini
 #OSD = sdl
 NOWERROR = 1
+
 #SUBTARGET = tiny
 
-CROSS_BUILD = 1
+############ ANDROID
 
 ANDROID = 1
+
+#AMIPS=1
+
+#AX86=1
+
+#AARMV7=1
+
+AARMV6=1
+
+########## iOS
+
 #iOS = 1;
+
 #iOSOSX = 1;
+
+################
+
+CROSS_BUILD = 1
 
 #TARGETOS = android
 #PTR64 = 0
@@ -36,8 +53,25 @@ FORCE_DRC_C_BACKEND = 1
 
 ifdef ANDROID
 
-MYPREFIX=/home/david/Projects/android/my-android-toolchain-14/bin/arm-linux-androideabi-
-BASE_DEV=/home/david/Projects/android/my-android-toolchain-14/sysroot
+ifdef AMIPS
+MYPREFIX=/home/david/Projects/android/my-android-toolchain-r8-mips/bin/mipsel-linux-android-
+BASE_DEV=/home/david/Projects/android/my-android-toolchain-r8-mips/sysroot
+endif
+
+ifdef AX86
+MYPREFIX=/home/david/Projects/android/my-android-toolchain-r8-x86/bin/i686-android-linux-
+BASE_DEV=/home/david/Projects/android/my-android-toolchain-r8-x86/sysroot
+endif
+
+ifdef AARMV6
+MYPREFIX=/home/david/Projects/android/my-android-toolchain-r8/bin/arm-linux-androideabi-
+BASE_DEV=/home/david/Projects/android/my-android-toolchain-r8/sysroot
+endif
+
+ifdef AARMV7
+MYPREFIX=/home/david/Projects/android/my-android-toolchain-r8/bin/arm-linux-androideabi-
+BASE_DEV=/home/david/Projects/android/my-android-toolchain-r8/sysroot
+endif
 
 #MYPREFIX=/home/david/Projects/android/my-android-toolchain-14-crystax/bin/arm-linux-androideabi-
 #BASE_DEV=/home/david/Projects/android/my-android-toolchain-14-crystax/sysroot
@@ -677,13 +711,21 @@ ifdef ANDROID
 CCOMFLAGS += --sysroot $(BASE_DEV)
 CCOMFLAGS += -DANDROID
 CCOMFLAGS += -fpic
+
+ifdef AARMV7
 CCOMFLAGS += -march=armv7-a -mfloat-abi=softfp -DARMV7
 #CCOMFLAGS += -mfpu=neon
 #CCOMFLAGS += -pipe  -mtune=cortex-a9
+LDFLAGS += -Wl,--fix-cortex-a8
+endif
+
+ifdef AARMV6
+LDFLAGS += -Wl,--fix-cortex-a8
+endif
+
 
 CCOMFLAGS += -Wno-psabi
 
-LDFLAGS += -Wl,--fix-cortex-a8
 LDFLAGS += -llog -lgcc
 LDFLAGS += -Wl,-soname,libMAME4droid.so -shared
 LDFLAGS += -lc -lm 
@@ -721,7 +763,9 @@ CCOMFLAGS += -F/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.2
 CCOMFLAGS += -F/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.2.sdk/System/Library/Frameworks
 CCOMFLAGS +=  -I/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.2.sdk/usr/include
 CCOMFLAGS +=  -I/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.2.sdk/usr/include/c++/4.2.1/armv7-apple-darwin10/
+
 CCOMFLAGS += -march=armv7-a -mfloat-abi=softfp -DARMV7
+
 endif 
 
 LDFLAGS += -framework Foundation -framework CoreFoundation -framework UIKit -framework QuartzCore -framework CoreGraphics -framework AudioToolbox

@@ -49,7 +49,7 @@ static void droid_ios_video_draw(void);
 extern "C"
 void droid_ios_video_thread(void);
 
-int video_threaded = 1;
+//int video_threaded = 1;
 
 void droid_ios_setup_video()
 {
@@ -87,7 +87,7 @@ void droid_ios_video_draw()
 	bpp = 2;
 	vofs = hofs = 0;
 
-	if(video_threaded)
+	if(myosd_video_threaded)
 	{
 		pthread_mutex_lock( &cond_mutex );
 
@@ -109,10 +109,10 @@ void droid_ios_video_draw()
 		myosd_set_video_mode(screen_width,screen_height,vis_area_screen_width,vis_area_screen_height);
 	}
 
-	if(video_threaded)
+	if(myosd_video_threaded)
 	   pthread_mutex_unlock( &cond_mutex );
 
-	if(video_threaded)
+	if(myosd_video_threaded)
 	   osd_lock_acquire(currlist->lock);
 
 	surfptr = (UINT8 *) myosd_screen15;
@@ -127,24 +127,24 @@ void droid_ios_video_draw()
 	draw_rgb555_draw_primitives(currlist->head, surfptr, screen_width, screen_height, pitch / 2);
 #endif
 
-	if(video_threaded)
+	if(myosd_video_threaded)
 	  osd_lock_release(currlist->lock);
 
 	myosd_video_flip();
 
-	if(video_threaded)
+	if(myosd_video_threaded)
 	   pthread_mutex_lock( &cond_mutex );
 
 	currlist = NULL;
 
-	if(video_threaded)
+	if(myosd_video_threaded)
 	   pthread_mutex_unlock( &cond_mutex );
 }
 
 extern "C"
 void droid_ios_video_thread()
 {
-	while (!thread_stopping && video_threaded)
+	while (!thread_stopping && myosd_video_threaded)
 	{
 		droid_ios_video_draw();
 	}
@@ -155,7 +155,7 @@ void droid_ios_video_render(render_target *our_target)
 	int minwidth, minheight;
 	int viswidth, visheight;
 
-	if(video_threaded)
+	if(myosd_video_threaded)
 	   pthread_mutex_lock( &cond_mutex );
 
     if(currlist==NULL)
@@ -222,14 +222,14 @@ void droid_ios_video_render(render_target *our_target)
 		curr_vis_area_screen_width = viswidth;
 		curr_vis_area_screen_height = visheight;
 
-		if(video_threaded)
+		if(myosd_video_threaded)
 		    pthread_cond_signal( &condition_var );
 		else
 			droid_ios_video_draw();
     }
 
 
-    if(video_threaded)
+    if(myosd_video_threaded)
 	   pthread_mutex_unlock( &cond_mutex );
 }
 

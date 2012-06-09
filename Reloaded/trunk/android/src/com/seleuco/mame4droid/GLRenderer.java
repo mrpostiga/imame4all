@@ -67,6 +67,8 @@ public class GLRenderer implements Renderer {
     
 	public void setMAME4droid(MAME4droid mm) {
 		this.mm = mm;
+		
+		force10 = mm.getPrefsHelper().isForcedGLES10();
 	}
     
     public GLRenderer()
@@ -308,7 +310,7 @@ public class GLRenderer implements Renderer {
 			gl.glVertexPointer(3, GL10.GL_FLOAT, 0, mFVertexBuffer);
 			gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, mTexBuffer);
 			gl.glDrawElements(GL10.GL_TRIANGLE_STRIP, 4,
-					GL10.GL_UNSIGNED_SHORT, mIndexBuffer);					
+					GL10.GL_UNSIGNED_SHORT, mIndexBuffer);		    					
 		}		
     }
 }

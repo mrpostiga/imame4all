@@ -64,7 +64,7 @@ int wiimote_remove(uint16_t source_cid, bd_addr_t *addr){
     int i = 0;
     int unid = -1;
     int found = 0;
-    for(;i<num_of_joys;i++)
+    for(;i<myosd_num_of_joys;i++)
     {
        if(joys[i].c_source_cid==source_cid && !found)
        {
@@ -94,8 +94,8 @@ int wiimote_remove(uint16_t source_cid, bd_addr_t *addr){
     }
     if(found)
     {
-      num_of_joys--;
-      if(WIIMOTE_DBG)printf("NUM JOYS %d\n",num_of_joys);
+      myosd_num_of_joys--;
+      if(WIIMOTE_DBG)printf("NUM JOYS %d\n",myosd_num_of_joys);
       return unid;
     }
     return unid;
@@ -115,7 +115,7 @@ struct wiimote_t* wiimote_get_by_source_cid(uint16_t source_cid){
 
 	int i = 0;
 
-	for (; i < num_of_joys; ++i) {
+	for (; i < myosd_num_of_joys; ++i) {
 		if(WIIMOTE_DBG)printf("0x%02x 0x%02x\n",joys[i].i_source_cid,source_cid);
 		if (joys[i].i_source_cid == source_cid)
 			return &joys[i];
@@ -609,7 +609,7 @@ void classic_ctrl_event(struct classic_ctrl_t* cc, byte* msg) {
 	ry = (msg[2] & 0x1F);
 
 	if(WIIMOTE_DBG)
-		printf("%d %d %d %d\n",lx,ly,rx,ry);
+		printf("lx ly rx ry %d %d %d %d\n",lx,ly,rx,ry);
 
 	calc_joystick_state(&cc->ljs, lx, ly);
 	calc_joystick_state(&cc->rjs, rx, ry);
@@ -701,7 +701,7 @@ int iOS_wiimote_check (struct  wiimote_t  *wm){
 	 joy_analog_x[wm->unid]=0.0f;
 	 joy_analog_y[wm->unid]=0.0f;
 	 int joyExKey = 0;
-	 myosd_exitGame = 0;
+	 //myosd_exitGame = 0;
 	 if (1) {
 
 			if (IS_PRESSED(wm, WIIMOTE_BUTTON_A))		{joyExKey |= MYOSD_A;}
@@ -783,8 +783,8 @@ int iOS_wiimote_check (struct  wiimote_t  *wm){
 
 					if(cc->ljs.mag >= deadZone)
 					{
-						joy_analog_x[wm->unid] = cc->ljs.rx;
-						joy_analog_y[wm->unid] = cc->ljs.ry;
+						joy_analog_x[wm->unid] =  (  cc->ljs.rx > 1.0 ) ? 1.0 : (  cc->ljs.rx < -1.0 ) ? -1.0 :  cc->ljs.rx;
+						joy_analog_y[wm->unid] =  (  cc->ljs.ry > 1.0 ) ? 1.0 : (  cc->ljs.ry < -1.0 ) ? -1.0 :  cc->ljs.ry;
 
 						float v = cc->ljs.ang;
 
@@ -893,18 +893,21 @@ int iOS_wiimote_check (struct  wiimote_t  *wm){
 							//printf("A Y\n");
 						}
 					}
-
 /*
 					printf("classic L button pressed:         %f\n", cc->l_shoulder);
 					printf("classic R button pressed:         %f\n", cc->r_shoulder);
+
 					printf("classic left joystick angle:      %f\n", cc->ljs.ang);
 					printf("classic left joystick magnitude:  %f\n", cc->ljs.mag);
+					printf("classic left joystick rx:         %f\n", cc->ljs.rx);
+					printf("classic left joystick ry:         %f\n", cc->ljs.ry);
+
 					printf("classic right joystick angle:     %f\n", cc->rjs.ang);
 					printf("classic right joystick magnitude: %f\n", cc->rjs.mag);
+					printf("classic right rx:                 %f\n", cc->rjs.rx);
+					printf("classic right ry:                 %f\n", cc->rjs.ry);
 */
 				}
-
-
 
 		return joyExKey;
 	 } else {

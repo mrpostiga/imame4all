@@ -81,6 +81,7 @@ extern int isIphone4;
 
 @synthesize forcepxa;
 @synthesize emures;
+@synthesize p1aspx;
    
 - (id)init {
 
@@ -95,7 +96,7 @@ extern int isIphone4;
 - (void)loadOptions
 {
 	
-	NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v4.bin")];
+	NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v5.bin")];
 	
 	NSData *plistData;
 	id plist;
@@ -183,7 +184,8 @@ extern int isIphone4;
         
         forcepxa = 0;
         emures = 0;
-        
+
+        p1aspx = 0;        
 		//[self saveOptions];
 	}
 	else
@@ -235,6 +237,8 @@ extern int isIphone4;
         
         forcepxa  =  [[[optionsArray objectAtIndex:0] objectForKey:@"forcepxa"] intValue];
         emures  =  [[[optionsArray objectAtIndex:0] objectForKey:@"emures"] intValue];
+        
+        p1aspx  =  [[[optionsArray objectAtIndex:0] objectForKey:@"p1aspx"] intValue];
                                        
 	}
 			
@@ -291,10 +295,12 @@ extern int isIphone4;
                              [NSString stringWithFormat:@"%d", forcepxa], @"forcepxa",                             
                              [NSString stringWithFormat:@"%d", emures], @"emures",
                              
+                             [NSString stringWithFormat:@"%d", p1aspx], @"p1aspx",
+                             
 							 nil]];	
 
 	
-    NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v4.bin")];
+    NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v5.bin")];
 	
 	NSData *plistData;
 	
@@ -596,7 +602,7 @@ extern int isIphone4;
                    cell.text  = @"Touch Type";
 
                     segmentedTouchType = [[UISegmentedControl alloc] initWithItems:
-                       [NSArray arrayWithObjects: @"Digital", @"Analog", nil]];
+                       [NSArray arrayWithObjects: @"D-PAD",@"D-Stick", @"Analog", nil]];
                     segmentedTouchType.selectedSegmentIndex = [op inputTouchType];
                   
                     CGRect r = segmentedTouchType.frame;
@@ -704,7 +710,17 @@ extern int isIphone4;
                     segmentediCadeLayout.segmentedControlStyle = UISegmentedControlStylePlain; 
                     cell.accessoryView = segmentediCadeLayout;     
                    break;
-                }                              
+                }    
+                
+               case 9:
+               {
+                   cell.text  = @"P1 as P2,P3,P4";
+                   switchP1aspx  = [[UISwitch alloc] initWithFrame:CGRectZero];                
+                   cell.accessoryView = switchP1aspx ;
+                   [switchP1aspx setOn:[op p1aspx] animated:NO];
+                   [switchP1aspx addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
+                   break;
+               }                          
             }   
             break;
         }        
@@ -922,7 +938,7 @@ extern int isIphone4;
       {
           case 0: return 5;
           case 1: return 5;
-          case 2: return 9;
+          case 2: return 10;
           case 3: return 3;
           case 4: return 9+2;
       }
@@ -1024,7 +1040,10 @@ extern int isIphone4;
         [switchForcepxa release];        
     if(segmentedEmures != nil)
         [segmentedEmures release];  
-         
+    
+    if(switchP1aspx != nil)
+        [switchP1aspx release];   
+                 
    [super dealloc];
 }
 
@@ -1124,6 +1143,9 @@ extern int isIphone4;
         op.forcepxa = [switchForcepxa isOn];
     if(sender == segmentedEmures)
         op.emures = [segmentedEmures selectedSegmentIndex];
+    
+    if(sender == switchP1aspx)
+        op.p1aspx = [switchP1aspx isOn];
             
 	[op saveOptions];
 		
