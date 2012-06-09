@@ -56,7 +56,7 @@
 		(point.y <= rect.origin.y + rect.size.height)) ? 1 : 0)  
 		
 
-extern int num_of_joys;
+extern int myosd_num_of_joys;
 
 extern CGRect drects[100];
 extern int ndrects;
@@ -134,9 +134,11 @@ extern int myosd_waysStick;
 int iOS_numbuttons = 4;
 int iOS_aplusb = 0;
 
+extern int myosd_pxasp1;
+
 int menu_exit_option = 0;
 
-extern int video_threaded;
+extern int myosd_video_threaded;
 int main_thread_priority = 46;
 int video_thread_priority = 46;
 int main_thread_priority_type = 1;
@@ -394,7 +396,7 @@ void* app_Thread_Start(void* args)
 	  //app_DemuteSound();
 	
 	  int old = btUsed;
-	  btUsed = num_of_joys!=0;
+	  btUsed = myosd_num_of_joys!=0;
 	    
 	  if(((!iphone_is_landscape && iOS_full_screen_port) || (iphone_is_landscape && iOS_full_screen_land)) && btUsed && old!=btUsed)
 	  {
@@ -434,6 +436,8 @@ void* app_Thread_Start(void* args)
       iOS_animated_DPad  = [op animatedButtons];
       iOS_full_screen_land  = [op fullLand];
       iOS_full_screen_port  = [op fullPort];
+      
+      myosd_pxasp1 = [op p1aspx];
        
       iOS_skin = [op skin]+1;
       iOS_skin_data = iOS_skin;
@@ -625,7 +629,7 @@ void* app_Thread_Start(void* args)
     if(btnStates[BTN_L2] == BUTTON_PRESS /*&& myosd_inGame*/ && !actionPending)
     {				  				
 
-        if(myosd_in_menu==0)
+        if(myosd_in_menu==0 && myosd_inGame)
         {
             actionPending=1;
             myosd_exitGame = 0;
@@ -633,10 +637,15 @@ void* app_Thread_Start(void* args)
             usleep(100000);	            
             __emulation_paused = 1;
             change_pause(1);
-	        UIAlertView* exitAlertView=[[UIAlertView alloc] initWithTitle:nil
+            
+            UIAlertView* exitAlertView = nil;
+            
+            if(myosd_inGame)
+	              exitAlertView=[[UIAlertView alloc] initWithTitle:nil
 	                                                                  message:@"are you sure you want to exit the game?"
 	                                                                 delegate:self cancelButtonTitle:nil
 	                                                        otherButtonTitles:@"Yes",@"No",nil];
+	                                                        	                                                        
 	        [exitAlertView show];
 	        [exitAlertView release];
         }
@@ -972,7 +981,7 @@ void* app_Thread_Start(void* args)
    
    [self removeDPadView];
     
-   btUsed = num_of_joys!=0; 
+   btUsed = myosd_num_of_joys!=0; 
    
    if((btUsed || iCadeUsed) && ((!iphone_is_landscape && iOS_full_screen_port) || (iphone_is_landscape && iOS_full_screen_land)))
      return;
@@ -2237,7 +2246,7 @@ void* app_Thread_Start(void* args)
 	    		case 9:    rLandscapeImageOverlayFrame     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;      		  		
 	            case 10:   rLoopImageMask = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;    	
 	            case 11:   enable_dview = coords[0]; break;
-	            case 12:   video_threaded = coords[0]; break;
+	            case 12:   myosd_video_threaded = coords[0]; break;
 	            case 13:   main_thread_priority = coords[0]; break;
 	            case 14:   video_thread_priority = coords[0]; break;
 	            case 15:   main_thread_priority_type = coords[0]; break;

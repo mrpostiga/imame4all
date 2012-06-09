@@ -34,7 +34,7 @@
 0,16,117,58//L2 img
 908,16,117,58//R2 img     
 0,404,254,364//StickWindow
-12,470,230,230//StickArea
+12,500,230,230//StickArea
 64//radio_stick
 50
 

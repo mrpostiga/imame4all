@@ -56,7 +56,7 @@ import com.seleuco.mame4droid.helpers.PrefsHelper;
 
 public class InputHandler implements OnTouchListener, OnKeyListener, IController{
 	
-	protected AnalogStick analogStick = new AnalogStick();
+	protected AnalogStick stick = new AnalogStick();
 	protected  TiltSensor tiltSensor = new TiltSensor();
 	protected ControlCustomizer controlCustomizer = new ControlCustomizer();
 	
@@ -262,7 +262,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	    	Emulator.setPadData(i,pad_data[i]);
     	}
 		
-		analogStick.setMAME4droid(mm);
+		stick.setMAME4droid(mm);
 		tiltSensor.setMAME4droid(mm);
 		controlCustomizer.setMAME4droid(mm);
 	}
@@ -486,7 +486,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 			
 		for (int j = 0; j < values.size(); j++) {
 			InputValue iv = values.get(j);
-			if(iv.getType()==TYPE_STICK_IMG && pH.getControllerType() == PrefsHelper.PREF_DIGITAL)
+			if(iv.getType()==TYPE_STICK_IMG && pH.getControllerType() == PrefsHelper.PREF_DIGITAL_DPAD)
 			{
 				if(stick_state != old_stick_state)
 				{
@@ -500,11 +500,11 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 					old_stick_state = stick_state;
 				}
 			}
-			else if(iv.getType()==TYPE_ANALOG_RECT && pH.getControllerType() != PrefsHelper.PREF_DIGITAL)
+			else if(iv.getType()==TYPE_ANALOG_RECT && pH.getControllerType() != PrefsHelper.PREF_DIGITAL_DPAD)
 			{
 				if(stick_state != old_stick_state)
 				{
-					if(pH.isAnimatedInput() && pH.getControllerType()==PrefsHelper.PREF_ANALOG_FAST)
+					if(pH.isAnimatedInput() && (pH.getControllerType()==PrefsHelper.PREF_ANALOG_FAST || pH.getControllerType()==PrefsHelper.PREF_DIGITAL_STICK))
 					{
 					    if(pH.isDebugEnabled())
 					      mm.getInputView().invalidate();
@@ -574,7 +574,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 							   newtouch = getButtonValue(iv.getValue(),true);
 								 
 							   if(iv.getValue()==BTN_L2)
-								{ 
+							   { 
 								    if(!Emulator.isInMAME())
 									    mm.showDialog(DialogHelper.DIALOG_EXIT);
 								    else
@@ -596,7 +596,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 									 mm.showDialog(DialogHelper.DIALOG_OPTIONS);
 								}
 							}   
-							else if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL
+							else if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL_DPAD
 									&& !(TiltSensor.isEnabled() && Emulator.isInMAME()))
 							{	
 							   newtouch = getStickValue(iv.getValue());
@@ -650,8 +650,8 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		    }
         	/*if(state == STATE_SHOWING_CONTROLLER)
 		    {*/	
-		    	if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL && !(TiltSensor.isEnabled() && Emulator.isInMAME()))
-		    		pad_data[0] = analogStick.handleMotion(event, pad_data[0]); 	 		    	
+		    	if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL_DPAD && !(TiltSensor.isEnabled() && Emulator.isInMAME()))
+		    		pad_data[0] = stick.handleMotion(event, pad_data[0]); 	 		    	
 		    	handleTouchController(event);
 		    	return true;
 		    /*}*/
@@ -737,7 +737,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 				values.get(i).setFixData(dx, dy, ax, ay);
 				
 				if(values.get(i).getType() == TYPE_ANALOG_RECT)
-				   analogStick.setStickArea(values.get(i).getRect());
+				   stick.setStickArea(values.get(i).getRect());
 			}
 		}
 	}
@@ -795,7 +795,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	}
 	
 	public AnalogStick getAnalogStick() {
-		return analogStick;
+		return stick;
 	}
 
 	public int getOpacity(){

@@ -1,1 +1,1 @@
-../android-ndk-r7b/ndk-build
+../android-ndk-r8/ndk-build

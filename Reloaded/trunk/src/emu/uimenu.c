@@ -3,7 +3,6 @@
     uimenu.c
 
     Internal MAME menus for the user interface.
-
     Copyright Nicola Salmoria and the MAME Team.
     Visit http://mamedev.org for licensing and usage restrictions.
 
@@ -1494,6 +1493,14 @@ static void menu_main(running_machine *machine, ui_menu *menu, void *parameter, 
 		if((FPTR)event->itemref==777)
 		{
 			machine->schedule_soft_reset();
+			myosd_exitGame = 1;
+			popmessage("Done!");
+		}
+		else if((FPTR)event->itemref==778)
+		{
+			myosd_service = 1;
+			myosd_exitGame = 1;
+			popmessage("Done!.");
 		}
 		else
 		  ui_menu_stack_push(ui_menu_alloc(machine, menu->container, (ui_menu_handler_func)event->itemref, NULL));
@@ -1621,6 +1628,8 @@ static void menu_main_populate(running_machine *machine, ui_menu *menu, void *st
 
     //DAV HACK
 	ui_menu_item_append(menu, "Soft Reset", NULL, 0, (void *)777);
+
+	ui_menu_item_append(menu, "Service", NULL, 0, (void *)778);
 
 	ui_menu_item_append(menu, "Speed Hacks", NULL, 0, (void *)menu_speed_hacks);
 
@@ -1778,10 +1787,10 @@ static void menu_input_specific_populate(running_machine *machine, ui_menu *menu
 	for (port = machine->m_portlist.first(); port != NULL; port = port->next())
 		for (field = port->fieldlist; field != NULL; field = field->next)
 		{
-			const char *name = input_field_name(field);
+			const char *name2 = input_field_name(field);
 
 			/* add if we match the group and we have a valid name */
-			if (name != NULL && input_condition_true(machine, &field->condition) &&
+			if (name2 != NULL && input_condition_true(machine, &field->condition) &&
 #ifdef MESS
 				(field->category == 0 || input_category_active(machine, field->category)) &&
 #endif /* MESS */
@@ -1800,20 +1809,32 @@ static void menu_input_specific_populate(running_machine *machine, ui_menu *menu
 				for (seqtype = SEQ_TYPE_STANDARD; seqtype < SEQ_TYPE_TOTAL; seqtype++)
 				{
 					/* build an entry for the standard sequence */
+
 					input_item_data *item = (input_item_data *)ui_menu_pool_alloc(menu, sizeof(*item));
 					memset(item, 0, sizeof(*item));
 					item->ref = field;
 					item->seqtype = seqtype;
-					const input_seq *s = input_field_seq(field, seqtype);
-					//item->seq = *s;
 
+					const input_seq *s = input_field_seq(field, seqtype);
+
+					item->seq = *s;
+					/*
 					for(int i=0; i<8;i++)
 						item->seq.code[i] = (*s).code[i];
-
+                    */
 					item->defseq = get_field_default_seq(field, seqtype);
+
 					item->sortorder = sortorder + suborder[seqtype];
+
 					item->type = input_type_is_analog(field->type) ? (INPUT_TYPE_ANALOG + seqtype) : INPUT_TYPE_DIGITAL;
-					item->name = name;
+#ifdef ANDROID
+//					__android_log_print(ANDROID_LOG_DEBUG, "TT", "%s",name);
+#endif
+					if (item->type != INPUT_TYPE_DIGITAL)
+					    item->name = "BB";
+					else
+					    item->name = "AA";//name2;
+					item->name = name2;
 					item->next = itemlist;
 					itemlist = item;
 
@@ -3848,9 +3869,9 @@ static void menu_select_game_custom_render(running_machine *machine, ui_menu *me
 	else
 			//sprintf(&tempbuf[0][0], "Type name or select: _");
 	#ifdef IOS
-			sprintf(&tempbuf[0][0], "MAME4iOS Reloaded 1.1 by David Valdeita (Seleuco)");
+			sprintf(&tempbuf[0][0], "MAME4iOS Reloaded 1.2 by David Valdeita (Seleuco)");
 	#else
-			sprintf(&tempbuf[0][0], "MAME4droid Reloaded 1.1 by David Valdeita (Seleuco)");
+			sprintf(&tempbuf[0][0], "MAME4droid Reloaded 1.2 by David Valdeita (Seleuco)");
 	#endif
 
 	/* get the size of the text */

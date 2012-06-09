@@ -229,22 +229,22 @@ struct _mips3_state
     FUNCTION PROTOTYPES
 ***************************************************************************/
 
-void mips3com_init(mips3_state *mips, mips3_flavor flavor, int bigendian, legacy_cpu_device *device, device_irq_callback irqcallback);
-void mips3com_exit(mips3_state *mips);
+void mips3com_init(mips3_state *mipsaa, mips3_flavor flavor, int bigendian, legacy_cpu_device *device, device_irq_callback irqcallback);
+void mips3com_exit(mips3_state *mipsaa);
 
-void mips3com_reset(mips3_state *mips);
-offs_t mips3com_dasm(mips3_state *mips, char *buffer, offs_t pc, const UINT8 *oprom, const UINT8 *opram);
-void mips3com_update_cycle_counting(mips3_state *mips);
+void mips3com_reset(mips3_state *mipsaa);
+offs_t mips3com_dasm(mips3_state *mipsaa, char *buffer, offs_t pc, const UINT8 *oprom, const UINT8 *opram);
+void mips3com_update_cycle_counting(mips3_state *mipsaa);
 
-void mips3com_asid_changed(mips3_state *mips);
-int mips3com_translate_address(mips3_state *mips, int space, int intention, offs_t *address);
-void mips3com_tlbr(mips3_state *mips);
-void mips3com_tlbwi(mips3_state *mips);
-void mips3com_tlbwr(mips3_state *mips);
-void mips3com_tlbp(mips3_state *mips);
+void mips3com_asid_changed(mips3_state *mipsaa);
+int mips3com_translate_address(mips3_state *mipsaa, int space, int intention, offs_t *address);
+void mips3com_tlbr(mips3_state *mipsaa);
+void mips3com_tlbwi(mips3_state *mipsaa);
+void mips3com_tlbwr(mips3_state *mipsaa);
+void mips3com_tlbp(mips3_state *mipsaa);
 
-void mips3com_set_info(mips3_state *mips, UINT32 state, cpuinfo *info);
-void mips3com_get_info(mips3_state *mips, UINT32 state, cpuinfo *info);
+void mips3com_set_info(mips3_state *mipsaa, UINT32 state, cpuinfo *info);
+void mips3com_get_info(mips3_state *mipsaa, UINT32 state, cpuinfo *info);
 
 
 
@@ -257,12 +257,12 @@ void mips3com_get_info(mips3_state *mips, UINT32 state, cpuinfo *info);
     IRQ line
 -------------------------------------------------*/
 
-INLINE void mips3com_set_irq_line(mips3_state *mips, int irqline, int state)
+INLINE void mips3com_set_irq_line(mips3_state *mipsaa, int irqline, int state)
 {
 	if (state != CLEAR_LINE)
-		mips->cpr[0][COP0_Cause] |= 0x400 << irqline;
+		mipsaa->cpr[0][COP0_Cause] |= 0x400 << irqline;
 	else
-		mips->cpr[0][COP0_Cause] &= ~(0x400 << irqline);
+		mipsaa->cpr[0][COP0_Cause] &= ~(0x400 << irqline);
 }
 
 #endif /* __MIPS3COM_H__ */

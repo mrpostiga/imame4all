@@ -242,9 +242,9 @@ public class ControlCustomizer {
 		   {
 		       if (v.getType()==InputHandler.TYPE_BUTTON_RECT)
 		    	   canvas.drawRect(r, p2);
-		       else if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL && v.getType()==InputHandler.TYPE_STICK_RECT)
+		       else if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL_DPAD && v.getType()==InputHandler.TYPE_STICK_RECT)
 		    	   canvas.drawRect(r, p2);
-		       else if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL && v.getType()==InputHandler.TYPE_ANALOG_RECT)
+		       else if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL_DPAD && v.getType()==InputHandler.TYPE_ANALOG_RECT)
 		    	   canvas.drawRect(r, p2);
 		   }  
 		}	

@@ -134,7 +134,7 @@ public class InputHandlerExt extends InputHandler {
 										 mm.showDialog(DialogHelper.DIALOG_OPTIONS);
 									 }
 								}
-								else if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL
+								else if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL_DPAD
 										&& !(TiltSensor.isEnabled() && Emulator.isInMAME()))
 								{
 									 newtouches[id] = getStickValue(iv.getValue());

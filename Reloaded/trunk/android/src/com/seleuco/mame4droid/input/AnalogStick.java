@@ -129,8 +129,9 @@ public class AnalogStick implements IController{
 	 	{
 			int ways = mm.getPrefsHelper().getStickWays();
 			boolean b = Emulator.isInMAME();
-						
-			Emulator.setAnalogData(0,rx,ry * -1.0f);
+				
+			if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL_STICK)
+			   Emulator.setAnalogData(0,rx,ry * -1.0f);
 			
 	 		float v = ang;
 	 		
@@ -389,8 +390,10 @@ public class AnalogStick implements IController{
 	   
 		//if(motion_pid!=-1)
 		   pad_data = updateAnalog(pad_data);
+		   
+		double inc = mm.getPrefsHelper().isDebugEnabled() ? 0.01 : 0.08;   
 	    
-	    if((Math.abs(oldRx - rx) >= 0.08 || Math.abs(oldRy - ry) >= 0.08) && mm.getPrefsHelper().isAnimatedInput() )
+	    if((Math.abs(oldRx - rx) >= inc || Math.abs(oldRy - ry) >= inc) && mm.getPrefsHelper().isAnimatedInput() )
 	    {
 	      oldRx = rx;
 	      oldRy = ry;
@@ -423,7 +426,7 @@ public class AnalogStick implements IController{
 			inner_img.setAlpha(mm.getInputHandler().getOpacity());
 			inner_img.draw(canvas);
 		}
-		else if( mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_ANALOG_FAST)
+		else if( mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_ANALOG_FAST || mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL_STICK)
 		{
 			stick_images[mm.getInputHandler().getStick_state()].setBounds(rStickArea);
 			stick_images[mm.getInputHandler().getStick_state()].setAlpha(mm.getInputHandler().getOpacity());

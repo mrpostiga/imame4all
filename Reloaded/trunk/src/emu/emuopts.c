@@ -132,8 +132,8 @@ const options_entry mame_core_options[] =
 	{ "steadykey;steady",            "0",         OPTION_BOOLEAN,    "enable steadykey support" },
 	{ "offscreen_reload;reload",     "0",         OPTION_BOOLEAN,    "convert lightgun button 2 into offscreen reload" },
 	{ "joystick_map;joymap",         "auto",      0,                 "explicit joystick map, or auto to auto-select" },
-	{ "joystick_deadzone;joy_deadzone;jdz",      "0.3",  0,          "center deadzone range for joystick where change is ignored (0.0 center, 1.0 end)" },
-	{ "joystick_saturation;joy_saturation;jsat", "0.85", 0,          "end of axis saturation range for joystick where change is ignored (0.0 center, 1.0 end)" },
+	{ "joystick_deadzone;joy_deadzone;jdz",      /*HACK DAV "0.3"*/"0.01",  0,          "center deadzone range for joystick where change is ignored (0.0 center, 1.0 end)" },
+	{ "joystick_saturation;joy_saturation;jsat", /*HACK DAV "0.85"*/"0.85", 0,          "end of axis saturation range for joystick where change is ignored (0.0 center, 1.0 end)" },
 	{ "natural;nat",				 "0",		  OPTION_BOOLEAN,	 "specifies whether to use a natural keyboard or not" },
 	{ "uimodekey;umk",      		 "auto",	  0,    			 "specifies the key used to toggle between full and partial UI mode" },
 

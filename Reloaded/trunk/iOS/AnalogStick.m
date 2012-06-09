@@ -52,6 +52,7 @@ extern int iOS_animated_DPad;
 extern int iOS_skin;
 extern int iOS_analogDeadZoneValue;
 extern int enable_dview;
+extern int iOS_inputTouchType;
 
 int iOS_stick_radio = 60;
 
@@ -74,8 +75,11 @@ int iOS_stick_radio = 60;
 
 	if(mag >= deadZone)
 	{
-		joy_analog_x[0] = rx;
-		joy_analog_y[0] = ry * -1.0f;
+		if(iOS_inputTouchType==2)
+		{
+		   joy_analog_x[0] = rx;
+		   joy_analog_y[0] = ry * -1.0f;
+		}
 
 		float v = ang;
 		

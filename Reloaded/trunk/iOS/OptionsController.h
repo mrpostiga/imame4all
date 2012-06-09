@@ -78,6 +78,7 @@
 
    @public int forcepxa;
    @public int emures;
+   @public int p1aspx;
 
 }
 
@@ -129,6 +130,7 @@
 
 @property (readwrite,assign) int forcepxa;
 @property (readwrite,assign) int emures;
+@property (readwrite,assign) int p1aspx;
 
 @end
 
@@ -182,6 +184,8 @@
 
    UISwitch *switchForcepxa;
    UISegmentedControl *segmentedEmures;
+
+   UISwitch *switchP1aspx;
 }
 
 - (void)optionChanged:(id)sender;

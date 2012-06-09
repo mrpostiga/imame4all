@@ -309,14 +309,14 @@ public class InputView extends ImageView {
         {
         	InputValue v = data.get(i); 
         	BitmapDrawable d = null;
-        	if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL 
+        	if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL_DPAD 
         			&& v.getType()==InputHandler.TYPE_STICK_IMG && canvas.getClipBounds().intersect(v.getRect()))
         	{
                //canvas.drawBitmap(stick_images[mm.getInputHandler().getStick_state()].getBitmap(), null, v.getRect(), null);
         	   if(!(mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE && mm.getPrefsHelper().isHideStick()))
         	       d = stick_images[mm.getInputHandler().getStick_state()];
         	}
-        	else if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL && 
+        	else if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL_DPAD && 
         			v.getType()==InputHandler.TYPE_ANALOG_RECT && canvas.getClipBounds().intersect(v.getRect()) )
         	{
          	   if(!(mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE && mm.getPrefsHelper().isHideStick()))
@@ -374,9 +374,9 @@ public class InputView extends ImageView {
 
 			       if (v.getType()==InputHandler.TYPE_BUTTON_RECT)
 			    	  canvas.drawRect(r, p2);
-			       else if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL && v.getType()==InputHandler.TYPE_STICK_RECT)
+			       else if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL_DPAD && v.getType()==InputHandler.TYPE_STICK_RECT)
 			    	   canvas.drawRect(r, p2);
-			       else if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL && v.getType()==InputHandler.TYPE_ANALOG_RECT)
+			       else if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL_DPAD && v.getType()==InputHandler.TYPE_ANALOG_RECT)
 			    	   canvas.drawRect(r, p2);
 			   }  
 			}

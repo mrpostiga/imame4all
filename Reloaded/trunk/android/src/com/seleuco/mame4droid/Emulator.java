@@ -71,6 +71,9 @@ public class Emulator
 	final static public int IN_MENU = 19;
 	final static public int EMU_RESOLUTION = 20;
 	final static public int FORCE_PXASPECT = 21;	
+	final static public int THREADED_VIDEO = 22;
+	final static public int DOUBLE_BUFFER = 23;
+	final static public int PXASP1 = 24;
 	
     private static MAME4droid mm = null;
     
@@ -372,12 +375,16 @@ public class Emulator
             });
 		//}		  
 		  }
-		
+						
 		if(nativeVideoT==null)
 		{
 			nativeVideoT = new Thread(new Runnable(){
 				public void run() {
-					runVideoT();
+					
+					Emulator.setValue(Emulator.THREADED_VIDEO,mm.getPrefsHelper().isThreadedVideo() ? 1 : 0 );
+					
+					if( mm.getPrefsHelper().isThreadedVideo())					 
+					   runVideoT();					
 				}			
 			},"emulatorNativeVideo-Thread");
 			
@@ -487,7 +494,7 @@ public class Emulator
 		//Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 		
 		if (isEmulating)return;
-		
+				
 		Thread t = new Thread(new Runnable(){
 			public void run() {
 				isEmulating = true;

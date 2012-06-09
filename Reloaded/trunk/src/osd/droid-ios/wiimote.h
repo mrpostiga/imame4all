@@ -273,7 +273,7 @@ extern "C" {
     #define WIIMOTE_IS_CONNECTED(wm)		(WIIMOTE_IS_SET(wm, WIIMOTE_STATE_CONNECTED))
 
 	extern struct wiimote_t joys[4];
-	extern int num_of_joys;
+	extern int myosd_num_of_joys;
 
 
 //devuelve un int haciendo polling de lo guardado en el wiimote
