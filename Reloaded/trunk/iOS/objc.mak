@@ -9,12 +9,14 @@ OSDOBJS +=  $(IOSOBJ)/iph_main.o \
 	$(IOSOBJ)/EmulatorController.o \
 	$(IOSOBJ)/HelpController.o \
 	$(IOSOBJ)/OptionsController.o \
-	$(IOSOBJ)/DonateController.o \
-	$(IOSOBJ)/Helper.o \
-	$(IOSOBJ)/DView.o \
+	$(IOSOBJ)/ListOptionController.o \
+        $(IOSOBJ)/DonateController.o \
+	$(IOSOBJ)/WiiMoteHelper.o \
+	$(IOSOBJ)/DebugView.o \
 	$(IOSOBJ)/BTDevice.o \
 	$(IOSOBJ)/BTInquiryViewController.o \
-	$(IOSOBJ)/AnalogStick.o  
+	$(IOSOBJ)/iCadeView.o \
+	$(IOSOBJ)/AnalogStick.o   
 
 
 

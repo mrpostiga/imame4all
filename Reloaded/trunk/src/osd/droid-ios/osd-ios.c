@@ -50,6 +50,7 @@ int  myosd_force_pxaspect = 0;
 
 int  myosd_pxasp1 = 1;
 int  myosd_service = 0;
+int  myosd_num_buttons = 0;
 
 int myosd_video_threaded=1;
 
@@ -59,9 +60,24 @@ int m4all_BplusX = 0;
 int m4all_hide_LR = 0;
 int m4all_landscape_buttons = 4;
 
+int myosd_filter_favorites = 0;
+int myosd_filter_clones = 0;
+int myosd_filter_not_working = 0;
+
+int myosd_filter_manufacturer = -1;
+int myosd_filter_gte_year = -1;
+int myosd_filter_lte_year = -1;
+int myosd_filter_driver_source= -1;
+int myosd_filter_category = -1;
+char myosd_filter_keyword[MAX_FILTER_KEYWORD] = {'\0'};
+
+int myosd_reset_filter = 0;
+
+int myosd_num_ways = 8;
+
+
 /*extern */float joy_analog_x[4];
 /*extern */float joy_analog_y[4];
-
 
 static int lib_inited = 0;
 static int soundInit = 0;
@@ -93,15 +109,18 @@ static pthread_mutex_t sound_mutex     = PTHREAD_MUTEX_INITIALIZER;
 
 extern int video_thread_priority;
 extern int video_thread_priority_type;
+extern int global_low_latency_sound;
 
-extern void iphone_UpdateScreen(void);
-extern void iphone_Reset_Views(void);
+extern "C" void iphone_UpdateScreen(void);
+extern "C" void iphone_Reset_Views(void);
 extern "C" void droid_ios_video_thread(void);
 
-void change_pause(int value);
+extern "C" void change_pause(int value);
 void* threaded_video(void* args);
 int sound_close_AudioQueue(void);
 int sound_open_AudioQueue(int rate, int bits, int stereo);
+int sound_close_AudioUnit(void);
+int sound_open_AudioUnit(int rate, int bits, int stereo);
 void queue(unsigned char *p,unsigned size);
 unsigned short dequeue(unsigned char *p,unsigned size);
 inline int emptyQueue(void);
@@ -172,15 +191,20 @@ unsigned long myosd_joystick_read(int n)
 
        if(myosd_pxasp1 && myosd_num_of_joys==1)
        {
+#ifdef WIIMOTE           
     	   res |= iOS_wiimote_check(&joys[0]);
+#endif
     	   res |= myosd_joy_status[0];
        }
+
     }
 
 	if (n<myosd_num_of_joys)
 	{
-	   res |= iOS_wiimote_check(&joys[n]);
-	   res |= myosd_joy_status[n];
+#ifdef WIIMOTE
+	    res |= iOS_wiimote_check(&joys[n]);
+#endif
+        res |= myosd_joy_status[n];
 	}
 
 	return res;
@@ -192,19 +216,21 @@ float myosd_joystick_read_analog(int n, char axis)
 
     if(n==0 || myosd_pxasp1 && (myosd_num_of_joys==0 || myosd_num_of_joys==1))
     {
-       if(myosd_pxasp1 && myosd_num_of_joys==1)
+#ifdef WIIMOTE
+        if(myosd_pxasp1 && myosd_num_of_joys==1)
           iOS_wiimote_check(&joys[0]);
-
+#endif
        if(axis=='x')
 		   res = joy_analog_x[0];
 	   else if (axis=='y')
 		   res = joy_analog_y[0];
-
 	}
 
 	if (n<myosd_num_of_joys)
 	{
-	 	iOS_wiimote_check(&joys[n]);
+#ifdef WIIMOTE	 	
+        iOS_wiimote_check(&joys[n]);
+#endif        
 	   	if(axis=='x')
 			res = joy_analog_x[n];
 		else if (axis=='y')
@@ -223,7 +249,7 @@ void myosd_init(void)
     {
 	   printf("myosd_init\n");
 
-	   myosd_set_video_mode(320,240,320,240);
+	   //myosd_set_video_mode(320,240,320,240);
 
 	   if(dbl_buff)
 	      myosd_screen15 = myosd_screen;
@@ -273,7 +299,11 @@ void myosd_closeSound(void) {
 	{
 		printf("myosd_closeSound\n");
 
-		sound_close_AudioQueue();
+		
+        if(global_low_latency_sound)
+           sound_close_AudioUnit();
+        else
+           sound_close_AudioQueue();  
 
 	   	soundInit = 0;
 	}
@@ -282,10 +312,17 @@ void myosd_closeSound(void) {
 void myosd_openSound(int rate,int stereo) {
 	if( soundInit == 0)
 	{
-		printf("myosd_openSound rate:%d stereo:%d \n",rate,stereo);
-
-		sound_open_AudioQueue(rate, 16, stereo);
-
+        if(global_low_latency_sound)
+        {
+            printf("myosd_openSound LOW LATENCY rate:%d stereo:%d \n",rate,stereo);
+            sound_open_AudioUnit(rate, 16, stereo);
+        }
+        else
+        {
+		    printf("myosd_openSound NORMAL rate:%d stereo:%d \n",rate,stereo);
+            sound_open_AudioQueue(rate, 16, stereo);
+        }
+       
 		soundInit = 1;
 	}
 }
@@ -408,27 +445,6 @@ unsigned short dequeue(unsigned char *p,unsigned size){
 
 void checkStatus(OSStatus status){}
 
-/*
-int audioBufferSize = 480000*2;
-
-#define BUF (audioBufferSize )
-
-static void AQBufferCallback(
-							 void *userdata,
-							 AudioQueueRef outQ,
-							 AudioQueueBufferRef outQB)
-{
-	unsigned char *coreAudioBuffer;
-	int res;
-	coreAudioBuffer = (unsigned char*) outQB->mAudioData;
-
-	res = dequeue(coreAudioBuffer,BUF);
-	outQB->mAudioDataByteSize = res;
-
-	AudioQueueEnqueueBuffer(outQ, outQB, 0, NULL);
-}
-*/
-
 
 static void AQBufferCallback(void *userdata,
 							 AudioQueueRef outQ,
@@ -453,75 +469,8 @@ int sound_close_AudioQueue(){
         head = 0;
         tail = 0;
 	}
-	return 0;
+	return 1;
 }
-
-/*
-int sound_open_AudioQueue(int rate, int bits, int stereo){
-
-    Float64 sampleRate = 48000.0;
-    int i;
-    UInt32 err;
-
-    if(rate==44100)
-    	sampleRate = 44100.0;
-    if(rate==32000)
-    	sampleRate = 32000.0;
-    else if(rate==22050)
-    	sampleRate = 22050.0;
-    else if(rate==11025)
-    	sampleRate = 11025.0;
-
-    audioBufferSize =  (rate / 60) * 2 * (stereo==1 ? 2 : 1) ;
-
-    //audioBufferSize = 882 * 2 * 2;
-    //printf("%d %d %d %f\n",rate,bits,stereo,sampleRate);
-    //printf("audio buffer size %d\n",audioBufferSize);
-
-    if( soundInit == 1 )
-    {
-    	sound_close_AudioQueue();
-    }
-
-
-    soundInit = 0;
-    memset (&in.mDataFormat, 0, sizeof (in.mDataFormat));
-    in.mDataFormat.mSampleRate = sampleRate;
-    in.mDataFormat.mFormatID = kAudioFormatLinearPCM;
-    in.mDataFormat.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger  | kAudioFormatFlagIsPacked;
-    in.mDataFormat.mBytesPerPacket =  (stereo == 1 ? 4 : 2 );
-    in.mDataFormat.mFramesPerPacket = 1;
-    in.mDataFormat.mBytesPerFrame = (stereo ==  1? 4 : 2);
-    in.mDataFormat.mChannelsPerFrame = (stereo == 1 ? 2 : 1);
-    in.mDataFormat.mBitsPerChannel = 16;
-
-    err = AudioQueueNewOutput(&in.mDataFormat,
-							  AQBufferCallback,
-							  NULL,
-							  NULL,
-							  kCFRunLoopCommonModes,
-							  0,
-							  &in.queue);
-
-    //printf("res %ld",err);
-
-
-	for (i=0; i<AUDIO_BUFFERS; i++)
-	{
-		err = AudioQueueAllocateBuffer(in.queue, BUF, &in.mBuffers[i]);
-		//printf("res %ld",err);
-		in.mBuffers[i]->mAudioDataByteSize = BUF;
-		AudioQueueEnqueueBuffer(in.queue, in.mBuffers[i], 0, NULL);
-	}
-
-	soundInit = 1;
-	err = AudioQueueStart(in.queue, NULL);
-
-	return 0;
-
-}
-*/
-
 
 int sound_open_AudioQueue(int rate, int bits, int stereo){
 
@@ -585,5 +534,140 @@ int sound_open_AudioQueue(int rate, int bits, int stereo){
 
 	return 0;
 
+}
+
+///////// AUDIO UNIT
+#define kOutputBus 0
+static AudioComponentInstance audioUnit;
+
+static OSStatus playbackCallback(void *inRefCon,
+                                 AudioUnitRenderActionFlags *ioActionFlags,
+                                 const AudioTimeStamp *inTimeStamp,
+                                 UInt32 inBusNumber,
+                                 UInt32 inNumberFrames,
+                                 AudioBufferList *ioData) {
+    // Notes: ioData contains buffers (may be more than one!)
+    // Fill them up as much as you can. Remember to set the size value in each buffer to match how
+    // much data is in the buffer.
+    
+	unsigned  char *coreAudioBuffer;
+    
+    int i;
+    for (i = 0 ; i < ioData->mNumberBuffers; i++)
+    {
+        coreAudioBuffer = (unsigned char*) ioData->mBuffers[i].mData;
+        //ioData->mBuffers[i].mDataByteSize = dequeue(coreAudioBuffer,inNumberFrames * 4);
+        dequeue(coreAudioBuffer,inNumberFrames * 4);
+        ioData->mBuffers[i].mDataByteSize = inNumberFrames * 4;
+    }
+    
+    return noErr;
+}
+
+int sound_close_AudioUnit(){
+    
+	if( soundInit == 1 )
+	{
+		OSStatus status = AudioOutputUnitStop(audioUnit);
+		checkStatus(status);
+        
+		AudioUnitUninitialize(audioUnit);
+		soundInit = 0;
+        head = 0;
+        tail = 0;
+	}
+    
+	return 1;
+}
+
+int sound_open_AudioUnit(int rate, int bits, int stereo){
+    Float64 sampleRate = 48000.0;
+
+    if( soundInit == 1 )
+    {
+        sound_close_AudioUnit();
+    }
+    
+    if(rate==44100)
+        sampleRate = 44100.0;
+    if(rate==32000)
+        sampleRate = 32000.0;
+    else if(rate==22050)
+        sampleRate = 22050.0;
+    else if(rate==11025)
+        sampleRate = 11025.0;
+    
+    //audioBufferSize =  (rate / 60) * 2 * (stereo==1 ? 2 : 1) ;
+    
+    OSStatus status;
+    
+    // Describe audio component
+    AudioComponentDescription desc;
+    desc.componentType = kAudioUnitType_Output;
+    desc.componentSubType = kAudioUnitSubType_RemoteIO;
+    
+    desc.componentFlags = 0;
+    desc.componentFlagsMask = 0;
+    desc.componentManufacturer = kAudioUnitManufacturer_Apple;
+    
+    // Get component
+    AudioComponent inputComponent = AudioComponentFindNext(NULL, &desc);
+    
+    // Get audio units
+    status = AudioComponentInstanceNew(inputComponent, &audioUnit);
+    checkStatus(status);
+    
+    UInt32 flag = 1;
+    // Enable IO for playback
+    status = AudioUnitSetProperty(audioUnit,
+                                  kAudioOutputUnitProperty_EnableIO,
+                                  kAudioUnitScope_Output,
+                                  kOutputBus,
+                                  &flag,
+                                  sizeof(flag));
+    checkStatus(status);
+    
+    AudioStreamBasicDescription audioFormat;
+    
+    memset (&audioFormat, 0, sizeof (audioFormat));
+    
+    audioFormat.mSampleRate = sampleRate;
+    audioFormat.mFormatID = kAudioFormatLinearPCM;
+    audioFormat.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger  | kAudioFormatFlagIsPacked;
+    audioFormat.mBytesPerPacket =  (stereo == 1 ? 4 : 2 );
+    audioFormat.mFramesPerPacket = 1;
+    audioFormat.mBytesPerFrame = (stereo ==  1? 4 : 2);
+    audioFormat.mChannelsPerFrame = (stereo == 1 ? 2 : 1);
+    audioFormat.mBitsPerChannel = 16;
+    
+    status = AudioUnitSetProperty(audioUnit,
+                                  kAudioUnitProperty_StreamFormat,
+                                  kAudioUnitScope_Input,
+                                  kOutputBus,
+                                  &audioFormat,
+                                  sizeof(audioFormat));
+    checkStatus(status);
+    
+    struct AURenderCallbackStruct callbackStruct;
+    // Set output callback
+    callbackStruct.inputProc = playbackCallback;
+    callbackStruct.inputProcRefCon = NULL;
+    status = AudioUnitSetProperty(audioUnit,
+                                  kAudioUnitProperty_SetRenderCallback,
+                                  kAudioUnitScope_Global,
+                                  kOutputBus,
+                                  &callbackStruct,
+                                  sizeof(callbackStruct));
+    checkStatus(status);
+    
+    status = AudioUnitInitialize(audioUnit);
+    checkStatus(status);
+    
+    //ARRANCAR
+    soundInit = 1;
+    status = AudioOutputUnitStart(audioUnit);
+    checkStatus(status);
+    
+    return 1;
 }
 

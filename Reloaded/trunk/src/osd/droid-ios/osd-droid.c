@@ -45,9 +45,25 @@ int  myosd_force_pxaspect = 0;
 int  myosd_waysStick;
 int  myosd_pxasp1 = 0;
 int  myosd_service = 0;
+int  myosd_num_buttons = 0;
 
 int myosd_num_of_joys=1;
 int myosd_video_threaded=1;
+
+int myosd_filter_favorites = 0;
+int myosd_filter_clones = 0;
+int myosd_filter_not_working = 0;
+
+int myosd_filter_manufacturer = -1;
+int myosd_filter_gte_year = -1;
+int myosd_filter_lte_year = -1;
+int myosd_filter_driver_source= -1;
+int myosd_filter_category = -1;
+extern char myosd_filter_keyword[MAX_FILTER_KEYWORD] = {'\0'};
+
+int myosd_reset_filter = 0;
+
+int myosd_num_ways = 8;
 
 float joy_analog_x[4];
 float joy_analog_y[4];

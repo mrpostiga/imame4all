@@ -20,7 +20,7 @@ NOWERROR = 1
 
 ############ ANDROID
 
-ANDROID = 1
+#ANDROID = 1
 
 #AMIPS=1
 
@@ -28,13 +28,21 @@ ANDROID = 1
 
 #AARMV7=1
 
-AARMV6=1
+#AARMV6=1
 
 ########## iOS
 
-#iOS = 1;
+iOS = 1;
 
-#iOSOSX = 1;
+iOSOSX = 1;
+
+iOSNOJAILBREAK = 1
+
+#iOSSIMULATOR = 1
+
+#iOSARMV7=1
+
+iOSARMV7S=1
 
 ################
 
@@ -47,9 +55,7 @@ X86_MIPS3_DRC =
 X86_PPC_DRC =
 FORCE_DRC_C_BACKEND = 1
 
-
-
-#OPTIMIZE = 0
+#OPTIMIZE = 1
 
 ifdef ANDROID
 
@@ -86,9 +92,22 @@ BASE_DEV=/home/david/Projects/iphone/toolchain/sdks/iPhoneOS2.0.sdk
 #BASE_DEV=/home/david/Projects/iphone/toolchain/sdks/iPhoneOS4.1.sdk
 else
 ##OSX
+
+ifndef iOSSIMULATOR
 #MYPREFIX=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/arm-apple-darwin10-
-MYPREFIX=/Developer/Platforms/iPhoneOS.platform/Developer/usr/llvm-gcc-4.2/bin/arm-apple-darwin10-llvm-
-BASE_DEV=/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.2.sdk
+#MYPREFIX=/Developer/Platforms/iPhoneOS.platform/Developer/usr/llvm-gcc-4.2/bin/arm-apple-darwin10-llvm-
+#MYPREFIX=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/llvm-gcc-4.2/bin/arm-apple-darwin10-llvm-
+MYPREFIX=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/
+
+#BASE_DEV=/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.2.sdk
+BASE_DEV=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.0.sdk
+else
+
+MYPREFIX=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/
+BASE_DEV=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator6.0.sdk
+
+endif
+
 endif
 endif
 
@@ -378,9 +397,12 @@ endif
 
 ifdef iOSOSX
 
-AR = /Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/ar
-CC = @$(MYPREFIX)gcc-4.2
-LD =  $(MYPREFIX)g++-4.2
+AR = @$(MYPREFIX)ar
+#CC = @$(MYPREFIX)gcc-4.2
+#LD = @$(MYPREFIX)g++-4.2
+CC = @$(MYPREFIX)gcc
+LD = @$(MYPREFIX)g++
+
 
 else
 
@@ -440,8 +462,19 @@ endif
 FULLNAME = $(PREFIX)$(PREFIXSDL)$(NAME)$(SUFFIX)$(SUFFIX64)$(SUFFIXDEBUG)$(SUFFIXPROFILE)
 
 # add an EXE suffix to get the final emulator name
+ifdef iOSNOJAILBREAK
+ifdef iOSSIMULATOR
+EMULATOR = libmamesim.a
+endif
+ifdef iOSARMV7
+EMULATOR = libmamearmv7.a
+endif
+ifdef iOSARMV7S
+EMULATOR = libmamearmv7s.a
+endif
+else
 EMULATOR = $(FULLNAME)$(EXE)
-
+endif
 
 
 #-------------------------------------------------
@@ -519,7 +552,8 @@ CFLAGS = $(CCOMFLAGS) $(CPPONLYFLAGS)
 # we compile C++ code to C++98 standard with GNU extensions
 CONLYFLAGS += -std=gnu89
 CPPONLYFLAGS += -x c++ -std=gnu++98
-COBJFLAGS += -x objective-c++
+#COBJFLAGS += -x objective-c++
+COBJFLAGS += -x objective-c
 
 # this speeds it up a bit by piping between the preprocessor/compiler/assembler
 CCOMFLAGS += -pipe
@@ -755,26 +789,73 @@ ifdef iOS
 #CCOMFLAGS += --sysroot $(BASE_DEV)
 CCOMFLAGS += -DIOS
 
+###
+#CCOMFLAGS += -fno-short-enums
+#CCOMFLAGS += -fshort-enums  
+###
+
+ifndef iOSNOJAILBREAK
+CCOMFLAGS += -DWIIMOTE
+endif
+
 ifndef iOSOSX
+
 CCOMFLAGS += -DIOS3
 CCOMFLAGS += -F/home/david/Projects/iphone/toolchain/sdks/iPhoneOS3.1.2.sdk/System/Library/PrivateFrameworks
-else
-CCOMFLAGS += -F/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.2.sdk/System/Library/PrivateFrameworks
-CCOMFLAGS += -F/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.2.sdk/System/Library/Frameworks
-CCOMFLAGS +=  -I/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.2.sdk/usr/include
-CCOMFLAGS +=  -I/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.2.sdk/usr/include/c++/4.2.1/armv7-apple-darwin10/
 
-CCOMFLAGS += -march=armv7-a -mfloat-abi=softfp -DARMV7
+else #OSX
+
+#CFLAGS += -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator6.0.sdk 
+
+CCOMFLAGS += -F$(BASE_DEV)/System/Library/PrivateFrameworks
+CCOMFLAGS += -F$(BASE_DEV)/System/Library/Frameworks
+CCOMFLAGS +=  -I$(BASE_DEV)/usr/include
+#CCOMFLAGS +=  -I$(BASE_DEV)/include/c++/4.2.1/armv7-apple-darwin10/
+
+#CCOMFLAGS += -march=armv7-a -mfloat-abi=softfp -DARMV7
+#CCOMFLAGS += -march=armv7s -DARMV7
+
+ifndef iOSSIMULATOR
+
+ifndef iOSARMV7S
+CCOMFLAGS += -arch armv7 
+LDFLAGS += -arch armv7
+else
+CCOMFLAGS += -arch armv7s 
+LDFLAGS += -arch armv7s
+endif
+
+CCOMFLAGS += -miphoneos-version-min=5.0
+
+#LDFLAGS  += -march=armv7s
+#LDFLAGS  += -march=armv7-a
+
+#LDFLAGS +=   -ios_version_min 5.0
+#CCOMFLAGS += -x objective-c 
+
+else
+
+CCOMFLAGS += -arch i386 
+#CCOMFLAGS +=  -mios-simulator-version-min=6.0 
+CCOMFLAGS += -D__IPHONE_OS_VERSION_MIN_REQUIRED=50000 
+#CCOMFLAGS += -x objective-c  -fmessage-length=0 -Wno-trigraphs -fasm-blocks -O0 -Wreturn-type -Wunused-variable -fexceptions -fvisibility=hidden -fvisibility-inlines-hidden -mmacosx-version-min=10.6 -fpascal-strings -gdwarf-2 -fobjc-legacy-dispatch -fobjc-abi-version=2
+
+LDFLAGS += -arch i386
+
+endif
 
 endif 
 
 LDFLAGS += -framework Foundation -framework CoreFoundation -framework UIKit -framework QuartzCore -framework CoreGraphics -framework AudioToolbox
 LDFLAGS += -F$(BASE_DEV)/System/Library/Frameworks
 LDFLAGS += -F$(BASE_DEV)/System/Library/PrivateFrameworks
-LDFLAGS += -L$(BASE_DEV)/usr/lib 
+LDFLAGS += -L$(BASE_DEV)/usr/lib
+LDFLAGS += -L$(BASE_DEV)/usr/lib/system  
 LDFLAGS += -lobjc -lpthread -bind_at_load
 LDFLAGS += -L./lib/
+ifndef iOSNOJAILBREAK
 LDFLAGS += -lBTstack
+endif
 CCOMFLAGS  += -ffast-math -fsingle-precision-constant
 
 
@@ -820,7 +901,11 @@ include $(SRC)/build/build.mak
 include $(SRC)/tools/tools.mak
 
 ifdef iOS
+ifndef iOSNOJAILBREAK
 include $(SRC)/../iOS/objc.mak
+else
+#include $(SRC)/../iOS/objc_njb.mak
+endif
 endif
 
 # combine the various definitions to one
@@ -831,6 +916,7 @@ CDEFS = $(DEFS)
 #-------------------------------------------------
 # primary targets
 #-------------------------------------------------
+
 
 emulator: maketree $(BUILD) $(EMULATOR)
 
@@ -906,12 +992,21 @@ ifndef EXECUTABLE_DEFINED
 
 # always recompile the version string
 #$(VERSIONOBJ): $(DRVLIBS) $(LIBOSD) $(LIBCPU) $(LIBEMU) $(LIBSOUND) $(LIBUTIL) $(EXPAT) $(ZLIB) $(SOFTFLOAT) $(LIBOCORE) $(RESFILE)
-$(VERSIONOBJ): $(DRVLIBS) $(OSDOBJS) $(CPUOBJS) $(LIBEMUOBJS) $(SOUNDOBJS) $(UTILOBJS) $(EXPAT) $(ZLIB) $(SOFTFLOAT) $(OSDCOREOBJS) $(RESFILE)
 
-#$(EMULATOR): $(VERSIONOBJ) $(DRVLIBS) $(LIBOSD) $(LIBCPU) $(LIBEMU) $(LIBDASM) $(LIBSOUND) $(LIBUTIL) $(EXPAT) $(SOFTFLOAT) $(ZLIB) $(LIBOCORE) $(RESFILE)
-$(EMULATOR): $(VERSIONOBJ) $(DRVLIBS) $(OSDOBJS) $(CPUOBJS) $(LIBEMUOBJS) $(DASMOBJS) $(SOUNDOBJS) $(UTILOBJS) $(EXPAT) $(SOFTFLOAT) $(ZLIB) $(OSDCOREOBJS) $(RESFILE)
+$(VERSIONOBJ): $(DRVLIBS) $(OSDOBJS) $(CPUOBJS) $(LIBEMUOBJS) $(SOUNDOBJS) $(UTILOBJS) $(EXPATOBJS) $(ZLIBOBJS) $(SOFTFLOATOBJS) $(OSDCOREOBJS) $(RESFILE)
+
+#$(EMULATOR): $(VERSIONOBJ) $(DRVLIBS) $(LIBOSD) $(LIBCPU) $(LIBEMU) $(LIBDASM) $(LIBSOUND) $(LIBUTIL) $(EXPAT) $(SOFTFLOAT) $(ZLIBOBJS) $(LIBOCORE) $(RESFILE)
+
+ifdef iOSNOJAILBREAK
+$(EMULATOR): $(VERSIONOBJ) $(DRVLIBS) $(OSDOBJS) $(CPUOBJS) $(LIBEMUOBJS) $(DASMOBJS) $(SOUNDOBJS) $(UTILOBJS) $(EXPATOBJS) $(SOFTFLOATOBJS) $(ZLIBOBJS) $(OSDCOREOBJS) $(RESFILE)
+	@echo Archiving $@...
+	$(AR) -v $(ARFLAGS) $@ $^
+else
+$(EMULATOR): $(VERSIONOBJ) $(DRVLIBS) $(OSDOBJS) $(CPUOBJS) $(LIBEMUOBJS) $(DASMOBJS) $(SOUNDOBJS) $(UTILOBJS) $(EXPATOBJS) $(SOFTFLOATOBJS) $(ZLIBOBJS) $(OSDCOREOBJS) $(RESFILE)
 	@echo Linking $@...
 	$(LD) $(LDFLAGS) $(LDFLAGSEMULATOR) $^ $(LIBS) -o $@
+endif 
+
 ifeq ($(TARGETOS),win32)
 ifdef SYMBOLS
 	$(OBJDUMP) --section=.text --line-numbers --syms --demangle $@ >$(FULLNAME).sym
@@ -950,7 +1045,7 @@ $(OBJ)/%.fh: $(SRC)/%.png $(PNG2BDC) $(FILE2STR)
 $(OBJ)/%.a:
 	@echo Archiving $@...
 	$(RM) $@
-	$(AR) $(ARFLAGS) $@ $^
+	$(AR) -v $(ARFLAGS) $@ $^
 
 $(OBJ)/%.o: %.m
 	@echo Compiling $<...

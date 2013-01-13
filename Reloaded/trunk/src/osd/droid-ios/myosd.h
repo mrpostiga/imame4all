@@ -29,7 +29,9 @@ enum  { MYOSD_UP=0x1,       MYOSD_LEFT=0x4,       MYOSD_DOWN=0x10,  MYOSD_RIGHT=
         MYOSD_START=1<<8,   MYOSD_SELECT=1<<9,    MYOSD_L1=1<<10,    MYOSD_R1=1<<11,
         MYOSD_A=1<<12,      MYOSD_B=1<<13,        MYOSD_X=1<<14,    MYOSD_Y=1<<15,
         MYOSD_VOL_UP=1<<23, MYOSD_VOL_DOWN=1<<22, MYOSD_PUSH=1<<27, MYOSD_ESC=1<<28 };
-
+    
+#define MAX_FILTER_KEYWORD 30
+        
 extern unsigned short *myosd_screen15;
 extern int  myosd_fps;
 extern int  myosd_showinfo;
@@ -55,10 +57,25 @@ extern int  myosd_force_pxaspect;
 extern int  myosd_num_of_joys;
 extern int  myosd_video_threaded;
 extern int  myosd_service;
+extern int  myosd_num_buttons;
 
 extern unsigned long myosd_pad_status;
 extern int myosd_last_game_selected;
 
+extern int myosd_filter_favorites;
+extern int myosd_filter_clones;
+extern int myosd_filter_not_working;
+extern int myosd_filter_manufacturer;
+extern int myosd_filter_gte_year;
+extern int myosd_filter_lte_year;
+extern int myosd_filter_driver_source;
+extern int myosd_filter_category;
+extern char myosd_filter_keyword[MAX_FILTER_KEYWORD];
+extern int myosd_reset_filter;
+
+extern int myosd_num_ways;
+
+    
 extern void myosd_init(void);
 extern void myosd_deinit(void);
 extern void myosd_video_flip(void);
@@ -69,7 +86,12 @@ extern void myosd_closeSound(void);
 extern void myosd_openSound(int rate,int stereo);
 extern void myosd_sound_play(void *buff, int len);
 extern void myosd_check_pause(void);
-
+    
+extern const char *myosd_array_main_manufacturers[];
+extern const char *myosd_array_years[];
+extern const char *myosd_array_main_driver_source[];
+extern const char *myosd_array_categories[];
+    
 #if defined(__cplusplus)
 }
 #endif

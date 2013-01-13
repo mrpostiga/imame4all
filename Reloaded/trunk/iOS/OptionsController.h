@@ -1,7 +1,7 @@
 /*
- * This file is part of iMAME4all.
+ * This file is part of MAME4iOS.
  *
- * Copyright (C) 2010 David Valdeita (Seleuco)
+ * Copyright (C) 2012 David Valdeita (Seleuco)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,7 +50,7 @@
    @public  int fullLand;
    @public  int fullPort;
 
-   @public  int skin;
+   @public  int skinValue;
 
    @public  int wiiDeadZoneValue;
    @public  int touchDeadZone;
@@ -58,18 +58,16 @@
    @public  int overscanValue;
    @public  int tvoutNative;
 
-   @public  int inputTouchType;
+   @public  int touchtype;
    @public  int analogDeadZoneValue;
     
-   @public  int iCadeLayout;
+   @public  int controltype;
    @public  int showINFO;
     
-   @public int SoundKHZ;
-   @public int soundEnabled;
+   @public int soundValue;
 
    @public int throttle;
-   @public int fskip;
-   @public int fslevel;
+   @public int fsvalue;
    @public int sticktype;
    @public int numbuttons;
    @public int aplusb;
@@ -79,7 +77,20 @@
    @public int forcepxa;
    @public int emures;
    @public int p1aspx;
-
+    
+   @public int filterClones;
+   @public int filterFavorites;
+   @public int filterNotWorking;
+   @public int manufacturerValue;
+   @public int yearGTEValue;
+   @public int yearLTEValue;
+   @public int driverSourceValue;
+   @public int categoryValue;
+    
+   @public NSString *filterKeyword;
+    
+   @public int lowlsound;
+    
 }
 
 - (void)loadOptions;
@@ -102,7 +113,7 @@
 @property (readwrite,assign) int fullLand;
 @property (readwrite,assign) int fullPort;
 
-@property (readwrite,assign) int skin;
+@property (readwrite,assign) int skinValue;
 
 @property (readwrite,assign) int wiiDeadZoneValue;
 @property (readwrite,assign) int touchDeadZone;
@@ -110,18 +121,16 @@
 @property (readwrite,assign) int overscanValue;
 @property (readwrite,assign) int tvoutNative;
 
-@property (readwrite,assign) int inputTouchType;
+@property (readwrite,assign) int touchtype;
 @property (readwrite,assign) int analogDeadZoneValue;
 
-@property (readwrite,assign) int iCadeLayout;
+@property (readwrite,assign) int controltype;
 @property (readwrite,assign) int showINFO;
 
-@property (readwrite,assign) int SoundKHZ;
-@property (readwrite,assign) int soundEnabled;
+@property (readwrite,assign) int soundValue;
 
 @property (readwrite,assign) int throttle;
-@property (readwrite,assign) int fskip;
-@property (readwrite,assign) int fslevel;
+@property (readwrite,assign) int fsvalue;
 @property (readwrite,assign) int sticktype;
 @property (readwrite,assign) int numbuttons;
 @property (readwrite,assign) int aplusb;
@@ -132,12 +141,57 @@
 @property (readwrite,assign) int emures;
 @property (readwrite,assign) int p1aspx;
 
+@property (readwrite,assign) int filterClones;
+@property (readwrite,assign) int filterFavorites;
+@property (readwrite,assign) int filterNotWorking;
+@property (readwrite,assign) int manufacturerValue;
+@property (readwrite,assign) int yearGTEValue;
+@property (readwrite,assign) int yearLTEValue;
+@property (readwrite,assign) int driverSourceValue;
+@property (readwrite,assign) int categoryValue;
+
+@property (readwrite,assign) NSString *filterKeyword;
+
+@property (readwrite,assign) int lowlsound;
+
 @end
 
-
-@interface OptionsController : UIViewController  <UITableViewDelegate, UITableViewDataSource>
+enum OptionSections
 {
+    kSupportSection = 0,
+    kFilterSection = 1,
+    kPortraitSection = 2,
+    kLandscapeSection = 3,
+    kInputSection = 4,
+    kDefaultsSection = 5,
+    kMiscSection = 6
+};
 
+enum ListOptionType
+{
+    kTypeNumButtons,
+    kTypeEmuRes,
+    kTypeStickType,
+    kTypeTouchType,
+    kTypeControlType,
+    kTypeAnalogDZValue,
+    kTypeWiiDZValue,
+    kTypeSoundValue,
+    kTypeFSValue,
+    kTypeOverscanValue,
+    kTypeSkinValue,
+    kTypeManufacturerValue,
+    kTypeYearGTEValue,
+    kTypeYearLTEValue,
+    kTypeDriverSourceValue,
+    kTypeCategoryValue
+    
+};
+
+@interface OptionsController : UIViewController  <UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate>
+{
+   UIViewController*  emuController;
+   
    UISwitch*		  switchKeepAspectPort;
    UISwitch*		  switchKeepAspectLand;
    UISwitch*		  switchSmoothedPort;
@@ -146,49 +200,58 @@
    UISwitch*		  switchTvFilterPort;
    UISwitch*		  switchScanlineFilterPort;
 
-
    UISwitch*		  switchTvFilterLand;
    UISwitch*		  switchScanlineFilterLand;
 
    UISwitch*		  switchShowFPS;
    UISwitch*		  switchShowINFO;
    UISwitch*		  switchAnimatedButtons;
-   UISwitch*		  switch4buttonsLand;
+
    UISwitch*		  switchfullLand;
    UISwitch*		  switchfullPort;
 
-   UISegmentedControl *segmentedWiiDeadZoneValue;
-
-   UISegmentedControl *segmentedSkin;
    UISwitch           *switchTouchDeadZone;
 
-   UISegmentedControl *segmentedOverscanValue;
    UISwitch           *switchTvoutNative;
-
-   UISegmentedControl *segmentedTouchType;
-   UISegmentedControl *segmentedAnalogDeadZoneValue;
-   
-   UISegmentedControl *segmentediCadeLayout;
-    
-   UISegmentedControl *segmentedSoundKHZ;
-   UISwitch *switchSound;
-
+       
    UISwitch *switchThrottle;
-   UISegmentedControl *segmentedFSkip;
-   UISegmentedControl *segmentedFSlevel;
-   UISegmentedControl *segmentedSticktype;
-   UISegmentedControl *segmentedNumbuttons;
+
    UISwitch *switchAplusB;
    UISwitch *switchCheats;
    UISwitch *switchSleep;
 
    UISwitch *switchForcepxa;
-   UISegmentedControl *segmentedEmures;
 
    UISwitch *switchP1aspx;
+   
+   NSArray *arrayNumbuttons;
+   NSArray *arrayEmuRes;
+   NSArray *arrayTouchType;
+   NSArray *arrayStickType;
+   NSArray *arrayControlType;
+   NSArray *arrayAnalogDZValue;
+   NSArray *arrayWiiDZValue;
+   NSArray *arraySoundValue;
+   NSArray *arrayFSValue;
+   NSArray *arrayOverscanValue;
+   NSArray *arraySkinValue;
+    
+    
+   UISwitch *switchFilterClones;
+   UISwitch *switchFilterFavorites;
+   UISwitch *switchFilterNotWorking;
+   NSMutableArray  *arrayManufacturerValue;
+   NSMutableArray  *arrayYearGTEValue;
+   NSMutableArray  *arrayYearLTEValue;
+   NSMutableArray  *arrayDriverSourceValue;
+   NSMutableArray  *arrayCategoryValue;
+    
+   UISwitch *switchLowlsound;
+    
 }
 
 - (void)optionChanged:(id)sender;
 
+@property (nonatomic, assign) UIViewController *emuController;
 
 @end

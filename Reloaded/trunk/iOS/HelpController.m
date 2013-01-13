@@ -1,7 +1,7 @@
 /*
- * This file is part of iMAME4all.
+ * This file is part of MAME4iOS.
  *
- * Copyright (C) 2010 David Valdeita (Seleuco)
+ * Copyright (C) 2012 David Valdeita (Seleuco)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,102 +29,67 @@
  */
 
 #import "HelpController.h"
-#include <stdio.h>
-#import "Helper.h"
-
+#import "Globals.h"
 
 @implementation HelpController
 
-@synthesize bIsDismissed;
 
 - (id)init {
 
     if (self = [super init]) {
-
-        bIsDismissed = NO;
+        aWebView  = nil;
     }
 
     return self;
-
 }
 
 - (void)loadView {
-   
-
-	//struct CGRect rect = [[UIScreen mainScreen] bounds];
-	UIViewController *pctrl = [self parentViewController];		
-	struct CGRect rect = pctrl.view.frame;//[[UIScreen mainScreen] bounds];
-	rect.origin.x = rect.origin.y = 0.0f;	
-	if(pctrl.interfaceOrientation==UIInterfaceOrientationLandscapeLeft 
-	||pctrl.interfaceOrientation==UIInterfaceOrientationLandscapeRight )
-	{
-	     int tmp = rect.size.width;
-	     rect.size.width = rect.size.height; 
-	     rect.size.height = tmp;	     
-	}
-
-	UIView *view= [[UIView alloc] initWithFrame:rect];
+       
+	UIView *view= [[UIView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame]];
 	self.view = view;
 	[view release];
+    
+    self.title = @"Help";
     self.view.backgroundColor = [UIColor whiteColor];
+    self.view.autoresizesSubviews = TRUE;
+        
+    aWebView =[ [ UIWebView alloc ] initWithFrame: view.frame];
     
-   UINavigationBar *navBar = [ [ UINavigationBar alloc ] initWithFrame: CGRectMake(rect.origin.x, rect.origin.y, rect.size.width, 45.0f)];
-   [ navBar setDelegate: self ];
-
-   UINavigationItem *item = [[ UINavigationItem alloc ] initWithTitle:@"Credits & Help" ];
-   UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithTitle:@"OK" style:UIBarButtonItemStyleBordered target:[self parentViewController]   action:  @selector(done:) ];
-   item.rightBarButtonItem = backButton;
-   [backButton release];
-   [ navBar pushNavigationItem: item  animated:YES];
-     
-   [ self.view addSubview: navBar ];
-   [navBar release];
+    //aWebView.scalesPageToFit = YES;
     
+    aWebView.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
     
-    FILE *file;
-    char buffer[262144], buf[1024];
-
-    UITextView *textView = [ [ UITextView alloc ] initWithFrame: CGRectMake(rect.origin.x, rect.origin.y + 45.0f, rect.size.width,rect.size.height - 45.0f )];
-//        [ textView setTextSize: 12 ];
-
-    textView.font = [UIFont fontWithName:@"Courier New" size:14.0];
-
-
-    textView.editable = NO;
-
-    file = fopen(get_resource_path("readme.txt"), "r");
-
-    if (!file) 
-    {        
-            textView.textColor =  [UIColor redColor];            
-            [ textView setText: @"ERROR: File not found" ];
-            
-    } else 
-    {
-            buffer[0] = 0;
-            while((fgets(buf, sizeof(buf), file))!=NULL) {
-                strlcat(buffer, buf, sizeof(buffer));
-            }
-            fclose(file);
-
-            [ textView setText: [ [[ NSString alloc ] initWithCString: buffer ] autorelease]];
-    }
-
-    [ self.view addSubview: textView ];
-    [textView release];
-    
-    
+    [ self.view addSubview: aWebView ];
 }
 
 -(void)viewDidLoad{	
 
 }
 
+-(void)viewWillAppear:(BOOL)animated
+{
+    aWebView.delegate = self;
+    
+    [self loadHTML];
+}
 
+-(void)viewWillDisappear:(BOOL)animated
+{
+    [aWebView stopLoading];
+    aWebView.delegate = nil;
+}
 
 -(BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-       //return (interfaceOrientation == UIInterfaceOrientationPortrait);       
-       return YES;
+    //   return (interfaceOrientation == UIInterfaceOrientationPortrait);
+    return YES;
+    //return NO;
+}
+
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
+{
+    
+    //[self loadHTML];
+    //[aWebView reload];    
 }
 
 - (void)didReceiveMemoryWarning {
@@ -133,8 +98,30 @@
 
  
 - (void)dealloc {
-       
+    
+    aWebView.delegate = nil;
+    [aWebView release];
+
 	[super dealloc];
+}
+
+-(BOOL) webView:(UIWebView *)inWeb shouldStartLoadWithRequest:(NSURLRequest *)inRequest navigationType:(UIWebViewNavigationType)inType {
+    if ( inType == UIWebViewNavigationTypeLinkClicked ) {
+        [[UIApplication sharedApplication] openURL:[inRequest URL]];
+        return NO;
+    }
+    
+    return YES;
+}
+
+- (void)loadHTML{
+    NSString *HTMLData = [[NSString alloc] initWithContentsOfFile: [NSString stringWithUTF8String:get_resource_path("readme.html")] encoding:NSUTF8StringEncoding error:nil];
+    
+    NSURL *aURL = [NSURL fileURLWithPath:[NSString stringWithUTF8String:get_resource_path("")]];
+    
+    [aWebView loadHTMLString:HTMLData baseURL: aURL];
+    
+    [HTMLData release];
 }
 
 @end

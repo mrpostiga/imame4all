@@ -1,7 +1,7 @@
 /*
- * This file is part of iMAME4all.
+ * This file is part of MAME4iOS.
  *
- * Copyright (C) 2011 David Valdeita (Seleuco)
+ * Copyright (C) 2012 David Valdeita (Seleuco)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,41 +29,17 @@
  */
  
 #import "AnalogStick.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+#import "Globals.h"
 
 #include "myosd.h"
 
 @implementation AnalogStickView
 
-CGRect rStickArea;
-
-extern float joy_analog_x[4];
-extern float joy_analog_y[4];
-extern unsigned long myosd_pad_status;
-
-extern int iphone_is_landscape;
-extern int iphone_controller_opacity;
-extern int iOS_full_screen_land;
-extern int iOS_full_screen_port;
-extern int iOS_animated_DPad;
-extern int iOS_skin;
-extern int iOS_analogDeadZoneValue;
-extern int enable_dview;
-extern int iOS_inputTouchType;
-
-int iOS_stick_radio = 60;
-
-//#define STICK4WAY (myosd_waysStick == 4 && myosd_inGame)
-#define STICK4WAY (myosd_waysStick == 4 || !myosd_inGame)
-#define STICK2WAY (myosd_waysStick == 2 && myosd_inGame)
 
 - (void) updateAnalog
 {
 
-    switch(iOS_analogDeadZoneValue)
+    switch(g_pref_analog_DZ_value)
     {
       case 0: deadZone = 0.01f;break;
       case 1: deadZone = 0.05f;break;
@@ -75,10 +51,14 @@ int iOS_stick_radio = 60;
 
 	if(mag >= deadZone)
 	{
-		if(iOS_inputTouchType==2)
+        if(g_pref_input_touch_type==TOUCH_INPUT_ANALOG)
 		{
-		   joy_analog_x[0] = rx;
-		   joy_analog_y[0] = ry * -1.0f;
+           joy_analog_x[0] = rx;
+           if(!STICK2WAY)
+		      joy_analog_y[0] = ry * -1.0f;
+           else
+              joy_analog_y[0] = 0;
+           //printf("Sending analog %f, %f...\n",joy_analog_x[0],joy_analog_y[0] );
 		}
 
 		float v = ang;
@@ -195,6 +175,7 @@ int iOS_stick_radio = 60;
 	{
 	    joy_analog_x[0]=0.0f;
 	    joy_analog_y[0]=0.0f;
+        //printf("Sending analog %f, %f...\n",joy_analog_x[0],joy_analog_y[0] );
 	     
 	    myosd_pad_status &= ~MYOSD_UP;
 	    myosd_pad_status &= ~MYOSD_DOWN;
@@ -219,50 +200,57 @@ int iOS_stick_radio = 60;
     					 
 }
 
-- (id)initWithFrame:(CGRect)frame {
+- (id)initWithFrame:(CGRect)frame withEmuController:(EmulatorController*)emulatorController{
     if ((self = [super initWithFrame:frame])) {
         // Initialization code
 		self.backgroundColor = [UIColor clearColor];
-	  	    
-	 ptMin.x = rStickArea.origin.x - frame.origin.x;
-	 ptMin.y = rStickArea.origin.y - frame.origin.y;
-	 ptMax.x = ptMin.x + rStickArea.size.width;
-	 ptMax.y = ptMin.y + rStickArea.size.height;
-	 ptCenter.x = (rStickArea.size.width/ 2) + ptMin.x;
-	 ptCenter.y = (rStickArea.size.height / 2) + ptMin.y;
-	 CGRect rImg = CGRectMake(ptMin.x,ptMin.y,rStickArea.size.width,rStickArea.size.height);
-	 
-	 //ptMax = CGPointMake(self.bounds.size.width, self.bounds.size.height);
-	 //ptCenter = CGPointMake(self.bounds.size.width/2, self.bounds.size.height/2);
-         	 
-	 NSString *name;
-	 
-	 if((iphone_is_landscape && iOS_full_screen_land) || (!iphone_is_landscape && iOS_full_screen_port) /*|| iOS_skin==1*/)
-	 {   
-	     name = [NSString stringWithFormat:@"./SKIN_%d/%@",iOS_skin,@"./stick-outer.png"];
-	     outerView = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:name]];
-	     //outerView.frame = CGRectMake(0,0,frame.size.width,frame.size.height);//frame;
-	     outerView.frame = rImg;//frame;
-	         
-	     [outerView setAlpha:((float)iphone_controller_opacity / 100.0f)];
-	      
-	     [self addSubview: outerView];   
-    }
-    name = [NSString stringWithFormat:@"./SKIN_%d/%@",iOS_skin,@"./stick-inner.png"];
-    stickWidth =  rImg.size.width * (iOS_stick_radio/100.0f);//0.60;
-    stickHeight = rImg.size.height * (iOS_stick_radio/100.0f);//0.60; 
-    innerView = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:name]];
-    [self calculateStickPosition: ptCenter];
-    innerView.frame =  stickPos;
- 
-    if((iphone_is_landscape && iOS_full_screen_land) || (!iphone_is_landscape && iOS_full_screen_port))
-         [innerView setAlpha:((float)iphone_controller_opacity / 100.0f)];
-           
-       [self addSubview: innerView];
+        
+        emuController = emulatorController;
+        
+        CGRect rStickArea = emuController.rStickArea;
+        
+        ptMin.x = rStickArea.origin.x - frame.origin.x;
+        ptMin.y = rStickArea.origin.y - frame.origin.y;
+        ptMax.x = ptMin.x + rStickArea.size.width;
+        ptMax.y = ptMin.y + rStickArea.size.height;
+        ptCenter.x = (rStickArea.size.width/ 2) + ptMin.x;
+        ptCenter.y = (rStickArea.size.height / 2) + ptMin.y;
+        CGRect rImg = CGRectMake(ptMin.x,ptMin.y,rStickArea.size.width,rStickArea.size.height);
+        
+        //ptMax = CGPointMake(self.bounds.size.width, self.bounds.size.height);
+        //ptCenter = CGPointMake(self.bounds.size.width/2, self.bounds.size.height/2);
+        
+        NSString *name;
+        
+        if((g_device_is_landscape && g_pref_full_screen_land) || (!g_device_is_landscape && g_pref_full_screen_port) /*|| iOS_skin==1*/)
+        {
+            name = [NSString stringWithFormat:@"./SKIN_%d/%@",g_pref_skin,@"./stick-outer.png"];
+            outerView = [ [ UIImageView alloc ] initWithImage:[emuController loadImage: name]];
+            //outerView.frame = CGRectMake(0,0,frame.size.width,frame.size.height);//frame;
+            outerView.frame = rImg;//frame;
+            
+            [outerView setAlpha:((float)g_controller_opacity / 100.0f)];
+            
+            [self addSubview: outerView];
+        }
+        
+        int stick_radio = emuController.stick_radio;
+        
+        name = [NSString stringWithFormat:@"./SKIN_%d/%@",g_pref_skin,@"./stick-inner.png"];
+        stickWidth =  rImg.size.width * (stick_radio/100.0f);//0.60;
+        stickHeight = rImg.size.height * (stick_radio/100.0f);//0.60;
+        innerView = [ [ UIImageView alloc ] initWithImage:[emuController loadImage: name]];
+        [self calculateStickPosition: ptCenter];
+        innerView.frame =  stickPos;
+        
+        if((g_device_is_landscape && g_pref_full_screen_land) || (!g_device_is_landscape && g_pref_full_screen_port))
+            [innerView setAlpha:((float)g_controller_opacity / 100.0f)];
+        
+        [self addSubview: innerView];
     }
     
     //self.exclusiveTouch = YES;
-    self.multipleTouchEnabled = NO;
+    self.multipleTouchEnabled = YES;//NO;
 	//self.userInteractionEnabled = NO;
     
     return self;    
@@ -270,7 +258,7 @@ int iOS_stick_radio = 60;
 
 - (void)drawRect:(CGRect)rect 
 {
-    if(enable_dview)
+    if(g_enable_debug_view)
     {
 	    CGContextRef context = UIGraphicsGetCurrentContext();	 
 	    	       
@@ -297,29 +285,47 @@ int iOS_stick_radio = 60;
 
 - (void)calculateStickPosition:(CGPoint)pt {
    
-    if(STICK2WAY)
+    if(g_pref_input_touch_type==TOUCH_INPUT_ANALOG)
     {
-       stickPos.origin.x =  MIN(ptMax.x-stickWidth,MAX(ptMin.x,pt.x - (stickWidth/2)));
-       stickPos.origin.y =  ptCenter.y - (stickHeight/2);
-    }
-    else if(STICK4WAY)
-    {    
-       if(currentDirection == StickRight || currentDirection == StickLeft)
-       {
-          stickPos.origin.x =  MIN(ptMax.x-stickWidth,MAX(ptMin.x,pt.x - (stickWidth/2)));
-          stickPos.origin.y =  ptCenter.y - (stickHeight/2);
-       }  
-       else
-       {
-          stickPos.origin.x =  ptCenter.x - (stickWidth/2);
-          stickPos.origin.y =  MIN(ptMax.y-stickHeight,MAX(ptMin.y,pt.y - (stickHeight/2)));
-       }
+        if(STICK2WAY)
+        {
+            stickPos.origin.x =  MIN(ptMax.x-stickWidth,MAX(ptMin.x,pt.x - (stickWidth/2)));
+            stickPos.origin.y =  ptCenter.y - (stickHeight/2);
+        }
+        else if(STICK4WAY)
+        {
+            if(currentDirection == StickRight || currentDirection == StickLeft)
+            {
+                stickPos.origin.x =  MIN(ptMax.x-stickWidth,MAX(ptMin.x,pt.x - (stickWidth/2)));
+                stickPos.origin.y =  ptCenter.y - (stickHeight/2);
+            }
+            else
+            {
+                stickPos.origin.x =  ptCenter.x - (stickWidth/2);
+                stickPos.origin.y =  MIN(ptMax.y-stickHeight,MAX(ptMin.y,pt.y - (stickHeight/2)));
+            }
+        }
+        else
+        {
+            stickPos.origin.x =  MIN(ptMax.x-stickWidth,MAX(ptMin.x,pt.x - (stickWidth/2)));
+            stickPos.origin.y =  MIN(ptMax.y-stickHeight,MAX(ptMin.y,pt.y - (stickHeight/2)));
+        }
     }
     else
     {
-        stickPos.origin.x =  MIN(ptMax.x-stickWidth,MAX(ptMin.x,pt.x - (stickWidth/2)));
-        stickPos.origin.y =  MIN(ptMax.y-stickHeight,MAX(ptMin.y,pt.y - (stickHeight/2)));
+        switch (currentDirection){
+            case StickNone:{stickPos.origin.x =ptCenter.x - (stickWidth/2);stickPos.origin.y=ptCenter.y - (stickHeight/2);break;}
+            case StickUp:{stickPos.origin.x =ptCenter.x - (stickWidth/2);stickPos.origin.y=ptMin.y;break;}
+            case StickDown:{stickPos.origin.x =ptCenter.x - (stickWidth/2);stickPos.origin.y=ptMax.y-stickHeight;break;}
+            case StickLeft:{stickPos.origin.x =ptMin.x;stickPos.origin.y=ptCenter.y - (stickHeight/2);break;}
+            case StickRight:{stickPos.origin.x =ptMax.x-stickWidth;stickPos.origin.y=ptCenter.y - (stickHeight/2);break;}
+            case StickUpLeft:{stickPos.origin.x =ptMin.x;stickPos.origin.y=ptMin.y;break;}
+            case StickUpRight:{stickPos.origin.x =ptMax.x-stickWidth;stickPos.origin.y=ptMin.y;break;}
+            case StickDownLeft:{stickPos.origin.x =ptMin.x;stickPos.origin.y=ptMax.y-stickHeight;break;}
+            case StickDownRight:{stickPos.origin.x =ptMax.x-stickWidth;stickPos.origin.y=ptMax.y-stickHeight;break;}
+        }
     }
+    
     stickPos.size.width = stickWidth;
     stickPos.size.height = stickHeight;
 
@@ -356,66 +362,50 @@ int iOS_stick_radio = 60;
 	
 }
 
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+- (void)analogTouches:(UITouch *)touch withEvent:(UIEvent *)event
 {
     static float oldRx;
     static float oldRy;
-    
-    UITouch *touch = [touches anyObject];
+
     CGPoint pt = [touch locationInView:self];
     
     ptCur = pt;
-       
+    
   	if( touch.phase == UITouchPhaseBegan		||
-		touch.phase == UITouchPhaseMoved		||
-		touch.phase == UITouchPhaseStationary	)
-	{		  	    
+       touch.phase == UITouchPhaseMoved		||
+       touch.phase == UITouchPhaseStationary	)
+	{
 	    [self calculateStickState:ptCur min:ptMin max:ptMax center:ptCenter];
     }
     else
     {
-       ptCur =ptCenter;
-       currentDirection = StickNone;
-       rx=0;
-       ry=0;
-       mag=0;
-       oldRx = oldRy = -999;
+        ptCur =ptCenter;
+        currentDirection = StickNone;
+        rx=0;
+        ry=0;
+        mag=0;
+        oldRx = oldRy = -999;
     }
-        
+    
     [self updateAnalog];
     
-    if((fabs(oldRx - rx) >= 0.03 || fabs(oldRy - ry) >= 0.03) && iOS_animated_DPad)
+    if((fabs(oldRx - rx) >= 0.03 || fabs(oldRy - ry) >= 0.03) && g_pref_animated_DPad)
     {
-      oldRx = rx;
-      oldRy = ry;
-      
-      [self calculateStickPosition: (mag >= deadZone ? ptCur : ptCenter)];      
-      
-      innerView.center = CGPointMake(CGRectGetMidX(stickPos),CGRectGetMidY(stickPos));
-      if(enable_dview)[self setNeedsDisplay];
-      [innerView setNeedsDisplay];
+        oldRx = rx;
+        oldRy = ry;
+        
+        [self calculateStickPosition: (mag >= deadZone ? ptCur : ptCenter)];
+        
+        innerView.center = CGPointMake(CGRectGetMidX(stickPos),CGRectGetMidY(stickPos));
+        if(g_enable_debug_view)[self setNeedsDisplay];
+        [innerView setNeedsDisplay];
     }  
-}
-
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
-	[self touchesBegan:touches withEvent:event];
-}
-
-- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
-	[self touchesBegan:touches withEvent:event];
-}
-
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
-	[self touchesBegan:touches withEvent:event];
 }
 
 - (void)dealloc {
 
-    if(outerView!=nil)
-      [outerView release];
- 
-    if(innerView!=nil)
-      [innerView release];	   	   
+    [outerView release]; 
+    [innerView release];
 	   
 	[super dealloc];
 }

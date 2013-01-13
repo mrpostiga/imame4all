@@ -161,11 +161,11 @@ struct _input_item_data
 typedef struct _analog_item_data analog_item_data;
 struct _analog_item_data
 {
-	const input_field_config *field;
-	int					type;
+    int					type;
 	int					min, max;
 	int					cur;
 	int 				defvalue;
+    const input_field_config *field;
 };
 
 
@@ -302,11 +302,37 @@ static void menu_select_game_populate(running_machine *machine, ui_menu *menu, s
 static int CLIB_DECL menu_select_game_driver_compare(const void *elem1, const void *elem2);
 static void menu_select_game_build_driver_list(ui_menu *menu, select_game_state *menustate);
 static void menu_select_game_custom_render(running_machine *machine, ui_menu *menu, void *state, void *selectedref, float top, float bottom, float x, float y, float x2, float y2);
+static void menu_alt_game(running_machine *machine, ui_menu *menu, void *parameter, void *state);
 
 /* menu helpers */
 static void menu_render_triangle(bitmap_t *dest, const bitmap_t *source, const rectangle *sbounds, void *param);
 static void menu_settings_custom_render_one(render_container *container, float x1, float y1, float x2, float y2, const dip_descriptor *dip, UINT32 selectedmask);
 static void menu_settings_custom_render(running_machine *machine, ui_menu *menu, void *state, void *selectedref, float top, float bottom, float x, float y, float x2, float y2);
+
+/* favorites */
+#define MAXFAVS 2000
+static char favarray[MAXFAVS][16];
+static void favorites_read(void);
+static void favorites_remove(char *game);
+static void favorites_add(char *game);
+static UINT8 isFavorite(const char *name);
+
+/* categories */
+typedef struct _cat_record cat_record;
+struct _cat_record
+{
+	char				name[16];
+    char				category[40];
+};
+
+#define MAXCATS 9500
+static int num_cat_items = -1;
+static cat_record catarray[MAXCATS];
+static int CLIB_DECL cat_compare_items(const void *i1, const void *i2);
+static void categories_read(void);
+static char *find_category(const char *name);
+
+static const char *mystristr(const char *haystack, const char *needle);
 
 
 
@@ -519,7 +545,7 @@ void ui_menu_reset(ui_menu *menu, ui_menu_reset_options options)
 	if (menu->parent == NULL)
 		ui_menu_item_append(menu, backtext, NULL, 0, NULL);
 	else if (menu->parent->handler == menu_quit_game)
-		ui_menu_item_append(menu, /*exittext*/ "Reload ROMs", NULL, 0, NULL);
+		ui_menu_item_append(menu, /*exittext*/ "                                   Reload ROMs                                   ", NULL, 0, NULL);
 	else
 		ui_menu_item_append(menu, priortext, NULL, 0, NULL);
 }
@@ -672,7 +698,13 @@ void *ui_menu_pool_alloc(ui_menu *menu, size_t size)
 	ui_menu_pool *pool;
 
 	assert(size < UI_MENU_POOL_SIZE);
-
+////DAC HACK
+    //FIZ some weird opmization compiler bug with align
+    if(size%2!=0)
+    {
+        size+=1;
+    }
+/////////
 	/* find a pool with enough room */
 	for (pool = menu->pool; pool != NULL; pool = pool->next)
 		if (pool->end - pool->top >= size)
@@ -866,6 +898,20 @@ static void ui_menu_draw(running_machine *machine, ui_menu *menu, int customonly
 			float line_y0 = line_y;
 			float line_x1 = x2 - 0.5f * UI_LINE_WIDTH;
 			float line_y1 = line_y + line_height;
+            
+//DAV HACK
+            int favorite = isFavorite(item->subtext);
+            if(favorite)
+            {
+                fgcolor = fgcolor2 = fgcolor3 = MAKE_ARGB(0xFF,0xad,0xd8,0xe6);
+            }
+            
+            if(item->flags & MENU_FLAG_CLONE)
+            {
+                fgcolor = fgcolor2 = fgcolor3;
+            }
+
+//DAV HACK
 
 			/* set the hover if this is our item */
 			if (mouse_hit && line_x0 <= mouse_x && line_x1 > mouse_x && line_y0 <= mouse_y && line_y1 > mouse_y && item_is_selectable(item))
@@ -878,6 +924,12 @@ static void ui_menu_draw(running_machine *machine, ui_menu *menu, int customonly
 				bgcolor = UI_SELECTED_BG_COLOR;
 				fgcolor2 = UI_SELECTED_COLOR;
 				fgcolor3 = UI_SELECTED_COLOR;
+//DAV HACK
+                if(favorite)
+                {
+                    fgcolor = fgcolor2 = fgcolor3 = MAKE_ARGB(0xFF,0xad,0xd8,0xe6);
+                }
+//DAV HACK
 			}
 
 			/* else if the mouse is over this item, draw with a different background */
@@ -939,7 +991,7 @@ static void ui_menu_draw(running_machine *machine, ui_menu *menu, int customonly
 				int subitem_invert = item->flags & MENU_FLAG_INVERT;
 				const char *subitem_text = item->subtext;
 				float item_width, subitem_width;
-
+                
 				/* draw the left-side text */
 				ui_draw_text_full(menu->container, itemtext, effective_left, line_y, effective_width,
 							JUSTIFY_LEFT, WRAP_TRUNCATE, DRAW_NORMAL, fgcolor, bgcolor, &item_width, NULL);
@@ -1101,11 +1153,11 @@ static void ui_menu_handle_events(ui_menu *menu)
 {
 	int stop = FALSE;
 	ui_event event;
-
+    
 	/* loop while we have interesting events */
 	while (ui_input_pop_event(menu->machine, &event) && !stop)
-	{
-		switch (event.event_type)
+	{                
+        switch (event.event_type)
 		{
 			/* if we are hovering over a valid item, select it with a single click */
 			case UI_EVENT_MOUSE_DOWN:
@@ -1171,7 +1223,15 @@ static void ui_menu_handle_keys(ui_menu *menu, UINT32 flags)
 	/* bail if no items */
 	if (menu->numitems == 0)
 		return;
-
+    
+//DAV HACK
+    /*
+	if (exclusive_input_pressed(menu, IPT_OSD_1, 0))
+	{
+        return;
+	}*/
+//END DAV HACK
+    
 	/* if we hit select, return TRUE or pop the stack, depending on the item */
 	if (exclusive_input_pressed(menu, IPT_UI_SELECT, 0))
 	{
@@ -2462,7 +2522,7 @@ static void menu_analog_populate(running_machine *machine, ui_menu *menu)
 						UINT32 flags = 0;
 
 						/* allocate a data item for tracking what this menu item refers to */
-						data = (analog_item_data *)ui_menu_pool_alloc(menu, sizeof(*data));
+						data = (analog_item_data *)ui_menu_pool_alloc(menu, sizeof(*data));;
 						data->field = field;
 						data->type = type;
 
@@ -3583,6 +3643,11 @@ static void menu_select_game(running_machine *machine, ui_menu *menu, void *para
 //DAV HACK
 	if(myosd_last_game_selected!=0 && menu->selected==0)
 	{
+        if(myosd_last_game_selected==menu->numitems-3)//repositionate in last game since removal
+        {
+            myosd_last_game_selected = menu->numitems - 4;
+        }
+            
 		menu->selected = myosd_last_game_selected;
 		ui_menu_validate_selection(menu, 1);
 	}
@@ -3594,10 +3659,20 @@ static void menu_select_game(running_machine *machine, ui_menu *menu, void *para
 	event = ui_menu_process(machine, menu, 0);
 	if (event != NULL && event->itemref != NULL)
 	{
-		/* reset the error on any future event */
+        /* reset the error on any future event */
 		if (menustate->error)
 			menustate->error = FALSE;
-
+//DAV HACK
+        else if(event->iptkey == IPT_OSD_1)
+        {
+            const game_driver *driver = (const game_driver *)event->itemref;
+            
+            if ((FPTR)driver != 1)
+			{
+                ui_menu_stack_push(ui_menu_alloc(menu->machine, menu->container, menu_alt_game, (void *)driver->name));
+            }
+        }
+//DAV HACK
 		/* handle selections */
 		else if (event->iptkey == IPT_UI_SELECT)
 		{
@@ -3710,6 +3785,9 @@ static void menu_select_game_populate(running_machine *machine, ui_menu *menu, s
 								  "the docs directory for information on configuring "APPNAME".", NULL, MENU_FLAG_MULTILINE | MENU_FLAG_REDTEXT, NULL);
 		return;
 	}
+    
+    //if(myosd_filter_keyword[0]!=0)
+        //strcpy(menustate->search,myosd_filter_keyword);
 
 	/* otherwise, rebuild the match list */
 	if (menustate->search[0] != 0 || menustate->matchlist[0] == NULL || menustate->rerandomize)
@@ -3725,7 +3803,7 @@ static void menu_select_game_populate(running_machine *machine, ui_menu *menu, s
 			const game_driver *cloneof = driver_get_clone(driver);
 			//ui_menu_item_append(menu, driver->name, driver->description, (cloneof == NULL || (cloneof->flags & GAME_IS_BIOS_ROOT)) ? 0 : MENU_FLAG_INVERT, (void *)driver);
 //DAV HACK
-			ui_menu_item_append(menu, driver->description, driver->name, (cloneof == NULL || (cloneof->flags & GAME_IS_BIOS_ROOT)) ? 0 : MENU_FLAG_INVERT, (void *)driver);
+			ui_menu_item_append(menu, driver->description, driver->name, (cloneof == NULL || (cloneof->flags & GAME_IS_BIOS_ROOT)) ? 0 : MENU_FLAG_CLONE, (void *)driver);
 //DAV HACK
 		}
 	}
@@ -3791,6 +3869,26 @@ static void menu_select_game_build_driver_list(ui_menu *menu, select_game_state 
 	mame_path *path;
 	UINT8 *found;
 
+//DAV HACK
+    categories_read();
+    
+    favorites_read();
+    
+    //fixup filters
+    if(myosd_filter_manufacturer>=0)
+    {
+        if(strcmp(myosd_array_main_manufacturers[myosd_filter_manufacturer],"Other")==0)
+            myosd_filter_manufacturer = -2;
+    }
+    
+    if(myosd_filter_driver_source>=0)
+    {
+        if(strcmp(myosd_array_main_driver_source[myosd_filter_driver_source],"Other")==0)
+            myosd_filter_driver_source = -2;
+    }
+    
+////DAV HACK
+    
 	/* create a sorted copy of the main driver list */
 	memcpy((void *)menustate->driverlist, drivers, driver_count * sizeof(menustate->driverlist[0]));
 	qsort((void *)menustate->driverlist, driver_count, sizeof(menustate->driverlist[0]), menu_select_game_driver_compare);
@@ -3824,9 +3922,75 @@ static void menu_select_game_build_driver_list(ui_menu *menu, select_game_state 
 			tempdriver.name = drivername;
 			tempdriver_ptr = &tempdriver;
 			found_driver = (const game_driver **)bsearch(&tempdriver_ptr, menustate->driverlist, driver_count, sizeof(*menustate->driverlist), menu_select_game_driver_compare);
-
+            
+            int skip = found_driver == NULL;
+ 
+//DAV HACK            
+            if(!skip && myosd_filter_clones)
+            {
+                const game_driver *cloneof = driver_get_clone(*found_driver);
+                skip = cloneof!=NULL && !(cloneof->flags & GAME_IS_BIOS_ROOT);
+            }
+            if(!skip) skip = myosd_filter_not_working && (*found_driver)->flags & GAME_NOT_WORKING;
+            if(!skip) skip = myosd_filter_favorites && !isFavorite(drivername) ;
+            if(!skip && myosd_filter_manufacturer !=  -1)
+            {
+                if(myosd_filter_manufacturer==-2)
+                {
+                    int i=0;
+                    while(!skip && myosd_array_main_manufacturers[i][0]!='\0')
+                    {
+                        skip = strstr((*found_driver)->manufacturer,myosd_array_main_manufacturers[i])!=NULL;
+                        i++;
+                    }
+                }
+                else
+                    skip =  strstr((*found_driver)->manufacturer,myosd_array_main_manufacturers[myosd_filter_manufacturer])==NULL;
+            }
+            
+            if(!skip && myosd_filter_gte_year!=-1)
+            {
+                const char *year = (*found_driver)->year;
+                skip = strcmp(year,"19??")==0 || strcmp(year,"197?")==0 || strcmp(year,"198?")==0 || strcmp(year,"200?")==0 || strcmp(year,myosd_array_years[myosd_filter_gte_year]) < 0;
+            }
+            if(!skip && myosd_filter_lte_year!=-1)
+            {
+                const char *year = (*found_driver)->year;
+                skip = strcmp(year,"19??")==0 || strcmp(year,"197?")==0 || strcmp(year,"198?")==0 || strcmp(year,"200?")==0 || strcmp(year,myosd_array_years[myosd_filter_lte_year]) > 0;
+            }
+            
+            if(!skip && myosd_filter_driver_source !=  -1)
+            {
+                astring source_name;
+                core_filename_extract_base(&source_name,(*found_driver)->source_file,true);
+                const char *sname= source_name.cstr();
+                
+                if(myosd_filter_driver_source==-2)
+                {
+                    int i=0;
+                    while(!skip && myosd_array_main_driver_source[i][0]!='\0')
+                    {
+                        skip = strcmp(sname,myosd_array_main_driver_source[i])==0;
+                        i++;
+                    }
+                }
+                else
+                    skip =  strcmp(sname,myosd_array_main_driver_source[myosd_filter_driver_source])!=0;
+            }
+            
+            if(!skip && myosd_filter_keyword[0] != '\0')
+                skip = mystristr((*found_driver)->name,myosd_filter_keyword)==NULL && mystristr((*found_driver)->description,myosd_filter_keyword)==NULL;
+            
+            if(!skip && myosd_filter_category != -1)
+            {
+                char *category = find_category((*found_driver)->name);
+                
+                skip = category==NULL || strstr(category,myosd_array_categories[myosd_filter_category])==NULL;
+            }
+            
+//DAV HACK
 			/* if found, mark the corresponding entry in the array */
-			if (found_driver != NULL)
+			if (!skip)
 			{
 				int index = found_driver - menustate->driverlist;
 				found[index / 8] |= 1 << (index % 8);
@@ -3862,18 +4026,73 @@ static void menu_select_game_custom_render(running_machine *machine, ui_menu *me
 	char tempbuf[4][256];
 	rgb_t color;
 	int line;
+    
+//DAV HACK
+    
+    int nroms = menu->numitems > 3 ? menu->numitems -3 : 0;
+//DAV HACK
 
 	/* display the current typeahead */
 	if (menustate->search[0] != 0)
 		sprintf(&tempbuf[0][0], "Type name or select: %s_", menustate->search);
-	else
+//DAV HACK
+	else if(/*myosd_filter_clones!=0 || myosd_filter_favorites!=0 || myosd_filter_not_working!=0 ||*/
+            myosd_filter_manufacturer!=-1 || myosd_filter_gte_year!=-1 || myosd_filter_lte_year!=-1 || myosd_filter_driver_source!=-1
+            || myosd_filter_keyword[0]!= '\0' || myosd_filter_category!=-1 )
+    {
+        char tempstr[255];
+        strcpy(tempstr, "Filter: ");
+        
+        if (myosd_filter_keyword[0]!='\0'){
+            strcat(tempstr, myosd_filter_keyword);
+            strcat(tempstr, "/");
+        }
+        
+        if (myosd_filter_gte_year>=0) {
+            strcat(tempstr, ">=");
+            strcat(tempstr, myosd_array_years[myosd_filter_gte_year]);
+            strcat(tempstr, "/");
+        }
+        if (myosd_filter_lte_year>=0) {
+            strcat(tempstr, "<=");
+            strcat(tempstr, myosd_array_years[myosd_filter_lte_year]);
+            strcat(tempstr, "/");
+        }
+        
+        if (myosd_filter_manufacturer>=0) {
+            strcat(tempstr, myosd_array_main_manufacturers[myosd_filter_manufacturer]);
+            strcat(tempstr, "/");
+        }
+        if (myosd_filter_manufacturer==-2)
+            strcat(tempstr, "Other Manufact/");
+        
+        if (myosd_filter_driver_source>=0) {
+            strcat(tempstr, myosd_array_main_driver_source[myosd_filter_driver_source]);
+            strcat(tempstr, "/");
+        }
+        if (myosd_filter_driver_source==-2)
+            strcat(tempstr, "Other DrvSrc/");
+        
+        if (myosd_filter_category>=0) {
+            strcat(tempstr, myosd_array_categories[myosd_filter_category]);
+            strcat(tempstr, "/");
+        }
+
+        tempstr[strlen(tempstr)-1] = '\0';
+        sprintf(&tempbuf[0][0], "%s. Game: %d/%d",tempstr,MIN(myosd_last_game_selected+1,nroms), nroms);
+    }
+    else
+    {
 			//sprintf(&tempbuf[0][0], "Type name or select: _");
 	#ifdef IOS
-			sprintf(&tempbuf[0][0], "MAME4iOS Reloaded 1.2 by David Valdeita (Seleuco)");
+			sprintf(&tempbuf[0][0], "MAME4iOS Reloaded 1.3 by David Valdeita (Seleuco). Game: %d/%d",MIN(myosd_last_game_selected+1,nroms), nroms);
 	#else
-			sprintf(&tempbuf[0][0], "MAME4droid Reloaded 1.2 by David Valdeita (Seleuco)");
+			sprintf(&tempbuf[0][0], "MAME4droid Reloaded 1.2 by David Valdeita (Seleuco). Game: %d/%d",MIN(myosd_last_game_selected+1,nroms), nroms);
 	#endif
-
+    }
+    
+//DAV HACK
+    
 	/* get the size of the text */
 	ui_draw_text_full(menu->container, &tempbuf[0][0], 0.0f, 0.0f, 1.0f, JUSTIFY_CENTER, WRAP_TRUNCATE,
 					  DRAW_NONE, ARGB_WHITE, ARGB_BLACK, &width, NULL);
@@ -3907,17 +4126,27 @@ static void menu_select_game_custom_render(running_machine *machine, ui_menu *me
 
 		/* first line is game name */
 		sprintf(&tempbuf[0][0], "%-.100s", driver->description);
+        
+        char *category = find_category(driver->name);
+        astring source_name;
+        core_filename_extract_base(&source_name,driver->source_file,true);
 
 		/* next line is year, manufacturer */
-		sprintf(&tempbuf[1][0], "%s, %-.100s", driver->year, driver->manufacturer);
+		sprintf(&tempbuf[1][0], "%s, %-.50s, %s", driver->year, driver->manufacturer, source_name.cstr());
 
+        sprintf(&tempbuf[2][0], "%-.100s", category == NULL? "No Category":category);
+        
+        const char *overall;
 		/* next line is overall driver status */
 		if (driver->flags & GAME_NOT_WORKING)
-			strcpy(&tempbuf[2][0], "Overall: NOT WORKING");
+			//strcpy(&tempbuf[2][0], "Overall: NOT WORKING");
+            overall = "NOT WORKING";
 		else if (driver->flags & GAME_UNEMULATED_PROTECTION)
-			strcpy(&tempbuf[2][0], "Overall: Unemulated Protection");
+			//strcpy(&tempbuf[2][0], "Overall: Unemulated Protection");
+            overall = "Unemulated Protection";
 		else
-			strcpy(&tempbuf[2][0], "Overall: Working");
+			//strcpy(&tempbuf[2][0], "Overall: Working");
+            overall = "Working";
 
 		/* next line is graphics, sound status */
 		if (driver->flags & (GAME_IMPERFECT_GRAPHICS | GAME_WRONG_COLORS | GAME_IMPERFECT_COLORS))
@@ -3932,7 +4161,7 @@ static void menu_select_game_custom_render(running_machine *machine, ui_menu *me
 		else
 			soundstat = "OK";
 
-		sprintf(&tempbuf[3][0], "Gfx: %s, Sound: %s", gfxstat, soundstat);
+		sprintf(&tempbuf[3][0], "%s, Gfx: %s, Sound: %s",overall, gfxstat, soundstat);
 	}
 	else
 	{
@@ -4000,7 +4229,84 @@ static void menu_select_game_custom_render(running_machine *machine, ui_menu *me
 	}
 }
 
-
+static void menu_alt_game(running_machine *machine, ui_menu *menu, void *parameter, void *state)
+{
+    
+	const ui_menu_event *event;
+    
+    char *name = (char *)parameter;
+    
+	/* if the menu isn't built, populate now */
+	if (!ui_menu_populated(menu))
+	{
+        if(isFavorite(name)){
+            ui_menu_item_append(menu, "Remove Game From Favorites", NULL, 0, (void *)1);
+        }
+        else
+        {
+            ui_menu_item_append(menu, "Add Game To Favorites", NULL, 0, (void *)1);
+        }
+        
+		ui_menu_item_append(menu, "Delete Game Physical Files", NULL, 0, (void *)2);
+	}
+    
+	event = ui_menu_process(machine, menu, 0);
+	if (event != NULL && event->iptkey == IPT_UI_SELECT)
+	{
+		if((FPTR)event->itemref==1)
+        {
+            if(isFavorite(name)) {
+                favorites_remove(name);
+                if(myosd_filter_favorites==-1)
+                {
+                   ui_menu_stack_pop(menu->machine); 
+                }
+                else
+                {
+                    machine->schedule_exit();
+                    ui_menu_stack_reset(machine);
+                }
+                
+            } else {
+                favorites_add(name);
+                ui_menu_stack_pop(menu->machine);
+            }
+            
+            popmessage("Done!");
+            
+        }
+        else if((FPTR)event->itemref==2)
+		{
+            char file[256];
+            
+            const char * path = options_get_string(menu->machine->options(), OPTION_CFG_DIRECTORY);
+            sprintf(file,"%s/%s.cfg",path,name);
+            remove(file);
+            
+            path = options_get_string(menu->machine->options(), OPTION_NVRAM_DIRECTORY);
+            sprintf(file,"%s/%s.nv",path,name);
+            remove(file);
+            
+            path = options_get_string(menu->machine->options(), OPTION_ROMPATH);
+            sprintf(file,"%s/%s.nv",path,name);
+            remove(file);
+            
+            sprintf(file,"%s/%s.zip",path,name);
+            int r = remove(file);
+            if(r==0){
+                popmessage("Done!");
+                machine->schedule_exit();
+                ui_menu_stack_reset(machine);
+            }
+            else
+            {
+               popmessage("Error!");
+               ui_menu_stack_pop(menu->machine);
+            }
+        }
+	}
+    
+}
 
 /***************************************************************************
     MENU HELPERS
@@ -4058,4 +4364,223 @@ static void menu_render_triangle(bitmap_t *dest, const bitmap_t *source, const r
 			linewidth -= dalpha;
 		}
 	}
+}
+
+/***************************************************************************
+FAVORITES
+ ***************************************************************************/
+
+static void favorites_read(void)
+{
+    //SQ: Read the favorites list from the favorites.ini file
+    FILE *file;
+    int counter=0;
+    int startread=0;
+    
+    favarray[0][0] = '\0';
+        
+    file = fopen ("Favorites.ini", "r");
+    if ( file != NULL )
+    {
+        char line[256]; /* or other suitable maximum line size */
+        
+        while ( fgets(line, sizeof line, file) != NULL ) /* read a line */
+        {
+            if (line[strlen(line) - 1] == '\n') line[strlen(line) - 1] = '\0';
+            if (line[strlen(line) - 1] == '\r') line[strlen(line) - 1] = '\0';
+            
+            if (line[0] == '[' || line[0] == '\0' || strlen(line) > 16) continue;
+            
+            //Everything checks out so stick the line in the array
+            strcpy(favarray[counter++], line);
+            if(counter == MAXFAVS-2) break;
+        }
+        fclose ( file );
+        favarray[counter][0] = '\0';
+    }
+}
+
+static void favorites_remove(char *game)
+{
+    //SQ: Scan through the favorites file and remove
+    //the requested line, creating a new file.
+    FILE *file, *file2;
+    int counter=0;
+    int startread=0;
+        
+    file = fopen ("Favorites.ini", "r");
+    file2 = fopen ("Favorites.ini.new", "w");
+    if ( file != NULL && file2 != NULL) {
+        char line[256];
+        char line2[256];
+        
+        while ( fgets(line, sizeof line, file) != NULL ) { /* read a line */
+            strcpy(line2, line);
+            
+            if (line[strlen(line) - 1] == '\n') line[strlen(line) - 1] = '\0';
+            if (line[strlen(line) - 1] == '\r') line[strlen(line) - 1] = '\0';
+            
+            if (line[0] != '[' && line[0] != '\0' && strlen(line) <= 16) {
+                if (strcmp(line, game) == 0) {
+                    continue;
+                }
+            }
+            fputs(line2, file2);
+            
+        }
+        fclose (file);
+        fclose (file2);
+        
+        //Move the new file over the old one.
+        rename("Favorites.ini.new", "Favorites.ini");
+    }
+    
+    //SQ:All done so re-read the favorites array
+    favorites_read();
+}
+
+static void favorites_add(char *game)
+{
+    //SQ:Add the game to the favorites file
+    FILE *file;
+
+    file = fopen("Favorites.ini", "a");
+    if (file != NULL) {
+        fputs(game, file);
+        fputc('\n', file);
+        fclose(file);
+    }
+    
+    //SQ:All done so re-read the favorites array
+    favorites_read();
+}
+
+static UINT8 isFavorite(const char *name){
+    int counter=0;
+
+    if(name==NULL)return 0;
+    while(true) {
+        if (favarray[counter][0] == '\0') break;    //Null is the array terminator
+        if (strcmp(favarray[counter],name) == 0) {
+            return 1;
+        }
+        counter++;
+    }
+    return 0;
+}
+
+////////////////
+
+
+static const char *mystristr(const char *haystack, const char *needle)
+{
+    if ( !*needle )
+    {
+        return haystack;
+    }
+    for ( ; *haystack; ++haystack )
+    {
+        if ( toupper(*haystack) == toupper(*needle) )
+        {
+            /*
+             * Matched starting char -- loop through remaining chars.
+             */
+            const char *h, *n;
+            for ( h = haystack, n = needle; *h && *n; ++h, ++n )
+            {
+                if ( toupper(*h) != toupper(*n) )
+                {
+                    break;
+                }
+            }
+            if ( !*n ) /* matched all of 'needle' to null termination */
+            {
+                return haystack; /* return the start of the match */
+            }
+        }
+    }
+    return 0;
+}
+
+/***************************************************************************
+ CATEGORIES
+ ***************************************************************************/
+
+static int CLIB_DECL cat_compare_items(const void *elem1, const void *elem2)
+{
+	const cat_record *c1 = (const cat_record*)elem1;
+	const cat_record *c2 = (const cat_record*)elem2;
+    
+	const char *name1 = c1->name;
+	const char *name2 = c2->name;
+    
+	while (*name1 == *name2 && *name1 != 0 && *name2 != 0)
+		name1++, name2++;
+    
+	return *name1 - *name2;
+}
+
+
+static void categories_read(void)
+{
+    FILE *file;
+    int counter=0;
+    int startread=0;
+    char curcat[256];
+    
+    if(num_cat_items!=-1)
+        return;
+    
+    num_cat_items = 0;
+    catarray[0].name[0] = '\0';
+    
+    file = fopen ("Category.ini", "r");
+    if ( file != NULL )
+    {
+        char line[256]; /* or other suitable maximum line size */
+        
+        while ( fgets(line, sizeof line, file) != NULL ) /* read a line */
+        {
+            if (line[strlen(line) - 1] == '\n') line[strlen(line) - 1] = '\0';
+            if (line[strlen(line) - 1] == '\r') line[strlen(line) - 1] = '\0';
+            
+            if (line[0] == '\0')
+                continue;
+            
+            if (line[0] == '[')
+            {
+                line[strlen(line) - 1] = '\0';
+                strcpy(curcat,line+1);
+                continue;
+            }
+            
+            strcpy(catarray[counter].name, line);
+            strcpy(catarray[counter].category, curcat);
+            counter++;
+            
+            if(counter == MAXCATS-2) break;
+        }
+        fclose ( file );
+        catarray[counter].name[0] = '\0';
+        num_cat_items = counter;
+        
+        //order it
+        qsort(catarray, num_cat_items, sizeof(catarray[0]), cat_compare_items);
+        
+        //for(int i=0; i<num_cat_items;i++)
+            //printf("%s %s\n",catarray[i].name,catarray[i].category);
+        
+    }
+}
+
+static char *find_category(const char *name){
+    int counter=0;
+    cat_record cat,*pcat;
+    
+    if(name==NULL)return NULL;
+    
+    strcpy(cat.name,name);
+    pcat = (cat_record *)bsearch(&cat,catarray, num_cat_items, sizeof(catarray[0]), cat_compare_items);
+    
+    return pcat==NULL?NULL:pcat->category;
 }

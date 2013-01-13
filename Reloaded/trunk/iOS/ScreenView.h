@@ -1,7 +1,7 @@
 /*
- * This file is part of iMAME4all.
+ * This file is part of MAME4iOS.
  *
- * Copyright (C) 2010 David Valdeita (Seleuco)
+ * Copyright (C) 2012 David Valdeita (Seleuco)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,14 +29,7 @@
  */
 
 #import <UIKit/UIKit.h>
-
-#import <Foundation/Foundation.h>
 #import <QuartzCore/CALayer.h>
-
-#import <pthread.h>
-#import <sched.h>
-#import <unistd.h>
-#import <sys/time.h>
 
 @interface ScreenLayer : CALayer {
 	CGAffineTransform rotateTransform;
@@ -49,7 +42,6 @@
 
 @interface ScreenView : UIView
 {
-
 }
 
 - (id)initWithFrame:(CGRect)frame;

@@ -1,7 +1,7 @@
 /*
- * This file is part of iMAME4all.
+ * This file is part of MAME4iOS.
  *
- * Copyright (C) 2010 David Valdeita (Seleuco)
+ * Copyright (C) 2012 David Valdeita (Seleuco)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,63 +27,22 @@
  * file, but you are not obligated to do so.  If you do not wish to
  * do so, delete this exception statement from your version.
  */
- 
-#import "ScreenView.h"
-#include "myosd.h"
 
-#define RADIANS( degrees ) ( degrees * M_PI / 180 )
+#import "ScreenView.h"
+#import "Globals.h"
 
 static ScreenView *sharedInstance = nil;
 
-//unsigned short* screenbuffer = NULL;
-//static 
-unsigned short img_buffer [1024 * 768 * 4];//max driver res? STANDARD VGA!
+//static
+unsigned short img_buffer [1024 * 768 * 4];//max driver res?
 
-extern int myosd_video_width;
-extern int myosd_video_height;
-
-CGRect rEmulatorFrame;
-//CGRect rPortraitViewFrame;
-//CGRect rPortraitNoKeepAspectViewFrame;
-//CGRect rLandscapeNoKeepAspectViewFrame;
-//CGRect rLandscapeViewFrame;
-//extern CGRect rLandscapeImageViewFrame;
-
-extern int iphone_is_landscape;
-extern int iphone_smooth_land;
-extern int iphone_smooth_port;
-extern int iphone_keep_aspect_ratio;
-
-//extern crop_border_land;
-extern int crop_border_port;
-//extern crop_state;
-
-extern int isIpad;
-extern int __emulation_paused;
-
-
-/*
-void reset_video(){
-   myosd_screen15  = img_buffer;
-}
-*/
 void iphone_UpdateScreen()
 {
-  //return;
-  //usleep(100);
-  //sched_yield();
-  /*
-  	while(__emulation_paused )
-	{
-        usleep(100);
-    }
-   */
-   
-   if(sharedInstance==nil) return;
     
-   [sharedInstance performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone:NO];  
+    if(sharedInstance==nil) return;
+    
+    [sharedInstance performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone:NO];
 }
-
 
 @implementation ScreenLayer
 
@@ -93,85 +52,81 @@ void iphone_UpdateScreen()
 }
 
 - (id)init {
-//printf("Crean layer %ld\n",self);
+    //printf("Crean layer %ld\n",self);
 	if (self = [super init])
-	{		    
-	   bitmapContext = nil;
-	   
-	       //screenbuffer = img_buffer;
-	       //myosd_screen15 = img_buffer;
-	       	        
-	       CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();    
-           bitmapContext = CGBitmapContextCreate(
-             img_buffer,
-             myosd_video_width,//512,//320,
-             myosd_video_height,//480,//240,
-             /*8*/5, // bitsPerComponent
-             2*myosd_video_width,//2*512,///*4*320*/2*320, // bytesPerRow
-             colorSpace,
-             kCGImageAlphaNoneSkipFirst  | kCGBitmapByteOrder16Little/*kCGImageAlphaNoneSkipLast */);
-
-            CFRelease(colorSpace);
-             
-		        		
-        //rotateTransform = CGAffineTransformMakeRotation(RADIANS(90));
+	{
+        bitmapContext = nil;
+        
+        
+        CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+        bitmapContext = CGBitmapContextCreate(
+                                              img_buffer,
+                                              myosd_video_width,//512,//320,
+                                              myosd_video_height,//480,//240,
+                                              /*8*/5, // bitsPerComponent
+                                              2*myosd_video_width,//2*512,///*4*320*/2*320, // bytesPerRow
+                                              colorSpace,
+                                              kCGImageAlphaNoneSkipFirst  | kCGBitmapByteOrder16Little/*kCGImageAlphaNoneSkipLast */);
+        
+        CFRelease(colorSpace);
+        
+        
+        //rotateTransform = CGAffineTransformMakeRotation(DEGREE_TO_RAD(90));
         rotateTransform = CGAffineTransformIdentity;
         self.affineTransform = rotateTransform;
-                       		
-		if((iphone_smooth_land && iphone_is_landscape) || (iphone_smooth_port && !iphone_is_landscape))
+        
+		if((g_pref_smooth_land && g_device_is_landscape) || (g_pref_smooth_port && !g_device_is_landscape))
 		{
-		   [self setMagnificationFilter:kCAFilterLinear];
-  	       [self setMinificationFilter:kCAFilterLinear];
+            [self setMagnificationFilter:kCAFilterLinear];
+            [self setMinificationFilter:kCAFilterLinear];
 		}
 		else
 		{
-
-  	       [self setMagnificationFilter:kCAFilterNearest];
-		   [self setMinificationFilter:kCAFilterNearest];
-  	    } 
+            
+            [self setMagnificationFilter:kCAFilterNearest];
+            [self setMinificationFilter:kCAFilterNearest];
+  	    }
   	    
   	    if (0) {
 		    [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
-            [[NSNotificationCenter defaultCenter] addObserver:self 
-                                                     selector:@selector(orientationChanged:) 
-                                                         name:@"UIDeviceOrientationDidChangeNotification" 
+            [[NSNotificationCenter defaultCenter] addObserver:self
+                                                     selector:@selector(orientationChanged:)
+                                                         name:@"UIDeviceOrientationDidChangeNotification"
                                                        object:nil];
 		}
 		
 	}
 	return self;
 }
-	
+
 - (void) orientationChanged:(NSNotification *)notification
 {
     UIDeviceOrientation orientation = [[UIDevice currentDevice] orientation];
     if (orientation == UIDeviceOrientationLandscapeLeft) {
-        rotateTransform = CGAffineTransformMakeRotation(RADIANS(90));
+        rotateTransform = CGAffineTransformMakeRotation(DEGREE_TO_RAD(90));
     } else if (orientation == UIDeviceOrientationLandscapeRight) {
-        rotateTransform = CGAffineTransformMakeRotation(RADIANS(270));
+        rotateTransform = CGAffineTransformMakeRotation(DEGREE_TO_RAD(270));
     }
     
-}	
+}
 
 - (void)display {
-        
-        CGImageRef cgImage = CGBitmapContextCreateImage(bitmapContext);
-        
-        self.contents = (id)cgImage;
     
-        CFRelease(cgImage);               
+    CGImageRef cgImage = CGBitmapContextCreateImage(bitmapContext);
+    
+    self.contents = (id)cgImage;
+    
+    CFRelease(cgImage);
 }
 
 - (void)dealloc {
         
-                    
     if(bitmapContext!=nil)
     {
-
-       CFRelease(bitmapContext);
-       bitmapContext=nil;
-    }   
-        
+        CFRelease(bitmapContext);
+        bitmapContext=nil;
+    }
+    
     [super dealloc];
 }
 @end
@@ -187,25 +142,21 @@ void iphone_UpdateScreen()
 
 - (id)initWithFrame:(CGRect)frame {
 	if ((self = [super initWithFrame:frame])!=nil) {
-       
-       self.opaque = YES;
-       self.clearsContextBeforeDrawing = NO;
-       self.multipleTouchEnabled = NO;
-	   self.userInteractionEnabled = NO;
-              
-       sharedInstance = self;				
+        
+        self.opaque = YES;
+        self.clearsContextBeforeDrawing = NO;
+        self.multipleTouchEnabled = NO;
+        self.userInteractionEnabled = NO;
+        
+        sharedInstance = self;
 	}
-        	
+    
 	return self;
 }
 
 
 - (void)dealloc
 {
-	//screenbuffer == NULL;
-	//[ screenLayer release ];
-	
-	//sharedInstance = nil;
 	
 	[ super dealloc ];
 }
@@ -218,7 +169,7 @@ void iphone_UpdateScreen()
     // -drawLayer:inContext: being called.
     // By implementing an empty -drawRect: method, we allow UIKit to continue to implement
     // this logic, while doing our real drawing work inside of -drawLayer:inContext:
-        
+    
 }
 
 @end
