@@ -1,7 +1,7 @@
 /*
- * This file is part of iMAME4all.
+ * This file is part of MAME4iOS.
  *
- * Copyright (C) 2010 David Valdeita (Seleuco)
+ * Copyright (C) 2012 David Valdeita (Seleuco)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,8 +30,26 @@
 
 #import <UIKit/UIKit.h>
 
-@interface DView : UIView {
+#import "Globals.h"
+#import "EmulatorController.h"
 
+#ifdef IOS3
+@protocol UIKeyInput <UITextInputTraits>
+
+- (BOOL)hasText;
+- (void)insertText:(NSString *)text;
+- (void)deleteBackward;
+
+@end
+#endif
+
+@interface iCadeView : UIView<UIKeyInput>{
+    UIView                  *inputView;//This is to show a fake invisible keyboard
+    EmulatorController      *emuController;
 }
+
+- (id)initWithFrame:(CGRect)frame withEmuController:(EmulatorController*)emulatorController;
+
+@property (nonatomic, assign) BOOL active;
 
 @end

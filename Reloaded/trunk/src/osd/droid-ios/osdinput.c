@@ -49,6 +49,9 @@ static int joy_buttons[4][8];
 static int joy_axis[4][2];
 static int joy_hats[4][4];
 
+static int poll_ports = 0;
+
+static void my_poll_ports(running_machine *machine);
 static INT32 my_get_state(void *device_internal, void *item_internal);
 static INT32 my_axis_get_state(void *device_internal, void *item_internal);
 
@@ -106,13 +109,71 @@ void droid_ios_init_input(running_machine *machine)
 	input_device_item_add(keyboard_device, "PGDN", &keyboard_state[KEY_PGDN], ITEM_ID_PGDN, my_get_state);
 
 	input_device_item_add(keyboard_device, "Service", &keyboard_state[KEY_SERVICE], ITEM_ID_F2, my_get_state);
+    
+    poll_ports = 1;
+}
+
+void my_poll_ports(running_machine *machine)
+{
+    const input_field_config *field;
+	const input_port_config *port;
+    if(poll_ports)
+    {
+        int way8 = 0;
+        int counter = 0;
+        myosd_num_buttons = 0;
+        for (port = machine->m_portlist.first(); port != NULL; port = port->next())
+        {
+            for (field = port->fieldlist; field != NULL; field = field->next)
+            {
+                if (field->player!=0)continue;
+                if(field->type == IPT_BUTTON1)
+                    if(myosd_num_buttons<1)myosd_num_buttons=1;
+                if(field->type == IPT_BUTTON2)
+                    if(myosd_num_buttons<2)myosd_num_buttons=2;
+                if(field->type == IPT_BUTTON3)
+                    if(myosd_num_buttons<3)myosd_num_buttons=3;
+                if(field->type == IPT_BUTTON4)
+                    if(myosd_num_buttons<4)myosd_num_buttons=4;
+                if(field->type == IPT_BUTTON5)
+                    if(myosd_num_buttons<5)myosd_num_buttons=5;
+                if(field->type == IPT_BUTTON6)
+                    if(myosd_num_buttons<6)myosd_num_buttons=6;
+                if(field->type == IPT_JOYSTICKRIGHT_UP)//dual stick is mapped as buttons
+                    if(myosd_num_buttons<4)myosd_num_buttons=4;
+                if(field->type == IPT_POSITIONAL)//positional is mapped with two last buttons
+                    if(myosd_num_buttons<6)myosd_num_buttons=6;
+                if(field->type == IPT_JOYSTICK_UP || field->type == IPT_JOYSTICK_DOWN || field->type == IPT_JOYSTICKLEFT_UP || field->type == IPT_JOYSTICKLEFT_DOWN)
+                    way8= 1;
+                if(field->type == IPT_AD_STICK_X || field->type == IPT_LIGHTGUN_X || field->type == IPT_MOUSE_X ||
+                   field->type == IPT_TRACKBALL_X || field->type == IPT_PEDAL)
+                    way8= 1;
+                if(field->type == IPT_DIAL || field->type == IPT_PADDLE || field->type == IPT_POSITIONAL ||
+                   field->type == IPT_DIAL_V || field->type == IPT_PADDLE_V || field->type == IPT_POSITIONAL_V)
+                    counter++;
+            }
+        }
+        poll_ports=0;
+        
+        //8 si analog o lightgun o up o down
+        if (myosd_num_ways!=4){            
+            if(way8 || counter>1)
+                myosd_num_ways = 8;
+            else
+                myosd_num_ways = 2;
+        }
+        printf("Num Buttons %d\n",myosd_num_buttons);
+        printf("Num WAYS %d\n",myosd_num_ways);
+    }
+    
 }
 
 
 void droid_ios_poll_input(running_machine *machine)
 {
-
-	long _pad_status = myosd_joystick_read(0);
+    my_poll_ports(machine);
+    
+    long _pad_status = myosd_joystick_read(0);
 
 	if(mystate == STATE_NORMAL)
 	{
@@ -128,8 +189,12 @@ void droid_ios_poll_input(running_machine *machine)
 	    else
 	    {
 			keyboard_state[KEY_ESCAPE] = 0;
+            
+            if(myosd_reset_filter==1){
+                myosd_exitGame= 1;
+            }
         }
-
+        
 		if(myosd_service && !myosd_in_menu)
 		{
 			keyboard_state[KEY_SERVICE] = 0x80;
@@ -148,6 +213,7 @@ void droid_ios_poll_input(running_machine *machine)
 			keyboard_state[KEY_SAVE] =  0x80;
 			myosd_savestate = 0;
 			mystate = STATE_LOADSAVE;
+            return;
 		}
 
 		if(myosd_loadstate)
@@ -155,6 +221,7 @@ void droid_ios_poll_input(running_machine *machine)
 			keyboard_state[KEY_LOAD] =  0x80;
 			myosd_loadstate = 0;
 			mystate = STATE_LOADSAVE;
+            return;
 		}
 
 		for(int i=0; i<4; i++)
@@ -176,6 +243,17 @@ void droid_ios_poll_input(running_machine *machine)
 					keyboard_state[KEY_PGUP] = 0;
 					keyboard_state[KEY_PGDN] = 0;
 				}
+                
+                if((_pad_status & MYOSD_START)  &&  (_pad_status & MYOSD_A))
+                {
+                    myosd_savestate = 1;
+                    break;
+                }
+                if((_pad_status & MYOSD_SELECT)  &&  (_pad_status & MYOSD_A))
+                {
+                    myosd_loadstate = 1;
+                    break;
+                }
 			}
 
 			if(myosd_joystick_read_analog(0, 'x') == 0 && myosd_joystick_read_analog(0, 'y')==0)
@@ -213,8 +291,8 @@ void droid_ios_poll_input(running_machine *machine)
 	}
 	else if(mystate == STATE_LOADSAVE)
 	{
-
-		keyboard_state[KEY_ESCAPE] = 0;
+		
+        keyboard_state[KEY_ESCAPE] = 0;
 		keyboard_state[KEY_1] = 0;
 		keyboard_state[KEY_2] = 0;
 
@@ -229,12 +307,14 @@ void droid_ios_poll_input(running_machine *machine)
 		{
 			keyboard_state[KEY_1] = 0x80;
 			mystate = STATE_NORMAL;
+            do{}while(myosd_joystick_read(0) & MYOSD_B);
 		}
 
 		if ((_pad_status & MYOSD_X) != 0)
 		{
 			keyboard_state[KEY_2] = 0x80;
 			mystate = STATE_NORMAL;
+            do{}while(myosd_joystick_read(0) & MYOSD_X);
 		}
 
 	}
@@ -329,6 +409,9 @@ void osd_customize_input_type_list(input_type_desc *typelist)
 				break;
 			case IPT_UI_RIGHT:
 				input_seq_set_3(&typedesc->seq[SEQ_TYPE_STANDARD],STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT1RIGHT), SEQCODE_OR, INPUT_CODE_SET_DEVINDEX(JOYCODE_X_RIGHT_SWITCH, 0));
+				break;
+			case IPT_OSD_1:
+				input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON2, 0));
 				break;
 			case IPT_JOYSTICK_UP:
 			case IPT_JOYSTICKLEFT_UP:
@@ -551,6 +634,7 @@ void osd_customize_input_type_list(input_type_desc *typelist)
 			case IPT_SELECT:
 				input_seq_set_0(&typedesc->seq[SEQ_TYPE_STANDARD]);
 				break;
+                
 			//default:
 				//input_seq_set_0(&typedesc->seq[SEQ_TYPE_STANDARD]);
 		}

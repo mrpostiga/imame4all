@@ -1,5 +1,5 @@
 =================================================================
-MAME4iOS Reloaded (0.139u1 ) 1.3 WIP (June 02, 2012) 
+MAME4iOS Reloaded (0.139u1 ) 1.3 (November 18, 2012) 
 by David Valdeita (Seleuco)
 =================================================================
 
@@ -243,6 +243,8 @@ PORT CREDITS
 - Port to Android by David Valdeita (Seleuco)
 
 DEVELOPMENT
+
+- 2012-11-18 Version 1.3. Added iPhone5 support
 
 - 2012-06-02 Version 1.2. Fixed compatibility issue with iOS 5.1.1 jailbreak. Added local multiplayer (up to 4 players). Added true analog control (selectable as option). Fixed Taito X system. Added P1 Player as P2,P3,P4 input option. Some bug fixes. 
 - 2012-04-08 Version 1.1. Upgraded to MAME 0.139u1. Added 4/3, pixel aspect video aspects (now works MAME menu aspect ratio selector),

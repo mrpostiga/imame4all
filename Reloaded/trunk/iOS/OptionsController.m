@@ -1,7 +1,7 @@
 /*
- * This file is part of iMAME4all.
+ * This file is part of MAME4iOS.
  *
- * Copyright (C) 2010 David Valdeita (Seleuco)
+ * Copyright (C) 2012 David Valdeita (Seleuco)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,14 +27,13 @@
  * file, but you are not obligated to do so.  If you do not wish to
  * do so, delete this exception statement from your version.
  */
+#include "myosd.h"
 
 #import "OptionsController.h"
-#import "Helper.h"
-#include <stdio.h>
-//#include "shared.h"
-
-extern int isIpad;
-extern int isIphone4;
+#import "Globals.h"
+#import "ListOptionController.h"
+#import "DonateController.h"
+#import "HelpController.h"
 
 @implementation Options
 
@@ -55,7 +54,7 @@ extern int isIphone4;
 @synthesize fullLand;
 @synthesize fullPort;
 
-@synthesize skin;
+@synthesize skinValue;
 
 @synthesize wiiDeadZoneValue;
 @synthesize touchDeadZone;
@@ -63,16 +62,14 @@ extern int isIphone4;
 @synthesize overscanValue;
 @synthesize tvoutNative;
 
-@synthesize inputTouchType;
+@synthesize touchtype;
 @synthesize analogDeadZoneValue;
-@synthesize iCadeLayout;
+@synthesize controltype;
 
-@synthesize SoundKHZ;
-@synthesize soundEnabled;
+@synthesize soundValue;
 
 @synthesize throttle;
-@synthesize fskip;
-@synthesize fslevel;
+@synthesize fsvalue;
 @synthesize sticktype;
 @synthesize numbuttons;
 @synthesize aplusb;
@@ -82,7 +79,20 @@ extern int isIphone4;
 @synthesize forcepxa;
 @synthesize emures;
 @synthesize p1aspx;
-   
+
+@synthesize filterClones;
+@synthesize filterFavorites;
+@synthesize filterNotWorking;
+@synthesize manufacturerValue;
+@synthesize yearGTEValue;
+@synthesize yearLTEValue;
+@synthesize driverSourceValue;
+@synthesize categoryValue;
+
+@synthesize filterKeyword;
+
+@synthesize lowlsound;
+
 - (id)init {
 
     if (self = [super init]) {
@@ -92,11 +102,11 @@ extern int isIphone4;
     return self;
 }
 
-
 - (void)loadOptions
 {
 	
-	NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v5.bin")];
+	//NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v5.bin")];
+    NSString *path=[NSString stringWithUTF8String:get_documents_path("iOS/options_v16.bin")];
 	
 	NSData *plistData;
 	id plist;
@@ -122,8 +132,8 @@ extern int isIphone4;
 		
 		keepAspectRatioPort=1;
 		keepAspectRatioLand=1;
-		smoothedPort=isIpad?1:0;
-		smoothedLand=isIpad?1:0;
+		smoothedPort=g_isIpad?1:0;
+		smoothedLand=g_isIpad?1:0;
 				
 		tvFilterPort = 0;
         tvFilterLand = 0;
@@ -133,59 +143,51 @@ extern int isIphone4;
         showFPS = 0;
         showINFO = 1;
         fourButtonsLand = 0;
-        animatedButtons = ![[Helper machine] isEqualToString: @"iPhone1,1"] 
-		              && ![[Helper machine] isEqualToString: @"iPhone1,2"] 		               
-		              && ![[Helper machine] isEqualToString: @"iPod1,1"]		              
-		              ;
+        animatedButtons = 1;
 		              
         fullLand = animatedButtons;
         fullPort = 0;
         
-        if(isIpad)
-        {
-           skin = 0;
-        }
-        else if( [[Helper machine] isEqualToString: @"iPhone1,1"] || 
-		         [[Helper machine] isEqualToString: @"iPhone1,2"] ||
-		         [[Helper machine] isEqualToString: @"iPhone2,1"] ||		               
-		         [[Helper machine] isEqualToString: @"iPod1,1"]   ||
-                 [[Helper machine] isEqualToString: @"iPod2,1"])
-        {
-           skin = 1;
-        }
-        else
-        {
-           skin = 0;
-        }
-        
+        skinValue = 0;
         
         wiiDeadZoneValue = 2;
         touchDeadZone = 1;
         
-        overscanValue = 3;
+        overscanValue = 0;
         tvoutNative = 1;
         
-        inputTouchType = 1;
+        touchtype = 1;
         analogDeadZoneValue = 2;		
         
-        iCadeLayout = 0;
+        controltype = 0;
         
-        SoundKHZ = 4;
-        soundEnabled = 1;
+        soundValue = 5;
         
         throttle = 1;
-        fskip = 2;
-        fslevel = 5;
-        sticktype = 2;
-        numbuttons = 5;
+        fsvalue = 0;
+        sticktype = 0;
+        numbuttons = 0;
         aplusb = 0;
         cheats = 1;
         sleep = 1;
         
         forcepxa = 0;
         emures = 0;
-
-        p1aspx = 0;        
+        p1aspx = 0;
+        
+        filterClones=0;
+        filterFavorites=0;
+        filterNotWorking=1;
+        manufacturerValue=0;
+        yearGTEValue=0;
+        yearLTEValue=0;
+        driverSourceValue=0;
+        categoryValue=0;
+        
+        filterKeyword = nil;
+        
+        lowlsound = 0;
+        
 		//[self saveOptions];
 	}
 	else
@@ -211,7 +213,7 @@ extern int isIphone4;
         fullLand =  [[[optionsArray objectAtIndex:0] objectForKey:@"fullLand"] intValue];
         fullPort =  [[[optionsArray objectAtIndex:0] objectForKey:@"fullPort"] intValue];
         
-        skin =  [[[optionsArray objectAtIndex:0] objectForKey:@"skin"] intValue];
+        skinValue =  [[[optionsArray objectAtIndex:0] objectForKey:@"skinValue"] intValue];
         
         wiiDeadZoneValue =  [[[optionsArray objectAtIndex:0] objectForKey:@"wiiDeadZoneValue"] intValue];
         touchDeadZone =  [[[optionsArray objectAtIndex:0] objectForKey:@"touchDeadZone"] intValue];
@@ -219,16 +221,14 @@ extern int isIphone4;
         overscanValue =  [[[optionsArray objectAtIndex:0] objectForKey:@"overscanValue"] intValue];
         tvoutNative =  [[[optionsArray objectAtIndex:0] objectForKey:@"tvoutNative"] intValue];
         
-        inputTouchType =  [[[optionsArray objectAtIndex:0] objectForKey:@"inputTouchType"] intValue];
+        touchtype =  [[[optionsArray objectAtIndex:0] objectForKey:@"inputTouchType"] intValue];
         analogDeadZoneValue =  [[[optionsArray objectAtIndex:0] objectForKey:@"analogDeadZoneValue"] intValue];    
-        iCadeLayout =  [[[optionsArray objectAtIndex:0] objectForKey:@"iCadeLayout"] intValue];
+        controltype =  [[[optionsArray objectAtIndex:0] objectForKey:@"controlType"] intValue];
 
-        SoundKHZ =  [[[optionsArray objectAtIndex:0] objectForKey:@"SoundKHZ"] intValue];
-        soundEnabled =  [[[optionsArray objectAtIndex:0] objectForKey:@"soundEnabled"] intValue];
+        soundValue =  [[[optionsArray objectAtIndex:0] objectForKey:@"soundValue"] intValue];
                 
         throttle  =  [[[optionsArray objectAtIndex:0] objectForKey:@"throttle"] intValue];
-        fskip  =  [[[optionsArray objectAtIndex:0] objectForKey:@"fskip"] intValue];
-        fslevel  =  [[[optionsArray objectAtIndex:0] objectForKey:@"fslevel"] intValue];
+        fsvalue  =  [[[optionsArray objectAtIndex:0] objectForKey:@"fsvalue"] intValue];
         sticktype  =  [[[optionsArray objectAtIndex:0] objectForKey:@"sticktype"] intValue];
         numbuttons  =  [[[optionsArray objectAtIndex:0] objectForKey:@"numbuttons"] intValue];
         aplusb  =  [[[optionsArray objectAtIndex:0] objectForKey:@"aplusb"] intValue];
@@ -239,7 +239,20 @@ extern int isIphone4;
         emures  =  [[[optionsArray objectAtIndex:0] objectForKey:@"emures"] intValue];
         
         p1aspx  =  [[[optionsArray objectAtIndex:0] objectForKey:@"p1aspx"] intValue];
-                                       
+                
+        filterClones  =  [[[optionsArray objectAtIndex:0] objectForKey:@"filterClones"] intValue];
+        filterFavorites  =  [[[optionsArray objectAtIndex:0] objectForKey:@"filterFavorites"] intValue];
+        filterNotWorking  =  [[[optionsArray objectAtIndex:0] objectForKey:@"filterNotWorking"] intValue];
+        manufacturerValue  =  [[[optionsArray objectAtIndex:0] objectForKey:@"manufacturerValue"] intValue];
+        yearGTEValue  =  [[[optionsArray objectAtIndex:0] objectForKey:@"yearGTEValue"] intValue];
+        yearLTEValue  =  [[[optionsArray objectAtIndex:0] objectForKey:@"yearLTEValue"] intValue];
+        driverSourceValue  =  [[[optionsArray objectAtIndex:0] objectForKey:@"driverSourceValue"] intValue];
+        categoryValue  =  [[[optionsArray objectAtIndex:0] objectForKey:@"categoryValue"] intValue];
+        
+        filterKeyword  =  [[optionsArray objectAtIndex:0] objectForKey:@"filterKeyword"];
+        
+        lowlsound  =  [[[optionsArray objectAtIndex:0] objectForKey:@"lowlsound"] intValue];
+        
 	}
 			
 }
@@ -267,7 +280,7 @@ extern int isIphone4;
 							 [NSString stringWithFormat:@"%d", fullLand], @"fullLand",
 							 [NSString stringWithFormat:@"%d", fullPort], @"fullPort",
 							 
-							 [NSString stringWithFormat:@"%d", skin], @"skin",
+							 [NSString stringWithFormat:@"%d", skinValue], @"skinValue",
 							  
 							 [NSString stringWithFormat:@"%d", wiiDeadZoneValue], @"wiiDeadZoneValue",
 							 [NSString stringWithFormat:@"%d", touchDeadZone], @"touchDeadZone",
@@ -275,17 +288,15 @@ extern int isIphone4;
 							 [NSString stringWithFormat:@"%d", overscanValue], @"overscanValue",
 							 [NSString stringWithFormat:@"%d", tvoutNative], @"tvoutNative",
 							 
-							 [NSString stringWithFormat:@"%d", inputTouchType], @"inputTouchType",
+							 [NSString stringWithFormat:@"%d", touchtype], @"inputTouchType",
 							 [NSString stringWithFormat:@"%d", analogDeadZoneValue], @"analogDeadZoneValue",
 							 					
-                             [NSString stringWithFormat:@"%d", iCadeLayout], @"iCadeLayout",
+                             [NSString stringWithFormat:@"%d", controltype], @"controlType",
 
-                             [NSString stringWithFormat:@"%d", SoundKHZ], @"SoundKHZ",
-                             [NSString stringWithFormat:@"%d", soundEnabled], @"soundEnabled",
+                             [NSString stringWithFormat:@"%d", soundValue], @"soundValue",
 
                              [NSString stringWithFormat:@"%d", throttle], @"throttle",
-                             [NSString stringWithFormat:@"%d", fskip], @"fskip",
-                             [NSString stringWithFormat:@"%d", fslevel], @"fslevel",
+                             [NSString stringWithFormat:@"%d", fsvalue], @"fsvalue",
                              [NSString stringWithFormat:@"%d", sticktype], @"sticktype",
                              [NSString stringWithFormat:@"%d", numbuttons], @"numbuttons",
                              [NSString stringWithFormat:@"%d", aplusb], @"aplusb",
@@ -297,11 +308,25 @@ extern int isIphone4;
                              
                              [NSString stringWithFormat:@"%d", p1aspx], @"p1aspx",
                              
-							 nil]];	
+                             [NSString stringWithFormat:@"%d", filterClones], @"filterClones",
+                             [NSString stringWithFormat:@"%d", filterFavorites], @"filterFavorites",
+                             [NSString stringWithFormat:@"%d", filterNotWorking], @"filterNotWorking",
+                             [NSString stringWithFormat:@"%d", manufacturerValue], @"manufacturerValue",
+                             [NSString stringWithFormat:@"%d", yearGTEValue], @"yearGTEValue",
+                             [NSString stringWithFormat:@"%d", yearLTEValue], @"yearLTEValue",
+                             [NSString stringWithFormat:@"%d", driverSourceValue], @"driverSourceValue",
+                             [NSString stringWithFormat:@"%d", categoryValue], @"categoryValue",
+                             [NSString stringWithFormat:@"%d", lowlsound], @"lowlsound",
+                             
+                             filterKeyword, @"filterKeyword", //CUIADO si es nill termina la lista
+                                                                                     
+							 nil]];
+
 
 	
-    NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v5.bin")];
-	
+    //NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v5.bin")];
+	NSString *path=[NSString stringWithUTF8String:get_documents_path("iOS/options_v16.bin")];
+    
 	NSData *plistData;
 	
 	NSString *error;
@@ -330,7 +355,7 @@ extern int isIphone4;
 	else
 	{
 
-		NSLog(error);		
+		NSLog(@"%@",error);		
 		[error release];		
 	}	
 }
@@ -346,11 +371,12 @@ extern int isIphone4;
 
 @implementation OptionsController
 
+@synthesize emuController;
+
 
 - (id)init {
-
+    
     if (self = [super init]) {
-        
         switchKeepAspectPort=nil;
         switchKeepAspectLand=nil;
         switchSmoothedPort=nil;
@@ -364,113 +390,167 @@ extern int isIphone4;
         switchShowFPS=nil;
         switchShowINFO=nil;
         switchAnimatedButtons=nil;
-        switch4buttonsLand=nil;
+        
         switchfullLand=nil;
         switchfullPort=nil;
-        
-        segmentedSkin= nil;
-        
-        segmentedWiiDeadZoneValue = nil;
+                
         switchTouchDeadZone = nil;
         
-        segmentedOverscanValue = nil;
         switchTvoutNative = nil;
-        
-        segmentedTouchType = nil;
-        segmentedAnalogDeadZoneValue = nil;
-        
-        segmentediCadeLayout=nil;
-        
-        segmentedSoundKHZ=nil;
-        switchSound=nil;
-        
+                
         switchThrottle = nil;
-        segmentedFSkip = nil;
-        segmentedFSlevel = nil;
-        segmentedSticktype = nil;
-        segmentedNumbuttons = nil;
+        
         switchAplusB = nil;
         switchCheats = nil;
         switchSleep = nil;
         
         switchForcepxa = nil;
-        segmentedEmures = nil;
+            
+        arrayNumbuttons = [[NSArray alloc] initWithObjects:@"Auto",@"0 Buttons",@"1 Buttons",@"2 Buttons",@"3 Buttons",@"4 Buttons",@"All Buttons", nil];
+        
+        arrayEmuRes = [[NSArray alloc] initWithObjects:@"Auto",@"320x200",@"320x240",@"400x300",@"480x300",@"512x384",@"640x400",@"640x480",@"800x600",@"1024x768", nil];
+        
+        arrayTouchType = [[NSArray alloc] initWithObjects:@"Digital DPAD",@"Digital Stick",@"Analog Stick", nil];
+        
+        arrayStickType = [[NSArray alloc] initWithObjects:@"Auto",@"2-Way",@"4-Way",@"8-Way", nil];
+        
+        arrayControlType = [[NSArray alloc] initWithObjects:@"None",@"iCade",@"iCP",@"iMpulse", nil];
+        
+        arrayAnalogDZValue = [[NSArray alloc] initWithObjects:@"1", @"2", @"3",@"4", @"5", @"6", nil];
+        arrayWiiDZValue = [[NSArray alloc] initWithObjects:@"1", @"2", @"3",@"4", @"5", @"6", nil];
+        
+        arraySoundValue = [[NSArray alloc] initWithObjects:@"Off", @"On (11 KHz)", @"On (22 KHz)",@"On (33 KHz)", @"On (44 KHz)", @"On (48 KHz)", nil];
+        
+        arrayFSValue = [[NSArray alloc] initWithObjects:@"Auto",@"None", @"1", @"2", @"3",@"4", @"5", @"6", @"7", @"8", @"9", @"10",nil];
+        
+        arrayOverscanValue = [[NSArray alloc] initWithObjects:@"None",@"1", @"2", @"3",@"4", @"5", @"6", nil];
+        
+        arraySkinValue = 
+        [[NSArray alloc] initWithObjects: @"A", @"B (Layout 1)", @"B (Layout 2)", nil];
+        
+        
+        switchFilterClones = nil;
+        switchFilterFavorites = nil;
+        switchFilterNotWorking = nil;
+        arrayManufacturerValue = [[NSMutableArray  alloc] initWithObjects:@"# All",nil];
+        arrayYearGTEValue = [[NSMutableArray  alloc] initWithObjects:@"Any",nil];
+        arrayYearLTEValue = [[NSMutableArray  alloc] initWithObjects:@"Any",nil];
+        arrayDriverSourceValue = [[NSMutableArray  alloc] initWithObjects:@"# All",nil];
+        arrayCategoryValue = [[NSMutableArray  alloc] initWithObjects:@"# All",nil];
+        
+        int i = 0;
+        
+        
+        while(myosd_array_years[i][0]!='\0'){
+            [arrayYearGTEValue addObject:[NSString stringWithUTF8String: myosd_array_years[i]]];
+            [arrayYearLTEValue addObject:[NSString stringWithUTF8String: myosd_array_years[i]]];
+            i++;
+        }
+        i=0;
+        while(myosd_array_main_manufacturers[i][0]!='\0'){
+            [arrayManufacturerValue addObject:[NSString stringWithUTF8String: myosd_array_main_manufacturers[i]]];
+            i++;
+        }
+        i=0;
+        while(myosd_array_main_driver_source[i][0]!='\0'){
+            [arrayDriverSourceValue addObject:[NSString stringWithUTF8String: myosd_array_main_driver_source[i]]];
+            i++;
+        }
+        [arrayManufacturerValue replaceObjectAtIndex:[arrayManufacturerValue indexOfObject:@"Other"] withObject: @"# Other / Unknow"];
+        [arrayDriverSourceValue replaceObjectAtIndex:[arrayDriverSourceValue indexOfObject:@"Other"] withObject: @"# Other / Unknow"];
+        i=0;
+        while(myosd_array_categories[i][0]!='\0'){
+            [arrayCategoryValue addObject:[NSString stringWithUTF8String: myosd_array_categories[i]]];
+            i++;
+        }
+        
+        switchLowlsound = nil;
+        
     }
 
     return self;
 }
 
 - (void)loadView {
-
-	UIViewController *pctrl = [self parentViewController];		
-	struct CGRect rect = pctrl.view.frame;//[[UIScreen mainScreen] bounds];
-	rect.origin.x = rect.origin.y = 0.0f;
-	if(pctrl.interfaceOrientation==UIInterfaceOrientationLandscapeLeft 
-	||pctrl.interfaceOrientation==UIInterfaceOrientationLandscapeRight )
-	{
-	     int tmp = rect.size.width;
-	     rect.size.width = rect.size.height; 
-	     rect.size.height = tmp;	     
-	}
-
-	UIView *view= [[UIView alloc] initWithFrame:rect];	
-	self.view = view;
-	[view release];
-    self.view.backgroundColor = [UIColor whiteColor];
-
     
-   UINavigationBar    *navBar = [ [ UINavigationBar alloc ] initWithFrame: CGRectMake(rect.origin.x, rect.origin.y, rect.size.width, 45.0f)];
-   [ navBar setDelegate: self ];
 
-   UINavigationItem *item = [[ UINavigationItem alloc ] initWithTitle:@"Options" ];
-   UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithTitle:@"OK" style:UIBarButtonItemStyleBordered target:[self parentViewController]  action:  @selector(done:) ];
-   item.rightBarButtonItem = backButton;
-   [backButton release];
-   [ navBar pushNavigationItem: item  animated:YES];
-     
-   [ self.view addSubview: navBar ];
-   [navBar release];
-   
+    UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithTitle:@"Done"
+                                                                   style:UIBarButtonItemStyleBordered
+                                                                  target: emuController  action:  @selector(done:) ];
+    self.navigationItem.rightBarButtonItem = backButton;
+    [backButton release];
+    
+    self.title = NSLocalizedString(@"Settings", @"");
+    
     UITableView *tableView = [[UITableView alloc] 
-    initWithFrame:CGRectMake(rect.origin.x, rect.origin.y + 45.0f, rect.size.width,rect.size.height - 45.0f) style:UITableViewStyleGrouped];
-    //[tableView setSeparatorColor:[UIColor clearColor]];
+    initWithFrame:CGRectMake(0, 0, 240, 200) style:UITableViewStyleGrouped];
           
     tableView.delegate = self;
     tableView.dataSource = self;
-    [self.view addSubview:tableView];
+    tableView.autoresizesSubviews = YES;
+    self.view = tableView;
     [tableView release];
-   
 
-    
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-
-   //UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"CellIdentifier"];
    
    NSString *cellIdentifier = [NSString stringWithFormat: @"%d:%d", [indexPath indexAtPosition:0], [indexPath indexAtPosition:1]];
    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
    
    if (cell == nil)
    {
-      //If not possible create a new cell
-      cell = [[[UITableViewCell alloc] initWithFrame:CGRectZero reuseIdentifier:@"CellIdentifier"]
-                            autorelease];
+       
+      UITableViewCellStyle style;
+       
+      if(indexPath.section==kFilterSection && indexPath.row==9)
+          style = UITableViewCellStyleDefault;
+       else
+          style = UITableViewCellStyleValue1;
+       
+      cell = [[[UITableViewCell alloc] initWithStyle:style
+                                      //UITableViewCellStyleDefault
+                                      //UITableViewCellStyleValue1
+                                      reuseIdentifier:@"CellIdentifier"] autorelease];
+       
       cell.accessoryType = UITableViewCellAccessoryNone;
       cell.selectionStyle = UITableViewCellSelectionStyleNone;
    }
    
    Options *op = [[Options alloc] init];
    
-   switch (indexPath.section) 
+   switch (indexPath.section)
    {
-       case 0: //Portraint
+           
+       case kSupportSection:
+       {
+           switch (indexPath.row)
+           {
+               case 0:
+               {
+                   cell.textLabel.text   = @"Help";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   break;
+               }
+                   
+               case 1:
+               {
+                   cell.textLabel.text   = @"Donate";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   break;
+               }
+           }
+           break;
+       }
+           
+       case kPortraitSection: //Portrait
        {
            switch (indexPath.row) 
            {
                case 0: 
                {
-                   cell.text  = @"Smoothed Image";
+                   cell.textLabel.text   = @"Smoothed Image";
+                   [switchSmoothedPort release];
                    switchSmoothedPort = [[UISwitch alloc] initWithFrame:CGRectZero];                
                    cell.accessoryView = switchSmoothedPort;
                    [switchSmoothedPort setOn:[op smoothedPort] animated:NO];
@@ -480,7 +560,8 @@ extern int isIphone4;
                
                case 1:
                {
-                   cell.text  = @"CRT Filter";
+                   cell.textLabel.text   = @"CRT Effect";
+                   [switchTvFilterPort release];
                    switchTvFilterPort  = [[UISwitch alloc] initWithFrame:CGRectZero];                               
                    cell.accessoryView = switchTvFilterPort ;
                    [switchTvFilterPort setOn:[op tvFilterPort] animated:NO];
@@ -489,7 +570,8 @@ extern int isIphone4;
                }
                case 2:
                {
-                   cell.text  = @"Scanline Filter";
+                   cell.textLabel.text   = @"Scanline Effect";
+                   [switchScanlineFilterPort release];
                    switchScanlineFilterPort  = [[UISwitch alloc] initWithFrame:CGRectZero];                
                    cell.accessoryView = switchScanlineFilterPort ;
                    [switchScanlineFilterPort setOn:[op scanlineFilterPort] animated:NO];
@@ -498,7 +580,8 @@ extern int isIphone4;
                }          
                case 3:
                {
-                   cell.text  = @"Full Screen";
+                   cell.textLabel.text   = @"Full Screen";
+                   [switchfullPort release];
                    switchfullPort  = [[UISwitch alloc] initWithFrame:CGRectZero];                
                    cell.accessoryView = switchfullPort;
                    [switchfullPort setOn:[op fullPort] animated:NO];
@@ -507,7 +590,8 @@ extern int isIphone4;
                }   
                case 4:
                {
-	                cell.text  = @"Keep Aspect Ratio";
+	                cell.textLabel.text   = @"Keep Aspect Ratio";
+                   [switchKeepAspectPort release];
 	                switchKeepAspectPort  = [[UISwitch alloc] initWithFrame:CGRectZero];                
 	                cell.accessoryView = switchKeepAspectPort;
 	                [switchKeepAspectPort setOn:[op keepAspectRatioPort] animated:NO];
@@ -518,13 +602,14 @@ extern int isIphone4;
            }    
            break;
        }
-       case 1:  //Landscape
+       case kLandscapeSection:  //Landscape
        {
            switch (indexPath.row) 
            {
                case 0: 
                {
-                   cell.text  = @"Smoothed Image";
+                   cell.textLabel.text  = @"Smoothed Image";
+                   [switchSmoothedLand release];
                    switchSmoothedLand = [[UISwitch alloc] initWithFrame:CGRectZero];                
                    cell.accessoryView = switchSmoothedLand;
                    [switchSmoothedLand setOn:[op smoothedLand] animated:NO];
@@ -533,7 +618,8 @@ extern int isIphone4;
                }
                case 1:
                {
-                   cell.text  = @"CRT Filter";
+                   cell.textLabel.text   = @"CRT Effect";
+                   [switchTvFilterLand release];
                    switchTvFilterLand  = [[UISwitch alloc] initWithFrame:CGRectZero];                
                    cell.accessoryView = switchTvFilterLand ;
                    [switchTvFilterLand setOn:[op tvFilterLand] animated:NO];
@@ -542,27 +628,18 @@ extern int isIphone4;
                }
                case 2:
                {
-                   cell.text  = @"Scanline Filter";
+                   cell.textLabel.text   = @"Scanline Effect";
+                   [switchScanlineFilterLand release];
                    switchScanlineFilterLand  = [[UISwitch alloc] initWithFrame:CGRectZero];                
                    cell.accessoryView = switchScanlineFilterLand ;
                    [switchScanlineFilterLand setOn:[op scanlineFilterLand] animated:NO];
                    [switchScanlineFilterLand addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
                    break;
                }
-               /*
                case 3:
                {
-                   cell.text  = @"Show 4 Buttons";
-                   switch4buttonsLand  = [[UISwitch alloc] initWithFrame:CGRectZero];                
-                   cell.accessoryView = switch4buttonsLand ;
-                   [switch4buttonsLand setOn:[op fourButtonsLand] animated:NO];
-                   [switch4buttonsLand addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
-                   break;
-               }
-               */
-               case 3:
-               {
-                   cell.text  = @"Full Screen";
+                   cell.textLabel.text   = @"Full Screen";
+                   [switchfullLand release];
                    switchfullLand  = [[UISwitch alloc] initWithFrame:CGRectZero];                
                    cell.accessoryView = switchfullLand ;
                    [switchfullLand setOn:[op fullLand] animated:NO];
@@ -573,7 +650,8 @@ extern int isIphone4;
                case 4:
                {
 
-                    cell.text  = @"Keep Aspect Ratio";
+                    cell.textLabel.text   = @"Keep Aspect Ratio";
+                   [switchKeepAspectLand release];
                     switchKeepAspectLand  = [[UISwitch alloc] initWithFrame:CGRectZero];                
                     cell.accessoryView = switchKeepAspectLand;
                     [switchKeepAspectLand setOn:[op keepAspectRatioLand] animated:NO];
@@ -584,13 +662,14 @@ extern int isIphone4;
            }
            break;
         }    
-        case 2:  //Input
+        case kInputSection:  //Input
         {
             switch (indexPath.row) 
             {
                case 0:
                {
-                   cell.text  = @"Animated";
+                   cell.textLabel.text   = @"Animated";
+                   [switchAnimatedButtons release];
                    switchAnimatedButtons  = [[UISwitch alloc] initWithFrame:CGRectZero];                
                    cell.accessoryView = switchAnimatedButtons ;
                    [switchAnimatedButtons setOn:[op animatedButtons] animated:NO];
@@ -599,164 +678,106 @@ extern int isIphone4;
               }
               case 1:
               {
-                   cell.text  = @"Touch Type";
-
-                    segmentedTouchType = [[UISegmentedControl alloc] initWithItems:
-                       [NSArray arrayWithObjects: @"D-PAD",@"D-Stick", @"Analog", nil]];
-                    segmentedTouchType.selectedSegmentIndex = [op inputTouchType];
-                  
-                    CGRect r = segmentedTouchType.frame;
-                    r.size.height = 30;
-                    segmentedTouchType.frame = r;
-                    
-                    [segmentedTouchType addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-                    segmentedTouchType.segmentedControlStyle = UISegmentedControlStylePlain; 
-                    //UISegmentedControlStyleBar;
-                     cell.accessoryView = segmentedTouchType;     
+                   cell.textLabel.text   = @"Touch Type";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.detailTextLabel.text = [arrayTouchType objectAtIndex:op.touchtype];
                    break;
                }
                case 2:
-               {
-                   cell.text  = @"Stick Type";
-
-                    segmentedSticktype = [[UISegmentedControl alloc] initWithItems:
-                       [NSArray arrayWithObjects: @"2-way", @"4-way", @"8-way", nil]];
-                    segmentedSticktype.selectedSegmentIndex = [op sticktype];
-                  
-                    CGRect r = segmentedSticktype.frame;
-                    r.size.height = 30;
-                    segmentedSticktype.frame = r;
-                    
-                    [segmentedSticktype addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-                    segmentedSticktype.segmentedControlStyle = UISegmentedControlStylePlain; 
-                    //UISegmentedControlStyleBar;
-                     cell.accessoryView = segmentedSticktype;     
+               {                   
+                   cell.textLabel.text   = @"Stick Type";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.detailTextLabel.text = [arrayStickType objectAtIndex:op.sticktype];
+                   
                    break;
                }
                case 3:
-               {
-                    cell.text  = @"Buttons";
-
-                    segmentedNumbuttons = [[UISegmentedControl alloc] initWithItems:
-                       [NSArray arrayWithObjects: @"0",@"1", @"2", @"3",@"4", @"all", nil]];
-                    segmentedNumbuttons.selectedSegmentIndex = [op numbuttons];
-                  
-                    [segmentedNumbuttons addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-                    segmentedNumbuttons.segmentedControlStyle = UISegmentedControlStyleBar;
-                    cell.accessoryView = segmentedNumbuttons;     
+               {                
+                   cell.textLabel.text   = @"Full Screen Buttons";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.detailTextLabel.text = [arrayNumbuttons objectAtIndex:op.numbuttons];
+                   
                    break;
-               }       
+               }
                case 4:
                {
-                   cell.text  = @"Button A = B + X";
+                   cell.textLabel.text   = @"Button A = B + X";
+                   [switchAplusB release];
                    switchAplusB  = [[UISwitch alloc] initWithFrame:CGRectZero];                
                    cell.accessoryView = switchAplusB ;
                    [switchAplusB setOn:[op aplusb] animated:NO];
                    [switchAplusB addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
                    break;
-               }                                        
-               case 5:
-               {                                      
-                   cell.text  = @"Analog Touch DZ";
-                   
-                    segmentedAnalogDeadZoneValue = [[UISegmentedControl alloc] initWithItems:
-                       [NSArray arrayWithObjects: @"1", @"2", @"3",@"4", @"5", @"6", nil]];
-                    segmentedAnalogDeadZoneValue.selectedSegmentIndex = [op analogDeadZoneValue];
-                    //actionControl.tag = 3;
-                    [segmentedAnalogDeadZoneValue addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-                    segmentedAnalogDeadZoneValue.segmentedControlStyle = UISegmentedControlStyleBar;
-                    //[cell addSubview:segmentedDeadZoneValue];
-                     cell.accessoryView = segmentedAnalogDeadZoneValue;                     
-                   break;
-               }                            
-              case 6:
-               {
-                   cell.text  = @"Digital Touch DZ";
-                   switchTouchDeadZone  = [[UISwitch alloc] initWithFrame:CGRectZero];                
-                   cell.accessoryView = switchTouchDeadZone ;
-                   [switchTouchDeadZone setOn:[op touchDeadZone] animated:NO];
-                   [switchTouchDeadZone addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
-                   break;
-               }                              
-               case 7:
-               {                                      
-                   cell.text  = @"Wii Classic DZ";
-                   
-                    segmentedWiiDeadZoneValue = [[UISegmentedControl alloc] initWithItems:
-                       [NSArray arrayWithObjects: @"1", @"2", @"3",@"4", @"5", @"6", nil]];
-                    //segmentedDeadZoneValue.frame = CGRectMake(145, 5, 150, 35);
-                    segmentedWiiDeadZoneValue.selectedSegmentIndex = [op wiiDeadZoneValue];
-                    //actionControl.tag = 3;
-                    [segmentedWiiDeadZoneValue addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-                    segmentedWiiDeadZoneValue.segmentedControlStyle = UISegmentedControlStyleBar;
-                    //[cell addSubview:segmentedDeadZoneValue];
-                     cell.accessoryView = segmentedWiiDeadZoneValue;
-
-                   break;
-               }       
-                case 8:
+               }                                             
+                case 5:
                 {
-                    cell.text  = @"Control Layout";
+                    cell.textLabel.text   = @"External Controller";
 
-                    segmentediCadeLayout = [[UISegmentedControl alloc] initWithItems:
-                       [NSArray arrayWithObjects: @"iCP", @"iCade", nil]];
-                    segmentediCadeLayout.selectedSegmentIndex = [op iCadeLayout];
-                  
-                    CGRect r = segmentediCadeLayout.frame;
-                    r.size.height = 30;
-                    segmentediCadeLayout.frame = r;
+                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                    cell.detailTextLabel.text = [arrayControlType objectAtIndex:op.controltype];
                     
-                    [segmentediCadeLayout addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-                    segmentediCadeLayout.segmentedControlStyle = UISegmentedControlStylePlain; 
-                    cell.accessoryView = segmentediCadeLayout;     
                    break;
                 }    
                 
-               case 9:
+               case 6:
                {
-                   cell.text  = @"P1 as P2,P3,P4";
+                   cell.textLabel.text   = @"P1 as P2,P3,P4";
+                   [switchP1aspx release];
                    switchP1aspx  = [[UISwitch alloc] initWithFrame:CGRectZero];                
                    cell.accessoryView = switchP1aspx ;
                    [switchP1aspx setOn:[op p1aspx] animated:NO];
                    [switchP1aspx addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
                    break;
-               }                          
+               }
+                case 7:
+                {
+                    cell.textLabel.text   = @"DPAD Touch DZ";
+                    [switchTouchDeadZone release];
+                    switchTouchDeadZone  = [[UISwitch alloc] initWithFrame:CGRectZero];
+                    cell.accessoryView = switchTouchDeadZone ;
+                    [switchTouchDeadZone setOn:[op touchDeadZone] animated:NO];
+                    [switchTouchDeadZone addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                    break;
+                }
+                case 8:
+                {
+                    cell.textLabel.text   = @"Analog Touch Dead Zone";
+                    
+                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                    cell.detailTextLabel.text = [arrayAnalogDZValue objectAtIndex:op.analogDeadZoneValue];
+                    break;
+                }
+                case 9:
+                {
+                    if(g_wiimote_avalible)
+                    {
+                        cell.textLabel.text   = @"Wii Classic Dead Zone";
+                        
+                        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                        cell.detailTextLabel.text = [arrayWiiDZValue objectAtIndex:op.wiiDeadZoneValue];
+                    }
+                    
+                    break;
+                }
             }   
             break;
         }        
-       case 3:  //Sound
+       case kDefaultsSection:  
        {
            switch (indexPath.row) 
            {
                case 0:
                {
-                   cell.text  = @"Sound Rate (kHz)";
+                   cell.textLabel.text   = @"Sound";
                    
-                   segmentedSoundKHZ = [[UISegmentedControl alloc] initWithItems:
-                                           [NSArray arrayWithObjects: @"11", @"22", @"33", @"44", @"48",nil]];
-                   segmentedSoundKHZ.selectedSegmentIndex = [op SoundKHZ];
-                   
-                   CGRect r = segmentedSoundKHZ.frame;
-                   r.size.height = 30;
-                   segmentedSoundKHZ.frame = r;
-                   
-                   [segmentedSoundKHZ addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-                   segmentedSoundKHZ.segmentedControlStyle = UISegmentedControlStylePlain; 
-                   cell.accessoryView = segmentedSoundKHZ;     
-                   break;               
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.detailTextLabel.text = [arraySoundValue objectAtIndex:op.soundValue];
+                   break;
                }
                case 1:
                {
-                   cell.text  = @"Sound Enabled";
-                   switchSound  = [[UISwitch alloc] initWithFrame:CGRectZero];                
-                   cell.accessoryView = switchSound ;
-                   [switchSound setOn:[op soundEnabled] animated:NO];
-                   [switchSound addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];                          
-                   break;             
-               } 
-               case 2:
-               {
-                   cell.text  = @"Cheats";
+                   cell.textLabel.text   = @"Cheats";
+                   [switchCheats release];
                    switchCheats  = [[UISwitch alloc] initWithFrame:CGRectZero];                
                    cell.accessoryView = switchCheats ;
                    [switchCheats setOn:[op cheats] animated:NO];
@@ -767,13 +788,14 @@ extern int isIphone4;
            break;
        }
 
-        case 4:  //Miscellaneous
+        case kMiscSection:  //Miscellaneous
         {
             switch (indexPath.row) 
             {
               case 0:
                {
-                   cell.text  = @"Show FPS";
+                   cell.textLabel.text   = @"Show FPS";
+                   [switchShowFPS release];
                    switchShowFPS  = [[UISwitch alloc] initWithFrame:CGRectZero];                
                    cell.accessoryView = switchShowFPS ;
                    [switchShowFPS setOn:[op showFPS] animated:NO];
@@ -781,22 +803,17 @@ extern int isIphone4;
                    break;
                }
                case 1:
-               {                                      
-                    cell.text  = @"Emu Res";
-                   
-                    segmentedEmures = [[UISegmentedControl alloc] initWithItems:
-                       [NSArray arrayWithObjects: @"auto", @"320", @"512",@"640", @"800", @"1024", nil]];
-                                                              
-                    segmentedEmures.selectedSegmentIndex = [op emures];
-                    [segmentedEmures addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-                    segmentedEmures.segmentedControlStyle = UISegmentedControlStyleBar;
-                    cell.accessoryView = segmentedEmures;
+               {                                                         
+                   cell.textLabel.text   = @"Emulated Resolution";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.detailTextLabel.text = [arrayEmuRes objectAtIndex:op.emures];
 
                    break;
                }               
               case 2:
                {
-                   cell.text  = @"Throttle";
+                   cell.textLabel.text   = @"Throttle";
+                   [switchThrottle release];
                    switchThrottle  = [[UISwitch alloc] initWithFrame:CGRectZero];                
                    cell.accessoryView = switchThrottle ;
                    [switchThrottle setOn:[op throttle] animated:NO];
@@ -805,86 +822,65 @@ extern int isIphone4;
                }
                case 3:
                {
-                   cell.text  = @"FS";
-
-                    segmentedFSkip = [[UISegmentedControl alloc] initWithItems:
-                       [NSArray arrayWithObjects: @"None", @"Manual", @"Auto", nil]];
-                    segmentedFSkip.selectedSegmentIndex = [op fskip];
-                  
-                    CGRect r = segmentedFSkip.frame;
-                    r.size.height = 30;
-                    segmentedFSkip.frame = r;
-                    
-                    [segmentedFSkip addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-                    segmentedFSkip.segmentedControlStyle = UISegmentedControlStylePlain; 
-                    cell.accessoryView = segmentedFSkip;     
+                   cell.textLabel.text   = @"Frame Skip";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.detailTextLabel.text = [arrayFSValue objectAtIndex:op.fsvalue];
+    
                    break;
                }
                case 4:
-               {                                      
-                    cell.text  = @"FS Value";
-                   
-                    segmentedFSlevel = [[UISegmentedControl alloc] initWithItems:
-                       [NSArray arrayWithObjects: @"1", @"2", @"3",@"4", @"5", @"6",@"7",@"8",@"9", nil]];
-                                                              
-                    segmentedFSlevel.selectedSegmentIndex = [op fslevel];
-                    [segmentedFSlevel addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-                    segmentedFSlevel.segmentedControlStyle = UISegmentedControlStyleBar;
-                    cell.accessoryView = segmentedFSlevel;
-
-                   break;
-               }
-               case 5:
                {
-                   cell.text  = @"Force Pixel Aspect";
+                   cell.textLabel.text   = @"Force Pixel Aspect";
+                   [switchForcepxa release];
                    switchForcepxa  = [[UISwitch alloc] initWithFrame:CGRectZero];                
                    cell.accessoryView = switchForcepxa ;
                    [switchForcepxa setOn:[op forcepxa] animated:NO];
                    [switchForcepxa addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
                    break;
                }  
-              case 6:
+              case 5:
                {
-                   cell.text  = @"Sleep on idle";
+                   cell.textLabel.text   = @"Sleep on Idle";
+                   [switchSleep release];
                    switchSleep  = [[UISwitch alloc] initWithFrame:CGRectZero];                
                    cell.accessoryView = switchSleep ;
                    [switchSleep setOn:[op sleep] animated:NO];
                    [switchSleep addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
                    break;
                }                                                                             
-              case 7:
+              case 6:
                {
-                   cell.text  = @"Show Info/Warnings";
+                   cell.textLabel.text   = @"Show Info/Warnings";
+                   [switchShowINFO release];
                    switchShowINFO  = [[UISwitch alloc] initWithFrame:CGRectZero];                
                    cell.accessoryView = switchShowINFO ;
                    [switchShowINFO setOn:[op showINFO] animated:NO];
                    [switchShowINFO addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
                    break;
                }
+               case 7:
+               {
+                    cell.textLabel.text   = @"Low Latency Audio";
+                    [switchLowlsound release];
+                    switchLowlsound  = [[UISwitch alloc] initWithFrame:CGRectZero];
+                    cell.accessoryView = switchLowlsound ;
+                    [switchLowlsound setOn:[op lowlsound] animated:NO];
+                    [switchLowlsound addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                    break;
+               }
                case 8:
                {
-                   cell.text  = @"Skin";                   
-                   segmentedSkin = [[UISegmentedControl alloc] initWithItems:
-                   (isIpad ?
-                   [NSArray arrayWithObjects: @"A", @"B (Layout 2)", @"B ", nil]
-                   :[NSArray arrayWithObjects: @"A", @"B ( Lo )", @"B", nil])];
-                    
-                    CGRect r = segmentedTouchType.frame;
-                    r.size.height = 30;
-                    segmentedTouchType.frame = r;
-                    
-                    //segmentedDeadZoneValue.frame = CGRectMake(145, 5, 150, 35);
-                   segmentedSkin.selectedSegmentIndex = [op skin];
-                    //actionControl.tag = 3;
-                   [segmentedSkin addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-                   segmentedSkin.segmentedControlStyle = UISegmentedControlStyleBar;
-                   //[cell addSubview:segmentedDeadZoneValue];
-                   cell.accessoryView = segmentedSkin;
+                   cell.textLabel.text   = @"Skin";
+                   
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.detailTextLabel.text = [arraySkinValue objectAtIndex:op.skinValue];
+
                    break;
                }
                case 9:
                {
-                   cell.text  = @"Native TV-OUT";
+                   cell.textLabel.text   = @"Native TV-OUT";
+                   [switchTvoutNative release];
                    switchTvoutNative  = [[UISwitch alloc] initWithFrame:CGRectZero];                
                    cell.accessoryView = switchTvoutNative ;
                    [switchTvoutNative setOn:[op tvoutNative] animated:NO];
@@ -893,20 +889,130 @@ extern int isIphone4;
                }                
                case 10:
                {
-                   cell.text  = @"Overscan TV-OUT";                   
-                   segmentedOverscanValue = [[UISegmentedControl alloc] initWithItems:
-                   [NSArray arrayWithObjects: @"0", @"1", @"2",@"3",@"4",@"5",@"6", nil]];
-                                      
-                   segmentedOverscanValue.selectedSegmentIndex = [op overscanValue];
-                   [segmentedOverscanValue addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-                   segmentedOverscanValue.segmentedControlStyle = UISegmentedControlStyleBar;
-                   cell.accessoryView = segmentedOverscanValue;
+                   cell.textLabel.text   = @"Overscan TV-OUT";
+                   
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.detailTextLabel.text = [arrayOverscanValue objectAtIndex:op.overscanValue];
+                   
                    break;
                }               
 
             }
             break;   
         }
+       case kFilterSection:
+       {
+           switch (indexPath.row)
+           {
+               case 0:
+               {
+                   cell.textLabel.text = @"Hide Non-Favorites";
+                   [switchFilterFavorites release];
+                   switchFilterFavorites  = [[UISwitch alloc] initWithFrame:CGRectZero];
+                   cell.accessoryView = switchFilterFavorites ;
+                   [switchFilterFavorites setOn:[op filterFavorites] animated:NO];
+                   [switchFilterFavorites addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                   break;
+                   
+                   break;
+               }
+               
+               case 1:
+               {
+                   cell.textLabel.text = @"Hide Clones";
+                   [switchFilterClones release];
+                   switchFilterClones  = [[UISwitch alloc] initWithFrame:CGRectZero];
+                   cell.accessoryView = switchFilterClones ;
+                   [switchFilterClones setOn:[op filterClones] animated:NO];
+                   [switchFilterClones addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                   break;
+               }
+
+               case 2:
+               {
+                   cell.textLabel.text = @"Hide Not Working";
+                   [switchFilterNotWorking release];
+                   switchFilterNotWorking  = [[UISwitch alloc] initWithFrame:CGRectZero];
+                   cell.accessoryView = switchFilterNotWorking ;
+                   [switchFilterNotWorking setOn:[op filterNotWorking] animated:NO];
+                   [switchFilterNotWorking addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                   break;
+               }
+                   
+               case 3:
+               {
+                   cell.textLabel.text   = @"Keyword";
+                   UITextField *textField = [[UITextField alloc] initWithFrame:CGRectMake(110, 40, 185, 25)] ;
+                   textField.placeholder = @"Empty Text";
+                   textField.text =  op.filterKeyword;
+                   textField.tag = indexPath.row/2;
+                   textField.returnKeyType = UIReturnKeyDone;
+                   textField.autocorrectionType = UITextAutocorrectionTypeNo;
+                   textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
+                   textField.spellCheckingType = UITextSpellCheckingTypeNo;
+                   textField.clearButtonMode = UITextFieldViewModeNever;
+                   textField.textAlignment = UITextAlignmentRight;
+                   textField.keyboardType = UIKeyboardTypeASCIICapable;
+                   textField.clearsOnBeginEditing = YES;
+                   //textField.borderStyle = UITextBorderStyleRoundedRect;
+                   textField.delegate = self;
+                   cell.accessoryView = textField;
+                   //[cell.contentView addSubview:textField];
+                   [textField release];
+                   
+                   break;
+               }
+                   
+               case 4:
+               {
+                   cell.textLabel.text   = @"Year >=";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.detailTextLabel.text = [arrayYearGTEValue objectAtIndex:op.yearGTEValue];
+                   break;
+               }
+               case 5:
+               {
+                   cell.textLabel.text   = @"Year <=";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.detailTextLabel.text = [arrayYearLTEValue objectAtIndex:op.yearLTEValue];
+                   break;
+               }
+                   
+               case 6:
+               {
+                   cell.textLabel.text   = @"Manufacturer";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.detailTextLabel.text = [[arrayManufacturerValue objectAtIndex:op.manufacturerValue] stringByReplacingOccurrencesOfString:@"#" withString:@""];
+                   break;
+               }
+                   
+               case 7:
+               {
+                   
+                   cell.textLabel.text   = @"Driver Source";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.detailTextLabel.text = [[arrayDriverSourceValue objectAtIndex:op.driverSourceValue]
+                   stringByReplacingOccurrencesOfString:@"#" withString:@""];
+                   break;
+               }
+               case 8:
+               {
+                   
+                   cell.textLabel.text   = @"Category";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.detailTextLabel.text = [[arrayCategoryValue objectAtIndex:op.categoryValue]
+                                                stringByReplacingOccurrencesOfString:@"#" withString:@""];
+                   break;
+               }
+               case 9:
+               {
+                    cell.selectionStyle = UITableViewCellSelectionStyleBlue;
+                    cell.textLabel.text = @"Reset Filters to Default";
+                    cell.textLabel.textAlignment = UITextAlignmentCenter;
+                   break;
+               }
+           }
+       }
    }
      
    [op release];
@@ -916,19 +1022,22 @@ extern int isIphone4;
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-      return 5;
+      return 7;
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
 		
     switch (section)
     {
-          case 0: return @"Portrait";
-          case 1: return @"Landscape";
-          case 2: return @"Input";
-          case 3: return @"Game Defaults";  
-          case 4: return @"Miscellaneous";
+          case kSupportSection: return @"Support";
+          case kPortraitSection: return @"Portrait";
+          case kLandscapeSection: return @"Landscape";
+          case kInputSection: return @"Input";
+          case kDefaultsSection: return @"Game Defaults";
+          case kMiscSection: return @"Miscellaneous";
+          case kFilterSection: return @"Game Filter";
     }
+    return @"Error!";
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -936,12 +1045,15 @@ extern int isIphone4;
    
       switch (section)
       {
-          case 0: return 5;
-          case 1: return 5;
-          case 2: return 10;
-          case 3: return 3;
-          case 4: return 9+2;
+          case kSupportSection: return 2;
+          case kPortraitSection: return 5;
+          case kLandscapeSection: return 5;
+          case kInputSection: return 10-!g_wiimote_avalible;
+          case kDefaultsSection: return 2;
+          case kMiscSection: return 10+1;
+          case kFilterSection: return 10;
       }
+    return -1;
 }
 
 -(void)viewDidLoad{	
@@ -960,98 +1072,66 @@ extern int isIphone4;
 
 
 - (void)dealloc {
-   if(switchKeepAspectPort!=nil)
-     [switchKeepAspectPort release];
-   if(switchKeepAspectLand!=nil)
-     [switchKeepAspectLand release];     
-   if(switchSmoothedPort!=nil)  
-     [switchSmoothedPort release];
-   if(switchSmoothedLand!=nil)  
-     [switchSmoothedLand release];
-   if(switchTvFilterPort!=nil)
-     [switchTvFilterPort release];
-   if(switchTvFilterLand!=nil)
-     [switchTvFilterLand release];
-   if(switchScanlineFilterPort!=nil)
-     [switchScanlineFilterPort release];
-   if(switchScanlineFilterLand!=nil)
-     [switchScanlineFilterLand release];
-     
-   if(switchShowFPS!=nil)
-     [switchShowFPS release];
-   if(switchShowINFO!=nil)
-     [switchShowINFO release];
-   if(switchAnimatedButtons!=nil)
-     [switchAnimatedButtons release];
-   if(switch4buttonsLand!=nil)
-     [switch4buttonsLand release];
-   if(switchfullLand!=nil)
-     [switchfullLand release];      
-   if(switchfullPort!=nil)
-     [switchfullPort release]; 
-          
-   if(segmentedSkin!=nil)
-     [segmentedSkin release];  
-     
-   if(segmentedWiiDeadZoneValue!=nil)
-    [segmentedWiiDeadZoneValue release];
     
-   if(switchTouchDeadZone!=nil)
-     [switchTouchDeadZone release];
-     
-   if(segmentedOverscanValue!=nil)
-    [segmentedOverscanValue release];
+    [switchKeepAspectPort release];
+    [switchKeepAspectLand release];
+    [switchSmoothedPort release];
+    [switchSmoothedLand release];
+    [switchTvFilterPort release];
+    [switchTvFilterLand release];
+    [switchScanlineFilterPort release];
+    [switchScanlineFilterLand release];
     
-   if(switchTvoutNative!=nil)
-     [switchTvoutNative release]; 
-
-   if(segmentedTouchType!=nil)
-     [segmentedTouchType release]; 
-
-   if(segmentedAnalogDeadZoneValue!=nil)
-    [segmentedAnalogDeadZoneValue release];
+    [switchShowFPS release];
+    [switchShowINFO release];
+    [switchAnimatedButtons release];
     
-   if(segmentediCadeLayout!=nil)
-    [segmentediCadeLayout release]; 
-
-    if(segmentedSoundKHZ!=nil)
-        [segmentedSoundKHZ release]; 
-    if(switchSound!=nil)
-        [switchSound release]; 
-        
-    if(switchThrottle != nil)
-        [switchThrottle release];    
-    if(segmentedFSkip != nil)
-        [segmentedFSkip release];        
-    if(segmentedFSlevel != nil)
-        [segmentedFSlevel release];        
-    if(segmentedSticktype != nil)
-        [segmentedSticktype release];        
-    if(segmentedNumbuttons != nil)
-        [segmentedNumbuttons release];        
-    if(switchAplusB != nil)
-        [switchAplusB release];        
-    if(switchCheats != nil)
-        [switchCheats release];        
-    if(switchSleep != nil)
-        [switchSleep release];              
-
-    if(switchForcepxa != nil)
-        [switchForcepxa release];        
-    if(segmentedEmures != nil)
-        [segmentedEmures release];  
+    [switchfullLand release];
+    [switchfullPort release];
     
-    if(switchP1aspx != nil)
-        [switchP1aspx release];   
-                 
-   [super dealloc];
+    [switchTouchDeadZone release];
+    
+    [switchTvoutNative release];
+    
+    [switchThrottle release];
+    [switchAplusB release];
+    [switchCheats release];
+    [switchSleep release];
+    [switchForcepxa release];
+    
+    [switchP1aspx release];
+    
+    [arrayNumbuttons release];
+    [arrayEmuRes release];
+    [arrayStickType release];
+    [arrayTouchType release];
+    [arrayControlType release];
+    [arrayAnalogDZValue release];
+    [arrayWiiDZValue release];
+    [arraySoundValue release];
+    [arrayFSValue release];
+    [arrayOverscanValue release];
+    [arraySkinValue release];
+    
+    [switchFilterClones release];
+    [switchFilterFavorites release];
+    [switchFilterNotWorking release];
+    [arrayManufacturerValue release];
+    [arrayYearGTEValue release];
+    [arrayYearLTEValue release];
+    [arrayDriverSourceValue release];
+    [arrayCategoryValue release];
+    
+    [switchLowlsound release];
+    
+    [super dealloc];
 }
 
 - (void)optionChanged:(id)sender
 {
     Options *op = [[Options alloc] init];
 	
-	if(sender==switchKeepAspectPort)    		
+	if(sender==switchKeepAspectPort)
 	   op.keepAspectRatioPort = [switchKeepAspectPort isOn];
 	
 	if(sender==switchKeepAspectLand)    		
@@ -1083,55 +1163,22 @@ extern int isIphone4;
 	
 	if(sender == switchAnimatedButtons) 
 	   op.animatedButtons=  [switchAnimatedButtons isOn];
-	
-	if(sender == switch4buttonsLand) 
-	   op.fourButtonsLand =  [switch4buttonsLand isOn];	
-	
+			
 	if(sender == switchfullLand) 
 	   op.fullLand =  [switchfullLand isOn];
 
 	if(sender == switchfullPort) 
 	   op.fullPort =  [switchfullPort isOn];
-	   
-    if(sender == segmentedSkin) 
-	   op.skin =  [segmentedSkin selectedSegmentIndex];   
-	   
-	if(sender == segmentedWiiDeadZoneValue)
-	   op.wiiDeadZoneValue = [segmentedWiiDeadZoneValue selectedSegmentIndex];   
-	   
+  	   	   
 	if(sender == switchTouchDeadZone)
 	  op.touchDeadZone = [switchTouchDeadZone isOn];
-	  
-	if(sender == segmentedOverscanValue)
-	   op.overscanValue = [segmentedOverscanValue selectedSegmentIndex];   
-	   
+  	   
 	if(sender == switchTvoutNative)
 	  op.tvoutNative = [switchTvoutNative isOn];  
-
-	if(sender == segmentedTouchType)
-	  op.inputTouchType = [segmentedTouchType selectedSegmentIndex];
-	  
-	if(sender == segmentedAnalogDeadZoneValue)
-	   op.analogDeadZoneValue = [segmentedAnalogDeadZoneValue selectedSegmentIndex];  	
-    
-    if(sender == segmentediCadeLayout)
-        op.iCadeLayout = [segmentediCadeLayout selectedSegmentIndex];
-
-    if(sender == segmentedSoundKHZ)
-        op.SoundKHZ = [segmentedSoundKHZ selectedSegmentIndex];
-    if(sender == switchSound)
-        op.soundEnabled = [switchSound isOn];
-    
+	         
     if(sender == switchThrottle)
         op.throttle = [switchThrottle isOn];    
-    if(sender == segmentedFSkip)
-        op.fskip = [segmentedFSkip selectedSegmentIndex];    
-    if(sender == segmentedFSlevel)
-        op.fslevel = [segmentedFSlevel selectedSegmentIndex]; 
-    if(sender == segmentedSticktype)
-        op.sticktype = [segmentedSticktype selectedSegmentIndex];        
-    if(sender == segmentedNumbuttons)
-        op.numbuttons = [segmentedNumbuttons selectedSegmentIndex];
+     
     if(sender == switchAplusB)
         op.aplusb = [switchAplusB isOn];   
     if(sender == switchCheats)
@@ -1141,17 +1188,237 @@ extern int isIphone4;
 
     if(sender == switchForcepxa)
         op.forcepxa = [switchForcepxa isOn];
-    if(sender == segmentedEmures)
-        op.emures = [segmentedEmures selectedSegmentIndex];
     
     if(sender == switchP1aspx)
         op.p1aspx = [switchP1aspx isOn];
-            
+    
+    if(sender == switchFilterClones)
+        op.filterClones = [switchFilterClones isOn];
+    if(sender == switchFilterFavorites)
+        op.filterFavorites = [switchFilterFavorites isOn];
+    if(sender == switchFilterNotWorking)
+        op.filterNotWorking = [switchFilterNotWorking isOn];
+    
+    if(sender == switchLowlsound)
+        op.lowlsound = [switchLowlsound isOn];
+    
 	[op saveOptions];
 		
 	[op release];
 }
 
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    NSUInteger row = [indexPath row];
+    NSUInteger section = [indexPath section];
+    //printf("%d %d\n",section,row);
+    
+    switch (section)
+    {
+        case kSupportSection:
+        {
+            if (row==0){
+                HelpController *controller = [[HelpController alloc] init];
+                [[self navigationController] pushViewController:controller animated:YES];
+                [controller release];
+            }
+            
+            if (row==1){
+                DonateController *controller = [[DonateController alloc] init];
+                [[self navigationController] pushViewController:controller animated:YES];
+                [controller release];
+            }
 
+            break;
+        }
+        case kInputSection:
+        {
+            if (row==1){
+                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped type:kTypeTouchType list:arrayTouchType];
+                [[self navigationController] pushViewController:listController animated:YES];
+                [listController release];
+            }
+            if (row==2){
+                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
+                                                        type:kTypeStickType list:arrayStickType];
+                [[self navigationController] pushViewController:listController animated:YES];
+                [listController release];
+            }
+            if (row==3){
+                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
+                                                   type:kTypeNumButtons list:arrayNumbuttons];      
+                [[self navigationController] pushViewController:listController animated:YES];
+                [listController release];
+            }
+            if (row==5){
+                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
+                                               type:kTypeControlType list:arrayControlType]; 
+                [[self navigationController] pushViewController:listController animated:YES];
+                [listController release];
+            }
+            if (row==8){
+                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
+                                    type:kTypeAnalogDZValue list:arrayAnalogDZValue];                     
+                [[self navigationController] pushViewController:listController animated:YES];
+                [listController release];
+            }
+            if (row==9){
+                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
+                                type:kTypeWiiDZValue list:arrayWiiDZValue];                        
+                [[self navigationController] pushViewController:listController animated:YES];
+                [listController release];
+            }
+            break;
+        }
+        case kDefaultsSection:
+        {
+            if (row==0){
+                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
+                                                         type:kTypeSoundValue list:arraySoundValue]; 
+                [[self navigationController] pushViewController:listController animated:YES];
+                [listController release];
+            }
+            break;
+        }
+        case kMiscSection:
+        {
+            if (row==1){
+                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
+                               type:kTypeEmuRes list:arrayEmuRes];                         
+                [[self navigationController] pushViewController:listController animated:YES];
+                [listController release];
+            }
+            if (row==3){
+                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
+                                type:kTypeFSValue list:arrayFSValue];                         
+                [[self navigationController] pushViewController:listController animated:YES];
+                [listController release];
+            }
+            if (row==8){
+                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
+                                                        type:kTypeSkinValue list:arraySkinValue];  
+                [[self navigationController] pushViewController:listController animated:YES];
+                [listController release];
+            }
+            if (row==10){
+                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
+                                                        type:kTypeOverscanValue list:arrayOverscanValue];
+                [[self navigationController] pushViewController:listController animated:YES];
+                [listController release];
+            }
+            break;
+        }
+        case kFilterSection:
+        {
+            
+            if(row==3)
+            {
+                UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+                [(UITextField *)cell.accessoryView  becomeFirstResponder];
+            }
+            
+            
+            if (row==4){
+                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStylePlain
+                                                         type:kTypeYearGTEValue list:arrayYearGTEValue];
+
+                [[self navigationController] pushViewController:listController animated:YES];
+                [listController release];
+            }
+            if (row==5){
+                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStylePlain
+                                                        type:kTypeYearLTEValue list:arrayYearLTEValue];
+
+                [[self navigationController] pushViewController:listController animated:YES];
+                [listController release];
+            }
+            
+            if (row==6){
+                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStylePlain
+                                                        type:kTypeManufacturerValue list:arrayManufacturerValue];
+                
+                [[self navigationController] pushViewController:listController animated:YES];
+                [listController release];
+            }
+            
+            if (row==7){
+                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStylePlain
+                                                          type:kTypeDriverSourceValue list:arrayDriverSourceValue];
+                                                        
+                [[self navigationController] pushViewController:listController animated:YES];
+                [listController release];
+            }
+            
+            if (row==8){
+                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStylePlain
+                                                                                              type:kTypeCategoryValue list:arrayCategoryValue];
+                
+                [[self navigationController] pushViewController:listController animated:YES];
+                [listController release];
+            }
+
+            if (row==9){
+                Options *op = [[Options alloc] init];
+                
+                op.filterClones=0;
+                op.filterFavorites=0;
+                op.filterNotWorking=0;
+                op.yearLTEValue =0;
+                op.yearGTEValue =0;
+                op.manufacturerValue =0;
+                op.driverSourceValue =0;
+                op.categoryValue =0;
+                op.filterKeyword = nil;
+                
+                [op saveOptions];
+                [op release];
+                
+               [tableView reloadData];
+            }
+            break;
+        }
+    }
+    
+}
+           
+ - (void) viewWillAppear:(BOOL)animated {
+     [super viewWillAppear:animated];
+     UITableView *tableView = (UITableView *)self.view;
+     [tableView reloadData];
+}
+
+- (void) textFieldDidBeginEditing:(UITextField *)textField {
+    UITableViewCell *cell = (UITableViewCell*) [textField superview];
+    UITableView *tableView = (UITableView *)self.view;
+    [tableView scrollToRowAtIndexPath:[tableView indexPathForCell:cell] atScrollPosition:/*UITableViewScrollPositionMiddle*/UITableViewScrollPositionTop animated:YES];
+}
+
+- (void) textFieldDidEndEditing:(UITextField *)textField {
+    Options *op = [[Options alloc] init];
+    if(textField.text == nil ||  textField.text.length==0)
+        op.filterKeyword = nil;
+    else
+        op.filterKeyword = [textField.text substringToIndex:MIN(MAX_FILTER_KEYWORD-1,textField.text.length)];
+    [op saveOptions];
+    [op release];
+    /*
+    UITableViewCell *cell = (UITableViewCell*) [textField superview];
+    UITableView *tableView = (UITableView *)self.view;
+    [tableView scrollToRowAtIndexPath:[tableView indexPathForCell:cell] atScrollPosition:UITableViewScrollPositionMiddle animated:YES];*/
+}
+
+- (BOOL) textFieldShouldReturn:(UITextField *)textField
+{
+    [textField resignFirstResponder];
+    return YES;
+}
+
+- (BOOL) textFieldShouldClear:(UITextField *)textField {
+    Options *op = [[Options alloc] init];
+    op.filterKeyword = nil;
+    [op saveOptions];
+    [op release];
+    return YES;
+}
 
 @end

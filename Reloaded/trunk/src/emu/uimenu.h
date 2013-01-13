@@ -28,6 +28,9 @@
 #define MENU_FLAG_MULTILINE			(1 << 3)
 #define MENU_FLAG_REDTEXT			(1 << 4)
 #define MENU_FLAG_DISABLE			(1 << 5)
+//DAV HACK
+#define MENU_FLAG_CLONE			    (1 << 6)
+//DAV HACK
 
 /* special menu item for separators */
 #define MENU_SEPARATOR_ITEM			"---"

@@ -1,7 +1,7 @@
 /*
- * This file is part of iMAME4all.
+ * This file is part of MAME4iOS.
  *
- * Copyright (C) 2010 David Valdeita (Seleuco)
+ * Copyright (C) 2012 David Valdeita (Seleuco)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,9 +30,11 @@
 
 #import <UIKit/UIKit.h>
 
-@interface HelpController : UIViewController
+@interface HelpController : UIViewController<UIWebViewDelegate>
 {
-   @public BOOL bIsDismissed ;
+    UIWebView *aWebView;
 }
- @property (readwrite,assign)  BOOL bIsDismissed;
+
+-(void)loadHTML;
+
 @end

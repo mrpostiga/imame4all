@@ -1,7 +1,7 @@
 /*
- * This file is part of iMAME4all.
+ * This file is part of MAME4iOS.
  *
- * Copyright (C) 2010 David Valdeita (Seleuco)
+ * Copyright (C) 2012 David Valdeita (Seleuco)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,25 +28,19 @@
  * do so, delete this exception statement from your version.
  */
 
-#import "DView.h"
+#import "DebugView.h"
 
-#import <QuartzCore/QuartzCore.h>  
-
-CGRect drects[100];
-int ndrects;
-extern int isIpad;
-
-@implementation DView
+@implementation DebugView
 
 
-- (id)initWithFrame:(CGRect)frame {
+- (id)initWithFrame:(CGRect)frame withEmuController:(EmulatorController*)emulatorController{
     if (self = [super initWithFrame:frame]) {
         // Initialization code
 		self.backgroundColor = [UIColor clearColor];
 		self.multipleTouchEnabled = NO;
 	    self.userInteractionEnabled = NO;
 	
-	   
+	    emuController = emulatorController;
     }
     return self;
 }
@@ -55,11 +49,10 @@ extern int isIpad;
 - (void)drawRect:(CGRect)rect {
 	//printf("draw dview\n");
 	
-	//TEST CODE
     
    // printf("Drawing Rect");
     
-    	//Get the CGContext from this view
+    //Get the CGContext from this view
 	CGContextRef context = UIGraphicsGetCurrentContext();
 	 
    	//Set the stroke (pen) color
@@ -68,9 +61,12 @@ extern int isIpad;
 	CGContextSetLineWidth(context, 2.0);
 	
     int i=0;
+    int ndrects = [emuController num_debug_rects];
+    CGRect *drects = [emuController getDebugRects];
     
 	for(i=0; i<ndrects;i++)
 	  CGContextStrokeRect(context, drects[i]);
+    
 	
 	//CGContextAddRect(context, drects[1]);
 	//Draw it
@@ -84,7 +80,7 @@ extern int isIpad;
     CGContextScaleCTM(context, 1, -1);
     CGContextSetRGBStrokeColor (context, 0, 1, 1, 1);
  
-   if(!isIpad)
+   if(!g_isIpad)
    {
  //     CGContextShowTextAtPoint(context, 10, 10, "Es un iPhone",12 );
    }

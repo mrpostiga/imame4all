@@ -48,7 +48,7 @@
 
 //int num_of_joys = 0;
 struct wiimote_t joys[4];
-extern int iOS_wiiDeadZoneValue;
+extern int g_pref_wii_DZ_value;
 #define STICK4WAY (myosd_waysStick == 4 && myosd_inGame)
 #define STICK2WAY (myosd_waysStick == 2 && myosd_inGame)
 
@@ -736,7 +736,7 @@ int iOS_wiimote_check (struct  wiimote_t  *wm){
 
 				    float deadZone;
 
-				    switch(iOS_wiiDeadZoneValue)
+				    switch(g_pref_wii_DZ_value)
 				    {
 				      case 0: deadZone = 0.12f;break;
 				      case 1: deadZone = 0.15f;break;

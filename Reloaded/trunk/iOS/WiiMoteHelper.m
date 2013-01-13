@@ -1,7 +1,7 @@
 /*
- * This file is part of iMAME4all.
+ * This file is part of MAME4iOS.
  *
- * Copyright (C) 2010 David Valdeita (Seleuco)
+ * Copyright (C) 2012 David Valdeita (Seleuco)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,13 +28,15 @@
  * do so, delete this exception statement from your version.
  */
 
-
 #include <sys/types.h>
 #include <sys/sysctl.h>
 #include <stdio.h>
+
 #include "wiimote.h"
 
-#import "Helper.h"
+#import "WiiMoteHelper.h"
+#import "Globals.h"
+
 #import "EmulatorController.h"
 
 #import "BTDevice.h"
@@ -44,7 +46,6 @@
 #import "btstack/run_loop.h"
 #import "btstack/hci_cmds.h"
 
-//unsigned long btUsed = 0;
 bool btOK = false;
 bool initLoop = false;
 BTDevice *device;
@@ -53,30 +54,6 @@ bool conected = false;
 bool activated = false;
 
 BTInquiryViewController *inqViewControl;
-
-extern int iphone_menu;
-extern int iphone_is_landscape;
-extern int iOS_exitGame;
-  
-const char* get_resource_path(char* file)
-{
-  static char resource_path[1024];
-
-  sprintf(resource_path, "/Applications/MAME4iOS.app/%s", file);
-
-  return resource_path;
-}
-
-const char* get_documents_path(char* file)
-{
-  static char documents_path[1024];
-
-//sq  sprintf(documents_path, "/var/mobile/Media/ROMs/iMAME4all/%s", file);
-
-    sprintf(documents_path, IMAMEBASEPATH "/%s", file);
-
-  return documents_path;
-}  
   
 void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
         bd_addr_t event_addr;
@@ -174,7 +151,7 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
                                         {
 	                                       wm->battery_level = (msg[5] / (float)WM_MAX_BATTERY_CODE);
 	                                    
-	                                       printf("BATTERY LEVEL %d\n", wm->battery_level);
+	                                       printf("BATTERY LEVEL %f\n", wm->battery_level);
 	                                    }
 	                                    
 	                                    //handshake stuff!
@@ -302,36 +279,9 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
         }
 }
 
-@implementation Helper
+@implementation WiiMoteHelper
  
-+ (NSString *)machine
-{
-  size_t size;
- 
-  // Set 'oldp' parameter to NULL to get the size of the data
-  // returned so we can allocate appropriate amount of space
-  sysctlbyname("hw.machine", NULL, &size, NULL, 0); 
- 
-  // Allocate the space to store name
-  char *name = (char*)malloc(size);
- 
-  // Get the platform name
-  sysctlbyname("hw.machine", name, &size, NULL, 0);
- 
-  // Place name into a string
-  NSString *machine = [NSString stringWithCString:name];
- 
-  // Done with this
-  free(name);
- 
-  return machine;
-}
-
-
-
 +(void) startwiimote:(UIViewController *)controller{
-
-   //if(initLoop)return;
 
   if(!initLoop)
   {
@@ -353,77 +303,38 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
     // create inq controller
     if(inqViewControl==nil)
     {
-       inqViewControl = [[BTInquiryViewController alloc] init];
+      inqViewControl = [[BTInquiryViewController alloc] init];
     
-	   struct CGRect rect = 
-	   controller.view.frame;
-	  //[inqViewControl parentViewController].view.frame;
-	  
-	  //[[UIScreen mainScreen] bounds]; 
+      struct CGRect rect = controller.view.frame;
+
 	  CGFloat navBarWidht =  rect.size.width;
-	  /*iphone_is_landscape ?*/ rect.size.height /*: rect.size.width*/;     
-	  //CGFloat navBarWidht = rect.size.width;
-	  
-	  CGFloat navBarHeight = 45;     
+	  CGFloat navBarHeight = 45;
+        
 	  UINavigationBar *navBar = [ [ UINavigationBar alloc ] initWithFrame: CGRectMake(0, 0, navBarWidht , navBarHeight)];
 	  [navBar autorelease];
 	  [navBar setDelegate: inqViewControl ];
 	  
-	  
 	  UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
       [button setFrame:CGRectMake(rect.size.width-70,5,60,35)];
       [button setTitle:@"Done" forState:UIControlStateNormal];
-      //[button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
       button.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
       [button addTarget:self action:@selector(cancelWiiMoteSearch) forControlEvents:UIControlEventTouchUpInside];
-      //button.backgroundColor = [UIColor darkGrayColor];
-      //rect.size.width = 64;
-      //rect.size.height = 64;
-      //button.frame = rect;
-      //button.contentEdgeInsets = UIEdgeInsetsMake(16, 16, 16, 16);
       
       [navBar addSubview:button];
-      
-	   
-	   /*
-	   UINavigationItem *item = [[ UINavigationItem alloc ] initWithTitle:@"WiiMote Sync" ];
-	   
-	   UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithTitle:@"Done" style:UIBarButtonItemStyleBordered target:self  action:  @selector(cancelWiiMoteSearch) ];
-	   item.rightBarButtonItem = backButton;
-	   [backButton release];
-	   
-	   [ navBar pushNavigationItem: item  animated:YES];
-	   */
-	  
-
-	   
-	   UILabel *navLabel = [[UILabel alloc] initWithFrame:CGRectMake(40,0,300, navBarHeight)];	   
-	   navLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-	   navLabel.text = @"WiiMote Sync";
-	   navLabel.backgroundColor = [UIColor clearColor];
-	   navLabel.textColor = [UIColor blackColor];
-	   navLabel.font = [UIFont systemFontOfSize: 18];
-	   navLabel.textAlignment = UITextAlignmentLeft;
-	   [navBar addSubview:navLabel];
-	   [navLabel release];
-	   
-	     
-	   [[inqViewControl tableView] setTableHeaderView:navBar];
-	   [navBar release];
-	    	
-	    /*
-	    UITextView *footer = [[UITextView alloc] initWithFrame:CGRectMake(10,00,300,100)];
-	    footer.text = @"Make your WiiMote discoverable by pressing the 1+2 buttons at the same time.";
-	    footer.textColor = [UIColor blackColor];
-	    footer.font = [UIFont fontWithName:@"Arial" size:18];
-	
-	    footer.backgroundColor = [UIColor whiteColor];
-	    footer.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-	    footer.editable = false;
-   	    
-   	    [[inqViewControl tableView] setTableFooterView:footer];
-   	    */
-    
+      	   	   
+      UILabel *navLabel = [[UILabel alloc] initWithFrame:CGRectMake(40,0,300, navBarHeight)];
+	  navLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+	  navLabel.text = @"WiiMote Sync";
+	  navLabel.backgroundColor = [UIColor clearColor];
+	  navLabel.textColor = [UIColor blackColor];
+	  navLabel.font = [UIFont systemFontOfSize: 18];
+	  navLabel.textAlignment = UITextAlignmentLeft;
+	  [navBar addSubview:navLabel];
+	  [navLabel release];
+	   	   
+	  [[inqViewControl tableView] setTableHeaderView:navBar];
+	  [navBar release];
+	    	    
     }
     
     if(!activated)
@@ -458,7 +369,8 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
   else
   {
      [inqViewControl dismissModalViewControllerAnimated:YES];
-     EmulatorController *eC = (EmulatorController *)[inqViewControl parentViewController];	
+     //EmulatorController *eC = (EmulatorController *)[inqViewControl parentViewController];
+     EmulatorController *eC = (EmulatorController *)my_parentViewController(inqViewControl);      
      [eC endMenu];
 
   }
@@ -467,7 +379,8 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
 +(void) cancelWiiMoteSearch {        
     [inqViewControl stopInquiry];
     [inqViewControl dismissModalViewControllerAnimated:YES];
-    EmulatorController *eC = (EmulatorController *)[inqViewControl parentViewController];	
+    //EmulatorController *eC = (EmulatorController *)[inqViewControl parentViewController];
+    EmulatorController *eC = (EmulatorController *)my_parentViewController(inqViewControl);
     [eC endMenu];
 }
 
@@ -499,67 +412,35 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
 }
 
 + (void) inquiryStopped{
-/*
-    if (wiiMoteConHandle) {
-          bt_send_cmd(&hci_disconnect, wiiMoteConHandle, 0x13); // remote closed connection
-          wiiMoteConHandle = 0;
-    }
-*/
- //   [inqViewControl dismissModalViewControllerAnimated:YES];
-    //iphone_menu = 0;
-
 }
 
 + (void) disconnectDevice:(BTInquiryViewController *) inqView device:(BTDevice*) selectedDevice {
 }
 
-+ (void)endwiimote{
++ (void)endwiimote {
 
-    // disconnect
-    /*
-    if (wiiMoteConHandle) {
-          bt_send_cmd(&hci_disconnect, wiiMoteConHandle, 0x13); // remote closed connection
-    }
-    */
     if(btOK)
     {
-        /*
-		while(num_of_joys!=0)
-        {
-	        bd_addr_t addr;
-			//bt_send_cmd(&hci_disconnect,joys[0].wiiMoteConHandle , 0x13); // remote closed connection
-			
-	        int unid = wiimote_remove(joys[0].c_source_cid,&addr);
-	        if(unid!=-1)
-	        {
-	           [inqViewControl removeDeviceForAddress:&addr];
-	        }			                   
-        }
-		*/
-		
-		if(iphone_menu==12)
+		if(g_menu_option==MENU_WIIMOTE)
 		{	
-		  //[inqViewControl stopInquiry];
 		  [inqViewControl dismissModalViewControllerAnimated:YES];
-		  EmulatorController *eC = (EmulatorController *)[inqViewControl parentViewController];	
+		  //EmulatorController *eC = (EmulatorController *)[inqViewControl parentViewController];
+          EmulatorController *eC = (EmulatorController *)my_parentViewController(inqViewControl);
           [eC endMenu];
 		}
 		 
-		//[inqViewControl release];
-		//inqViewControl = nil;
+
 		int i=0;
 		while(i!=myosd_num_of_joys){
 			[inqViewControl removeDeviceForAddress:&joys[i].addr];
 			i++;
-			
 		}
 			
 		myosd_num_of_joys=0;
 	    bt_send_cmd(&btstack_set_power_mode, HCI_POWER_OFF );
 	    bt_close();
 	    activated= false;
-		btOK = false;
-		//initLoop=false;		
+		btOK = false;	
     }
 }
 

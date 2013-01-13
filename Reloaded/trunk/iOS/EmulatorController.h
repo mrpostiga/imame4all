@@ -1,7 +1,7 @@
 /*
- * This file is part of iMAME4all.
+ * This file is part of MAME4iOS.
  *
- * Copyright (C) 2010 David Valdeita (Seleuco)
+ * Copyright (C) 2012 David Valdeita (Seleuco)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,89 +30,80 @@
 
 #import <UIKit/UIKit.h>
 
-#import <Foundation/Foundation.h>
-#import <QuartzCore/CALayer.h>
-#import "DView.h"
-#import "AnalogStick.h"
+#import "Globals.h"
 
-#import <pthread.h>
-#import <sched.h>
-#import <unistd.h>
-#import <sys/time.h>
+@interface UINavigationController (KeyboardDismiss)
 
-#define NUM_BUTTONS 10
-
-#ifdef IOS3
-@protocol UIKeyInput <UITextInputTraits>
-
-- (BOOL)hasText;
-- (void)insertText:(NSString *)text;
-- (void)deleteBackward;
+- (BOOL)disablesAutomaticKeyboardDismissal;
 
 @end
-#endif
 
-@interface EmulatorController : UIViewController <UIActionSheetDelegate, UIKeyInput>
+@class DebugView;
+@class AnalogStickView;
+@class iCadeView;
+
+@interface EmulatorController : UIViewController <UIActionSheetDelegate>
 {
 
   UIView			* screenView;
   UIImageView	    * imageBack;
   UIImageView	    * imageOverlay;
-  DView             * dview;
-  //NSTimer           * touchTimer;
-  @public UIView	*externalView;
+  DebugView         * dview;
+  @public UIView	* externalView;
 
   UIImageView	    * dpadView;
   UIImageView	    * buttonViews[NUM_BUTTONS];
 
   AnalogStickView   * analogStickView;
+    
+  iCadeView         *iCade;
 
   UIActionSheet     * menu;
+  
+  //input rects
+  CGRect input[INPUT_LAST_VALUE];
+    
+  //current rect emulation window
+  CGRect rScreenView;
+    
+  //views frames
+  CGRect rFrames[FRAME_RECT_LAST_VALUE];
 
-
-  //joy controller
-  CGRect ButtonUp;
-  CGRect ButtonLeft;
-  CGRect ButtonDown;
-  CGRect ButtonRight;
-  CGRect ButtonUpLeft;
-  CGRect ButtonDownLeft;
-  CGRect ButtonUpRight;
-  CGRect ButtonDownRight;
-  CGRect Up;
-  CGRect Left;
-  CGRect Down;
-  CGRect Right;
-  CGRect UpLeft;
-  CGRect DownLeft;
-  CGRect UpRight;
-  CGRect DownRight;
-  CGRect Select;
-  CGRect Start;
-  CGRect LPad;
-  CGRect RPad;
-  CGRect LPad2;
-  CGRect RPad2;
-  CGRect Menu;
-
-  //buttons & Dpad images
+  //buttons & Dpad images & states
   CGRect rDPad_image;
-  NSString *nameImgDPad[9];
+  NSString *nameImgDPad[NUM_DPAD_ELEMENTS];
 
   CGRect rButton_image[NUM_BUTTONS];
 
   NSString *nameImgButton_Press[NUM_BUTTONS];
   NSString *nameImgButton_NotPress[NUM_BUTTONS];
+    
+  int dpad_state;
+  int old_dpad_state;
+    
+  int btnStates[NUM_BUTTONS];
+  int old_btnStates[NUM_BUTTONS];
+    
+  //analog stick stuff
+  int stick_radio;
+  CGRect rStickWindow;
+  CGRect rStickArea;
+    
+  //tvout external view
+  CGRect RectExternalView;
+    
+  //input debug stuff
+  CGRect debug_rects[100];
+  int num_debug_rects;
 
-  //NSTimer						*	timer;
 }
 
-
+- (int *)getBtnStates;
 
 - (void)getControllerCoords:(int)orientation;
 
 - (void)getConf;
-- (void)filldrectsController;
+- (void)filldebugRects;
 
 - (void)startEmulation;
 
@@ -138,6 +129,18 @@
 
 - (void)updateOptions;
 
-@property (readwrite,assign)   UIView	 *externalView;
+- (CGRect *)getDebugRects;
+
+- (UIImage *)loadImage:(NSString *)name;
+- (FILE *)loadFile:(const char *)name;
+
+- (void)moveROMS;
+
+@property (readwrite,assign)  UIView *externalView;
+@property (readwrite,assign) int dpad_state;
+@property (readonly,assign) int num_debug_rects;
+@property (readwrite,assign) CGRect rExternalView;
+@property (readonly,assign) int stick_radio;
+@property (readonly,assign) CGRect rStickArea;
 
 @end

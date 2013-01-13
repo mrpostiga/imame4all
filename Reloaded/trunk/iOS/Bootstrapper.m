@@ -1,7 +1,7 @@
 /*
- * This file is part of iMAME4all.
+ * This file is part of MAME4iOS.
  *
- * Copyright (C) 2010 David Valdeita (Seleuco)
+ * Copyright (C) 2012 David Valdeita (Seleuco)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,20 +28,46 @@
  * do so, delete this exception statement from your version.
  */
 
-#import "Bootstrapper.h"
-#import "Helper.h"
 #import <UIKit/UIKit.h>
-#include <stdio.h>
+
+#import "Bootstrapper.h"
+#import "Globals.h"
+#import "WiiMoteHelper.h"
+
 #include <sys/stat.h>
-//#include "shared.h"
 
+#define IS_WIDESCREEN ( fabs( ( double )[ [ UIScreen mainScreen ] bounds ].size.height - ( double )568 ) < DBL_EPSILON )
+#define IS_IPAD   ( [ [ [ UIDevice currentDevice ] model ] isEqualToString: @"iPad" ] )
+#define IS_IPHONE ( [ [ [ UIDevice currentDevice ] model ] isEqualToString: @"iPhone" ] )
+#define IS_IPOD   ( [ [ [ UIDevice currentDevice ] model ] isEqualToString: @"iPod touch" ] )
+#define IS_IPHONE_5 ( IS_IPHONE && IS_WIDESCREEN )
 
-int isIpad = 0;
-int isIphone4 = 0;
-extern int __emulation_run; 
-CGRect rExternal;
-int nativeTVOUT = 1;
-int overscanTVOUT = 1;
+const char* get_resource_path(const char* file)
+{
+    static char resource_path[1024];
+    
+#ifdef JAILBREAK
+    sprintf(resource_path, "/Applications/MAME4iOS.app/%s", file);
+#else
+    const char *userPath = [[[NSBundle mainBundle] bundlePath] cStringUsingEncoding:NSASCIIStringEncoding];
+    sprintf(resource_path, "%s/%s", userPath, file);
+#endif
+    return resource_path;
+}
+
+const char* get_documents_path(const char* file)
+{
+    static char documents_path[1024];
+    
+#ifdef JAILBREAK
+    sprintf(documents_path, "/var/mobile/Media/ROMs/MAME4iOS/%s", file);
+#else
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+	const char *userPath = [[paths objectAtIndex:0] cStringUsingEncoding:NSASCIIStringEncoding];
+    sprintf(documents_path, "%s/%s",userPath, file);
+#endif
+    return documents_path;
+}
 
 @implementation Bootstrapper
 
@@ -52,10 +78,8 @@ int overscanTVOUT = 1;
 	
 	//printf("Machine: '%s'\n",[[Helper machine] UTF8String]) ;
 	
-	//mkdir("/var/mobile/Media/ROMs/iXpectrum/downloads", 0755);
-	
-	int r = chdir ("/var/mobile/Media/ROMs/MAME4iOS/");
-	printf("running %d\n",r);
+    int r = chdir (get_documents_path(""));
+	printf("running... %d\n",r);
 	
 	mkdir(get_documents_path("iOS"), 0755);
 	mkdir(get_documents_path("artwork"), 0755);
@@ -70,49 +94,73 @@ int overscanTVOUT = 1;
 	mkdir(get_documents_path("samples"), 0755);
 	mkdir(get_documents_path("roms"), 0755);
 
-    [[UIApplication sharedApplication] setStatusBarHidden:YES animated:NO];
+#ifndef JAILBREAK    
+    [[NSURL fileURLWithPath: [NSString stringWithUTF8String:get_documents_path("roms")]]
+     setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:nil];
+    [[NSURL fileURLWithPath: [NSString stringWithUTF8String:get_documents_path("artwork")]]
+     setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:nil];
+    [[NSURL fileURLWithPath: [NSString stringWithUTF8String:get_documents_path("samples")]]
+     setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:nil];
+    [[NSURL fileURLWithPath: [NSString stringWithUTF8String:get_documents_path("nvram")]]
+     setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:nil];
+    [[NSURL fileURLWithPath: [NSString stringWithUTF8String:get_documents_path("cheat.zip")]]
+     setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:nil];
     
-	[[UIApplication sharedApplication] setIdleTimerDisabled:YES];//TODO ???
-	/*
-	BOOL iPad = NO;
-	UIDevice* dev = [UIDevice currentDevice];
-    if ([dev respondsToSelector:@selector(isWildcat)])
+    NSError *error;
+    NSFileManager* manager = [[NSFileManager alloc] init];
+    NSString *toPath = [NSString stringWithUTF8String:get_documents_path("cheat.zip")];
+    if (![manager fileExistsAtPath:toPath])
     {
-       iPad = [dev isWildcat];
-    }
-	
-	isIpad = iPad != NO;
-	*/
-	
-	isIpad = [[Helper machine] rangeOfString:@"iPad"].location != NSNotFound;
-	isIphone4 = [[Helper machine] rangeOfString:@"iPhone3"].location != NSNotFound;
-	//isIpad = 1;
+        error = nil;
+        [manager copyItemAtPath:[NSString stringWithUTF8String:get_resource_path("cheat.zip")]
+                     toPath:toPath
+                      error:&error];
     
-    // do this so we can detect keyboard in viewDidLoad
-    [deviceWindow makeKeyWindow];
-
+        NSLog(@"Unable to move file cheat? %@", [error localizedDescription]);
+    }
+    toPath = [NSString stringWithUTF8String:get_documents_path("Category.ini")];
+    if (![manager fileExistsAtPath:toPath])
+    {
+        error = nil;
+        [manager copyItemAtPath:[NSString stringWithUTF8String:get_resource_path("Category.ini")]
+                     toPath:toPath
+                      error:&error];
+        NSLog(@"Unable to move file category? %@", [error localizedDescription]);
+    }
+    [manager release];
+#endif
+    
+    [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation : UIStatusBarAnimationNone];
+    
+    g_isIpad = IS_IPAD;
+    g_isIphone5 = IS_WIDESCREEN; //Really want to know if widescreen
+    
 	hrViewController = [[EmulatorController alloc] init];
 	
 	deviceWindow = [[UIWindow alloc] initWithFrame:rect];
 	deviceWindow.backgroundColor = [UIColor redColor];
-	[deviceWindow addSubview: hrViewController.view ];
-	
+    
+	//[deviceWindow addSubview: hrViewController.view ];//LO CAMBIO PARA QUE GIRE EN iOS 6.0	
+    [deviceWindow setRootViewController:hrViewController];
+    
 	[deviceWindow makeKeyAndVisible];
+        
+    [UIApplication sharedApplication].idleTimerDisabled = YES;
 	 
 	externalWindow = [[UIWindow alloc] initWithFrame:CGRectZero];
 	externalWindow.hidden = YES;
 	 	
-	if(nativeTVOUT)
+	if(g_pref_nativeTVOUT)
 	{ 	
 		[[NSNotificationCenter defaultCenter] addObserver:self 
 													 selector:@selector(prepareScreen) 
-														 name:@"UIScreenDidConnectNotification"
+														 name:/*@"UIScreenDidConnectNotification"*/UIScreenDidConnectNotification
 													   object:nil];
 	        
 			
 	    [[NSNotificationCenter defaultCenter] addObserver:self 
 													 selector:@selector(prepareScreen) 
-														 name:@"UIScreenDidDisconnectNotification" 
+														 name:/*@"UIScreenDidDisconnectNotification"*/UIScreenDidDisconnectNotification
 													   object:nil];
 	}	
     
@@ -121,9 +169,12 @@ int overscanTVOUT = 1;
 
 - (void)applicationWillResignActive:(UIApplication *)application {
 
-   [Helper endwiimote]; 
-   [hrViewController runMenu];
-   usleep(1000000);   
+#ifdef WIIMOTE
+    [WiiMoteHelper endwiimote];
+#endif
+   if(myosd_inGame)//force pause when game
+      [hrViewController runMenu];
+   //usleep(1000000);
 }
 /*
 - (void)applicationDidBecomeActive:(UIApplication  *)application {
@@ -139,7 +190,7 @@ int overscanTVOUT = 1;
 {
 	 @try
     {												   										       
-	    if ([[UIScreen screens] count] > 1 && nativeTVOUT) {
+	    if ([[UIScreen screens] count] > 1 && g_pref_nativeTVOUT) {
 	    											 	        	   					
 			// Internal display is 0, external is 1.
 			externalScreen = [[[UIScreen screens] objectAtIndex:1] retain];			
@@ -158,7 +209,7 @@ int overscanTVOUT = 1;
 			[alert show];
 			
 		} else {
-		     if(!__emulation_run)
+		     if(!g_emulation_initiated)
 		     {
 		        [hrViewController startEmulation];
 		     }   
@@ -174,25 +225,19 @@ int overscanTVOUT = 1;
 	 @catch(NSException* ex)
     {
         NSLog(@"Not supported tv out API!");
-        if(!__emulation_run)
+        if(!g_emulation_initiated)
           [hrViewController startEmulation];
     }	
 }
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-	UIScreenMode *desiredMode = [screenModes objectAtIndex:buttonIndex];
 	
 	[externalScreen setCurrentMode:[screenModes objectAtIndex:buttonIndex]];
 	[externalWindow setScreen:externalScreen];
 	
 	CGRect rect = CGRectZero;
-/*	
-	rect.size = desiredMode.size;
-	rect.size.width =desiredMode.size.width;
-	rect.size.height =desiredMode.size.height;
-*/	 
-	
+ 	
 	rect = externalScreen.bounds;
 	externalWindow.frame = rect;
 	externalWindow.clipsToBounds = YES;
@@ -200,43 +245,17 @@ int overscanTVOUT = 1;
 	int  external_width = externalWindow.frame.size.width;
 	int  external_height = externalWindow.frame.size.height;
 	
-	//float overscan = (desiredMode.size.width== 720) ? 0.92f : 1.0f;
-	float overscan = 1 - (overscanTVOUT *  0.025f);
-	
-	
-	//int width = (int)(external_width /* * overscan */);//overscan
-    //int height = (int)((width * 3) / 4);
-    
-    //if(height > external_height)
-    //{
-    //   int  height = (int)(external_height /** overscan*/);//overscan
-    //   int  width = (int)((height * 4) / 3);       
-    //}
-    
-    //?????
+	float overscan = 1 - (g_pref_overscanTVOUT *  0.025f);
+
     int width=external_width;
     int height=external_height; 
-    /*
-    	                                       UIAlertView* alert = 
-                                               [[UIAlertView alloc] initWithTitle:@"Ventana"
-       message:[NSString stringWithFormat:@"%@ %@ %@ %@",
-       [NSNumber numberWithInt:width],
-       [NSNumber numberWithInt:height],
-       [NSNumber numberWithInt:overscan],
-       [NSNumber numberWithInt:overscanTVOUT]
-       ] 
-                                                                     delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles: nil];
-                                               [alert show];                                           
-                                                                                      
-                                               [alert release];
-    */
+
     width = width * overscan;    
     height = height * overscan;
     int x = (external_width - width)/2;
     int y = (external_height - height)/2;
                                        
-      
-    rExternal = CGRectMake( x, y, width, height);
+    CGRect rView = CGRectMake( x, y, width, height);
     
     for (UIView *view in [externalWindow subviews]) {
        [view removeFromSuperview];
@@ -247,10 +266,12 @@ int overscanTVOUT = 1;
     [externalWindow addSubview:view];
     [view release];
 		
-	[hrViewController setExternalView:view];
+    [hrViewController setExternalView:view];
+    hrViewController.rExternalView = rView;
+    
 	externalWindow.hidden = NO;
 	//[externalWindow makeKeyAndVisible];
-	if(__emulation_run)
+	if(g_emulation_initiated)
 	    [hrViewController changeUI];
 	else
 	    [hrViewController startEmulation];
@@ -265,5 +286,6 @@ int overscanTVOUT = 1;
 	[externalWindow dealloc];
 	[super dealloc];
 }
+
 
 @end

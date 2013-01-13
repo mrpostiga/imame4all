@@ -28,9 +28,11 @@ endif
 
 ifdef iOS
 
-OSDOBJS += \
-	$(MYOSDOBJ)/osd-ios.o \
-	$(MYOSDOBJ)/wiimote.o
+OSDOBJS += $(MYOSDOBJ)/osd-ios.o
+
+ifndef iOSNOJAILBREAK
+OSDOBJS += $(MYOSDOBJ)/wiimote.o
+endif
 	
 endif
 

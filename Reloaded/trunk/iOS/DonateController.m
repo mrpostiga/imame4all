@@ -1,7 +1,7 @@
 /*
- * This file is part of iMAME4all.
+ * This file is part of MAME4iOS.
  *
- * Copyright (C) 2010 David Valdeita (Seleuco)
+ * Copyright (C) 2012 David Valdeita (Seleuco)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,179 +29,123 @@
  */
  
 #import "DonateController.h"
+#import "Globals.h"
 #import "EmulatorController.h"
-#include <stdio.h>
 
 @implementation DonateController
 
-@synthesize bIsDismissed;
 
 - (id)init {
-
+    
     if (self = [super init]) {
-
-        bIsDismissed = NO;
-        navBar = nil;
         aWebView = nil;
     }
-
+    
     return self;
-
 }
 
 - (void)loadView {
-
-	UIViewController *pctrl = [self parentViewController];		
-	struct CGRect rect = pctrl.view.frame;//[[UIScreen mainScreen] bounds];
-	rect.origin.x = rect.origin.y = 0.0f;
-	if(pctrl.interfaceOrientation==UIInterfaceOrientationLandscapeLeft 
-	||pctrl.interfaceOrientation==UIInterfaceOrientationLandscapeRight )
-	{
-	     int tmp = rect.size.width;
-	     rect.size.width = rect.size.height; 
-	     rect.size.height = tmp;	     
-	}
-
-	UIView *view= [[UIView alloc] initWithFrame:rect];	
+	
+	UIView *view= [[UIView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame]];
 	self.view = view;
 	[view release];
     self.view.backgroundColor = [UIColor whiteColor];
     
-   navBar = [ [ UINavigationBar alloc ] initWithFrame: CGRectMake(rect.origin.x, rect.origin.y, rect.size.width, 45.0f)];
-   [ navBar setDelegate: self ];
-
-   UINavigationItem *item = [[ UINavigationItem alloc ] initWithTitle:@"Donate" ];
-   
-   UIBarButtonItem *backButton = [[[UIBarButtonItem alloc] initWithTitle:@"Quit" style:UIBarButtonItemStyleBordered target:/*[self parentViewController]*/self action:  @selector(mydone:) ] autorelease];
-   //UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithTitle:@"Quit2" style:UIBarButtonItemStyleBordered target:[self parentViewController]   action:  @selector(done:) ];
-   
-   item.rightBarButtonItem = backButton;
-  
-   /*  
-   UILabel *bigLabel = [[UILabel alloc] init];
-   bigLabel.text = @"I am BIG";
-   bigLabel.font = [UIFont fontWithName:@"Arial" size: 22.0];
-   [bigLabel sizeToFit];
-   item.titleView = bigLabel;
-   [bigLabel release];
-   */
-   [ navBar pushNavigationItem: item  animated:YES];
-     
-   [ self.view addSubview: navBar ];
+    self.title = @"Donate";
     
-
-   aWebView = [ [ UIWebView alloc ] initWithFrame: CGRectMake(rect.origin.x, rect.origin.y + 45.0f, rect.size.width,rect.size.height - 45.0f )];
-
-   aWebView.scalesPageToFit = YES;
-
-   aWebView.autoresizesSubviews = YES;
-   aWebView.autoresizingMask=(UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth);
-
-   //set the web view delegates for the web view to be itself
-   [aWebView setDelegate:self];
-
-   
-   //Set the URL to go to for your UIWebView
-   NSString *urlAddress = @"https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=seleuco%2enicator%40gmail%2ecom&lc=US&item_name=Seleuco%20Nicator&item_number=ixxxx4all&no_note=0&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHostedGuest";
-                        
-
-   //Create a URL object.
-   NSURL *url = [NSURL URLWithString:urlAddress];
-
-   //URL Requst Object
-   NSURLRequest *requestObj = [NSURLRequest requestWithURL:url];
-   
-   
-   //load the URL into the web view.
-   [aWebView loadRequest:requestObj];
-      
-   /*
-   NSString *HTMLData = [[NSString alloc] initWithContentsOfFile: @"/Applications/iXpectrum.app/donate.html"];
-      
-   NSURL *aURL = [NSURL fileURLWithPath:@"/Applications/iXpectrum.app/"];
-      
-   [aWebView loadHTMLString:HTMLData baseURL: aURL];
-   
-   [HTMLData release];
-   */
-   
-   [ self.view addSubview: aWebView ];
-
+    aWebView = [ [ UIWebView alloc ] initWithFrame: self.view.frame];
+    
+    aWebView.scalesPageToFit = YES;
+    
+    aWebView.autoresizesSubviews = YES;
+    aWebView.autoresizingMask=(UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth);
+    
+    [ self.view addSubview: aWebView ];
 }
-
-
--(void)mydone:(id)sender{
-   //[aWebView setDelegate:nil];
-    if ([aWebView isLoading])
-        [aWebView stopLoading];
-   [self dismissModalViewControllerAnimated:YES];
-   
-   EmulatorController *eC = (EmulatorController *)[self parentViewController];	
-   [eC endMenu];
-   
-}
-
 
 -(void)viewDidLoad{	
    
-   
-   	        UIAlertView *thksAlert = [[UIAlertView alloc] initWithTitle:@"Thanks for your support!" 
-															  
- 
- message:[NSString stringWithFormat: @"All my projects come to you free of charge and ad-free, because that's what i like my work to be, but if you want to thank me for my effort or colaborate in future developments, feel free to donate me for some beers :)"]
-														 
-															 delegate:self 
-													cancelButtonTitle:@"OK" 
-													otherButtonTitles: nil];
+    
+    UIAlertView *thksAlert = [[UIAlertView alloc] initWithTitle:@"Thanks for your support!"
+                              
+                              
+                                                        message:[NSString stringWithFormat: @"I am releasing everything for free, in keeping with the licensing MAME terms, which is free for non-commercial use only. This is strictly something I made because I wanted to play with it and have the skills to make it so. That said, if you are thinking on ways to support my development I suggest you to check my support page of other free works for the community."]
+                              
+                                                       delegate:self
+                                              cancelButtonTitle:@"OK" 
+                                              otherButtonTitles: nil];
 	
-	       [thksAlert show];
-	       [thksAlert release];
-     
+    [thksAlert show];
+    [thksAlert release];
+   
 }
 
+- (void)viewWillAppear:(BOOL)animated{
+    
+    //set the web view delegates for the web view to be itself
+    [aWebView setDelegate:self];
+    
+    //Set the URL to go to for your UIWebView
+    NSString *urlAddress = @"https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=seleuco%2enicator%40gmail%2ecom&lc=US&item_name=Seleuco%20Nicator&item_number=ixxxx4all&no_note=0&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHostedGuest";
+    
+    
+    //Create a URL object.
+    NSURL *url = [NSURL URLWithString:urlAddress];
+    
+    //URL Requst Object
+    NSURLRequest *requestObj = [NSURLRequest requestWithURL:url];
+    
+    
+    //load the URL into the web view.
+    [aWebView loadRequest:requestObj];
+}
+
+-(void)viewWillDisappear:(BOOL)animated{
+    [aWebView stopLoading];
+    [aWebView setDelegate:nil];
+    
+}
+
+/////
+
 - (void)webViewDidStartLoad:(UIWebView *)webView{
-    //[navBar topItem].title = webView.request.URL.absoluteString;
-     //[self retain];    
+    
 }
 
 - (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType{
-    if(navBar!=nil && [navBar topItem]!= nil)
-      [navBar topItem].title = @"Wait... Loading!";
+
+   self.title = @"Wait... Loading!";
    return YES;
 }
 
 - (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error{
-    if(navBar!=nil && [navBar topItem]!= nil)
-      [navBar topItem].title = @"Error";
+    self.title = @"Error";
     if(error!=nil && error.code != NSURLErrorCancelled)
     {
-		UIAlertView *connectionAlert = [[UIAlertView alloc] initWithTitle:@"Connection Failed!" 
-																  message:[NSString stringWithFormat:@"There is no internet connection. Connect to the internet and try again. Error:%@",[error localizedDescription]] 
-																 delegate:self 
-														cancelButtonTitle:@"OK" 
+		UIAlertView *connectionAlert = [[UIAlertView alloc] initWithTitle:@"Connection Failed!"
+																  message:[NSString stringWithFormat:@"There is no internet connection. Connect to the internet and try again. Error:%@",[error localizedDescription]]
+																 delegate:self
+														cancelButtonTitle:@"OK"
 														otherButtonTitles: nil];
 		
 		[connectionAlert show];
 		[connectionAlert release];
 	}
-    //[self release];
-    
 }
 
 - (void)webViewDidFinishLoad:(UIWebView *)webView{
-
-   if(navBar!=nil && webView!=nil)
-   {
-       if([navBar topItem]!= nil && webView.request!=nil)
-         [navBar topItem].title = webView.request.URL.absoluteString;
-   }  
-   //[self release];   
+    
+    if(webView!=nil)
+    {
+        if(webView.request!=nil)
+            self.title = webView.request.URL.absoluteString;
+    }
 }
 
 
 -(BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-       //return (interfaceOrientation == UIInterfaceOrientationPortrait);
-       return YES;
+    //return (interfaceOrientation == UIInterfaceOrientationPortrait);
+    return YES;
 }
 
 - (void)didReceiveMemoryWarning {
@@ -210,22 +154,9 @@
 
 
 - (void)dealloc {
-   
-  
-    if(navBar!=nil)
-    {
-       [navBar  release];
-       navBar = nil;
-    }  
     
-    if(aWebView!=nil)
-    {
-       //[aWebView stopLoading]; 
-       [aWebView setDelegate:nil];       
-       [aWebView release];
-       aWebView = nil;
-    }   
-     
+    [aWebView release];
+    
 	[super dealloc];
 }
 

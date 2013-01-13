@@ -1,7 +1,7 @@
 /*
- * This file is part of iMAME4all.
+ * This file is part of MAME4iOS.
  *
- * Copyright (C) 2011 David Valdeita (Seleuco)
+ * Copyright (C) 2012 David Valdeita (Seleuco)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,14 +29,7 @@
  */
 
 #import <UIKit/UIKit.h>
-
-	#define MY_PI			3.14159265
-
-	/* Convert between radians and degrees */
-	#define RAD_TO_DEGREE(r)	((r * 180.0f) / MY_PI)
-	#define DEGREE_TO_RAD(d)	(d * (MY_PI / 180.0f))
-
-	#define absf(x)			    ((x >= 0) ? (x) : (x * -1.0f))
+#import "EmulatorController.h"
 
 typedef enum
 {
@@ -68,11 +61,15 @@ typedef enum
     int stickHeight;
     float deadZone;
 
-
 	float ang;						/**< angle the joystick is being held		*/
 	float mag;						/**< magnitude of the joystick (range 0-1)	*/
 	float rx, ry;
+    
+    EmulatorController *emuController;
 }
 
+- (id)initWithFrame:(CGRect)frame withEmuController:(EmulatorController*)emulatorController;
+- (void)calculateStickPosition:(CGPoint)pt;
+- (void)analogTouches:(UITouch *)touch withEvent:(UIEvent *)event;
 
 @end
