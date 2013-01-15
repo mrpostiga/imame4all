@@ -414,7 +414,7 @@
         
         arrayStickType = [[NSArray alloc] initWithObjects:@"Auto",@"2-Way",@"4-Way",@"8-Way", nil];
         
-        arrayControlType = [[NSArray alloc] initWithObjects:@"None",@"iCade",@"iCP",@"iMpulse", nil];
+        arrayControlType = [[NSArray alloc] initWithObjects:@"None",@"iCade",@"iCP (iCade mode)",@"iMpulse", nil];
         
         arrayAnalogDZValue = [[NSArray alloc] initWithObjects:@"1", @"2", @"3",@"4", @"5", @"6", nil];
         arrayWiiDZValue = [[NSArray alloc] initWithObjects:@"1", @"2", @"3",@"4", @"5", @"6", nil];
@@ -565,7 +565,7 @@
                    switchTvFilterPort  = [[UISwitch alloc] initWithFrame:CGRectZero];                               
                    cell.accessoryView = switchTvFilterPort ;
                    [switchTvFilterPort setOn:[op tvFilterPort] animated:NO];
-                   [switchTvFilterPort addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];  
+                   [switchTvFilterPort addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
                    break;
                }
                case 2:
@@ -741,7 +741,7 @@
                 }
                 case 8:
                 {
-                    cell.textLabel.text   = @"Analog Touch Dead Zone";
+                    cell.textLabel.text   = @"Stick Touch DZ";
                     
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                     cell.detailTextLabel.text = [arrayAnalogDZValue objectAtIndex:op.analogDeadZoneValue];
@@ -751,7 +751,7 @@
                 {
                     if(g_wiimote_avalible)
                     {
-                        cell.textLabel.text   = @"Wii Classic Dead Zone";
+                        cell.textLabel.text   = @"Wii Classic DZ";
                         
                         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                         cell.detailTextLabel.text = [arrayWiiDZValue objectAtIndex:op.wiiDeadZoneValue];

@@ -107,7 +107,7 @@
             value = op.controltype;
             break;
         case kTypeAnalogDZValue:
-            self.title = @"Analog Touch DZ";
+            self.title = @"Stick Touch DZ";
             value = op.analogDeadZoneValue;
             break;
         case kTypeWiiDZValue:
