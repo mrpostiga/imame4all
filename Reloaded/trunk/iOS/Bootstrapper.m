@@ -80,8 +80,8 @@ const char* get_documents_path(const char* file)
 	
     int r = chdir (get_documents_path(""));
 	printf("running... %d\n",r);
-	
-	mkdir(get_documents_path("iOS"), 0755);
+    
+    mkdir(get_documents_path("iOS"), 0755);
 	mkdir(get_documents_path("artwork"), 0755);
 	mkdir(get_documents_path("cfg"), 0755);
 	mkdir(get_documents_path("nvram"), 0755);
@@ -94,7 +94,7 @@ const char* get_documents_path(const char* file)
 	mkdir(get_documents_path("samples"), 0755);
 	mkdir(get_documents_path("roms"), 0755);
 
-#ifndef JAILBREAK    
+#ifndef JAILBREAK
     [[NSURL fileURLWithPath: [NSString stringWithUTF8String:get_documents_path("roms")]]
      setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:nil];
     [[NSURL fileURLWithPath: [NSString stringWithUTF8String:get_documents_path("artwork")]]
@@ -107,28 +107,39 @@ const char* get_documents_path(const char* file)
      setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:nil];
     
     NSError *error;
+    NSString *fromPath,*toPath;
     NSFileManager* manager = [[NSFileManager alloc] init];
-    NSString *toPath = [NSString stringWithUTF8String:get_documents_path("cheat.zip")];
-    if (![manager fileExistsAtPath:toPath])
+    
+    fromPath = [NSString stringWithUTF8String:get_resource_path("gridlee.zip")];
+    toPath = [NSString stringWithUTF8String:get_documents_path("roms/gridlee.zip")];
+
+    if([manager fileExistsAtPath:fromPath] && ![manager fileExistsAtPath:toPath])
+    {
+        [manager copyItemAtPath:fromPath toPath:toPath error:nil];
+    }
+    
+    isGridlee = [manager fileExistsAtPath:toPath] && [[manager contentsOfDirectoryAtPath:[NSString stringWithUTF8String:get_documents_path("roms")] error:nil] count] == 1;
+	    
+    toPath = [NSString stringWithUTF8String:get_documents_path("cheat.zip")];
+    if (![manager fileExistsAtPath:toPath] && !isGridlee)
     {
         error = nil;
-        [manager copyItemAtPath:[NSString stringWithUTF8String:get_resource_path("cheat.zip")]
-                     toPath:toPath
-                      error:&error];
-    
+        fromPath = [NSString stringWithUTF8String:get_resource_path("cheat.zip")];
+        [manager copyItemAtPath: fromPath toPath:toPath error:&error];
         NSLog(@"Unable to move file cheat? %@", [error localizedDescription]);
     }
     toPath = [NSString stringWithUTF8String:get_documents_path("Category.ini")];
-    if (![manager fileExistsAtPath:toPath])
+    if (![manager fileExistsAtPath:toPath] && !isGridlee)
     {
         error = nil;
-        [manager copyItemAtPath:[NSString stringWithUTF8String:get_resource_path("Category.ini")]
-                     toPath:toPath
-                      error:&error];
+        fromPath = [NSString stringWithUTF8String:get_resource_path("Category.ini")];
+        [manager copyItemAtPath: fromPath toPath:toPath error:&error];
         NSLog(@"Unable to move file category? %@", [error localizedDescription]);
     }
+
     [manager release];
 #endif
+
     
     [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation : UIStatusBarAnimationNone];
     
@@ -172,7 +183,7 @@ const char* get_documents_path(const char* file)
 #ifdef WIIMOTE
     [WiiMoteHelper endwiimote];
 #endif
-   if(myosd_inGame)//force pause when game
+   if(myosd_inGame && !isGridlee)//force pause when game
       [hrViewController runMenu];
    //usleep(1000000);
 }

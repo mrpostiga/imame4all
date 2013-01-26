@@ -46,6 +46,8 @@ void mylog(char * msg){
 //  GLOBALS
 //============================================================
 
+int isGridlee = 0;
+
 const char *myosd_array_main_manufacturers[] = {
     "Alpha Denshi","Amcoe","American Laser Games","Arcadia Systems","Aristocrat","Atari","Atlus",
     "Barcrest","Bally/Sente","Banpresto","BFM","C.M.C.","Cal Omega",
@@ -184,6 +186,10 @@ int main(int argc, char **argv)
 		//args[n]= (char *)"-jsat"; n++;args[n]= (char *)"1.0"; n++;
 		//args[n]= (char *)"-joystick_deadzone"; n++;args[n]= (char *)"0.0"; n++;
 		args[n]= (char *)"-nocoinlock"; n++;
+        
+        if(isGridlee){
+           args[n]= (char *)"gridlee"; n++;
+        }
 
 	  if(myosd_reset_filter==0)
       {
