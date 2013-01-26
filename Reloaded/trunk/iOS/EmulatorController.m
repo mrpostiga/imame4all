@@ -351,9 +351,9 @@ void* app_Thread_Start(void* args)
     g_pref_scanline_filter_port = [op scanlineFilterPort];
     
     myosd_fps = [op showFPS];
-    myosd_showinfo = [op showINFO];
+    myosd_showinfo =  isGridlee ? 0 : [op showINFO];
     g_pref_animated_DPad  = [op animatedButtons];
-    g_pref_full_screen_land  = [op fullLand];
+    g_pref_full_screen_land  = isGridlee ? 0 : [op fullLand];
     g_pref_full_screen_port  = [op fullPort];
     
     myosd_pxasp1 = [op p1aspx];
@@ -369,7 +369,7 @@ void* app_Thread_Start(void* args)
     g_pref_nativeTVOUT = [op tvoutNative];
     g_pref_overscanTVOUT = [op overscanValue];
     
-    g_pref_input_touch_type = [op touchtype];
+    g_pref_input_touch_type = isGridlee ? 0 : [op touchtype];
     g_pref_analog_DZ_value = [op analogDeadZoneValue];
     g_pref_ext_control_type = [op controltype];
     
@@ -817,7 +817,10 @@ void* app_Thread_Start(void* args)
 
 -(NSUInteger)supportedInterfaceOrientations
 {
-    return UIInterfaceOrientationMaskAll;
+    if(isGridlee)
+      return UIInterfaceOrientationMaskLandscape;
+    else
+      return UIInterfaceOrientationMaskAll;
 }
 
 /*
@@ -971,6 +974,9 @@ void* app_Thread_Start(void* args)
           if(i==BTN_L1 && (g_pref_hide_LR || !myosd_inGame))continue;
           if(i==BTN_R1 && (g_pref_hide_LR || !myosd_inGame))continue;
       }
+       
+      if(isGridlee && (i==BTN_L2 || i==BTN_R2))
+          continue;
    
       //if((i==BTN_Y || i==BTN_A) && !iOS_4buttonsLand && iphone_is_landscape)
          //continue;
@@ -1680,12 +1686,17 @@ void* app_Thread_Start(void* args)
 			    //NSLog(@"MYOSD_SELECT");
 				myosd_pad_status |= MYOSD_SELECT;				
                 btnStates[BTN_SELECT] = BUTTON_PRESS;
+                if(isGridlee && (myosd_pad_status & MYOSD_START))
+                    myosd_pad_status &= ~MYOSD_START;
+                    
 			}
 			else if (MyCGRectContainsPoint(input[BTN_START_RECT], point)) {
 				//NSLog(@"MYOSD_START");
 				myosd_pad_status |= MYOSD_START;
 			    btnStates[BTN_START] = BUTTON_PRESS;
-			}						
+                if(isGridlee && (myosd_pad_status & MYOSD_SELECT))
+                    myosd_pad_status &= ~MYOSD_SELECT;
+			}
 			else if (MyCGRectContainsPoint(input[BTN_L1_RECT], point)) {
 				//NSLog(@"MYOSD_L");
 				myosd_pad_status |= MYOSD_L1;
@@ -1697,11 +1708,13 @@ void* app_Thread_Start(void* args)
 				btnStates[BTN_R1] = BUTTON_PRESS;
 			}			
 			else if (MyCGRectContainsPoint(input[BTN_L2_RECT], point)) {
-				//NSLog(@"MYOSD_L2");				
+				//NSLog(@"MYOSD_L2");
+                if(isGridlee)continue;
 				btnStates[BTN_L2] = BUTTON_PRESS;
 			}
 			else if (MyCGRectContainsPoint(input[BTN_R2_RECT], point)) {
-				//NSLog(@"MYOSD_R2");				
+				//NSLog(@"MYOSD_R2");
+				if(isGridlee)continue;
 				btnStates[BTN_R2] = BUTTON_PRESS;
 			}			
 			else if (MyCGRectContainsPoint(input[BTN_MENU_RECT], point)) {
@@ -2070,7 +2083,7 @@ void* app_Thread_Start(void* args)
     filemgr = [[NSFileManager alloc] init];
     
     NSString *fromPath = [NSString stringWithUTF8String:get_documents_path("")];
-    filelist = [filemgr contentsOfDirectoryAtPath:fromPath error:NULL];
+    filelist = [filemgr contentsOfDirectoryAtPath:fromPath error:nil];
     count = [filelist count];
     
     NSMutableArray *romlist = [[NSMutableArray alloc] init];

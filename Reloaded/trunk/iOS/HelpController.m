@@ -115,7 +115,7 @@
 }
 
 - (void)loadHTML{
-    NSString *HTMLData = [[NSString alloc] initWithContentsOfFile: [NSString stringWithUTF8String:get_resource_path("readme.html")] encoding:NSUTF8StringEncoding error:nil];
+    NSString *HTMLData = [[NSString alloc] initWithContentsOfFile: [NSString stringWithUTF8String:get_resource_path("help.html")] encoding:NSUTF8StringEncoding error:nil];
     
     NSURL *aURL = [NSURL fileURLWithPath:[NSString stringWithUTF8String:get_resource_path("")]];
     
