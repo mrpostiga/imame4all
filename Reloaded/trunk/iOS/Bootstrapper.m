@@ -197,7 +197,7 @@ const char* get_documents_path(const char* file)
 #ifdef WIIMOTE
     [WiiMoteHelper endwiimote];
 #endif
-   if(myosd_inGame && !isGridlee)//force pause when game
+   if((myosd_inGame || g_joy_used ) && !isGridlee )//force pause when game
       [hrViewController runMenu];
    //usleep(1000000);
 }

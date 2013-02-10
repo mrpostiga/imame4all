@@ -130,6 +130,10 @@ file_error osd_open(const char *path, UINT32 openflags, osd_file **file, UINT64 
 		goto error;
 	}
 	
+    //
+    //access |= O_SYNC;
+    //
+    
 	tmpstr = (char *)malloc(strlen((*file)->filename)+1);
 	strcpy(tmpstr, (*file)->filename);
 

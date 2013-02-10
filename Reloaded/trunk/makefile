@@ -32,17 +32,17 @@ NOWERROR = 1
 
 ########## iOS
 
-iOS = 1;
+iOS = 1
 
-iOSOSX = 1;
+iOSOSX = 1
 
-iOSNOJAILBREAK = 1
+#iOSNOJAILBREAK = 1
 
 #iOSSIMULATOR = 1
 
-#iOSARMV7=1
+iOSARMV7=1
 
-iOSARMV7S=1
+#iOSARMV7S=1
 
 ################
 
@@ -795,7 +795,7 @@ CCOMFLAGS += -DIOS
 ###
 
 ifndef iOSNOJAILBREAK
-CCOMFLAGS += -DWIIMOTE
+CCOMFLAGS += -DWIIMOTE -DJAILBREAK
 endif
 
 ifndef iOSOSX
