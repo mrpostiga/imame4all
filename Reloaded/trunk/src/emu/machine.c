@@ -852,7 +852,10 @@ void running_machine::handle_saveload()
 		mame_fclose(file);
 		if (staterr != STATERR_NONE && m_saveload_schedule == SLS_SAVE)
 			osd_rmfile(fullname);
-	}
+        //DAV HACK
+        //sync();
+        //END DAV HACKs
+    }
 	else
 		popmessage("Error: Failed to open file for %s operation.", opname);
 

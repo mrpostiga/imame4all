@@ -335,6 +335,11 @@ static void update_memory_mapping(running_machine *machine, struct memory_mapper
 			memory_install_write16_handler(cpu_get_address_space(chip->cpu, ADDRESS_SPACE_PROGRAM), region_start, region_end, 0, region_mirror, write);
 		else if (writebank != NULL)
 			memory_install_write_bank(cpu_get_address_space(chip->cpu, ADDRESS_SPACE_PROGRAM), region_start, region_end, 0, region_mirror, writebank);
+        
+        //Fix shdancer stage 2-4 crash, based on latest MAME code fix
+        if (rgn->romoffset != ~0) {
+        			memory_unmap_write(cpu_get_address_space(chip->cpu, ADDRESS_SPACE_PROGRAM), region_start, region_end, 0, region_mirror);
+        }
 
 		/* set the bank pointer */
 		if (readbank != NULL)

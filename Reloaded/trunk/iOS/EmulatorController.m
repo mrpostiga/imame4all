@@ -289,7 +289,7 @@ void* app_Thread_Start(void* args)
     g_emulation_paused = 1;
     change_pause(1);
   
-    enable_menu_exit_option  = g_iCade_used && myosd_inGame;
+    enable_menu_exit_option  = g_iCade_used && myosd_inGame && myosd_in_menu==0;
     
     menu = [[UIActionSheet alloc] initWithTitle:
             @"Choose an option from the menu. Press cancel to go back." delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil
@@ -346,7 +346,7 @@ void* app_Thread_Start(void* args)
           [self changeUI];
       }
     
-      [UIApplication sharedApplication].idleTimerDisabled = myosd_inGame ? YES : NO;//so atract mode dont sleep
+      [UIApplication sharedApplication].idleTimerDisabled = (myosd_inGame || g_joy_used) ? YES : NO;//so atract mode dont sleep
 }
 
 -(void)updateOptions{
@@ -908,7 +908,7 @@ void* app_Thread_Start(void* args)
 	   change_pause(0);
    }
    
-   [UIApplication sharedApplication].idleTimerDisabled = myosd_inGame ? YES : NO;//so atract mode dont sleep
+   [UIApplication sharedApplication].idleTimerDisabled = (myosd_inGame || g_joy_used) ? YES : NO;//so atract mode dont sleep
     
    [pool release];
 }
