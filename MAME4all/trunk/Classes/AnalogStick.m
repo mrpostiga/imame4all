@@ -273,7 +273,7 @@ int iOS_stick_radio = 60;
     }
     
     //self.exclusiveTouch = YES;
-    self.multipleTouchEnabled = NO;
+    self.multipleTouchEnabled = YES;//NO;
 	//self.userInteractionEnabled = NO;
     
     return self;    
@@ -367,12 +367,11 @@ int iOS_stick_radio = 60;
 	
 }
 
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+- (void)analogTouches:(UITouch *)touch withEvent:(UIEvent *)event
 {
     static float oldRx;
     static float oldRy;
     
-    UITouch *touch = [touches anyObject];
     CGPoint pt = [touch locationInView:self];
     
     ptCur = pt;
@@ -408,17 +407,6 @@ int iOS_stick_radio = 60;
     }  
 }
 
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
-	[self touchesBegan:touches withEvent:event];
-}
-
-- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
-	[self touchesBegan:touches withEvent:event];
-}
-
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
-	[self touchesBegan:touches withEvent:event];
-}
 
 - (void)dealloc {
 

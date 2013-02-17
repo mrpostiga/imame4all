@@ -186,7 +186,7 @@ extern int isIphone4;
         inputTouchType = 1;
         analogDeadZoneValue = 2;		
         
-        iCadeLayout = 0;
+        iCadeLayout = 1;
         
         SoundKHZ = 3;
         SoundSTEREO = 2;
@@ -378,7 +378,7 @@ extern int isIphone4;
 
 - (void)loadView {
 
-	UIViewController *pctrl = [self parentViewController];		
+	UIViewController *pctrl = self_parentViewController;		
 	struct CGRect rect = pctrl.view.frame;//[[UIScreen mainScreen] bounds];
 	rect.origin.x = rect.origin.y = 0.0f;
 	if(pctrl.interfaceOrientation==UIInterfaceOrientationLandscapeLeft 
@@ -399,7 +399,7 @@ extern int isIphone4;
    [ navBar setDelegate: self ];
 
    UINavigationItem *item = [[ UINavigationItem alloc ] initWithTitle:@"Options" ];
-   UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithTitle:@"OK" style:UIBarButtonItemStyleBordered target:[self parentViewController]  action:  @selector(done:) ];
+   UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithTitle:@"OK" style:UIBarButtonItemStyleBordered target:self_parentViewController  action:  @selector(done:) ];
    item.rightBarButtonItem = backButton;
    [backButton release];
    [ navBar pushNavigationItem: item  animated:YES];

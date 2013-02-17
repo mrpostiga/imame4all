@@ -494,7 +494,8 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 						break;
 					case kInquiryActive:
 						//label = @"Searching...";
-						label = @"Press 1 and 2 on the WiiMote to sync";
+						//label = @"Press 1 and 2 on the WiiMote to sync";
+                        label =   @"Press little red sync button";
 						cell.accessoryView = bluetoothActivity;
 						break;
 					case kInquiryRemoteName:

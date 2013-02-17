@@ -972,6 +972,16 @@ void osd_update_video_and_audio(struct osd_bitmap *bitmap)
 					do
 					{
                         //sched_yield();
+                        
+                        if(1 && (target-curr >= 2) && (target-curr<TICKS_PER_SEC))
+						{
+                            
+							struct  timespec req={0},rem={0};
+							req.tv_sec=0;
+							req.tv_nsec=1000000UL;
+							nanosleep(&req,&rem);
+						}
+                        
 						curr = ticker();
 					} while ((curr < target) && (target-curr<TICKS_PER_SEC));
 				}
