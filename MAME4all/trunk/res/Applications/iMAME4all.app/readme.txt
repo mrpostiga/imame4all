@@ -1,5 +1,5 @@
 ===============================================================
-iMAME4ALL 1.10 (September 22, 2011) by David Valdeita (Seleuco)
+iMAME4ALL 1.11 (February 17, 2013) by David Valdeita (Seleuco)
 ===============================================================
 
 
@@ -416,11 +416,17 @@ DEVELOPMENT
 --------------
 All changes by David Valdeita (aka Seleuco), unless otherwise stated
 Other contributors: Simon Quinn (aka Squid)
-                    Bryn Thomson
+                    Bryn Thomson (ART)
                     Todd Laney
 
+February 17,2013 v1.11
+* Added iOS 6.x compatibility
+* Added iPhone 5 support
+* Added battery saving code
+* Improved touch control and layouts
+
 September 22,2011 v1.10:
-* ROM favorites, use SELECT/COIN to select (Squid)
+* ROM favourites, use SELECT/COIN to select (Squid)
 * ROM filtering by category, manufacturer, clones and year (Squid)
 * Now displays year and manufacturer in game selection screen (Squid)
 
@@ -520,9 +526,8 @@ KNOWN PROBLEMS
 INTERESTING WEBPAGES ABOUT MAME
 -----------------------------------
 
-- http://www.mame.net/
-- http://www.mameworld.net/
-- http://www.marcianitos.org/
+- http://mamedev.org/
+- http://www.mameworld.info/
 
 ART
 ---------
@@ -541,7 +546,7 @@ Antiriad and Slaanesh. Thanks to everybody !.
 iMAME4all LICENSE
 ------------------
 
-The iMAME4all project is released under the GPL license. In addition you have some extra rights granted by a special license exception which allow you to link the iMAME4all GPL source with the not GPL MAME source.
+The iMAME4all project is released under a dual-license (GPL / MAME license) of your choice.  In addition you have some extra rights granted by a special license exception which allow you to link the iMAME4all GPL source with the not GPL MAME source.
 
 The exception also gives you the rights to eliminate it if you don't like it or if you want to include the iMAME4all source in another GPL program. So, iMAME4all is 100% GPL.
 
@@ -552,10 +557,9 @@ The only limitation is for iMAME4all. iMAME4all cannot include external GPL sour
 MAME LICENSE
 ----------------
 
-http://www.mame.net
-http://www.mamedev.com
+http://mamedev.org
 
-Copyright © 1997-2009, Nicola Salmoria and the MAME team. All rights reserved. 
+Copyright © 1997-2013, Nicola Salmoria and the MAME team. All rights reserved. 
 
 Redistribution and use of this code or any derivative works are permitted provided
 that the following conditions are met: 

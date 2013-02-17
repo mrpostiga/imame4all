@@ -51,6 +51,7 @@
 #import "HelpController.h"
 #import "OptionsController.h"
 #import "DonateController.h"
+#import "iCadeView.h"
 #import "FilterController.h"
 #import <pthread.h>
 
@@ -117,6 +118,7 @@ int iphone_keep_aspect_ratio_land = 0;
 int iphone_keep_aspect_ratio_port = 0;
 
 extern int isIpad;
+extern int isIphone5;
 int safe_render_path = 1;
 int enable_dview = 0;
 
@@ -164,21 +166,11 @@ int menu_exit_option = 0;
 
 int game_list_num = 0;
 
-
-#define STICK4WAY (iOS_waysStick == 4 && iOS_inGame)
-#define STICK2WAY (iOS_waysStick == 2 && iOS_inGame)
-        
-enum { DPAD_NONE=0,DPAD_UP=1,DPAD_DOWN=2,DPAD_LEFT=3,DPAD_RIGHT=4,DPAD_UP_LEFT=5,DPAD_UP_RIGHT=6,DPAD_DOWN_LEFT=7,DPAD_DOWN_RIGHT=8};    
-
-enum { BTN_B=0,BTN_X=1,BTN_A=2,BTN_Y=3,BTN_SELECT=4,BTN_START=5,BTN_L1=6,BTN_R1=7,BTN_L2=8,BTN_R2=9};
-
-enum { BUTTON_PRESS=0,BUTTON_NO_PRESS=1};
-
 //states
-static int dpad_state;
+int dpad_state;
 static int old_dpad_state;
 
-static int btnStates[NUM_BUTTONS];
+int btnStates[NUM_BUTTONS];
 static int old_btnStates[NUM_BUTTONS];
 
 extern pthread_t main_tid;
@@ -317,9 +309,7 @@ void* app_Thread_Start(void* args)
     else if(buttonIndex == 3 + menu_exit_option)    
     {
        iphone_menu = IPHONE_MENU_DONATE;
-       
-       [self  resignFirstResponder];
-       
+        
        DonateController *addController =[DonateController alloc];
                                
        [self presentModalViewController:addController animated:YES];
@@ -412,6 +402,9 @@ void* app_Thread_Start(void* args)
 	      //[self performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:YES];
 	      [self changeUI];
 	  }
+    
+      iCade.active = NO;
+      iCade.active = YES;
 	    
 	  actionPending=0;
 	  iOS_exitPause = 1;
@@ -744,18 +737,13 @@ void* app_Thread_Start(void* args)
     global_year = [op2 flt_year];
     [op2 release];
     
-    //
-    // we want to get keyboard input *only* from an external keyboard (no SW keyboards) the iCade is a bluetooth keyboard
-    //
-    // here is the plan, if a SW keyboard pops up resign.
-    //
-    // if a keyboard shows up later and someone starts using it, then try to grab FR status again
-    //
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(resignFirstResponder) name:@"UIKeyboardDidShowNotification" object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(becomeFirstResponder) name:@"UIKeyboardEmptyDelegateNotification" object:nil];
 
     [self changeUI];
+    
+    iCade = [[iCadeView alloc] initWithFrame:CGRectZero withEmuController:self];
+    [self.view addSubview:iCade];
+    
+    iCade.active = YES;
     
     if(0)
     {
@@ -773,8 +761,6 @@ void* app_Thread_Start(void* args)
 }
 - (void)viewDidUnload
 {
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"UIKeyboardDidShowNotification" object:nil]; 
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"UIKeyboardEmptyDelegateNotification" object:nil]; 
  
     [super viewDidUnload];
 }
@@ -788,75 +774,6 @@ void* app_Thread_Start(void* args)
 }
 
 
--(BOOL)becomeFirstResponder {
-    static int first = 1;
-    //NSLog(@"becomeFirstResponder");
-    if(warnIcade){
-       
-          	if(!iCadeUsed)
-          	{
-	          	UIAlertView *warnAlert; 
-	          	
-	          	if(first)
-	          	{
-		          	first=0;
-		          	warnAlert = [[UIAlertView alloc] initWithTitle:@"Connection!" 
-																	  
-		 
-		            message:[NSString stringWithFormat: @"Have I detected an iCade? Due to the limitations of the HW not all games are suited, use WiiClassic Pro instead if you get slowdowns or control lag. Remember, that you can select portrait fullscreen mode in options!. GERMAN users, set the soft keyboard to 'english (us)' before using the iCade"]
-																 
-																	 delegate:self 
-															cancelButtonTitle:@"Dismiss" 
-															otherButtonTitles: nil];																
-			       [warnAlert show];
-			       [warnAlert release];
-		       }
-		       else
-		       {
-		           
-		           warnAlert = [[UIAlertView alloc] initWithTitle:nil 
-	   																										
-		           message:[NSString stringWithFormat: @"\n\n\niCade connection?.\nPlease Wait..."]
-															 
-																 delegate: nil 
-														cancelButtonTitle: nil 
-														otherButtonTitles: nil];
-			   
-			      [self performSelector:@selector(autoDimiss:) withObject:warnAlert afterDelay:2.5f];
-		          [warnAlert show];
-		       }
-	       }
-	       iCadeUsed = 1;
-	       [self changeUI];
-	       
-    }
-    return [super becomeFirstResponder];
-}
-
--(BOOL)resignFirstResponder {
-   //NSLog(@"resignFirstResponder");
-   if(warnIcade)
-   {           	
-           	if(iCadeUsed)
-           	{
-	           	UIAlertView *warnAlert = [[UIAlertView alloc] initWithTitle:nil 
-	   																										
-		        message:[NSString stringWithFormat: @"\n\n\niCade disconnection?.\nPlease Wait..."]
-															 
-																 delegate: nil 
-														cancelButtonTitle: nil 
-														otherButtonTitles: nil];
-			   
-			   [self performSelector:@selector(autoDimiss:) withObject:warnAlert afterDelay:2.5f];
-		       [warnAlert show];
-	       }
-	       iCadeUsed = 0;
-	       [self changeUI];	       
-   }
-   return [super resignFirstResponder];
-}
-
-
 
 - (void)drawRect:(CGRect)rect
 {
@@ -864,17 +781,20 @@ void* app_Thread_Start(void* args)
 }
 
 -(BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-	//return (interfaceOrientation ==  UIDeviceOrientationLandscapeLeft || interfaceOrientation ==  UIDeviceOrientationLandscapeRight);
-	//return NO;
 	return YES;
-	//return actionPending ? NO : YES;
 }
 
+- (BOOL)shouldAutorotate {
+    return YES;
+}
+
+-(NSUInteger)supportedInterfaceOrientations
+{
+    return UIInterfaceOrientationMaskAll;
+}
 
 -(void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
-   
-    //show_controls = 1;   
- 
+    
     [self changeUI];
     if(menu!=nil)
     {         
@@ -1005,8 +925,8 @@ void* app_Thread_Start(void* args)
           if(i==BTN_X && iOS_landscape_buttons < 2)continue;
           if(i==BTN_B && iOS_landscape_buttons < 1)continue;  
                             
-          if(i==BTN_L1 && iOS_hide_LR)continue;
-          if(i==BTN_R1 && iOS_hide_LR)continue;
+          if(i==BTN_L1 && (iOS_hide_LR || !iOS_inGame))continue;
+          if(i==BTN_R1 && (iOS_hide_LR || !iOS_inGame))continue;
       }
    
       //if((i==BTN_Y || i==BTN_A) && !iOS_4buttonsLand && iphone_is_landscape)
@@ -1014,8 +934,13 @@ void* app_Thread_Start(void* args)
       name = [NSString stringWithFormat:@"./SKIN_%d/%@",iOS_skin,nameImgButton_NotPress[i]];   
       buttonViews[i] = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:name]];
       buttonViews[i].frame = rButton_image[i];
-      if((iphone_is_landscape && (iOS_full_screen_land /*|| i==BTN_Y || i==BTN_A*/)) || (!iphone_is_landscape && iOS_full_screen_port))      
-         [buttonViews[i] setAlpha:((float)iphone_controller_opacity / 100.0f)];   
+      
+       if((iphone_is_landscape && (iOS_full_screen_land /*|| i==BTN_Y || i==BTN_A*/)) || (!iphone_is_landscape && iOS_full_screen_port))
+         [buttonViews[i] setAlpha:((float)iphone_controller_opacity / 100.0f)];
+       
+       if(iphone_is_landscape && !iOS_full_screen_land && isIphone5 && (i==BTN_Y || i==BTN_A || i==BTN_L1 || i==BTN_R1) )
+           [buttonViews[i] setAlpha:((float)iphone_controller_opacity / 100.0f)];
+       
       [self.view addSubview: buttonViews[i]];
       btnStates[i] = old_btnStates[i] = BUTTON_NO_PRESS; 
    }
@@ -1239,7 +1164,9 @@ void* app_Thread_Start(void* args)
    {
 	   if(isIpad)
 	     imageBack = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:[NSString stringWithFormat:@"./SKIN_%d/back_landscape_iPad.png",iOS_skin]]];
-	   else
+	   else if(isIphone5)
+         imageBack = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:[NSString stringWithFormat:@"./SKIN_%d/back_landscape_iPhone_5.png",iOS_skin]]];
+       else
 	     imageBack = [ [ UIImageView alloc ] initWithImage:[UIImage imageNamed:[NSString stringWithFormat:@"./SKIN_%d/back_landscape_iPhone.png",iOS_skin]]];
 	   
 	   imageBack.frame = rLandscapeImageBackFrame; // Set the frame in which the UIImage should be drawn in.
@@ -1676,6 +1603,16 @@ void* app_Thread_Start(void* args)
 				    stickTouch = touch;
 				}			
 			}
+            else
+            {
+                if(MyCGRectContainsPoint(analogStickView.frame, point) || stickTouch == touch)
+                {
+                    //if(stickTouch==nil)
+                    stickTouch = touch;
+                    //if(touch == stickTouch)
+                    [analogStickView analogTouches:touch withEvent:event];
+                }
+            }
 			
 			if(touch == stickTouch) continue;
 			
@@ -1768,24 +1705,34 @@ void* app_Thread_Start(void* args)
 				btnStates[BTN_R2] = BUTTON_PRESS;
 			}			
 			else if (MyCGRectContainsPoint(Menu, point)) {
-				gp2x_pad_status |= GP2X_SELECT;				
+				/*
+                gp2x_pad_status |= GP2X_SELECT;
                 btnStates[BTN_SELECT] = BUTTON_PRESS;
 				gp2x_pad_status |= GP2X_START;
 			    btnStates[BTN_START] = BUTTON_PRESS;
+                */
 			}			
 	        			
 		}
 	    else
 	    {
-	        if(!iOS_inputTouchType && touch == stickTouch)
+            if(touch == stickTouch)
 			{
-	             gp2x_pad_status &= ~GP2X_UP;
-			     gp2x_pad_status &= ~GP2X_DOWN;
-				 gp2x_pad_status &= ~GP2X_LEFT;
-				 gp2x_pad_status &= ~GP2X_RIGHT;
-				 dpad_state = DPAD_NONE;
-				 stickTouch = nil;
+                if(iOS_inputTouchType==TOUCH_INPUT_DIGITAL)
+                {
+                    gp2x_pad_status &= ~GP2X_UP;
+                    gp2x_pad_status &= ~GP2X_DOWN;
+                    gp2x_pad_status &= ~GP2X_LEFT;
+                    gp2x_pad_status &= ~GP2X_RIGHT;
+                    dpad_state = DPAD_NONE;
+                }
+                else
+                {
+                    [analogStickView analogTouches:touch withEvent:event];
+                }
+                stickTouch = nil;
 		    }
+            
 	    }
 	}
 	
@@ -1805,255 +1752,6 @@ void* app_Thread_Start(void* args)
 	[self touchesBegan:touches withEvent:event];
 }
 
-//
-// Keyboard input from iCade
-//
-- (BOOL)canBecomeFirstResponder 
-{ 
-    return YES; 
-}
-
-- (void)insertText:(NSString *)theText 
-{
-    //NSLog(@"%s: %@ %d", __FUNCTION__, theText, [theText characterAtIndex:0]);
-    static int up = 0;
-    static int down = 0;
-    static int left = 0;
-    static int right = 0;    
-    warnIcade = 1;
-    
-    unichar key = [theText characterAtIndex:0];
-    
-    switch (key)
-    {
-        // joystick up
-        case 'w':
-            //if(!STICK2WAY && !(STICK4WAY && (left || right)))              
-            if(STICK4WAY)
-            {
-               gp2x_pad_status &= ~GP2X_LEFT;
-               gp2x_pad_status &= ~GP2X_RIGHT;
-            }            
-            if(!STICK2WAY)
-              gp2x_pad_status |= GP2X_UP;
-            up = 1;     
-            break;
-        case 'e':
-            if(STICK4WAY)
-            {
-               if(left)gp2x_pad_status |= GP2X_LEFT;
-               if(right)gp2x_pad_status |= GP2X_RIGHT;
-            }            
-            gp2x_pad_status &= ~GP2X_UP;
-            up = 0;
-            break;
-            
-        // joystick down
-        case 'x':
-            //if(!STICK2WAY && !(STICK4WAY && (left || right)))
-            if(STICK4WAY)
-            {
-               gp2x_pad_status &= ~GP2X_LEFT;
-               gp2x_pad_status &= ~GP2X_RIGHT;
-            }            
-            if(!STICK2WAY)
-               gp2x_pad_status |= GP2X_DOWN;
-            down = 1;   
-            break;
-        case 'z':
-            if(STICK4WAY)
-            {
-               if(left)gp2x_pad_status |= GP2X_LEFT;
-               if(right)gp2x_pad_status |= GP2X_RIGHT;
-            }
-            gp2x_pad_status &= ~GP2X_DOWN;
-            down = 0;   
-            break;
-            
-        // joystick right
-        case 'd':            
-            if(STICK4WAY)
-            {
-               gp2x_pad_status &= ~GP2X_UP;
-               gp2x_pad_status &= ~GP2X_DOWN;
-            }
-            gp2x_pad_status |= GP2X_RIGHT;
-            right = 1;
-            break;
-        case 'c':
-            if(STICK4WAY)
-            {
-               if(up)gp2x_pad_status |= GP2X_UP;
-               if(down)gp2x_pad_status |= GP2X_DOWN;
-            }
-            gp2x_pad_status &= ~GP2X_RIGHT;
-            right = 0;
-            break;
-            
-        // joystick left
-        case 'a':            
-            if(STICK4WAY)
-            {
-               gp2x_pad_status &= ~GP2X_UP;
-               gp2x_pad_status &= ~GP2X_DOWN;
-            }
-            gp2x_pad_status |= GP2X_LEFT;
-            left = 1;
-            break;
-        case 'q':
-            if(STICK4WAY)
-            {
-               if(up)gp2x_pad_status |= GP2X_UP;
-               if(down)gp2x_pad_status |= GP2X_DOWN;
-            }
-            gp2x_pad_status &= ~GP2X_LEFT;
-            left = 0;
-            break;
-            
-        // Y / UP
-        case 'i':
-            gp2x_pad_status |= GP2X_Y;
-            btnStates[BTN_Y] = BUTTON_PRESS;
-            break;
-        case 'm':
-            gp2x_pad_status &= ~GP2X_Y;
-            btnStates[BTN_Y] = BUTTON_NO_PRESS;
-            break;
-            
-        // X / DOWN
-        case 'l':
-            gp2x_pad_status |= GP2X_X;
-            btnStates[BTN_X] = BUTTON_PRESS;
-            break;
-        case 'v':
-            gp2x_pad_status &= ~GP2X_X;
-            btnStates[BTN_X] = BUTTON_NO_PRESS;
-            break;
-            
-        // A / LEFT
-        case 'k':
-            gp2x_pad_status |= GP2X_A;
-            btnStates[BTN_A] = BUTTON_PRESS;
-            break;
-        case 'p':
-            gp2x_pad_status &= ~GP2X_A;
-            btnStates[BTN_A] = BUTTON_NO_PRESS;
-            break;
-            
-        // B / RIGHT
-        case 'o':
-            gp2x_pad_status |= GP2X_B;
-            btnStates[BTN_B] = BUTTON_PRESS;
-            break;
-        case 'g':
-            gp2x_pad_status &= ~GP2X_B;
-            btnStates[BTN_B] = BUTTON_NO_PRESS;
-            break;
-            
-        // SELECT / COIN
-        case 'y': //button down
-            gp2x_pad_status |= GP2X_SELECT;
-            btnStates[BTN_SELECT] = BUTTON_PRESS;
-            break;
-        case 't': //button up
-            gp2x_pad_status &= ~GP2X_SELECT;
-            btnStates[BTN_SELECT] = BUTTON_NO_PRESS;
-            break;
-            
-        // START
-        case 'u':   //button down
-            if(iOS_iCadeLayout) { 
-                gp2x_pad_status |= GP2X_L;
-                btnStates[BTN_L1] = BUTTON_PRESS;
-            }
-            else {
-                gp2x_pad_status |= GP2X_START;
-                btnStates[BTN_START] = BUTTON_PRESS;
-            }
-            break;
-        case 'f':   //button up
-            if(iOS_iCadeLayout) { 
-                gp2x_pad_status &= ~GP2X_L;
-                btnStates[BTN_L1] = BUTTON_NO_PRESS;
-            }
-            else {
-                gp2x_pad_status &= ~GP2X_START;
-                btnStates[BTN_START] = BUTTON_NO_PRESS;
-            }
-            break;
-            
-        // 
-        case 'h':   //button down
-            if(iOS_iCadeLayout) { 
-                gp2x_pad_status |= GP2X_START;
-                btnStates[BTN_START] = BUTTON_PRESS;
-            }
-            else {
-                gp2x_pad_status |= GP2X_L;
-                btnStates[BTN_L1] = BUTTON_PRESS;
-            }
-            break;
-        case 'r':   //button up
-            if(iOS_iCadeLayout) { 
-                gp2x_pad_status &= ~GP2X_START;
-                btnStates[BTN_START] = BUTTON_NO_PRESS;
-            }
-            else {
-                gp2x_pad_status &= ~GP2X_L;
-                btnStates[BTN_L1] = BUTTON_NO_PRESS;
-            }
-            break;
-            
-        // 
-        case 'j':
-            gp2x_pad_status |= GP2X_R;
-            btnStates[BTN_R1] = BUTTON_PRESS;
-            break;
-        case 'n':
-            gp2x_pad_status &= ~GP2X_R;
-            btnStates[BTN_R1] = BUTTON_NO_PRESS;
-            break;
-    }
-    
-    // calculate dpad_state
-    switch (gp2x_pad_status & (GP2X_UP|GP2X_DOWN|GP2X_LEFT|GP2X_RIGHT))
-    {
-        case    GP2X_UP:    dpad_state = DPAD_UP; break;
-        case    GP2X_DOWN:  dpad_state = DPAD_DOWN; break;
-        case    GP2X_LEFT:  dpad_state = DPAD_LEFT; break;
-        case    GP2X_RIGHT: dpad_state = DPAD_RIGHT; break;
-            
-        case    GP2X_UP | GP2X_LEFT:  dpad_state = DPAD_UP_LEFT; break;
-        case    GP2X_UP | GP2X_RIGHT: dpad_state = DPAD_UP_RIGHT; break;
-        case    GP2X_DOWN | GP2X_LEFT:  dpad_state = DPAD_DOWN_LEFT; break;
-        case    GP2X_DOWN | GP2X_RIGHT: dpad_state = DPAD_DOWN_RIGHT; break;
-            
-        default: dpad_state = DPAD_NONE;
-    }
-    
-    static int cycleResponder = 0;
-    if (++cycleResponder > 20) {
-        // necessary to clear a buffer that accumulates internally
-        cycleResponder = 0;
-        warnIcade = 0;
-        [self resignFirstResponder];
-        [self becomeFirstResponder];
-        warnIcade = 1;
-        
-    }
-    
-    //[self handle_MENU];
-    [self handle_DPAD];
-}
-
-- (void)deleteBackward 
-{
-}
-- (BOOL)hasText 
-{
-    return YES;
-}
-
 - (void)getControllerCoords:(int)orientation {
     char string[256];
     FILE *fp;
@@ -2067,7 +1765,14 @@ void* app_Thread_Start(void* args)
 		   else
 		     fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_portrait_iPad.txt",  get_resource_path("/"), iOS_skin_data] UTF8String], "r");
 		}  
-		else
+		else if(isIphone5)
+        {
+            if(iOS_full_screen_port)
+                fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_portrait_full_iPhone_5.txt", get_resource_path("/"),  iOS_skin_data] UTF8String], "r");
+            else
+                fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_portrait_iPhone_5.txt", get_resource_path("/"),  iOS_skin_data] UTF8String], "r");
+        }
+        else
 		{
 		   if(iOS_full_screen_port)
 		     fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_portrait_full_iPhone.txt", get_resource_path("/"),  iOS_skin_data] UTF8String], "r");
@@ -2084,6 +1789,13 @@ void* app_Thread_Start(void* args)
 		   else
 		     fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_landscape_iPad.txt", get_resource_path("/"), iOS_skin_data] UTF8String], "r");
 		}
+        else if(isIphone5)
+        {
+            if(iOS_full_screen_land)
+                fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_landscape_full_iPhone_5.txt", get_resource_path("/"), iOS_skin_data] UTF8String], "r");
+            else
+                fp = fopen([[NSString stringWithFormat:@"%s/SKIN_%d/controller_landscape_iPhone_5.txt", get_resource_path("/"), iOS_skin_data] UTF8String], "r");
+        }
 		else
 		{
 		   if(iOS_full_screen_land)
@@ -2206,6 +1918,8 @@ void* app_Thread_Start(void* args)
 	
 	if(isIpad)
 	   fp = fopen([[NSString stringWithFormat:@"%sconfig_iPad.txt", get_resource_path("/")] UTF8String], "r");
+    else if(isIphone5)
+       fp = fopen([[NSString stringWithFormat:@"%sconfig_iPhone_5.txt", get_resource_path("/")] UTF8String], "r");
 	else
 	   fp = fopen([[NSString stringWithFormat:@"%sconfig_iPhone.txt", get_resource_path("/")] UTF8String], "r");
 	   	
@@ -2267,7 +1981,10 @@ void* app_Thread_Start(void* args)
       [imageOverlay release];
  
     if(dview!=nil)
-	   [dview release];	   
+	   [dview release];
+    
+    if(iCade!=nil)
+       [iCade release];
 	   
 	[super dealloc];
 }

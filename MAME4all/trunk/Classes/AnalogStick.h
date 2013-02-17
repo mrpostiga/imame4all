@@ -89,5 +89,6 @@ typedef enum
 	float rx, ry;
 }
 
+- (void)analogTouches:(UITouch *)touch withEvent:(UIEvent *)event;
 
 @end

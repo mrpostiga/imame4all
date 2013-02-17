@@ -76,7 +76,18 @@ typedef enum {
 } UIModalPresentationStyle;
 #endif
 
-@interface EmulatorController : UIViewController <UIActionSheetDelegate, UIKeyInput>
+#define STICK4WAY (iOS_waysStick == 4 && iOS_inGame)
+#define STICK2WAY (iOS_waysStick == 2 && iOS_inGame)
+
+enum { DPAD_NONE=0,DPAD_UP=1,DPAD_DOWN=2,DPAD_LEFT=3,DPAD_RIGHT=4,DPAD_UP_LEFT=5,DPAD_UP_RIGHT=6,DPAD_DOWN_LEFT=7,DPAD_DOWN_RIGHT=8};
+
+enum { BTN_B=0,BTN_X=1,BTN_A=2,BTN_Y=3,BTN_SELECT=4,BTN_START=5,BTN_L1=6,BTN_R1=7,BTN_L2=8,BTN_R2=9};
+
+enum { BUTTON_PRESS=0,BUTTON_NO_PRESS=1};
+
+@class iCadeView;
+
+@interface EmulatorController : UIViewController <UIActionSheetDelegate>
 {
 
   UIView			* screenView;
@@ -90,6 +101,8 @@ typedef enum {
   UIImageView	    * buttonViews[NUM_BUTTONS];
 
   AnalogStickView   * analogStickView;
+    
+  iCadeView         *iCade;  
 
   UIActionSheet     * menu;
 

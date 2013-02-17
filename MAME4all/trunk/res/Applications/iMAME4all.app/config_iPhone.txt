@@ -9,4 +9,4 @@
 0,0,480,320//LandscapeImageBackFrame
 81,0,320,240//LandscapeImageOverlayFrame
 15,15,30,30//rLoopImageMask
-1//drawcoords
+0//drawcoords

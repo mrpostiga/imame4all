@@ -59,6 +59,8 @@ and the 2011 next generation iPad will be == iPad2,1
 
  */
 
+#define self_parentViewController (([self parentViewController] != nil || ![self respondsToSelector:@selector(presentingViewController)]) ? [self parentViewController] : [self presentingViewController])
+#define my_parentViewController(c) (([c parentViewController] != nil || ![c respondsToSelector:@selector(presentingViewController)]) ? [c parentViewController] : [c presentingViewController])
 
 #import <UIKit/UIKit.h>
 #import "BTInquiryViewController.h"

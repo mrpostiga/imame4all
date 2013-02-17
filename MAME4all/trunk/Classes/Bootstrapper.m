@@ -50,8 +50,15 @@
 #include "shared.h"
 
 
+#define IS_WIDESCREEN ( fabs( ( double )[ [ UIScreen mainScreen ] bounds ].size.height - ( double )568 ) < DBL_EPSILON )
+#define IS_IPAD   ( [ [ [ UIDevice currentDevice ] model ] isEqualToString: @"iPad" ] )
+#define IS_IPHONE ( [ [ [ UIDevice currentDevice ] model ] isEqualToString: @"iPhone" ] )
+#define IS_IPOD   ( [ [ [ UIDevice currentDevice ] model ] isEqualToString: @"iPod touch" ] )
+#define IS_IPHONE_5 ( IS_IPHONE && IS_WIDESCREEN )
+
 int isIpad = 0;
 int isIphone4 = 0;
+int isIphone5 = 0;
 extern __emulation_run; 
 CGRect rExternal;
 int nativeTVOUT = 1;
@@ -75,31 +82,24 @@ int overscanTVOUT = 1;
     [[UIApplication sharedApplication] setStatusBarHidden:YES animated:NO];
     
 	[[UIApplication sharedApplication] setIdleTimerDisabled:YES];//TODO ???
-	/*
-	BOOL iPad = NO;
-	UIDevice* dev = [UIDevice currentDevice];
-    if ([dev respondsToSelector:@selector(isWildcat)])
-    {
-       iPad = [dev isWildcat];
-    }
-	
-	isIpad = iPad != NO;
-	*/
 	
 	isIpad = [[Helper machine] rangeOfString:@"iPad"].location != NSNotFound;
 	isIphone4 = [[Helper machine] rangeOfString:@"iPhone3"].location != NSNotFound;
-	//isIpad = 1;
+    isIphone5 = IS_WIDESCREEN;
     
-    // do this so we can detect keyboard in viewDidLoad
-    [deviceWindow makeKeyWindow];
+    //TEST
+    //isIpad = 0; isIphone5 = 0;
+
 
 	hrViewController = [[EmulatorController alloc] init];
 	
 	deviceWindow = [[UIWindow alloc] initWithFrame:rect];
 	deviceWindow.backgroundColor = [UIColor redColor];
-	[deviceWindow addSubview: hrViewController.view ];
+	
+    //[deviceWindow addSubview: hrViewController.view ];
 	
 	[deviceWindow makeKeyAndVisible];
+    [deviceWindow setRootViewController:hrViewController];
 	 
 	externalWindow = [[UIWindow alloc] initWithFrame:CGRectZero];
 	externalWindow.hidden = YES;
@@ -108,13 +108,15 @@ int overscanTVOUT = 1;
 	{ 	
 		[[NSNotificationCenter defaultCenter] addObserver:self 
 													 selector:@selector(prepareScreen) 
-														 name:@"UIScreenDidConnectNotification"
+														 name:/*@"UIScreenDidConnectNotification"*/
+                                                              UIScreenDidConnectNotification
 													   object:nil];
 	        
 			
 	    [[NSNotificationCenter defaultCenter] addObserver:self 
 													 selector:@selector(prepareScreen) 
-														 name:@"UIScreenDidDisconnectNotification" 
+														 name:/*@"UIScreenDidDisconnectNotification"*/
+                                                              UIScreenDidDisconnectNotification
 													   object:nil];
 	}	
     

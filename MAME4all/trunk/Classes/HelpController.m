@@ -66,7 +66,7 @@
    
 
 	//struct CGRect rect = [[UIScreen mainScreen] bounds];
-	UIViewController *pctrl = [self parentViewController];		
+	UIViewController *pctrl = self_parentViewController;
 	struct CGRect rect = pctrl.view.frame;//[[UIScreen mainScreen] bounds];
 	rect.origin.x = rect.origin.y = 0.0f;	
 	if(pctrl.interfaceOrientation==UIInterfaceOrientationLandscapeLeft 
@@ -86,7 +86,7 @@
    [ navBar setDelegate: self ];
 
    UINavigationItem *item = [[ UINavigationItem alloc ] initWithTitle:@"Credits & Help" ];
-   UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithTitle:@"OK" style:UIBarButtonItemStyleBordered target:[self parentViewController]   action:  @selector(done:) ];
+   UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithTitle:@"OK" style:UIBarButtonItemStyleBordered target:self_parentViewController  action:  @selector(done:) ];
    item.rightBarButtonItem = backButton;
    [backButton release];
    [ navBar pushNavigationItem: item  animated:YES];

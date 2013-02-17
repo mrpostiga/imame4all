@@ -398,8 +398,9 @@ int wiimote_handshake(struct wiimote_t* wm,  byte event, byte* data, unsigned sh
 int wiimote_send(struct wiimote_t* wm, byte report_type, byte* msg, int len) {
 	byte buf[32];
 
-    buf[0] = WM_SET_REPORT | WM_BT_OUTPUT;
-	buf[1] = report_type;
+    //buf[0] = WM_SET_REPORT | WM_BT_OUTPUT;
+	buf[0] = 0xa2;
+    buf[1] = report_type;
 
 	memcpy(buf+2, msg, len);
 

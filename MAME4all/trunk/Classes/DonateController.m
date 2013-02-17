@@ -44,6 +44,7 @@
  
 #import "DonateController.h"
 #import "EmulatorController.h"
+#import "Helper.h"
 #include <stdio.h>
 
 @implementation DonateController
@@ -65,7 +66,7 @@
 
 - (void)loadView {
 
-	UIViewController *pctrl = [self parentViewController];		
+	UIViewController *pctrl = self_parentViewController;
 	struct CGRect rect = pctrl.view.frame;//[[UIScreen mainScreen] bounds];
 	rect.origin.x = rect.origin.y = 0.0f;
 	if(pctrl.interfaceOrientation==UIInterfaceOrientationLandscapeLeft 
@@ -150,7 +151,7 @@
         [aWebView stopLoading];
    [self dismissModalViewControllerAnimated:YES];
    
-   EmulatorController *eC = (EmulatorController *)[self parentViewController];	
+   EmulatorController *eC = (EmulatorController *)self_parentViewController;
    [eC endMenu];
    
 }

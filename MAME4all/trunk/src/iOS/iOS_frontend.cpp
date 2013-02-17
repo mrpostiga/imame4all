@@ -441,7 +441,7 @@ static void game_list_view(int *pos) {
         tempstr[strlen(tempstr)-1] = '\0';
         gp2x_gamelist_text_out( screen_x-20, (29*8)-6,tempstr);
     } else {
-        gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"iMAME4all v1.10.0 by D.Valdeita");
+        gp2x_gamelist_text_out( (8*6)-8, (29*8)-6,"iMAME4all v1.11.0 by D.Valdeita");
     }
 }
 
