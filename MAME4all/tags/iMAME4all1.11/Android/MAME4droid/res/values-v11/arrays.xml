@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string-array name="pref_filter_options">
+	    <item>None</item>
+		<item>Scanline 1 Low</item>
+	    <item>Scanline 1 High</item>
+		<item>Scanline 2 Low</item>	
+		<item>Scanline 2 High</item>
+		<item>CRT 1 Low</item>
+		<item>CRT 1 High</item>
+		<item>CRT 2 Low</item>
+		<item>CRT 2 High</item>		
+	</string-array>
+	<string-array name="pref_filter_values">
+		<item>1</item>
+		<item>2</item>
+		<item>3</item>
+		<item>4</item>
+		<item>5</item>
+		<item>6</item>
+		<item>7</item>
+		<item>8</item>
+		<item>9</item>														
+	</string-array>
+
+	
+	<string-array name="pref_scaleMode_options">
+		<item>Original Size</item>
+		<item>1.5X</item>	
+		<item>2X</item>
+		<item>2.5X</item>		
+		<item>Scale (keep aspect ratio)</item>
+		<item>Stretch to fit screen</item>
+	</string-array>
+	<string-array name="pref_scaleMode_values">
+		<item>1</item>
+		<item>2</item>
+		<item>3</item>
+		<item>4</item>
+		<item>5</item>
+		<item>6</item>							
+	</string-array>
+	
+	<string-array name="pref_landscape_controllerType_options">
+		<item>No multitouch capable touch controller</item>
+		<item>Transparent touch controller suited for multitouch</item>
+	</string-array>
+	<string-array name="pref_landscape_controllerType_values">
+		<item>1</item>
+		<item>2</item>
+	</string-array>
+
+	<string-array name="pref_global_video_render_options">
+		<item>SW (Compatibility)</item>
+		<item>SW (+Threaded)</item>
+		<item>GL (Faster)</item>
+		<item>2D HW (Experimental)</item>
+	</string-array>
+	<string-array name="pref_global_video_render_values">
+		<item>1</item>
+		<item>2</item>
+		<item>3</item>
+		<item>4</item>		
+	</string-array>
+	
+	<string-array name="pref_controller_type_options">
+		<item>Digital (DPAD)</item>
+		<item>Analog (Performance)</item>
+		<item>Analog (Pretty)</item>
+	</string-array>
+	<string-array name="pref_controller_type_values">
+		<item>1</item>
+		<item>2</item>
+		<item>3</item>
+	</string-array>
+
+	<string-array name="pref_input_external_options">
+		<item>Default</item>
+		<item>iCade</item>
+		<item>iCP</item>
+	</string-array>
+	<string-array name="pref_input_external_values">
+		<item>1</item>
+		<item>2</item>
+		<item>3</item>
+	</string-array>	
+	
+	<string-array name="pref_dz_options">
+		<item>none</item>
+		<item>low</item>
+		<item>medium</item>
+		<item>high</item>
+		<item>very high</item>		
+	</string-array>
+	<string-array name="pref_dz_values">
+		<item>1</item>
+		<item>2</item>
+		<item>3</item>
+		<item>4</item>
+		<item>5</item>
+		<item>6</item>
+	</string-array>	
+	
+</resources>
