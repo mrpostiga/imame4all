@@ -116,8 +116,11 @@
 #include "crsshair.h"
 #include "validity.h"
 #include "debug/debugcon.h"
+#include "hiscore.h"
 
 #include <time.h>
+
+#include "myosd.h"
 
 
 
@@ -137,7 +140,7 @@ static char giant_string_buffer[65536] = { 0 };
 //-------------------------------------------------
 //  running_machine - constructor
 //-------------------------------------------------
-
+int cpunum;
 running_machine::running_machine(const game_driver &driver, const machine_config &_config, core_options &options, bool exit_to_game_select)
 	: m_regionlist(m_respool),
 	  m_devicelist(m_respool),
@@ -212,7 +215,13 @@ running_machine::running_machine(const game_driver &driver, const machine_config
 			firstcpu = downcast<cpu_device *>(device);
 			break;
 		}
-
+    if(myosd_hiscore)
+    {
+       cpu[0] = firstcpu;
+       for (cpunum = 1; cpunum < ARRAY_LENGTH(cpu) && cpu[cpunum - 1] != NULL; cpunum++)
+          cpu[cpunum] = cpu[cpunum - 1]->typenext();
+    }
+    
 	// fetch core options
 	if (options_get_bool(&m_options, OPTION_DEBUG))
 		debug_flags = (DEBUG_FLAG_ENABLED | DEBUG_FLAG_CALL_HOOK) | (options_get_bool(&m_options, OPTION_DEBUG_INTERNAL) ? 0 : DEBUG_FLAG_OSD_ENABLED);
@@ -357,6 +366,10 @@ void running_machine::start()
 	// set up the cheat engine
 	if (options_get_bool(&m_options, OPTION_CHEAT))
 		cheat_init(this);
+    
+    //MKCHAMP - INITIALIZING THE HISCORE ENGINE
+    if (myosd_hiscore)
+        hiscore_init(this);
 
 	// disallow save state registrations starting here
 	state_save_allow_registration(this, false);
@@ -796,7 +809,8 @@ void running_machine::handle_saveload()
 
 	// if there are anonymous timers, we can't save just yet, and we can't load yet either
 	// because the timers might overwrite data we have loaded
-	if (timer_count_anonymous(this) > 0)
+	
+    if (timer_count_anonymous(this) > 0)
 	{
 		// if more than a second has passed, we're probably screwed
 		if (attotime_sub(timer_get_time(this), m_saveload_schedule_time).seconds > 0)
@@ -806,6 +820,7 @@ void running_machine::handle_saveload()
 		}
 		return;
 	}
+  
 
 	// open the file
 	mame_file *file;

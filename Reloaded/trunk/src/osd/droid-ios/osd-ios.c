@@ -52,13 +52,14 @@ int  myosd_pxasp1 = 1;
 int  myosd_service = 0;
 int  myosd_num_buttons = 0;
 
-int myosd_video_threaded=1;
+int myosd_video_threaded=-1;
+int myosd_dbl_buffer=1;
 
 int myosd_num_of_joys=0;
 
-int m4all_BplusX = 0;
-int m4all_hide_LR = 0;
-int m4all_landscape_buttons = 4;
+//int m4all_BplusX = 0;
+//int m4all_hide_LR = 0;
+//int m4all_landscape_buttons = 4;
 
 int myosd_filter_favorites = 0;
 int myosd_filter_clones = 0;
@@ -75,6 +76,10 @@ int myosd_reset_filter = 0;
 
 int myosd_num_ways = 8;
 
+int myosd_vsync = -1;
+int myosd_autofire=1;
+int myosd_hiscore=1;
+
 
 /*extern */float joy_analog_x[4];
 /*extern */float joy_analog_y[4];
@@ -83,7 +88,6 @@ static int lib_inited = 0;
 static int soundInit = 0;
 static int isPause = 0;
 static int videot_running = 0;
-static int dbl_buff = 1;
 
 unsigned long myosd_pad_status = 0;
 unsigned long myosd_joy_status[4];
@@ -130,7 +134,7 @@ static void dump_video(void)
 {
 
 
-    if(dbl_buff && myosd_screen15!=NULL && img_buffer!=NULL)
+    if(myosd_dbl_buffer && myosd_screen15!=NULL && img_buffer!=NULL)
 	   memcpy(img_buffer,myosd_screen15, myosd_video_width * myosd_video_height * 2);
 
 	iphone_UpdateScreen();
@@ -250,8 +254,9 @@ void myosd_init(void)
 	   printf("myosd_init\n");
 
 	   //myosd_set_video_mode(320,240,320,240);
-
-	   if(dbl_buff)
+        
+       printf("myosd_dbl_buffer %d\n",myosd_dbl_buffer);
+	   if(myosd_dbl_buffer)
 	      myosd_screen15 = myosd_screen;
 	   else
 	      myosd_screen15 = img_buffer;
@@ -265,7 +270,8 @@ void myosd_init(void)
 		   //param.sched_priority = 50;
 		   //param.sched_priority = 46;
 		   //param.sched_priority = 100;
-
+           
+            printf("video priority %d\n",video_thread_priority);
 		    param.sched_priority = video_thread_priority;
 		    int policy;
 		    if(video_thread_priority_type == 1)

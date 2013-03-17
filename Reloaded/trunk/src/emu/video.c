@@ -1003,9 +1003,9 @@ static void update_frameskip(running_machine *machine)
 static void update_refresh_speed(running_machine *machine)
 {
 	/* only do this if the refreshspeed option is used */
-	if (options_get_bool(machine->options(), OPTION_REFRESHSPEED))
+	if (0 || options_get_bool(machine->options(), OPTION_REFRESHSPEED))
 	{
-		float minrefresh = render_get_max_update_rate();
+		float minrefresh = 60.00f;//render_get_max_update_rate();
 		if (minrefresh != 0)
 		{
 			attoseconds_t min_frame_period = ATTOSECONDS_PER_SECOND;
@@ -1025,13 +1025,23 @@ static void update_refresh_speed(running_machine *machine)
 			/* note that we lop 0.25Hz off of the minrefresh when doing the computation to allow for
                the fact that most refresh rates are not accurate to 10 digits... */
 			target_speed = floor((minrefresh - 0.25f) * 100.0 / ATTOSECONDS_TO_HZ(min_frame_period));
-			target_speed = MIN(target_speed, original_speed);
-
+			//target_speed = MIN(target_speed, original_speed);
+            
+            //target_speed = ((minrefresh + 0.25) * 100.0) / ATTOSECONDS_TO_HZ(min_frame_period);
+            target_speed = MAX(target_speed, original_speed);
+            
+            
 			/* if we changed, log that verbosely */
 			if (target_speed != global.speed)
 			{
-				mame_printf_verbose("Adjusting target speed to %d%% (hw=%.2fHz, game=%.2fHz, adjusted=%.2fHz)\n", target_speed, minrefresh, ATTOSECONDS_TO_HZ(min_frame_period), ATTOSECONDS_TO_HZ(min_frame_period * 100 / target_speed));
+				printf("Adjusting target speed to %d%% (hw=%.2fHz, game=%.2fHz, adjusted=%.2fHz)\n", target_speed, minrefresh, ATTOSECONDS_TO_HZ(min_frame_period), ATTOSECONDS_TO_HZ(min_frame_period * 100 / target_speed));
+                mame_printf_verbose("Adjusting target speed to %d%% (hw=%.2fHz, game=%.2fHz, adjusted=%.2fHz)\n", target_speed, minrefresh, ATTOSECONDS_TO_HZ(min_frame_period), ATTOSECONDS_TO_HZ(min_frame_period * 100 / target_speed));
 				global.speed = target_speed;
+                
+                for (screen_device *screen = screen_first(*machine); screen != NULL; screen = screen_next(screen))
+                {
+                    screen->configure(screen->width(), screen->height(), screen->visible_area(), HZ_TO_ATTOSECONDS(60.00f));
+                }
 			}
 		}
 	}
@@ -1827,6 +1837,10 @@ bool screen_device_config::device_validity_check(const game_driver &driver) cons
 //  LIVE VIDEO SCREEN DEVICE
 //**************************************************************************
 
+//DAV HACK
+static int vsync_hack = 0;
+/////
+
 //-------------------------------------------------
 //  screen_device - constructor
 //-------------------------------------------------
@@ -1858,6 +1872,7 @@ screen_device::screen_device(running_machine &_machine, const screen_device_conf
 {
 	memset(m_texture, 0, sizeof(m_texture));
 	memset(m_bitmap, 0, sizeof(m_bitmap));
+            
 }
 
 
@@ -1906,6 +1921,11 @@ void screen_device::device_start()
 	if ((machine->config->m_video_attributes & VIDEO_UPDATE_SCANLINE) != 0)
 		m_scanline_timer = timer_alloc(machine, static_scanline_update_callback, (void *)this);
 
+    
+    //DAV HACK
+    vsync_hack = (myosd_vsync != -1) && (ATTOSECONDS_TO_HZ(m_config.m_refresh) >= 50.00f);
+   
+    
 	// configure the screen with the default parameters
 	configure(m_config.m_width, m_config.m_height, m_config.m_visarea, m_config.m_refresh);
 
@@ -1945,6 +1965,7 @@ void screen_device::device_start()
 	state_save_register_device_item(this, 0, m_vblank_end_time.seconds);
 	state_save_register_device_item(this, 0, m_vblank_end_time.attoseconds);
 	state_save_register_device_item(this, 0, m_frame_number);
+    
 }
 
 
@@ -1974,7 +1995,11 @@ void screen_device::configure(int width, int height, const rectangle &visarea, a
 	assert(m_config.m_type == SCREEN_TYPE_VECTOR || visarea.min_x < width);
 	assert(m_config.m_type == SCREEN_TYPE_VECTOR || visarea.min_y < height);
 	assert(frame_period > 0);
-
+    
+    //DAV HACK
+    if(vsync_hack)
+        frame_period = HZ_TO_ATTOSECONDS(myosd_vsync / 100.00f);
+    
 	// fill in the new parameters
 	m_width = width;
 	m_height = height;

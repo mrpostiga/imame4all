@@ -49,6 +49,7 @@
 #import "ListOptionController.h"
 #import "DonateController.h"
 #import "HelpController.h"
+#import "EmulatorController.h"
 
 @implementation Options
 
@@ -107,6 +108,16 @@
 @synthesize filterKeyword;
 
 @synthesize lowlsound;
+@synthesize vsync;
+@synthesize threaded;
+@synthesize dblbuff;
+
+@synthesize mainPriority;
+@synthesize videoPriority;
+
+@synthesize autofire;
+
+@synthesize hiscore;
 
 - (id)init {
 
@@ -121,7 +132,7 @@
 {
 	
 	//NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v5.bin")];
-    NSString *path=[NSString stringWithUTF8String:get_documents_path("iOS/options_v16.bin")];
+    NSString *path=[NSString stringWithUTF8String:get_documents_path("iOS/options_v17.bin")];
 	
 	NSData *plistData;
 	id plist;
@@ -202,6 +213,15 @@
         filterKeyword = nil;
         
         lowlsound = 0;
+        vsync = 0;
+        threaded = 1;
+        dblbuff = 1;
+        
+        mainPriority = 5;
+        videoPriority = 5;
+        
+        autofire = 0;
+        hiscore = 0;
         
 		//[self saveOptions];
 	}
@@ -267,6 +287,16 @@
         filterKeyword  =  [[optionsArray objectAtIndex:0] objectForKey:@"filterKeyword"];
         
         lowlsound  =  [[[optionsArray objectAtIndex:0] objectForKey:@"lowlsound"] intValue];
+        vsync  =  [[[optionsArray objectAtIndex:0] objectForKey:@"vsync"] intValue];
+        threaded  =  [[[optionsArray objectAtIndex:0] objectForKey:@"threaded"] intValue];
+        dblbuff  =  [[[optionsArray objectAtIndex:0] objectForKey:@"dblbuff"] intValue];
+        
+        mainPriority  =  [[[optionsArray objectAtIndex:0] objectForKey:@"mainPriority"] intValue];
+        videoPriority  =  [[[optionsArray objectAtIndex:0] objectForKey:@"videoPriority"] intValue];
+        
+        autofire =  [[[optionsArray objectAtIndex:0] objectForKey:@"autofire"] intValue];
+        
+        hiscore  =  [[[optionsArray objectAtIndex:0] objectForKey:@"hiscore"] intValue];
         
 	}
 			
@@ -332,6 +362,15 @@
                              [NSString stringWithFormat:@"%d", driverSourceValue], @"driverSourceValue",
                              [NSString stringWithFormat:@"%d", categoryValue], @"categoryValue",
                              [NSString stringWithFormat:@"%d", lowlsound], @"lowlsound",
+                             [NSString stringWithFormat:@"%d", vsync], @"vsync",
+                             [NSString stringWithFormat:@"%d", threaded], @"threaded",
+                             [NSString stringWithFormat:@"%d", dblbuff], @"dblbuff",
+                             
+                             [NSString stringWithFormat:@"%d", mainPriority], @"mainPriority",
+                             [NSString stringWithFormat:@"%d", videoPriority], @"videoPriority",
+                             
+                             [NSString stringWithFormat:@"%d", autofire], @"autofire",
+                             [NSString stringWithFormat:@"%d", hiscore], @"hiscore",
                              
                              filterKeyword, @"filterKeyword", //CUIADO si es nill termina la lista
                                                                                      
@@ -340,7 +379,7 @@
 
 	
     //NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v5.bin")];
-	NSString *path=[NSString stringWithUTF8String:get_documents_path("iOS/options_v16.bin")];
+	NSString *path=[NSString stringWithUTF8String:get_documents_path("iOS/options_v17.bin")];
     
 	NSData *plistData;
 	
@@ -359,7 +398,7 @@
 		{
 			    UIAlertView *errAlert = [[UIAlertView alloc] initWithTitle:@"Error saving preferences!" 
 															message://[NSString stringWithFormat:@"Error:%@",[err localizedDescription]]  
-															@"Preferences couldn't be saved.\n Check for write permissions. chmod 777 if needed. See help." 
+															@"Preferences cannot be saved.\n Check for write permissions. chmod 777 if needed. Look at the help!." 
 															delegate:self 
 													        cancelButtonTitle:@"OK" 
 													        otherButtonTitles: nil];	
@@ -429,7 +468,7 @@
         
         arrayStickType = [[NSArray alloc] initWithObjects:@"Auto",@"2-Way",@"4-Way",@"8-Way", nil];
         
-        arrayControlType = [[NSArray alloc] initWithObjects:@"None",@"iCade",@"iCP (iCade mode)",@"iMpulse", nil];
+        arrayControlType = [[NSArray alloc] initWithObjects:@"None",@"iCade",@"iCP, Gametel",@"iMpulse", nil];
         
         arrayAnalogDZValue = [[NSArray alloc] initWithObjects:@"1", @"2", @"3",@"4", @"5", @"6", nil];
         arrayWiiDZValue = [[NSArray alloc] initWithObjects:@"1", @"2", @"3",@"4", @"5", @"6", nil];
@@ -452,6 +491,12 @@
         arrayYearLTEValue = [[NSMutableArray  alloc] initWithObjects:@"Any",nil];
         arrayDriverSourceValue = [[NSMutableArray  alloc] initWithObjects:@"# All",nil];
         arrayCategoryValue = [[NSMutableArray  alloc] initWithObjects:@"# All",nil];
+        
+        arrayMainPriorityValue = [[NSArray alloc] initWithObjects:@"0", @"1", @"2", @"3",@"4", @"5", @"6", @"7", @"8", @"9", @"10",nil];
+        arrayVideoPriorityValue = [[NSArray alloc] initWithObjects:@"0", @"1", @"2", @"3",@"4", @"5", @"6", @"7", @"8", @"9", @"10",nil];
+        
+        arrayAutofireValue = [[NSArray alloc] initWithObjects:@"Disabled", @"Speed 1", @"Speed 2",@"Speed 3",
+                              @"Speed 4", @"Speed 5",@"Speed 6",@"Speed 7",@"Speed 8",@"Speed 9",nil];
         
         int i = 0;
         
@@ -480,6 +525,10 @@
         }
         
         switchLowlsound = nil;
+        switchVsync = nil;
+        switchThreaded = nil;
+        switchDblbuff = nil;
+        switchHiscore = nil;
         
     }
 
@@ -518,7 +567,7 @@
        
       UITableViewCellStyle style;
        
-      if(indexPath.section==kFilterSection && indexPath.row==9)
+      if((indexPath.section==kFilterSection && indexPath.row==9) || indexPath.section==kCustomLayout )
           style = UITableViewCellStyleDefault;
        else
           style = UITableViewCellStyleValue1;
@@ -746,6 +795,14 @@
                }
                 case 7:
                 {
+                    
+                    cell.textLabel.text   = @"Button B as Autofire";
+                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                    cell.detailTextLabel.text = [arrayAutofireValue objectAtIndex:op.autofire];
+                    break;
+                }
+                case 8:
+                {
                     cell.textLabel.text   = @"DPAD Touch DZ";
                     [switchTouchDeadZone release];
                     switchTouchDeadZone  = [[UISwitch alloc] initWithFrame:CGRectZero];
@@ -754,7 +811,7 @@
                     [switchTouchDeadZone addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
                     break;
                 }
-                case 8:
+                case 9:
                 {
                     cell.textLabel.text   = @"Stick Touch DZ";
                     
@@ -762,7 +819,7 @@
                     cell.detailTextLabel.text = [arrayAnalogDZValue objectAtIndex:op.analogDeadZoneValue];
                     break;
                 }
-                case 9:
+                case 10:
                 {
                     if(g_wiimote_avalible)
                     {
@@ -774,10 +831,36 @@
                     
                     break;
                 }
+
             }   
             break;
-        }        
-       case kDefaultsSection:  
+        }
+           
+       case kCustomLayout:
+       {
+           switch (indexPath.row)
+           {
+               case 0:
+               {
+
+                   cell.selectionStyle = UITableViewCellSelectionStyleBlue;
+                   cell.textLabel.text = @"Change Current Layout";
+                   cell.textLabel.textAlignment = UITextAlignmentCenter;
+                   break;
+               }
+               case 1:
+               {
+
+                   cell.selectionStyle = UITableViewCellSelectionStyleBlue;
+                   cell.textLabel.text = @"Reset Current Layout to Default";
+                   cell.textLabel.textAlignment = UITextAlignmentCenter;
+                   break;
+               }
+           }
+           break;
+       }
+           
+       case kGameDefaultsSection:
        {
            switch (indexPath.row) 
            {
@@ -799,6 +882,83 @@
                    [switchCheats addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
                    break;
                }
+               case 2:
+               {
+                   cell.textLabel.text   = @"Force 60Hz Sync";
+                   [switchVsync release];
+                   switchVsync  = [[UISwitch alloc] initWithFrame:CGRectZero];
+                   cell.accessoryView = switchVsync ;
+                   [switchVsync setOn:[op vsync] animated:NO];
+                   [switchVsync addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                   break;
+               }
+               case 3:
+               {
+                   cell.textLabel.text   = @"Save Hiscores";
+                   [switchHiscore release];
+                   switchHiscore  = [[UISwitch alloc] initWithFrame:CGRectZero];
+                   cell.accessoryView = switchHiscore ;
+                   [switchHiscore setOn:[op hiscore] animated:NO];
+                   [switchHiscore addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                   break;
+               }
+           }
+           break;
+       }
+           
+       case kAppDefaultsSection:
+       {
+           switch (indexPath.row)
+           {
+               case 0:
+               {
+                       cell.textLabel.text   = @"Native TV-OUT";
+                       [switchTvoutNative release];
+                       switchTvoutNative  = [[UISwitch alloc] initWithFrame:CGRectZero];
+                       cell.accessoryView = switchTvoutNative ;
+                       [switchTvoutNative setOn:[op tvoutNative] animated:NO];
+                       [switchTvoutNative addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                       break;
+               }
+               case 1:
+               {
+                   cell.textLabel.text   = @"Threaded Video";
+                   [switchThreaded release];
+                   switchThreaded  = [[UISwitch alloc] initWithFrame:CGRectZero];
+                   cell.accessoryView = switchThreaded ;
+                   [switchThreaded setOn:[op threaded] animated:NO];
+                   [switchThreaded addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                   break;
+               }
+               case 2://video thread p
+               {
+
+                   cell.textLabel.text   = @"Video Thread Priority";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.detailTextLabel.text = [arrayVideoPriorityValue objectAtIndex:op.videoPriority];
+                   break;
+               }
+               case 3:
+               {
+                   cell.textLabel.text   = @"Double Buffer";
+                   [switchDblbuff release];
+                   switchDblbuff  = [[UISwitch alloc] initWithFrame:CGRectZero];
+                   cell.accessoryView = switchDblbuff ;
+                   [switchDblbuff setOn:[op dblbuff] animated:NO];
+                   [switchDblbuff addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                   break;
+                   
+                   break;
+               }
+               case 4:
+               {
+                       
+                   cell.textLabel.text   = @"Main Thread Priority";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.detailTextLabel.text = [arrayMainPriorityValue objectAtIndex:op.mainPriority];
+                   break;
+               }
+            
            }
            break;
        }
@@ -893,16 +1053,6 @@
                    break;
                }
                case 9:
-               {
-                   cell.textLabel.text   = @"Native TV-OUT";
-                   [switchTvoutNative release];
-                   switchTvoutNative  = [[UISwitch alloc] initWithFrame:CGRectZero];                
-                   cell.accessoryView = switchTvoutNative ;
-                   [switchTvoutNative setOn:[op tvoutNative] animated:NO];
-                   [switchTvoutNative addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
-                   break;
-               }                
-               case 10:
                {
                    cell.textLabel.text   = @"Overscan TV-OUT";
                    
@@ -1037,7 +1187,7 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-      return 7;
+      return kNumSections;
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
@@ -1048,7 +1198,9 @@
           case kPortraitSection: return @"Portrait";
           case kLandscapeSection: return @"Landscape";
           case kInputSection: return @"Input";
-          case kDefaultsSection: return @"Game Defaults";
+          case kCustomLayout: return @"Custom Layout";
+          case kGameDefaultsSection: return @"Game Defaults";
+          case kAppDefaultsSection: return @"App Defaults";
           case kMiscSection: return @"Miscellaneous";
           case kFilterSection: return @"Game Filter";
     }
@@ -1063,9 +1215,11 @@
           case kSupportSection: return 2;
           case kPortraitSection: return 5;
           case kLandscapeSection: return 5;
-          case kInputSection: return 10-!g_wiimote_avalible;
-          case kDefaultsSection: return 2;
-          case kMiscSection: return 10+1;
+          case kInputSection: return 11-!g_wiimote_avalible;
+          case kCustomLayout: return 2;
+          case kGameDefaultsSection: return 4;
+          case kAppDefaultsSection: return 5;
+          case kMiscSection: return 10;
           case kFilterSection: return 10;
       }
     return -1;
@@ -1138,6 +1292,15 @@
     [arrayCategoryValue release];
     
     [switchLowlsound release];
+    [switchVsync release];
+    [switchThreaded release];
+    [switchDblbuff release];
+    
+    [arrayMainPriorityValue release];
+    [arrayVideoPriorityValue release];
+    
+    [arrayAutofireValue release];
+    [switchHiscore release];
     
     [super dealloc];
 }
@@ -1217,6 +1380,18 @@
     if(sender == switchLowlsound)
         op.lowlsound = [switchLowlsound isOn];
     
+    if(sender == switchVsync)
+        op.vsync = [switchVsync isOn];
+    
+    if(sender == switchThreaded)
+        op.threaded = [switchThreaded isOn];
+    
+    if(sender == switchDblbuff)
+        op.dblbuff = [switchDblbuff isOn];
+    
+    if(sender == switchHiscore)
+        op.hiscore = [switchHiscore isOn];
+    
 	[op saveOptions];
 		
 	[op release];
@@ -1271,13 +1446,19 @@
                 [[self navigationController] pushViewController:listController animated:YES];
                 [listController release];
             }
-            if (row==8){
+            if (row==7){
                 ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                    type:kTypeAnalogDZValue list:arrayAnalogDZValue];                     
+                                                                                              type:kTypeAutofireValue list:arrayAutofireValue];
                 [[self navigationController] pushViewController:listController animated:YES];
                 [listController release];
             }
             if (row==9){
+                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
+                                    type:kTypeAnalogDZValue list:arrayAnalogDZValue];
+                [[self navigationController] pushViewController:listController animated:YES];
+                [listController release];
+            }
+            if (row==10){
                 ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
                                 type:kTypeWiiDZValue list:arrayWiiDZValue];                        
                 [[self navigationController] pushViewController:listController animated:YES];
@@ -1285,11 +1466,27 @@
             }
             break;
         }
-        case kDefaultsSection:
+        case kGameDefaultsSection:
         {
             if (row==0){
                 ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
                                                          type:kTypeSoundValue list:arraySoundValue]; 
+                [[self navigationController] pushViewController:listController animated:YES];
+                [listController release];
+            }
+            break;
+        }
+        case kAppDefaultsSection:
+        {
+            if (row==2){
+                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
+                                                                                              type:kTypeVideoPriorityValue list:arrayVideoPriorityValue];
+                [[self navigationController] pushViewController:listController animated:YES];
+                [listController release];
+            }
+            if (row==4){
+                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
+                                                                                              type:kTypeMainPriorityValue list:arrayMainPriorityValue];
                 [[self navigationController] pushViewController:listController animated:YES];
                 [listController release];
             }
@@ -1389,6 +1586,27 @@
                 [op release];
                 
                [tableView reloadData];
+                /*
+                NSFileManager *filemgr = [[NSFileManager alloc] init];
+                NSError *error = nil;
+                [filemgr removeItemAtPath:[NSString stringWithUTF8String:get_documents_path("cfg")] error:&error];
+                [filemgr release];
+                */
+            }
+            break;
+        }
+        case kCustomLayout:
+        {
+            
+            if(row==0)
+            {
+                [emuController beginCustomizeCurrentLayout];
+                [tableView reloadData];
+            }
+            if(row==1)
+            {
+                [emuController resetCurrentLayout];
+                [tableView reloadData];
             }
             break;
         }

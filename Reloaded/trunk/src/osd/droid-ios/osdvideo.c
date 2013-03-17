@@ -144,7 +144,7 @@ void droid_ios_video_draw()
 extern "C"
 void droid_ios_video_thread()
 {
-	while (!thread_stopping && myosd_video_threaded)
+    while (!thread_stopping && myosd_video_threaded)
 	{
 		droid_ios_video_draw();
 	}

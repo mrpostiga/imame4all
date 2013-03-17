@@ -233,6 +233,8 @@ public class ControlCustomizer {
 						old_ay = iv.getYoff_tmp();
 						ax = x;
 						ay = y;
+                        prev_ax = 0;
+                        prev_ay = 0;
 						valueMoved = iv;
 						break;
 					   }

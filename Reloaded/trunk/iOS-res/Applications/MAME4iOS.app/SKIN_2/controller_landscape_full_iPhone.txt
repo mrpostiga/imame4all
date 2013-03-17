@@ -6,21 +6,21 @@
 0,178,40,56//upleft
 40,178,45,56//up
 85,178,105,56//upright
-0,0,79,42//select
-400,0,79,40//start
-0,85,83,79//lpad
-401,85,83,79//rpad
+15,0,39,39//select
+420,0,39,39//start
+8,93,66,66//l1
+413,93,66,66//r1
 0,0,0,0//menu (select+ start) YO b + up
-341,243,28,77//button down left X + A
-369,254,78,66//buttondown  --> X
-432,254,48,66//button down right X + B
-285,243,56,77//buton left  --> A
-400,181,80,73//button right -> B
-256,243,29,77//button up left --> Y + A
-200,243,56,77//button up --> Y
-0,0,0,0//button up right Y + B
-90,0,79,42//lpad2
-310,0,79,42//rpad2
+341,243,57,57//button down left X + A
+364,251,66,66//buttondown  --> X
+432,254,57,57//button down right X + B
+278,251,66,66//buton left  --> A
+410,183,66,66//button right -> B
+256,243,57,57//button up left --> Y + A
+193,251,66,66//button up --> Y
+185,243,57,57//button up right Y + B
+105,0,39,39//lpad2
+330,0,39,39//rpad2
 0,0,0,0 //showkyboard
 402,175,83,83//B img
 356,243,83,83//X img

@@ -3780,9 +3780,14 @@ static void menu_select_game_populate(running_machine *machine, ui_menu *menu, s
 	/* if nothing there, add a single multiline item and return */
 	if (matchcount == 0)
 	{
-		ui_menu_item_append(menu, "No "GAMESNOUN" found. Please check the rompath specified in the "CONFIGNAME".ini file.\n\n"
-								  "If this is your first time using "APPNAME", please see the config.txt file in "
-								  "the docs directory for information on configuring "APPNAME".", NULL, MENU_FLAG_MULTILINE | MENU_FLAG_REDTEXT, NULL);
+#ifdef IOS
+        ui_menu_item_append(menu, "No games found. After installing, place your MAME-titled zipped roms in /var/mobile/Media/ROMs/MAME4iOS/roms folder.\n\n"
+                                 "On MAME4iOS for NO jailbroken devices, use iTunes file sharing or use a 3rd party app, like iFunBox or iExplorer, to copy ROMs on sandboxed MAME4iOS 'Documents' folder."
+								  , NULL, MENU_FLAG_MULTILINE | MENU_FLAG_REDTEXT, NULL);
+#else
+       ui_menu_item_append(menu, "No games found. After installing, place your MAME-titled zipped roms in MAME4droid ROMs folder\n\n"
+                                                , NULL, MENU_FLAG_MULTILINE | MENU_FLAG_REDTEXT, NULL);
+#endif
 		return;
 	}
     
@@ -4085,7 +4090,7 @@ static void menu_select_game_custom_render(running_machine *machine, ui_menu *me
     {
 			//sprintf(&tempbuf[0][0], "Type name or select: _");
 	#ifdef IOS
-			sprintf(&tempbuf[0][0], "MAME4iOS Reloaded 1.3 by David Valdeita (Seleuco). Game: %d/%d",MIN(myosd_last_game_selected+1,nroms), nroms);
+			sprintf(&tempbuf[0][0], "MAME4iOS Reloaded 1.4 by David Valdeita (Seleuco). Game: %d/%d",MIN(myosd_last_game_selected+1,nroms), nroms);
 	#else
 			sprintf(&tempbuf[0][0], "MAME4droid Reloaded 1.2 by David Valdeita (Seleuco). Game: %d/%d",MIN(myosd_last_game_selected+1,nroms), nroms);
 	#endif
@@ -4161,7 +4166,7 @@ static void menu_select_game_custom_render(running_machine *machine, ui_menu *me
 		else
 			soundstat = "OK";
 
-		sprintf(&tempbuf[3][0], "%s, Gfx: %s, Sound: %s",overall, gfxstat, soundstat);
+		sprintf(&tempbuf[3][0], "%s: Gfx: %s, Sound: %s",overall, gfxstat, soundstat);
 	}
 	else
 	{

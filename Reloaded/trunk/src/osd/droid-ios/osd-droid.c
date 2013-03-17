@@ -65,6 +65,11 @@ int myosd_reset_filter = 0;
 
 int myosd_num_ways = 8;
 
+int myosd_vsync = -1;
+int myosd_dbl_buffer=1;
+int myosd_autofire=0;
+int myosd_hiscore=0;
+
 float joy_analog_x[4];
 float joy_analog_y[4];
 
@@ -75,7 +80,6 @@ static int isPause = 0;
 unsigned long myosd_pad_status = 0;
 unsigned long myosd_joy_status[4];
 unsigned short 	*myosd_screen15 = NULL;
-static int dbl_buff = 1;
 
 //////////////////////// android
 
@@ -192,7 +196,7 @@ void setMyValue(int key,int value){
 	    case 22:
 	    	myosd_video_threaded = value;break;
 	    case 23:
-	    	dbl_buff = value;setDblBuffer();break;
+	    	myosd_dbl_buffer = value;setDblBuffer();break;
 	    case 24:
 	    	myosd_pxasp1 = value;break;
 
@@ -235,7 +239,7 @@ static void dump_video(void)
 #ifdef ANDROID
     // __android_log_print(ANDROID_LOG_DEBUG, "MAME4droid.so", "dump_video");
 #endif
-	if(dbl_buff)
+	if(myosd_dbl_buffer)
 	   memcpy(screenbuffer,prev_screenbuffer, myosd_video_width * myosd_video_height * 2);
 
 	if(dumpVideo_callback!=NULL)
@@ -318,7 +322,7 @@ void myosd_set_video_mode(int width,int height,int vis_width, int vis_height)
 }
 
 void setDblBuffer(){
-	if(dbl_buff)
+	if(myosd_dbl_buffer)
 	   myosd_screen15=prev_screenbuffer;
 	else
        myosd_screen15=screenbuffer;

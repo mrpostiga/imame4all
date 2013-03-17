@@ -107,7 +107,29 @@ const char* get_documents_path(const char* file)
 	mkdir(get_documents_path("memcard"), 0755);
 	mkdir(get_documents_path("samples"), 0755);
 	mkdir(get_documents_path("roms"), 0755);
-
+    
+    NSError *error;
+    NSString *fromPath,*toPath;
+    NSFileManager* manager = nil;
+ 
+#ifdef JAILBREAK    
+    manager = [[NSFileManager alloc] init];
+    if(![manager fileExistsAtPath:[NSString stringWithUTF8String:get_documents_path("roms")]] ||
+       ![manager fileExistsAtPath:[NSString stringWithUTF8String:get_documents_path("cfg")]] )
+    {
+        UIAlertView *errAlert = [[UIAlertView alloc] initWithTitle:@"Error"
+                                                           message:
+                                 @"Directories cannot be created!\nCheck for write permissions.\n'chmod - R 777 /var/mobile/Media/ROMs' if needed.\nLook at the help for details."
+                                                          delegate:nil
+                                                 cancelButtonTitle:@"Dismiss"
+                                                 otherButtonTitles: nil];	
+        [errAlert show];
+        [errAlert release];
+    }
+    
+    [manager release];
+#endif
+    
 #ifndef JAILBREAK
     [[NSURL fileURLWithPath: [NSString stringWithUTF8String:get_documents_path("roms")]]
      setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:nil];
@@ -120,9 +142,7 @@ const char* get_documents_path(const char* file)
     [[NSURL fileURLWithPath: [NSString stringWithUTF8String:get_documents_path("cheat.zip")]]
      setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:nil];
     
-    NSError *error;
-    NSString *fromPath,*toPath;
-    NSFileManager* manager = [[NSFileManager alloc] init];
+    manager = [[NSFileManager alloc] init];
     
     fromPath = [NSString stringWithUTF8String:get_resource_path("gridlee.zip")];
     toPath = [NSString stringWithUTF8String:get_documents_path("roms/gridlee.zip")];
@@ -150,6 +170,14 @@ const char* get_documents_path(const char* file)
         [manager copyItemAtPath: fromPath toPath:toPath error:&error];
         NSLog(@"Unable to move file category? %@", [error localizedDescription]);
     }
+    toPath = [NSString stringWithUTF8String:get_documents_path("hiscore.dat")];
+    if (![manager fileExistsAtPath:toPath] && !isGridlee)
+    {
+        error = nil;
+        fromPath = [NSString stringWithUTF8String:get_resource_path("hiscore.dat")];
+        [manager copyItemAtPath: fromPath toPath:toPath error:&error];
+        NSLog(@"Unable to move file hiscore? %@", [error localizedDescription]);
+    }
 
     [manager release];
 #endif
@@ -159,6 +187,7 @@ const char* get_documents_path(const char* file)
     
     g_isIpad = IS_IPAD;
     g_isIphone5 = IS_WIDESCREEN; //Really want to know if widescreen
+    //g_isIphone5 = true; g_isIpad = false;//TEST
     
 	hrViewController = [[EmulatorController alloc] init];
 	

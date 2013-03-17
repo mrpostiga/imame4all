@@ -74,6 +74,11 @@ extern char myosd_filter_keyword[MAX_FILTER_KEYWORD];
 extern int myosd_reset_filter;
 
 extern int myosd_num_ways;
+    
+extern int myosd_vsync;
+extern int myosd_dbl_buffer;
+extern int myosd_autofire;
+extern int myosd_hiscore;
 
     
 extern void myosd_init(void);

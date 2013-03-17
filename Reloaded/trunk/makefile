@@ -36,13 +36,13 @@ iOS = 1
 
 iOSOSX = 1
 
-#iOSNOJAILBREAK = 1
+iOSNOJAILBREAK = 1
 
 #iOSSIMULATOR = 1
 
-iOSARMV7=1
+#iOSARMV7=1
 
-#iOSARMV7S=1
+iOSARMV7S=1
 
 ################
 
@@ -100,11 +100,11 @@ ifndef iOSSIMULATOR
 MYPREFIX=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/
 
 #BASE_DEV=/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.2.sdk
-BASE_DEV=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.0.sdk
+BASE_DEV=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.1.sdk
 else
 
 MYPREFIX=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/
-BASE_DEV=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator6.0.sdk
+BASE_DEV=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator6.1.sdk
 
 endif
 
@@ -854,7 +854,8 @@ LDFLAGS += -L$(BASE_DEV)/usr/lib/system
 LDFLAGS += -lobjc -lpthread -bind_at_load
 LDFLAGS += -L./lib/
 ifndef iOSNOJAILBREAK
-LDFLAGS += -lBTstack
+#LDFLAGS += -lBTstack 
+LDFLAGS += -weak_library ./lib/libBTstack.dylib
 endif
 CCOMFLAGS  += -ffast-math -fsingle-precision-constant
 

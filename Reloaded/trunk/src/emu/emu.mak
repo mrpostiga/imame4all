@@ -66,6 +66,7 @@ EMUOBJS = \
 	$(EMUOBJ)/fileio.o \
 	$(EMUOBJ)/hash.o \
 	$(EMUOBJ)/hashfile.o \
+	$(EMUOBJ)/hiscore.o \
 	$(EMUOBJ)/image.o \
 	$(EMUOBJ)/info.o \
 	$(EMUOBJ)/input.o \

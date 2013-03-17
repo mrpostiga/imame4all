@@ -98,6 +98,9 @@ public:
 	running_device *_315_5248_1;
 	running_device *_315_5250_1;
 	running_device *_315_5250_2;
+    
+    //DAV FIX
+    emu_timer *scanline_timer;
 };
 
 
