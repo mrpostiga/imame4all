@@ -244,7 +244,7 @@ Notes:
 #define MASTER_CLOCK			50000000
 #define SOUND_CLOCK				16000000
 
-
+//static TIMER_CALLBACK( scanline_callback );
 
 /*************************************
  *
@@ -253,6 +253,8 @@ Notes:
  *************************************/
 
 static UINT16 *backupram1, *backupram2;
+//DAV FIX
+//static emu_timer *scanline_timer;
 
 /*************************************
  *
@@ -289,6 +291,9 @@ static void xboard_generic_init(running_machine *machine)
 	state_save_register_global_array(machine, state->iochip_regs[0]);
 	state_save_register_global_array(machine, state->iochip_regs[1]);
 	state_save_register_global_array(machine, state->adc_reverse);
+    
+    //DAV_FIX
+    ///*state->*/scanline_timer = timer_alloc(machine,scanline_callback,NULL);
 }
 
 
@@ -328,9 +333,10 @@ static void update_main_irqs(running_machine *machine)
 }
 
 
-static TIMER_CALLBACK( scanline_callback )
+static TIMER_DEVICE_CALLBACK( scanline_callback )
 {
-	segas1x_state *state = machine->driver_data<segas1x_state>();
+	//segas1x_state *state = machine->driver_data<segas1x_state>();
+    segas1x_state *state = timer.machine->driver_data<segas1x_state>();
 
 	int scanline = param;
 	int next_scanline = (scanline + 2) % 262;
@@ -359,10 +365,14 @@ static TIMER_CALLBACK( scanline_callback )
 
 	/* update IRQs on the main CPU */
 	if (update)
-		update_main_irqs(machine);
+		update_main_irqs(timer.machine);
 
 	/* come back in 2 scanlines */
-	timer_set(machine, machine->primary_screen->time_until_pos(next_scanline), NULL, next_scanline, scanline_callback);
+	//timer_set(machine, machine->primary_screen->time_until_pos(next_scanline), NULL, next_scanline, scanline_callback);
+    //timer_adjust_oneshot(/*state->*/scanline_timer,machine->primary_screen->time_until_pos(next_scanline),next_scanline);
+    //machine->device<timer_device>("int_timer")->adjust(machine->primary_screen->time_until_pos(next_scanline));
+    timer.adjust(timer.machine->primary_screen->time_until_pos(next_scanline),next_scanline);
+    
 }
 
 
@@ -434,14 +444,20 @@ static void xboard_reset(running_device *device)
 
 static MACHINE_RESET( xboard )
 {
-	fd1094_machine_init(machine->device("maincpu"));
+    segas1x_state *state = machine->driver_data<segas1x_state>();
+    
+    fd1094_machine_init(machine->device("maincpu"));
 	segaic16_tilemap_reset(machine, 0);
 
 	/* hook the RESET line, which resets CPU #1 */
 	m68k_set_reset_callback(machine->device("maincpu"), xboard_reset);
 
 	/* start timers to track interrupts */
-	timer_set(machine, machine->primary_screen->time_until_pos(1), NULL, 1, scanline_callback);
+	//timer_set(machine, machine->primary_screen->time_until_pos(1), NULL, 1, scanline_callback);
+    //machine->device<timer_device>("int_timer")->adjust(machine->primary_screen->time_until_pos(1));
+    //timer_adjust_oneshot(/*state->*/scanline_timer, machine->primary_screen->time_until_pos(1),1);
+    
+    state->interrupt_timer->adjust(machine->primary_screen->time_until_pos(1),1);
 }
 
 
@@ -1382,6 +1398,9 @@ static MACHINE_DRIVER_START( xboard )
 	MDRV_MACHINE_RESET(xboard)
 	MDRV_NVRAM_HANDLER(xboard)
 	MDRV_QUANTUM_TIME(HZ(6000))
+
+    //DAV FIX
+    MDRV_TIMER_ADD("int_timer",scanline_callback)
 
 	MDRV_315_5248_ADD("5248_main")
 	MDRV_315_5248_ADD("5248_subx")

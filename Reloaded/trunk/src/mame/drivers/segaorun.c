@@ -456,9 +456,11 @@ static TIMER_CALLBACK( irq2_gen )
 }
 
 
-static TIMER_CALLBACK( scanline_callback )
+static TIMER_DEVICE_CALLBACK( scanline_callback )
 {
-	segas1x_state *state = machine->driver_data<segas1x_state>();
+	//segas1x_state *state = machine->driver_data<segas1x_state>();
+     segas1x_state *state = timer.machine->driver_data<segas1x_state>();
+    
 	int scanline = param;
 	int next_scanline = scanline;
 
@@ -469,7 +471,7 @@ static TIMER_CALLBACK( scanline_callback )
 		case 65:
 		case 129:
 		case 193:
-			timer_set(machine, machine->primary_screen->time_until_pos(scanline, machine->primary_screen->visible_area().max_x + 1), NULL, 0, irq2_gen);
+			timer_set(timer.machine, timer.machine->primary_screen->time_until_pos(scanline, timer.machine->primary_screen->visible_area().max_x + 1), NULL, 0, irq2_gen);
 			next_scanline = scanline + 1;
 			break;
 
@@ -497,10 +499,11 @@ static TIMER_CALLBACK( scanline_callback )
 	}
 
 	/* update IRQs on the main CPU */
-	update_main_irqs(machine);
+	update_main_irqs(timer.machine);
 
 	/* come back at the next targeted scanline */
-	timer_set(machine, machine->primary_screen->time_until_pos(next_scanline), NULL, next_scanline, scanline_callback);
+	//timer_set(machine, machine->primary_screen->time_until_pos(next_scanline), NULL, next_scanline, scanline_callback);
+    timer.adjust(timer.machine->primary_screen->time_until_pos(next_scanline),next_scanline);
 }
 
 
@@ -533,7 +536,8 @@ static MACHINE_RESET( outrun )
 	m68k_set_reset_callback(machine->device("maincpu"), outrun_reset);
 
 	/* start timers to track interrupts */
-	timer_set(machine, machine->primary_screen->time_until_pos(223), NULL, 223, scanline_callback);
+	//timer_set(machine, machine->primary_screen->time_until_pos(223), NULL, 223, scanline_callback);
+    state->interrupt_timer->adjust(machine->primary_screen->time_until_pos(223),223);
 }
 
 
@@ -1132,7 +1136,10 @@ static MACHINE_DRIVER_START( outrun_base )
 	MDRV_MACHINE_RESET(outrun)
 	MDRV_QUANTUM_TIME(HZ(6000))
 
-	MDRV_PPI8255_ADD( "ppi8255", single_ppi_intf )
+    //DAV HACK
+    MDRV_TIMER_ADD("int_timer",scanline_callback)
+
+    MDRV_PPI8255_ADD( "ppi8255", single_ppi_intf )
 
 	/* video hardware */
 	MDRV_GFXDECODE(segaorun)

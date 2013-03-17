@@ -11,16 +11,16 @@
 0,0,0,0//LPad*
 0,0,0,0//RPad*
 0,0,0,0//menu
-178,380,62,28//ButtonDownLeft (X + A)
-183,408,57,70//ButtonDown X*
-240,399,80,81//ButtonDownRight (X + B)
+178,380,57,57//ButtonDownLeft (X + A)
+183,408,57,57//ButtonDown X*
+240,420,57,57//ButtonDownRight (X + B)
 178,323,57,57//ButtonLeft A*
-252,383,67,70//ButtonRight B*
-178,298,70,66//ButtonUpLeft (A + Y)
-248,298,57,57//ButtonUp Y
-252,298,68,85//ButtonUpRight (B + Y)*
-0,0,78,39//LPad2*
-242,0,78,39//RPad2
+252,388,57,57//ButtonRight B*
+178,298,57,57//ButtonUpLeft (A + Y)
+248,303,57,57//ButtonUp Y
+252,333,57,57//ButtonUpRight (B + Y)*
+0,0,78,39//L2*
+242,0,78,39//R2
 0,0,0,0//showkyboard
 240,370,83,83//B img
 170,395,83,83//X img

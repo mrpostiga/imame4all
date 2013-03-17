@@ -164,8 +164,9 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 						// hexdump(packet, size);
 						NSLog(@"--> adding %@", [dev toString] );
 						[devices addObject:dev];
+                        
 						if (delegate) {						   
-							[delegate deviceDetected:self device:dev];
+							[[delegate class] deviceDetected:self device:dev];
 						}
 					}
 				  
@@ -182,7 +183,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 					if (packet[2] == 0) {
 						[dev setName:[NSString stringWithUTF8String:(const char *) &packet[9]]];
 						if (delegate) {
-							[delegate deviceDetected:self device:dev];
+							[[delegate class ] deviceDetected:self device:dev];
 						}
 					}
 					[[self tableView] reloadData];
@@ -200,7 +201,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 						if (notifyDelegateOnInquiryStopped){
 							notifyDelegateOnInquiryStopped = false;
 							if (delegate) {
-								[delegate inquiryStopped];
+								[[delegate class ]inquiryStopped];
 							}
 						}
 					}
@@ -212,7 +213,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 						if (notifyDelegateOnInquiryStopped){
 							notifyDelegateOnInquiryStopped = false;
 							if (delegate) {
-								[delegate inquiryStopped];
+								[[delegate class] inquiryStopped];
 							}
 						}
 					}
@@ -277,7 +278,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 		if (notifyDelegateOnInquiryStopped){
 			notifyDelegateOnInquiryStopped = false;
 			if (delegate) {
-				[delegate inquiryStopped];
+				[[delegate class ]inquiryStopped];
 			}
 		}
 		return;
@@ -353,11 +354,12 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 			break;
 	}
 	if (immediateNotify && delegate){
-		[delegate inquiryStopped];
+		[[delegate class ]inquiryStopped];
 	} else {
 		notifyDelegateOnInquiryStopped = true;
 	}
 }
+
 
 - (void) showConnecting:(BTDevice *) device {
 	remoteDevice = device;
@@ -499,7 +501,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 						break;
 					case kInquiryActive:
 						//label = @"Searching...";
-						label = @"Press 1 and 2 on the WiiMote to sync";
+						label = @"Press 1+2 or red little button to sync";
 						cell.accessoryView = bluetoothActivity;
 						break;
 					case kInquiryRemoteName:
@@ -513,21 +515,21 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 		BTDevice *dev = [devices objectAtIndex:idx];
 		label = [dev nameOrAddress];
 		if ([dev name]){
-			cell.font = deviceNameFont;
+			cell.textLabel.font = deviceNameFont;
 		} else {
-			cell.font = macAddressFont;
+			cell.textLabel.font = macAddressFont;
 		}
 		// pick an icon for the devices
 		if (showIcons) {
 			int major = ([dev classOfDevice] & 0x1f00) >> 8;
 			if (major == 0x01) {
-				cell.image = [UIImage imageNamed:@"computer.png"];
+				cell.imageView.image = [UIImage imageNamed:@"computer.png"];
 			} else if (major == 0x02) {
-				cell.image = [UIImage imageNamed:@"smartphone.png"];
+				cell.imageView.image = [UIImage imageNamed:@"smartphone.png"];
 			} else if ( major == 0x05 && ([dev classOfDevice] & 0xff) == 0x40){ 
-				cell.image = [UIImage imageNamed:@"keyboard.png"];
+				cell.imageView.image = [UIImage imageNamed:@"keyboard.png"];
 			} else {
-				cell.image = [UIImage imageNamed:@"bluetooth.png"];
+				cell.imageView.image = [UIImage imageNamed:@"bluetooth.png"];
 			}
 		}
 		switch ([dev connectionState]) {
@@ -541,7 +543,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 				break;
 		}
 	}
-	cell.text = label;
+	cell.textLabel.text = label;
     return cell;
 }
 
@@ -561,12 +563,12 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 	if (bluetoothState == HCI_STATE_WORKING) {
 		if (delegate) {
 			if (idx < [devices count]){
-				[delegate deviceChoosen:self device:[devices objectAtIndex:idx]];
+				[[delegate class ]deviceChoosen:self device:[devices objectAtIndex:idx]];
 			} else if (idx == [devices count]) {
 			    //printf("seleccionado %d %d\n",idx,connectedDevice);
 				if (connectedDevice) {
 					// DISCONNECT button 
-					[delegate disconnectDevice:self device:connectedDevice];
+					[[delegate class ]disconnectDevice:self device:connectedDevice];
 				} else if (myosd_num_of_joys<4){
 					// Find more devices
 					[self myStartInquiry];

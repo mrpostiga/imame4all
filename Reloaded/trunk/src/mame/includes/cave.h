@@ -27,7 +27,8 @@ public:
 	static driver_data_t *alloc(running_machine &machine) { return auto_alloc_clear(&machine, cave_state(machine)); }
 
 	cave_state(running_machine &machine)
-		: driver_data_t(machine) { }
+    : driver_data_t(machine),
+    interrupt_timer(machine.device<timer_device>("int_timer"))  { }
 
 	/* memory pointers */
 	UINT16 *     videoregs;
@@ -114,6 +115,7 @@ public:
 	/* devices */
 	running_device *maincpu;
 	running_device *audiocpu;
+    timer_device *interrupt_timer;
 };
 
 /*----------- defined in video/cave.c -----------*/

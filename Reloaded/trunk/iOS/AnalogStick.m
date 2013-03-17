@@ -221,7 +221,8 @@
         
         emuController = emulatorController;
         
-        CGRect rStickArea = emuController.rStickArea;
+        //CGRect rStickArea = emuController.rStickArea;
+        CGRect rStickArea = frame;
         
         ptMin.x = rStickArea.origin.x - frame.origin.x;
         ptMin.y = rStickArea.origin.y - frame.origin.y;

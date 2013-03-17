@@ -100,15 +100,6 @@ static void update_irq_state( running_machine *machine )
 		cpu_set_input_line(state->maincpu, state->irq_level, CLEAR_LINE);
 }
 
-static TIMER_CALLBACK( cave_vblank_start )
-{
-	cave_state *state = machine->driver_data<cave_state>();
-	state->vblank_irq = 1;
-	update_irq_state(machine);
-	cave_get_sprite_info(machine);
-	state->agallet_vblank_irq = 1;
-}
-
 static TIMER_CALLBACK( cave_vblank_end )
 {
 	cave_state *state = machine->driver_data<cave_state>();
@@ -120,12 +111,24 @@ static TIMER_CALLBACK( cave_vblank_end )
 	state->agallet_vblank_irq = 0;
 }
 
+static TIMER_DEVICE_CALLBACK( cave_vblank_start )
+{
+	cave_state *state = timer.machine->driver_data<cave_state>();
+	state->vblank_irq = 1;
+	update_irq_state(timer.machine);
+	cave_get_sprite_info(timer.machine);
+	state->agallet_vblank_irq = 1;
+    timer_set(timer.machine,ATTOTIME_IN_USEC(2000) , NULL, 0, cave_vblank_end);
+}
+
 /* Called once/frame to generate the VBLANK interrupt */
 static INTERRUPT_GEN( cave_interrupt )
 {
 	cave_state *state = device->machine->driver_data<cave_state>();
-	timer_set(device->machine, ATTOTIME_IN_USEC(17376 - state->time_vblank_irq), NULL, 0, cave_vblank_start);
-	timer_set(device->machine, ATTOTIME_IN_USEC(17376 - state->time_vblank_irq + 2000), NULL, 0, cave_vblank_end);
+	//timer_set(device->machine, ATTOTIME_IN_USEC(17376 - state->time_vblank_irq), NULL, 0, cave_vblank_start);
+	//timer_set(device->machine, ATTOTIME_IN_USEC(17376 - state->time_vblank_irq + 2000), NULL, 0, cave_vblank_end);
+    state->interrupt_timer->adjust(ATTOTIME_IN_USEC(17376 - state->time_vblank_irq));
+    
 }
 
 /* Called by the YMZ280B to set the IRQ state */
@@ -1780,6 +1783,7 @@ static MACHINE_DRIVER_START( dfeveron )
 	MDRV_MACHINE_RESET(cave)
 	MDRV_EEPROM_93C46_ADD("eeprom")
 
+    MDRV_TIMER_ADD("int_timer",cave_vblank_start)
 	/* video hardware */
 	MDRV_SCREEN_ADD("screen", RASTER)
 	MDRV_SCREEN_REFRESH_RATE(15625/271.5)
@@ -1824,7 +1828,8 @@ static MACHINE_DRIVER_START( ddonpach )
 	MDRV_MACHINE_RESET(cave)
 	MDRV_EEPROM_93C46_ADD("eeprom")
 
-	/* video hardware */
+    MDRV_TIMER_ADD("int_timer",cave_vblank_start)
+    /* video hardware */
 	MDRV_SCREEN_ADD("screen", RASTER)
 	MDRV_SCREEN_REFRESH_RATE(15625/271.5)
 	MDRV_SCREEN_VBLANK_TIME(ATTOSECONDS_IN_USEC(0))
@@ -1872,7 +1877,8 @@ static MACHINE_DRIVER_START( donpachi )
 	MDRV_MACHINE_RESET(cave)
 	MDRV_EEPROM_93C46_ADD("eeprom")
 
-	/* video hardware */
+    MDRV_TIMER_ADD("int_timer",cave_vblank_start)
+    /* video hardware */
 	MDRV_SCREEN_ADD("screen", RASTER)
 	MDRV_SCREEN_REFRESH_RATE(15625/271.5)
 	MDRV_SCREEN_VBLANK_TIME(ATTOSECONDS_IN_USEC(0))
@@ -1920,7 +1926,8 @@ static MACHINE_DRIVER_START( esprade )
 	MDRV_MACHINE_RESET(cave)
 	MDRV_EEPROM_93C46_ADD("eeprom")
 
-	/* video hardware */
+    MDRV_TIMER_ADD("int_timer",cave_vblank_start)
+    /* video hardware */
 	MDRV_SCREEN_ADD("screen", RASTER)
 	MDRV_SCREEN_REFRESH_RATE(15625/271.5)
 	MDRV_SCREEN_VBLANK_TIME(ATTOSECONDS_IN_USEC(0))
@@ -1962,7 +1969,8 @@ static MACHINE_DRIVER_START( gaia )
 	MDRV_MACHINE_START(cave)
 	MDRV_MACHINE_RESET(cave)
 
-	/* video hardware */
+    MDRV_TIMER_ADD("int_timer",cave_vblank_start)
+    /* video hardware */
 	MDRV_SCREEN_ADD("screen", RASTER)
 	MDRV_SCREEN_REFRESH_RATE(15625/271.5)
 	MDRV_SCREEN_VBLANK_TIME(ATTOSECONDS_IN_USEC(0))
@@ -2005,7 +2013,8 @@ static MACHINE_DRIVER_START( guwange )
 	MDRV_MACHINE_RESET(cave)
 	MDRV_EEPROM_93C46_ADD("eeprom")
 
-	/* video hardware */
+    MDRV_TIMER_ADD("int_timer",cave_vblank_start)
+    /* video hardware */
 	MDRV_SCREEN_ADD("screen", RASTER)
 	MDRV_SCREEN_REFRESH_RATE(15625/271.5)
 	MDRV_SCREEN_VBLANK_TIME(ATTOSECONDS_IN_USEC(0))
@@ -2051,7 +2060,8 @@ static MACHINE_DRIVER_START( hotdogst )
 	MDRV_MACHINE_RESET(cave)
 	MDRV_EEPROM_93C46_ADD("eeprom")
 
-	/* video hardware */
+    MDRV_TIMER_ADD("int_timer",cave_vblank_start)
+    /* video hardware */
 	MDRV_SCREEN_ADD("screen", RASTER)
 	MDRV_SCREEN_REFRESH_RATE(15625/271.5)
 	MDRV_SCREEN_VBLANK_TIME(ATTOSECONDS_IN_USEC(0))
@@ -2104,7 +2114,8 @@ static MACHINE_DRIVER_START( korokoro )
 	MDRV_MACHINE_RESET(cave)
 	MDRV_EEPROM_ADD("eeprom", eeprom_interface_93C46_8bit)
 
-	/* video hardware */
+    MDRV_TIMER_ADD("int_timer",cave_vblank_start)
+    /* video hardware */
 	MDRV_SCREEN_ADD("screen", RASTER)
 	MDRV_SCREEN_REFRESH_RATE(15625/271.5)
 	MDRV_SCREEN_VBLANK_TIME(ATTOSECONDS_IN_USEC(0))
@@ -2163,7 +2174,8 @@ static MACHINE_DRIVER_START( mazinger )
 	MDRV_MACHINE_RESET(cave)
 	MDRV_EEPROM_93C46_ADD("eeprom")
 
-	/* video hardware */
+    MDRV_TIMER_ADD("int_timer",cave_vblank_start)
+    /* video hardware */
 	MDRV_SCREEN_ADD("screen", RASTER)
 	MDRV_SCREEN_REFRESH_RATE(15625/271.5)
 	MDRV_SCREEN_VBLANK_TIME(ATTOSECONDS_IN_USEC(0))
@@ -2222,7 +2234,8 @@ static MACHINE_DRIVER_START( metmqstr )
 	MDRV_MACHINE_RESET(cave)	/* start with the watchdog armed */
 	MDRV_EEPROM_93C46_ADD("eeprom")
 
-	/* video hardware */
+    MDRV_TIMER_ADD("int_timer",cave_vblank_start)
+    /* video hardware */
 	MDRV_SCREEN_ADD("screen", RASTER)
 	MDRV_SCREEN_REFRESH_RATE(15625/271.5)
 	MDRV_SCREEN_VBLANK_TIME(ATTOSECONDS_IN_USEC(0))
@@ -2284,7 +2297,8 @@ static MACHINE_DRIVER_START( pwrinst2 )
 	MDRV_MACHINE_RESET(cave)
 	MDRV_EEPROM_93C46_ADD("eeprom")
 
-	/* video hardware */
+    MDRV_TIMER_ADD("int_timer",cave_vblank_start)
+    /* video hardware */
 	MDRV_SCREEN_ADD("screen", RASTER)
 	MDRV_SCREEN_REFRESH_RATE(15625/271.5)
 	MDRV_SCREEN_VBLANK_TIME(ATTOSECONDS_IN_USEC(0))
@@ -2349,7 +2363,8 @@ static MACHINE_DRIVER_START( sailormn )
 	MDRV_MACHINE_RESET(cave)
 	MDRV_EEPROM_93C46_ADD("eeprom")
 
-	/* video hardware */
+    MDRV_TIMER_ADD("int_timer",cave_vblank_start)
+    /* video hardware */
 	MDRV_SCREEN_ADD("screen", RASTER)
 	MDRV_SCREEN_REFRESH_RATE(15625/271.5)
 	MDRV_SCREEN_VBLANK_TIME(ATTOSECONDS_IN_USEC(0))
@@ -2403,7 +2418,8 @@ static MACHINE_DRIVER_START( tjumpman )
 	MDRV_MACHINE_RESET(cave)
 	MDRV_EEPROM_93C46_ADD("eeprom")
 
-	/* video hardware */
+    MDRV_TIMER_ADD("int_timer",cave_vblank_start)
+    /* video hardware */
 	MDRV_SCREEN_ADD("screen", RASTER)
 	MDRV_SCREEN_REFRESH_RATE(15625/271.5)
 	MDRV_SCREEN_VBLANK_TIME(ATTOSECONDS_IN_USEC(0))
@@ -2446,7 +2462,8 @@ static MACHINE_DRIVER_START( uopoko )
 	MDRV_MACHINE_START(cave)
 	MDRV_EEPROM_93C46_ADD("eeprom")
 
-	/* video hardware */
+    MDRV_TIMER_ADD("int_timer",cave_vblank_start)
+    /* video hardware */
 	MDRV_SCREEN_ADD("screen", RASTER)
 	MDRV_SCREEN_REFRESH_RATE(15625/271.5)
 	MDRV_SCREEN_VBLANK_TIME(ATTOSECONDS_IN_USEC(0))

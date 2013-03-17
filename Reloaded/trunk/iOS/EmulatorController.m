@@ -51,6 +51,9 @@
 #import "iCadeView.h"
 #import "DebugView.h"
 #import "AnalogStick.h"
+#import "AnalogStick.h"
+#import "LayoutView.h"
+#import "LayoutData.h"
 #ifdef WIIMOTE
 #import "WiiMoteHelper.h"
 #endif
@@ -108,6 +111,8 @@ int g_pref_aplusb = 0;
 int g_pref_nativeTVOUT = 1;
 int g_pref_overscanTVOUT = 1;
 
+int g_skin_data = 1;
+
 int global_low_latency_sound = 0;
 static int main_thread_priority = 46;
 int video_thread_priority = 46;
@@ -117,7 +122,6 @@ int video_thread_priority_type = 1;
         
 static pthread_t main_tid;
 
-static int skin_data = 1;
 static int enable_menu_exit_option = 0;
 static int actionPending=0;
 static int wantExit = 0;
@@ -130,6 +134,7 @@ static int old_filter_category = 0;
 static int old_myosd_num_buttons = 0;
 static int button_auto = 0;
 static int ways_auto = 0;
+static int change_layout=0;
 
 static EmulatorController *sharedInstance = nil;
 	
@@ -168,10 +173,30 @@ void* app_Thread_Start(void* args)
 @synthesize externalView;
 @synthesize rExternalView;
 @synthesize stick_radio;
-@synthesize rStickArea;
+//@synthesize rStickArea;
+@synthesize rStickWindow;
+@synthesize rDPadImage;
 
 - (int *)getBtnStates{
     return btnStates;
+}
+
+- (CGRect *)getInputRects{
+    return rInput;
+}
+
+- (CGRect *)getButtonRects{
+    return rButtonImages;
+}
+
+- (UIView **)getButtonViews{
+    return buttonViews;
+}
+- (UIView *)getDPADView{
+    return dpadView;
+}
+- (UIView *)getStickView{
+    return analogStickView;
 }
 
 - (void)startEmulation{
@@ -186,6 +211,7 @@ void* app_Thread_Start(void* args)
     //param.sched_priority = 50;
     //param.sched_priority = 46;  
     //param.sched_priority = 100;
+    printf("main priority %d\n",main_thread_priority);
     param.sched_priority = main_thread_priority;
     int policy;
     if(main_thread_priority_type == 1)
@@ -333,10 +359,10 @@ void* app_Thread_Start(void* args)
       g_menu_option = MENU_NONE;
     
 
-      iCade.active = FALSE;
+      icadeView.active = FALSE;
       if(g_pref_ext_control_type != EXT_CONTROL_NONE)
       {
-         iCade.active = TRUE;//force renable
+         icadeView.active = TRUE;//force renable
       }
       else if(g_iCade_used)//ensure is off
       {
@@ -373,7 +399,7 @@ void* app_Thread_Start(void* args)
     myosd_pxasp1 = [op p1aspx];
     
     g_pref_skin = [op skinValue]+1;
-    skin_data = g_pref_skin;
+    g_skin_data = g_pref_skin;
     if(g_pref_skin == 2 && g_isIpad)
         g_pref_skin = 3;
     
@@ -398,6 +424,9 @@ void* app_Thread_Start(void* args)
     
     myosd_throttle = [op throttle];
     myosd_cheat = [op cheats];
+    myosd_vsync = [op vsync] == 1 ? 6000 : -1;
+   
+    
     myosd_sleep = [op sleep];
     
     old_pref_num_buttons = [op numbuttons];
@@ -505,55 +534,28 @@ void* app_Thread_Start(void* args)
        strcpy(myosd_filter_keyword, [op.filterKeyword UTF8String]);
     
     global_low_latency_sound = [op lowlsound];
+    if(myosd_video_threaded==-1)
+    {
+        myosd_video_threaded = [op threaded];
+        main_thread_priority =  MIN(1,[op mainPriority] * 10);
+        video_thread_priority = MIN(1,[op videoPriority] * 10);
+        myosd_dbl_buffer = [op dblbuff];
+    }
+    
+    myosd_autofire = [op autofire];
+    myosd_hiscore = [op hiscore];
 
     [op release];
 }
 
 -(void)done:(id)sender {
-
-    [self dismissModalViewControllerAnimated:YES];
+    
+    
+    if(!change_layout)
+      [self dismissModalViewControllerAnimated:YES];
 
 	Options *op = [[Options alloc] init];
-    
-/*
-    if(    g_pref_smooth_port != [op smoothedPort]
-        || g_pref_smooth_land != [op smoothedLand] 
-        || g_pref_keep_aspect_ratio_land != [op keepAspectRatioLand]
-        || g_pref_keep_aspect_ratio_port != [op keepAspectRatioPort]        
-        || g_pref_tv_filter_land != [op tvFilterLand]
-        || g_pref_tv_filter_port != [op tvFilterPort]
-        || g_pref_scanline_filter_land != [op scanlineFilterLand]
-        || g_pref_scanline_filter_port != [op scanlineFilterPort]      
-        || g_pref_animated_DPad  != [op animatedButtons]
-        || g_pref_full_screen_land  != [op fullLand]
-        || g_pref_full_screen_port  != [op fullPort]
-        || skin_data != ([op skinValue]+1)
-        || g_pref_touch_DZ != [op touchDeadZone]
-        || g_pref_nativeTVOUT != [op tvoutNative]
-        || g_pref_overscanTVOUT != [op overscanValue]
-        || g_pref_input_touch_type != [op touchtype]
-        || old_pref_num_buttons != [op numbuttons]
-        || g_pref_aplusb != [op aplusb]
-        )
-    {
-       [self updateOptions]; 
-*/
-       
-       if (g_pref_nativeTVOUT != [op tvoutNative])
-       {
-
-           UIAlertView *warnAlert = [[UIAlertView alloc] initWithTitle:@"Pending restart Application!" 
-															  
- 
-           message:[NSString stringWithFormat: @"You need to restar for the changes to take effect"]
-														 
-															 delegate:self 
-													cancelButtonTitle:@"Dismiss" 
-													otherButtonTitles: nil];
-	
-	       [warnAlert show];
-	       [warnAlert release];
-       }
+           
         
        if(g_pref_overscanTVOUT != [op overscanValue])
        {
@@ -626,20 +628,37 @@ void* app_Thread_Start(void* args)
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-  myosd_exitPause = 1;
-  g_emulation_paused = 0;
-  change_pause(0);
-  if(g_menu_option == MENU_EXIT)
-  {
-     [self endMenu];
-  }
- 
-  if(buttonIndex == 0 && wantExit )
-  {
-     myosd_exitGame = 1;
-  }
-  actionPending=0;
-  wantExit = 0;
+    if(change_layout)
+    {
+        if(buttonIndex == 0)
+           [LayoutData removeLayoutData];
+        
+        change_layout = 0;
+        
+        [self done:self];
+        
+        //[self changeUI];
+        
+        //[self endMenu];
+    }
+    else
+    {
+        
+        myosd_exitPause = 1;
+        g_emulation_paused = 0;
+        change_pause(0);
+        if(g_menu_option == MENU_EXIT)
+        {
+            [self endMenu];
+        }
+        
+        if(buttonIndex == 0 && wantExit )
+        {
+            myosd_exitGame = 1;
+        }
+        actionPending=0;
+        wantExit = 0;
+    }
 }
 
 - (void)handle_MENU
@@ -774,11 +793,11 @@ void* app_Thread_Start(void* args)
          
     [self changeUI];
     
-    iCade = [[iCadeView alloc] initWithFrame:CGRectZero withEmuController:self];
-    [self.view addSubview:iCade];
+    icadeView = [[iCadeView alloc] initWithFrame:CGRectZero withEmuController:self];
+    [self.view addSubview:icadeView];
     
     if(g_pref_ext_control_type!=EXT_CONTROL_NONE)
-       iCade.active = YES;
+       icadeView.active = YES;
     
     if(0)
     {
@@ -799,7 +818,7 @@ void* app_Thread_Start(void* args)
 {    
     [super viewDidUnload];
     
-    [self removeDPadView];
+    [self removeTouchControllerViews];
     
     [screenView release];
     screenView = nil;
@@ -813,8 +832,8 @@ void* app_Thread_Start(void* args)
     [dview release];
     dview= nil;
     
-    [iCade release];
-    iCade = nil;
+    [icadeView release];
+    icadeView = nil;
 }
 
 - (void)drawRect:(CGRect)rect
@@ -822,11 +841,11 @@ void* app_Thread_Start(void* args)
 }
 
 -(BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-    return YES;
+    return change_layout ? NO : YES;
 }
 
 - (BOOL)shouldAutorotate {
-    return YES;
+    return change_layout ? NO : YES;
 }
 
 -(NSUInteger)supportedInterfaceOrientations
@@ -873,8 +892,11 @@ void* app_Thread_Start(void* args)
     
   usleep(150000);//ensure some frames displayed
 
-  [screenView removeFromSuperview];
-  [screenView release];
+  if(screenView != nil)
+  {
+     [screenView removeFromSuperview];
+     [screenView release];
+  }
 
   if(imageBack!=nil)
   {
@@ -913,7 +935,7 @@ void* app_Thread_Start(void* args)
    [pool release];
 }
 
-- (void)removeDPadView{
+- (void)removeTouchControllerViews{
    
    int i;
    
@@ -943,12 +965,12 @@ void* app_Thread_Start(void* args)
       
 }
 
-- (void)buildDPadView {
+- (void)buildTouchControllerViews {
 
    int i;
    
    
-   [self removeDPadView];
+   [self removeTouchControllerViews];
     
    g_joy_used = myosd_num_of_joys!=0; 
    
@@ -961,7 +983,7 @@ void* app_Thread_Start(void* args)
    {
 	   name = [NSString stringWithFormat:@"./SKIN_%d/%@",g_pref_skin,nameImgDPad[DPAD_NONE]];
 	   dpadView = [ [ UIImageView alloc ] initWithImage:[self loadImage:name]];
-	   dpadView.frame = rDPad_image;
+	   dpadView.frame = rDPadImage;
 	   if( (!g_device_is_landscape && g_pref_full_screen_port) || (g_device_is_landscape && g_pref_full_screen_land))
 	         [dpadView setAlpha:((float)g_controller_opacity / 100.0f)];  
 	   [self.view addSubview: dpadView];
@@ -978,7 +1000,7 @@ void* app_Thread_Start(void* args)
    for(i=0; i<NUM_BUTTONS;i++)
    {
 
-      if(g_device_is_landscape || (!g_device_is_landscape && g_pref_full_screen_port))
+      if(!change_layout &&  (g_device_is_landscape || (!g_device_is_landscape && g_pref_full_screen_port)))
       {
           if(i==BTN_Y && (g_pref_full_num_buttons < 4 || !myosd_inGame))continue;
           if(i==BTN_A && (g_pref_full_num_buttons < 3 || !myosd_inGame))continue;
@@ -992,11 +1014,10 @@ void* app_Thread_Start(void* args)
       if(isGridlee && (i==BTN_L2 || i==BTN_R2))
           continue;
    
-      //if((i==BTN_Y || i==BTN_A) && !iOS_4buttonsLand && iphone_is_landscape)
-         //continue;
+
       name = [NSString stringWithFormat:@"./SKIN_%d/%@",g_pref_skin,nameImgButton_NotPress[i]];   
       buttonViews[i] = [ [ UIImageView alloc ] initWithImage:[self loadImage:name]];
-      buttonViews[i].frame = rButton_image[i];
+      buttonViews[i].frame = rButtonImages[i];
 
       if((g_device_is_landscape && (g_pref_full_screen_land /*|| i==BTN_Y || i==BTN_A*/)) || (!g_device_is_landscape && g_pref_full_screen_port))      
          [buttonViews[i] setAlpha:((float)g_controller_opacity / 100.0f)];
@@ -1105,7 +1126,7 @@ void* app_Thread_Start(void* args)
    }  
 
   //DPAD---   
-  [self buildDPadView];   
+  [self buildTouchControllerViews];   
   /////
    
   /////////////////
@@ -1132,6 +1153,8 @@ void* app_Thread_Start(void* args)
 
    g_device_is_landscape = 0;
    [ self getControllerCoords:0 ];
+    
+   [LayoutData loadLayoutData:self];
    
    [self buildPortraitImageBack];
    
@@ -1293,7 +1316,7 @@ void* app_Thread_Start(void* args)
     }
    
     //DPAD---   
-    [self buildDPadView];   
+    [self buildTouchControllerViews];   
     /////
   
    //////////////////
@@ -1322,6 +1345,8 @@ void* app_Thread_Start(void* args)
    g_device_is_landscape = 1;
       
    [self getControllerCoords:1 ];
+    
+   [LayoutData loadLayoutData:self];
    
    [self buildLandscapeImageBack];
         
@@ -1434,9 +1459,13 @@ void* app_Thread_Start(void* args)
 ////////////////
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
-{	       
-   
-    if((g_joy_used && ((!g_device_is_landscape && g_pref_full_screen_port) || (g_device_is_landscape && g_pref_full_screen_land))))
+{
+    
+    if(change_layout)
+    {
+        [layoutView handleTouches:touches withEvent: event];
+    }
+    else if((g_joy_used && ((!g_device_is_landscape && g_pref_full_screen_port) || (g_device_is_landscape && g_pref_full_screen_land))))
     {
         NSSet *allTouches = [event allTouches];
         UITouch *touch = [[allTouches allObjects] objectAtIndex:0];
@@ -1494,7 +1523,7 @@ void* app_Thread_Start(void* args)
 			
 			if(g_pref_input_touch_type == TOUCH_INPUT_DPAD)
 			{
-				if (MyCGRectContainsPoint(input[DPAD_UP_RECT], point) && !STICK2WAY) {
+				if (MyCGRectContainsPoint(rInput[DPAD_UP_RECT], point) && !STICK2WAY) {
 					//NSLog(@"MYOSD_UP");
 					myosd_pad_status |= MYOSD_UP;
 					dpad_state = DPAD_UP;
@@ -1505,7 +1534,7 @@ void* app_Thread_Start(void* args)
 				    
 				    stickTouch = touch;		    				
 				}			
-				else if (MyCGRectContainsPoint(input[DPAD_DOWN_RECT], point) && !STICK2WAY) {
+				else if (MyCGRectContainsPoint(rInput[DPAD_DOWN_RECT], point) && !STICK2WAY) {
 					//NSLog(@"MYOSD_DOWN");
 					myosd_pad_status |= MYOSD_DOWN;								
 					dpad_state = DPAD_DOWN;
@@ -1516,7 +1545,7 @@ void* app_Thread_Start(void* args)
 				    
 				    stickTouch = touch;
 				}			
-				else if (MyCGRectContainsPoint(input[DPAD_LEFT_RECT], point)) {
+				else if (MyCGRectContainsPoint(rInput[DPAD_LEFT_RECT], point)) {
 					//NSLog(@"MYOSD_LEFT");
 					myosd_pad_status |= MYOSD_LEFT;
 					dpad_state = DPAD_LEFT;
@@ -1527,7 +1556,7 @@ void* app_Thread_Start(void* args)
 				    
 				    stickTouch = touch;
 				}			
-				else if (MyCGRectContainsPoint(input[DPAD_RIGHT_RECT], point)) {
+				else if (MyCGRectContainsPoint(rInput[DPAD_RIGHT_RECT], point)) {
 					//NSLog(@"MYOSD_RIGHT");
 					myosd_pad_status |= MYOSD_RIGHT;
 					dpad_state = DPAD_RIGHT;
@@ -1538,7 +1567,7 @@ void* app_Thread_Start(void* args)
 				    
 				    stickTouch = touch;
 				}			
-				else if (MyCGRectContainsPoint(input[DPAD_UP_LEFT_RECT], point)) {
+				else if (MyCGRectContainsPoint(rInput[DPAD_UP_LEFT_RECT], point)) {
 					//NSLog(@"MYOSD_UP | MYOSD_LEFT");
 					if(!STICK2WAY && !STICK4WAY)
 					{
@@ -1559,7 +1588,7 @@ void* app_Thread_Start(void* args)
 				    }				    
 				    stickTouch = touch;				
 				}			
-				else if (MyCGRectContainsPoint(input[DPAD_UP_RIGHT_RECT], point)) {
+				else if (MyCGRectContainsPoint(rInput[DPAD_UP_RIGHT_RECT], point)) {
 					//NSLog(@"MYOSD_UP | MYOSD_RIGHT");
 					
 					if(!STICK2WAY && !STICK4WAY)
@@ -1581,7 +1610,7 @@ void* app_Thread_Start(void* args)
 				    }   				    
 				    stickTouch = touch;
 				}			
-				else if (MyCGRectContainsPoint(input[DPAD_DOWN_LEFT_RECT], point)) {
+				else if (MyCGRectContainsPoint(rInput[DPAD_DOWN_LEFT_RECT], point)) {
 					//NSLog(@"MYOSD_DOWN | MYOSD_LEFT");
 
 					if(!STICK2WAY && !STICK4WAY)
@@ -1603,7 +1632,7 @@ void* app_Thread_Start(void* args)
 				    }
 				    stickTouch = touch;				
 				}			
-				else if (MyCGRectContainsPoint(input[DPAD_DOWN_RIGHT_RECT], point)) {
+				else if (MyCGRectContainsPoint(rInput[DPAD_DOWN_RIGHT_RECT], point)) {
 					//NSLog(@"MYOSD_DOWN | MYOSD_RIGHT");
 					if(!STICK2WAY && !STICK4WAY)
 					{
@@ -1638,17 +1667,17 @@ void* app_Thread_Start(void* args)
 			
 			if(touch == stickTouch) continue;
             
-			if (MyCGRectContainsPoint(input[BTN_Y_RECT], point)) {
+			if (MyCGRectContainsPoint(rInput[BTN_Y_RECT], point)) {
 				myosd_pad_status |= MYOSD_Y;
 				btnStates[BTN_Y] = BUTTON_PRESS;                
 				//NSLog(@"MYOSD_Y");
 			}
-			else if (MyCGRectContainsPoint(input[BTN_X_RECT], point)) {
+			else if (MyCGRectContainsPoint(rInput[BTN_X_RECT], point)) {
 				myosd_pad_status |= MYOSD_X;
 				btnStates[BTN_X] = BUTTON_PRESS;
 				//NSLog(@"MYOSD_X");
 			}
-			else if (MyCGRectContainsPoint(input[BTN_A_RECT], point)) {
+			else if (MyCGRectContainsPoint(rInput[BTN_A_RECT], point)) {
 			    if(g_pref_BplusX)
 			    {
 					myosd_pad_status |= MYOSD_X | MYOSD_B;
@@ -1663,31 +1692,31 @@ void* app_Thread_Start(void* args)
 				}
 				//NSLog(@"MYOSD_A");
 			}
-			else if (MyCGRectContainsPoint(input[BTN_B_RECT], point)) {
+			else if (MyCGRectContainsPoint(rInput[BTN_B_RECT], point)) {
 				myosd_pad_status |= MYOSD_B;
 				btnStates[BTN_B] = BUTTON_PRESS;
 				//NSLog(@"MYOSD_B");
 			}
-			else if (MyCGRectContainsPoint(input[BTN_A_Y_RECT], point)) {
+			else if (MyCGRectContainsPoint(rInput[BTN_A_Y_RECT], point)) {
 				myosd_pad_status |= MYOSD_Y | MYOSD_A;
 				btnStates[BTN_Y] = BUTTON_PRESS;
 				btnStates[BTN_A] = BUTTON_PRESS;
 				//NSLog(@"MYOSD_Y | MYOSD_A");
 			}
-			else if (MyCGRectContainsPoint(input[BTN_X_A_RECT], point)) {
+			else if (MyCGRectContainsPoint(rInput[BTN_X_A_RECT], point)) {
 
 				myosd_pad_status |= MYOSD_X | MYOSD_A;
                 btnStates[BTN_A] = BUTTON_PRESS;
                 btnStates[BTN_X] = BUTTON_PRESS;
 				//NSLog(@"MYOSD_X | MYOSD_A");
 			}
-			else if (MyCGRectContainsPoint(input[BTN_B_Y_RECT], point)) {
+			else if (MyCGRectContainsPoint(rInput[BTN_B_Y_RECT], point)) {
 				myosd_pad_status |= MYOSD_Y | MYOSD_B;
                 btnStates[BTN_B] = BUTTON_PRESS;
                 btnStates[BTN_Y] = BUTTON_PRESS;
 				//NSLog(@"MYOSD_Y | MYOSD_B");
 			}			
-			else if (MyCGRectContainsPoint(input[BTN_B_X_RECT], point)) {
+			else if (MyCGRectContainsPoint(rInput[BTN_B_X_RECT], point)) {
 			    if(!g_pref_BplusX /*&& g_pref_land_num_buttons>=3*/)
 			    {
 					myosd_pad_status |= MYOSD_X | MYOSD_B;
@@ -1696,7 +1725,7 @@ void* app_Thread_Start(void* args)
                 }
 				//NSLog(@"MYOSD_X | MYOSD_B");
 			} 
-			else if (MyCGRectContainsPoint(input[BTN_SELECT_RECT], point)) {
+			else if (MyCGRectContainsPoint(rInput[BTN_SELECT_RECT], point)) {
 			    //NSLog(@"MYOSD_SELECT");
 				myosd_pad_status |= MYOSD_SELECT;				
                 btnStates[BTN_SELECT] = BUTTON_PRESS;
@@ -1704,34 +1733,34 @@ void* app_Thread_Start(void* args)
                     myosd_pad_status &= ~MYOSD_START;
                     
 			}
-			else if (MyCGRectContainsPoint(input[BTN_START_RECT], point)) {
+			else if (MyCGRectContainsPoint(rInput[BTN_START_RECT], point)) {
 				//NSLog(@"MYOSD_START");
 				myosd_pad_status |= MYOSD_START;
 			    btnStates[BTN_START] = BUTTON_PRESS;
                 if(isGridlee && (myosd_pad_status & MYOSD_SELECT))
                     myosd_pad_status &= ~MYOSD_SELECT;
 			}
-			else if (MyCGRectContainsPoint(input[BTN_L1_RECT], point)) {
+			else if (MyCGRectContainsPoint(rInput[BTN_L1_RECT], point)) {
 				//NSLog(@"MYOSD_L");
 				myosd_pad_status |= MYOSD_L1;
 			    btnStates[BTN_L1] = BUTTON_PRESS;
 			}
-			else if (MyCGRectContainsPoint(input[BTN_R1_RECT], point)) {
+			else if (MyCGRectContainsPoint(rInput[BTN_R1_RECT], point)) {
 				//NSLog(@"MYOSD_R");
 				myosd_pad_status |= MYOSD_R1;
 				btnStates[BTN_R1] = BUTTON_PRESS;
 			}			
-			else if (MyCGRectContainsPoint(input[BTN_L2_RECT], point)) {
+			else if (MyCGRectContainsPoint(rInput[BTN_L2_RECT], point)) {
 				//NSLog(@"MYOSD_L2");
                 if(isGridlee)continue;
 				btnStates[BTN_L2] = BUTTON_PRESS;
 			}
-			else if (MyCGRectContainsPoint(input[BTN_R2_RECT], point)) {
+			else if (MyCGRectContainsPoint(rInput[BTN_R2_RECT], point)) {
 				//NSLog(@"MYOSD_R2");
 				if(isGridlee)continue;
 				btnStates[BTN_R2] = BUTTON_PRESS;
 			}			
-			else if (MyCGRectContainsPoint(input[BTN_MENU_RECT], point)) {
+			else if (MyCGRectContainsPoint(rInput[BTN_MENU_RECT], point)) {
 				/*
                 myosd_pad_status |= MYOSD_SELECT;
                 btnStates[BTN_SELECT] = BUTTON_PRESS;
@@ -1787,23 +1816,23 @@ void* app_Thread_Start(void* args)
 		if(g_isIpad)
 		{
  		   if(g_pref_full_screen_port)
-		     fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_portrait_full_iPad.txt", skin_data] UTF8String]];
+		     fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_portrait_full_iPad.txt", g_skin_data] UTF8String]];
 		   else
-             fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_portrait_iPad.txt", skin_data] UTF8String]];
+             fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_portrait_iPad.txt", g_skin_data] UTF8String]];
 		}
 		else if(g_isIphone5)
 		{
             if(g_pref_full_screen_port)
-                fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_portrait_full_iPhone_5.txt", skin_data] UTF8String]];                
+                fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_portrait_full_iPhone_5.txt", g_skin_data] UTF8String]];                
             else
-                fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_portrait_iPhone_5.txt", skin_data] UTF8String]];
+                fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_portrait_iPhone_5.txt", g_skin_data] UTF8String]];
 		}
 		else
 		{
 		   if(g_pref_full_screen_port)
-             fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_portrait_full_iPhone.txt", skin_data] UTF8String]];
+             fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_portrait_full_iPhone.txt", g_skin_data] UTF8String]];
 		   else
-             fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_portrait_iPhone.txt", skin_data] UTF8String]];
+             fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_portrait_iPhone.txt", g_skin_data] UTF8String]];
 		}
     }
 	else
@@ -1811,23 +1840,23 @@ void* app_Thread_Start(void* args)
 		if(g_isIpad)
 		{
 		   if(g_pref_full_screen_land)
-             fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_landscape_full_iPad.txt", skin_data] UTF8String]]; 
+             fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_landscape_full_iPad.txt", g_skin_data] UTF8String]]; 
 		   else
-             fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_landscape_iPad.txt", skin_data] UTF8String]]; 		  
+             fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_landscape_iPad.txt", g_skin_data] UTF8String]]; 		  
 		}
 		else if(g_isIphone5)
 		{
             if(g_pref_full_screen_land)
-                fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_landscape_full_iPhone_5.txt", skin_data] UTF8String]];                 
+                fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_landscape_full_iPhone_5.txt", g_skin_data] UTF8String]];                 
             else
-                fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_landscape_iPhone_5.txt", skin_data] UTF8String]];  
+                fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_landscape_iPhone_5.txt", g_skin_data] UTF8String]];  
 		}
 		else
 		{
 		   if(g_pref_full_screen_land)
-             fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_landscape_full_iPhone.txt", skin_data] UTF8String]];  
+             fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_landscape_full_iPhone.txt", g_skin_data] UTF8String]];  
 		   else
-             fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_landscape_iPhone.txt", skin_data] UTF8String]];
+             fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_landscape_iPhone.txt", g_skin_data] UTF8String]];
 		}
 	}
 	
@@ -1849,45 +1878,45 @@ void* app_Thread_Start(void* args)
 						
 			switch(i)
 			{
-    		case 0:    input[DPAD_DOWN_LEFT_RECT]   	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 1:    input[DPAD_DOWN_RECT]   	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 2:    input[DPAD_DOWN_RIGHT_RECT]    = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 3:    input[DPAD_LEFT_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 4:    input[DPAD_RIGHT_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 5:    input[DPAD_UP_LEFT_RECT]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 6:    input[DPAD_UP_RECT]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 7:    input[DPAD_UP_RIGHT_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 8:    input[BTN_SELECT_RECT] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 9:    input[BTN_START_RECT]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 10:   input[BTN_L1_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 11:   input[BTN_R1_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 12:   input[BTN_MENU_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 13:   input[BTN_X_A_RECT]   	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 14:   input[BTN_X_RECT]   	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 15:   input[BTN_B_X_RECT]    	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 16:   input[BTN_A_RECT]  		= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 17:   input[BTN_B_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 18:   input[BTN_A_Y_RECT]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 19:   input[BTN_Y_RECT]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 20:   input[BTN_B_Y_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 21:   input[BTN_L2_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 22:   input[BTN_R2_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+    		case 0:    rInput[DPAD_DOWN_LEFT_RECT]   	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+    		case 1:    rInput[DPAD_DOWN_RECT]   	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+    		case 2:    rInput[DPAD_DOWN_RIGHT_RECT]    = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+    		case 3:    rInput[DPAD_LEFT_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+    		case 4:    rInput[DPAD_RIGHT_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+    		case 5:    rInput[DPAD_UP_LEFT_RECT]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+    		case 6:    rInput[DPAD_UP_RECT]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+    		case 7:    rInput[DPAD_UP_RIGHT_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+    		case 8:    rInput[BTN_SELECT_RECT] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+    		case 9:    rInput[BTN_START_RECT]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+    		case 10:   rInput[BTN_L1_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+    		case 11:   rInput[BTN_R1_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+    		case 12:   rInput[BTN_MENU_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+    		case 13:   rInput[BTN_X_A_RECT]   	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+    		case 14:   rInput[BTN_X_RECT]   	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+    		case 15:   rInput[BTN_B_X_RECT]    	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+    		case 16:   rInput[BTN_A_RECT]  		= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+    		case 17:   rInput[BTN_B_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+    		case 18:   rInput[BTN_A_Y_RECT]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+    		case 19:   rInput[BTN_Y_RECT]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+    		case 20:   rInput[BTN_B_Y_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+    		case 21:   rInput[BTN_L2_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+    		case 22:   rInput[BTN_R2_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
     		case 23:    break;
     		
-    		case 24:   rButton_image[BTN_B] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 25:   rButton_image[BTN_X]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 26:   rButton_image[BTN_A]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 27:   rButton_image[BTN_Y]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 28:   rDPad_image  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 29:   rButton_image[BTN_SELECT]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 30:   rButton_image[BTN_START]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 31:   rButton_image[BTN_L1] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 32:   rButton_image[BTN_R1] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 33:   rButton_image[BTN_L2] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 34:   rButton_image[BTN_R2] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+    		case 24:   rButtonImages[BTN_B] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+            case 25:   rButtonImages[BTN_X]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+            case 26:   rButtonImages[BTN_A]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+            case 27:   rButtonImages[BTN_Y]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+            case 28:   rDPadImage  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+            case 29:   rButtonImages[BTN_SELECT]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+            case 30:   rButtonImages[BTN_START]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+            case 31:   rButtonImages[BTN_L1] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+            case 32:   rButtonImages[BTN_R1] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+            case 33:   rButtonImages[BTN_L2] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+            case 34:   rButtonImages[BTN_R2] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
             
             case 35:   rStickWindow = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 36:   rStickArea = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+            case 36:   rStickArea = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); rStickWindow = rStickArea;break;
             case 37:   stick_radio =coords[0]; break;            
             case 38:   g_controller_opacity= coords[0]; break;
 			}
@@ -1902,30 +1931,30 @@ void* app_Thread_Start(void* args)
         {
            if(!orientation)
            {
-             input[DPAD_LEFT_RECT].size.width -= 17;//Left.size.width * 0.2;
-             input[DPAD_RIGHT_RECT].origin.x += 17;//Right.size.width * 0.2;
-             input[DPAD_RIGHT_RECT].size.width -= 17;//Right.size.width * 0.2;
+             rInput[DPAD_LEFT_RECT].size.width -= 17;//Left.size.width * 0.2;
+             rInput[DPAD_RIGHT_RECT].origin.x += 17;//Right.size.width * 0.2;
+             rInput[DPAD_RIGHT_RECT].size.width -= 17;//Right.size.width * 0.2;
            }
            else
            {
-             input[DPAD_LEFT_RECT].size.width -= 14;
-             input[DPAD_RIGHT_RECT].origin.x += 20;
-             input[DPAD_RIGHT_RECT].size.width -= 20;
+             rInput[DPAD_LEFT_RECT].size.width -= 14;
+             rInput[DPAD_RIGHT_RECT].origin.x += 20;
+             rInput[DPAD_RIGHT_RECT].size.width -= 20;
            }
         }
         else
         {
            if(!orientation)
            {
-             input[DPAD_LEFT_RECT].size.width -= 22;//Left.size.width * 0.2;
-             input[DPAD_RIGHT_RECT].origin.x += 22;//Right.size.width * 0.2;
-             input[DPAD_RIGHT_RECT].size.width -= 22;//Right.size.width * 0.2;
+             rInput[DPAD_LEFT_RECT].size.width -= 22;//Left.size.width * 0.2;
+             rInput[DPAD_RIGHT_RECT].origin.x += 22;//Right.size.width * 0.2;
+             rInput[DPAD_RIGHT_RECT].size.width -= 22;//Right.size.width * 0.2;
            }
            else
            {
-             input[DPAD_LEFT_RECT].size.width -= 22;
-             input[DPAD_RIGHT_RECT].origin.x += 22;
-             input[DPAD_RIGHT_RECT].size.width -= 22;
+             rInput[DPAD_LEFT_RECT].size.width -= 22;
+             rInput[DPAD_RIGHT_RECT].origin.x += 22;
+             rInput[DPAD_RIGHT_RECT].size.width -= 22;
            }
         }    
     }
@@ -1972,11 +2001,8 @@ void* app_Thread_Start(void* args)
 	    		case 7:    rFrames[LANDSCAPE_IMAGE_OVERLAY]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
                     
 	            case 8:    g_enable_debug_view = coords[0]; break;
-	            case 9:    myosd_video_threaded = coords[0]; break;
-	            case 10:   main_thread_priority = coords[0]; break;
-	            case 11:   video_thread_priority = coords[0]; break;
-	            case 12:   main_thread_priority_type = coords[0]; break;
-	            case 13:   video_thread_priority_type = coords[0]; break;
+	            case 9:    main_thread_priority_type = coords[0]; break;
+	            case 10:   video_thread_priority_type = coords[0]; break;
 			}
       i++;
     }
@@ -1993,7 +2019,7 @@ void* app_Thread_Start(void* args)
 
 - (void)dealloc {
 
-    [self removeDPadView];
+    [self removeTouchControllerViews];
 
     [screenView release];
     
@@ -2003,7 +2029,7 @@ void* app_Thread_Start(void* args)
  
     [dview release];
     
-    [iCade release];
+    [icadeView release];
 	   
 	[super dealloc];
 }
@@ -2014,33 +2040,33 @@ void* app_Thread_Start(void* args)
 
 - (void)filldebugRects {
 
-	    	debug_rects[0]=input[BTN_X_A_RECT];
-	    	debug_rects[1]=input[BTN_X_RECT];
-	    	debug_rects[2]=input[BTN_B_X_RECT];
-	    	debug_rects[3]=input[BTN_A_RECT];
-	    	debug_rects[4]=input[BTN_B_RECT];
-	    	debug_rects[5]=input[BTN_A_Y_RECT];
-	    	debug_rects[6]=input[BTN_Y_RECT];
-	        debug_rects[7]=input[BTN_B_Y_RECT];
-    		debug_rects[8]=input[BTN_SELECT_RECT];
-    		debug_rects[9]=input[BTN_START_RECT];
-    		debug_rects[10]=input[BTN_L1_RECT];
-    		debug_rects[11]=input[BTN_R1_RECT];
-    		debug_rects[12]=input[BTN_MENU_RECT];
-    		debug_rects[13]=input[BTN_L2_RECT];
-    		debug_rects[14]=input[BTN_R2_RECT];
+	    	debug_rects[0]=rInput[BTN_X_A_RECT];
+	    	debug_rects[1]=rInput[BTN_X_RECT];
+	    	debug_rects[2]=rInput[BTN_B_X_RECT];
+	    	debug_rects[3]=rInput[BTN_A_RECT];
+	    	debug_rects[4]=rInput[BTN_B_RECT];
+	    	debug_rects[5]=rInput[BTN_A_Y_RECT];
+	    	debug_rects[6]=rInput[BTN_Y_RECT];
+	        debug_rects[7]=rInput[BTN_B_Y_RECT];
+    		debug_rects[8]=rInput[BTN_SELECT_RECT];
+    		debug_rects[9]=rInput[BTN_START_RECT];
+    		debug_rects[10]=rInput[BTN_L1_RECT];
+    		debug_rects[11]=rInput[BTN_R1_RECT];
+    		debug_rects[12]=rInput[BTN_MENU_RECT];
+    		debug_rects[13]=rInput[BTN_L2_RECT];
+    		debug_rects[14]=rInput[BTN_R2_RECT];
     		debug_rects[15]= CGRectZero;
     		
     		if(g_pref_input_touch_type==TOUCH_INPUT_DPAD)
     		{
-				debug_rects[16]=input[DPAD_DOWN_LEFT_RECT];
-				debug_rects[17]=input[DPAD_DOWN_RECT];
-				debug_rects[18]=input[DPAD_DOWN_RIGHT_RECT];
-				debug_rects[19]=input[DPAD_LEFT_RECT];
-				debug_rects[20]=input[DPAD_RIGHT_RECT];
-				debug_rects[21]=input[DPAD_UP_LEFT_RECT];
-				debug_rects[22]=input[DPAD_UP_RECT];
-				debug_rects[23]=input[DPAD_UP_RIGHT_RECT];
+				debug_rects[16]=rInput[DPAD_DOWN_LEFT_RECT];
+				debug_rects[17]=rInput[DPAD_DOWN_RECT];
+				debug_rects[18]=rInput[DPAD_DOWN_RIGHT_RECT];
+				debug_rects[19]=rInput[DPAD_LEFT_RECT];
+				debug_rects[20]=rInput[DPAD_RIGHT_RECT];
+				debug_rects[21]=rInput[DPAD_UP_LEFT_RECT];
+				debug_rects[22]=rInput[DPAD_UP_RECT];
+				debug_rects[23]=rInput[DPAD_UP_RIGHT_RECT];
 	    		
 	            num_debug_rects = 24;     
             }
@@ -2183,6 +2209,91 @@ void* app_Thread_Start(void* args)
     else
     {
         [romlist release];
+    }
+}
+     
+-(void)beginCustomizeCurrentLayout{
+    
+    
+    if((g_joy_used && ((!g_device_is_landscape && g_pref_full_screen_port) || (g_device_is_landscape && g_pref_full_screen_land))))
+    {
+        UIAlertView* exitAlertView=[[UIAlertView alloc] initWithTitle:nil
+                                                              message:@"You cannot customize current layout when using a external controller!"
+                                                             delegate:nil
+                                                    cancelButtonTitle:@"Dismiss"
+                                                    otherButtonTitles:nil];
+        [exitAlertView show];
+        [exitAlertView release];
+    }
+    else
+    {
+        [self dismissModalViewControllerAnimated:YES];
+        
+        [self changeUI]; //ensure GUI
+        
+        [screenView removeFromSuperview];
+        [screenView release];
+        screenView = nil;
+        
+        layoutView = [[LayoutView alloc] initWithFrame:self.view.bounds withEmuController:self];
+        
+        change_layout = 1;
+        
+        [self removeTouchControllerViews];
+        
+        [self buildTouchControllerViews];
+        
+        [self.view addSubview:layoutView];
+    }
+    
+}
+
+-(void)finishCustomizeCurrentLayout{
+    
+    [layoutView removeFromSuperview];
+    [layoutView release];
+    
+    change_layout = 0;
+
+    [self done:self];
+        
+}
+
+-(void)resetCurrentLayout{
+    
+    if((g_joy_used && ((!g_device_is_landscape && g_pref_full_screen_port) || (g_device_is_landscape && g_pref_full_screen_land))))
+    {
+        UIAlertView* exitAlertView=[[UIAlertView alloc] initWithTitle:nil
+                                                              message:@"You cannot reset current layout when using a external controller!"
+                                                             delegate:nil
+                                                    cancelButtonTitle:@"Dismiss"
+                                                    otherButtonTitles:nil];
+        [exitAlertView show];
+        [exitAlertView release];
+    }
+    else
+    {
+        [self dismissModalViewControllerAnimated:YES];
+        
+        [self changeUI]; //ensure GUI
+        
+        [screenView removeFromSuperview];
+        [screenView release];
+        screenView = nil;
+        
+        change_layout = 1;
+        
+        [self removeTouchControllerViews];
+        
+        [self buildTouchControllerViews];
+        
+        
+        UIAlertView* exitAlertView=[[UIAlertView alloc] initWithTitle:nil
+                                                              message:@"Do you want to reset current layout to default?"
+                                                             delegate:self cancelButtonTitle:nil
+                                                    otherButtonTitles:@"Yes",@"No",nil];
+        [exitAlertView show];
+        [exitAlertView release];
     }
 }
 

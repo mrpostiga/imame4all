@@ -121,6 +121,7 @@ struct tilemap_info
 	void			(*draw_layer)(running_machine *machine, struct tilemap_info *info, bitmap_t *bitmap, const rectangle *cliprect, int which, int flags, int priority);
 	UINT16 *		textram;						/* pointer to textram pointer */
 	UINT16 *		tileram;						/* pointer to tileram pointer */
+    emu_timer *latch_timer;
 };
 
 struct road_info

@@ -1,24 +1,24 @@
-0,274,45,46//downleft
-45,274,45,46//down
-90,274,85,46//downright
+-5,274,45,46//downleft
+40,274,45,46//down
+85,274,45,46//downright
 -5,231,68,43//left
-64,231,106,43//right
-0,165,45,66//upleft
-45,165,45,66//up
-90,165,85,66//upright
-20,36,78,39//select
-470,36,78,39//start
-20,85,78,78//L1
-470,85,78,78//R2
+63,231,67,43//right
+-5,185,45,46//upleft
+40,185,45,46//up
+85,185,45,46//upright
+20,36,78,35//select
+470,36,78,35//start
+27,90,67,67//L1
+475,90,67,67//R1
 0,0,0,0//menu (select+ start) YO b + up
-429,243,28,77//button down left X + A
-457,254,78,66//buttondown  --> X
-520,254,48,66//button down right X + B
-373,243,56,77//buton left  --> A
-488,181,80,73//button right -> B
-344,243,29,77//button up left --> Y + A
-288,243,56,77//button up --> Y
-0,0,0,0//button up right Y + B
+429,251,57,57//button down left X + A
+453,251,66,66//buttondown  --> X
+520,254,57,57//button down right X + B
+367,250,66,66//buton left  --> A
+499,183,66,66//button right -> B
+344,251,57,57//button up left --> Y + A
+282,250,66,66//button up --> Y
+282,251,57,57//button up right Y + B
 20,0,78,35//lpad2
 470,0,78,35//rpad2
 0,0,0,0 //showkyboard

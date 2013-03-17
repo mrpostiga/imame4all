@@ -346,6 +346,7 @@ public:
 
 	// CPU information
 	cpu_device *			firstcpu;			// first CPU (allows for quick iteration via typenext)
+    device_t *		cpu[8];                     // CPU for hiscore support
 
 	// game-related information
 	const game_driver *		gamedrv;			// points to the definition of the game machine

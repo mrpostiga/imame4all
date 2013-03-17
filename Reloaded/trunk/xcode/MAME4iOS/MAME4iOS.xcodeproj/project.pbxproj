@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CE6D6E1416D8CADF00F265B7 /* LayoutData.m in Sources */ = {isa = PBXBuildFile; fileRef = CE6D6E1116D8CADF00F265B7 /* LayoutData.m */; };
+		CE6D6E1516D8CADF00F265B7 /* LayoutData.m in Sources */ = {isa = PBXBuildFile; fileRef = CE6D6E1116D8CADF00F265B7 /* LayoutData.m */; };
+		CE6D6E1616D8CADF00F265B7 /* LayoutView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE6D6E1316D8CADF00F265B7 /* LayoutView.m */; };
+		CE6D6E1716D8CADF00F265B7 /* LayoutView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE6D6E1316D8CADF00F265B7 /* LayoutView.m */; };
 		CE85CC621692FEE700232BA5 /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = CE85CC611692FEE700232BA5 /* cheat.zip */; };
 		CE85CC651692FF1100232BA5 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = CE85CC641692FF1100232BA5 /* Category.ini */; };
 		CE8D432916AB0D5D00D55884 /* gridlee.zip in Resources */ = {isa = PBXBuildFile; fileRef = CE8D432816AB0D5D00D55884 /* gridlee.zip */; };
@@ -15,6 +19,8 @@
 		CE8D87DD1653121200685BC4 /* iCadeView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8D87DC1653121200685BC4 /* iCadeView.m */; };
 		CE8D87E0165708AC00685BC4 /* libmamesim.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CEBFBC30163D634700A05CD0 /* libmamesim.a */; };
 		CE8F768D164D080D009AEDBC /* libmamearmv7s.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CE8F768C164D080D009AEDBC /* libmamearmv7s.a */; };
+		CE946B5316F3E03C0062575E /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = CE946B5216F3E03C0062575E /* hiscore.dat */; };
+		CE946B5416F3E03C0062575E /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = CE946B5216F3E03C0062575E /* hiscore.dat */; };
 		CEAC6C2E16AAA80400AF3275 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680891635BA7000051BC2 /* UIKit.framework */; };
 		CEAC6C2F16AAA80400AF3275 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE6808B1635BA7000051BC2 /* Foundation.framework */; };
 		CEAC6C3016AAA80400AF3275 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE6808D1635BA7000051BC2 /* CoreGraphics.framework */; };
@@ -100,8 +106,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		CE6D6E1016D8CADF00F265B7 /* LayoutData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LayoutData.h; path = ../../iOS/LayoutData.h; sourceTree = "<group>"; };
+		CE6D6E1116D8CADF00F265B7 /* LayoutData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LayoutData.m; path = ../../iOS/LayoutData.m; sourceTree = "<group>"; };
+		CE6D6E1216D8CADF00F265B7 /* LayoutView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LayoutView.h; path = ../../iOS/LayoutView.h; sourceTree = "<group>"; };
+		CE6D6E1316D8CADF00F265B7 /* LayoutView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LayoutView.m; path = ../../iOS/LayoutView.m; sourceTree = "<group>"; };
 		CE85CC611692FEE700232BA5 /* cheat.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = cheat.zip; path = "../../iOS-res/var/mobile/Media/ROMs/MAME4iOS/cheat.zip"; sourceTree = "<group>"; };
 		CE85CC641692FF1100232BA5 /* Category.ini */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Category.ini; path = "../../iOS-res/var/mobile/Media/ROMs/MAME4iOS/Category.ini"; sourceTree = "<group>"; };
+		CE87C2FD16F5C20F00ABE4F6 /* Gridlee.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Gridlee.entitlements; sourceTree = "<group>"; };
+		CE87C2FE16F5C21A00ABE4F6 /* MAME4iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = MAME4iOS.entitlements; sourceTree = "<group>"; };
 		CE8D432816AB0D5D00D55884 /* gridlee.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = gridlee.zip; path = "../../iOS-res/Applications/MAME4iOS.app/gridlee.zip"; sourceTree = "<group>"; };
 		CE8D87D7164FE4BE00685BC4 /* config_iPhone_5.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPhone_5.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPhone_5.txt"; sourceTree = "<group>"; };
 		CE8D87D916501C2200685BC4 /* libmamearmv7.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmamearmv7.a; path = ../../libmamearmv7.a; sourceTree = "<group>"; };
@@ -113,6 +125,7 @@
 		CE8F768C164D080D009AEDBC /* libmamearmv7s.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmamearmv7s.a; path = ../../libmamearmv7s.a; sourceTree = "<group>"; };
 		CE90575A166A89D000653872 /* ListOptionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ListOptionController.h; path = ../../iOS/ListOptionController.h; sourceTree = "<group>"; };
 		CE90575B166A89D000653872 /* ListOptionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ListOptionController.m; path = ../../iOS/ListOptionController.m; sourceTree = "<group>"; };
+		CE946B5216F3E03C0062575E /* hiscore.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = hiscore.dat; path = "../../iOS-res/var/mobile/Media/ROMs/MAME4iOS/hiscore.dat"; sourceTree = "<group>"; };
 		CEAC6C2C16AAA80400AF3275 /* Gridlee.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Gridlee.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CEAC6C3316AAA80400AF3275 /* Gridlee-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Gridlee-Info.plist"; sourceTree = "<group>"; };
 		CEAC6C3516AAA80400AF3275 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -239,6 +252,10 @@
 				CE8D87DB1653121100685BC4 /* iCadeView.h */,
 				CE8D87DC1653121200685BC4 /* iCadeView.m */,
 				CEE680A81635BAF400051BC2 /* iph_main.m */,
+				CE6D6E1016D8CADF00F265B7 /* LayoutData.h */,
+				CE6D6E1116D8CADF00F265B7 /* LayoutData.m */,
+				CE6D6E1216D8CADF00F265B7 /* LayoutView.h */,
+				CE6D6E1316D8CADF00F265B7 /* LayoutView.m */,
 				CEBFBC0E163C5BD300A05CD0 /* resources */,
 			);
 			name = RELOADED;
@@ -247,6 +264,7 @@
 		CEAC6C3116AAA80400AF3275 /* Gridlee */ = {
 			isa = PBXGroup;
 			children = (
+				CE87C2FD16F5C20F00ABE4F6 /* Gridlee.entitlements */,
 				CEAC6C3216AAA80400AF3275 /* Supporting Files */,
 			);
 			path = Gridlee;
@@ -272,6 +290,7 @@
 		CEBFBC0E163C5BD300A05CD0 /* resources */ = {
 			isa = PBXGroup;
 			children = (
+				CE946B5216F3E03C0062575E /* hiscore.dat */,
 				CE85CC641692FF1100232BA5 /* Category.ini */,
 				CE85CC611692FEE700232BA5 /* cheat.zip */,
 				CEBE455B168862EE00D9C140 /* help.html */,
@@ -334,6 +353,7 @@
 		CEE6808F1635BA7000051BC2 /* MAME4iOS */ = {
 			isa = PBXGroup;
 			children = (
+				CE87C2FE16F5C21A00ABE4F6 /* MAME4iOS.entitlements */,
 				CEE680901635BA7000051BC2 /* Supporting Files */,
 			);
 			path = MAME4iOS;
@@ -446,10 +466,10 @@
 				CEAC6C6016AAAB0200AF3275 /* config_iPhone.txt in Resources */,
 				CEAC6C6116AAAB0500AF3275 /* config_iPad.txt in Resources */,
 				CEAC6C6216AAAB0800AF3275 /* config_iPhone_5.txt in Resources */,
+				CEAC6C7516AAAC1D00AF3275 /* Default-568h@2x.png in Resources */,
 				CEAC6C6316AAAB0B00AF3275 /* help.html in Resources */,
 				CEAC6C6416AAAB1000AF3275 /* cheat.zip in Resources */,
 				CEAC6C6516AAAB1300AF3275 /* Category.ini in Resources */,
-				CEAC6C7516AAAC1D00AF3275 /* Default-568h@2x.png in Resources */,
 				CEAC6C7616AAAC1D00AF3275 /* Default.png in Resources */,
 				CEAC6C7716AAAC1D00AF3275 /* Default@2x.png in Resources */,
 				CEAC6C7C16AAACA700AF3275 /* Gridlee57.png in Resources */,
@@ -457,6 +477,7 @@
 				CEAC6C7E16AAACA700AF3275 /* Gridlee114.png in Resources */,
 				CEAC6C7F16AAACA700AF3275 /* Gridlee144-2.png in Resources */,
 				CE8D432916AB0D5D00D55884 /* gridlee.zip in Resources */,
+				CE946B5416F3E03C0062575E /* hiscore.dat in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -487,6 +508,7 @@
 				CEC5AD9816AAB47B00C7B33D /* MAME4iOS114.png in Resources */,
 				CEC5AD9916AAB47D00C7B33D /* MAME4iOS144.png in Resources */,
 				CEC5AD9C16AAB79C00C7B33D /* MAME4iOS57.png in Resources */,
+				CE946B5316F3E03C0062575E /* hiscore.dat in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -508,6 +530,8 @@
 				CEAC6C5116AAA97200AF3275 /* HelpController.m in Sources */,
 				CEAC6C5316AAA97500AF3275 /* AnalogStick.m in Sources */,
 				CEAC6C5516AAA97800AF3275 /* Bootstrapper.m in Sources */,
+				CE6D6E1516D8CADF00F265B7 /* LayoutData.m in Sources */,
+				CE6D6E1716D8CADF00F265B7 /* LayoutView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -526,6 +550,8 @@
 				CEAC6C5016AAA97100AF3275 /* HelpController.m in Sources */,
 				CEAC6C5216AAA97400AF3275 /* AnalogStick.m in Sources */,
 				CEAC6C5416AAA97800AF3275 /* Bootstrapper.m in Sources */,
+				CE6D6E1416D8CADF00F265B7 /* LayoutData.m in Sources */,
+				CE6D6E1616D8CADF00F265B7 /* LayoutView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -651,9 +677,10 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/../..\"",
 				);
-				ONLY_ACTIVE_ARCH = NO;
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-lstdc++";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				VALID_ARCHS = "armv7 armv7s";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -669,9 +696,10 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/../..\"",
 				);
-				ONLY_ACTIVE_ARCH = NO;
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-lstdc++";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				VALID_ARCHS = "armv7 armv7s";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

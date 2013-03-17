@@ -55,6 +55,7 @@
 @class DebugView;
 @class AnalogStickView;
 @class iCadeView;
+@class LayoutView;
 
 @interface EmulatorController : UIViewController <UIActionSheetDelegate>
 {
@@ -70,12 +71,14 @@
 
   AnalogStickView   * analogStickView;
     
-  iCadeView         *iCade;
+  iCadeView         *icadeView;
+    
+  LayoutView        *layoutView;
 
-  UIActionSheet     * menu;
+  UIActionSheet     *menu;
   
   //input rects
-  CGRect input[INPUT_LAST_VALUE];
+  CGRect rInput[INPUT_LAST_VALUE];
     
   //current rect emulation window
   CGRect rScreenView;
@@ -84,10 +87,10 @@
   CGRect rFrames[FRAME_RECT_LAST_VALUE];
 
   //buttons & Dpad images & states
-  CGRect rDPad_image;
+  CGRect rDPadImage;
   NSString *nameImgDPad[NUM_DPAD_ELEMENTS];
 
-  CGRect rButton_image[NUM_BUTTONS];
+  CGRect rButtonImages[NUM_BUTTONS];
 
   NSString *nameImgButton_Press[NUM_BUTTONS];
   NSString *nameImgButton_NotPress[NUM_BUTTONS];
@@ -113,6 +116,11 @@
 }
 
 - (int *)getBtnStates;
+- (CGRect *)getInputRects;
+- (CGRect *)getButtonRects;
+- (UIView **)getButtonViews;
+- (UIView *)getDPADView;
+- (UIView *)getStickView;
 
 - (void)getControllerCoords:(int)orientation;
 
@@ -121,8 +129,8 @@
 
 - (void)startEmulation;
 
-- (void)removeDPadView;
-- (void)buildDPadView;
+- (void)removeTouchControllerViews;
+- (void)buildTouchControllerViews;
 
 - (void)changeUI;
 
@@ -150,11 +158,17 @@
 
 - (void)moveROMS;
 
+- (void)beginCustomizeCurrentLayout;
+- (void)finishCustomizeCurrentLayout;
+- (void)resetCurrentLayout;
+
 @property (readwrite,assign)  UIView *externalView;
 @property (readwrite,assign) int dpad_state;
 @property (readonly,assign) int num_debug_rects;
 @property (readwrite,assign) CGRect rExternalView;
 @property (readonly,assign) int stick_radio;
-@property (readonly,assign) CGRect rStickArea;
+//@property (readonly,assign) CGRect rStickArea;
+@property (assign) CGRect rStickWindow;
+@property (assign) CGRect rDPadImage;
 
 @end

@@ -58,6 +58,8 @@ const options_entry mame_core_options[] =
 	{ "snapshot_directory",          "snap",      0,                 "directory to save screenshots" },
 	{ "diff_directory",              "diff",      0,                 "directory to save hard drive image difference files" },
 	{ "comment_directory",           "comments",  0,                 "directory to save debugger comments" },
+    //DAV HACK MKCHAMP - ADDING CFG OPTION TO SPECIFY HISCORE DIRECTORY..."hi" BY DEFAULT
+    { "hiscore_directory",           "hi",        0,                 "directory to save hiscores" },
 
 	/* state/playback options */
 	{ NULL,                          NULL,        OPTION_HEADER,     "CORE STATE/PLAYBACK OPTIONS" },

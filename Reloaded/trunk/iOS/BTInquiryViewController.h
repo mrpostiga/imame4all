@@ -87,6 +87,7 @@ typedef enum {
 @end
 
 @protocol BTInquiryDelegate
+- (Class)class;
 + (void) deviceChoosen:(BTInquiryViewController *) inqView device:(BTDevice*) device;
 + (void) deviceDetected:(BTInquiryViewController *) inqView device:(BTDevice*) device;
 + (void) disconnectDevice:(BTInquiryViewController *) inqView device:(BTDevice*) device;

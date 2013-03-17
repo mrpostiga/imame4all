@@ -15,6 +15,8 @@ OSDOBJS +=  $(IOSOBJ)/iph_main.o \
 	$(IOSOBJ)/DebugView.o \
 	$(IOSOBJ)/BTDevice.o \
 	$(IOSOBJ)/BTInquiryViewController.o \
+	$(IOSOBJ)/LayoutData.o \
+	$(IOSOBJ)/LayoutView.o \
 	$(IOSOBJ)/iCadeView.o \
 	$(IOSOBJ)/AnalogStick.o   
 

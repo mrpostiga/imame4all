@@ -39,6 +39,9 @@ enum
 };
 
 static int mystate = STATE_NORMAL;
+static int B_pressed[4] ={0,0,0,0};
+static int old_B_pressed[4] = {0,0,0,0};
+static int enabled_autofire[4] = {0,0,0,0};
 
 // a single input device
 static input_device *keyboard_device;
@@ -50,6 +53,7 @@ static int joy_axis[4][2];
 static int joy_hats[4][4];
 
 static int poll_ports = 0;
+static int fire[4] = {0,0,0,0};
 
 static void my_poll_ports(running_machine *machine);
 static INT32 my_get_state(void *device_internal, void *item_internal);
@@ -62,6 +66,7 @@ void droid_ios_init_input(running_machine *machine)
 	memset(joy_buttons,0,sizeof(joy_buttons));
 	memset(joy_axis,0,sizeof(joy_axis));
 	memset(joy_hats,0,sizeof(joy_hats));
+    
 
 	//input_device_class_enable(machine, DEVICE_CLASS_LIGHTGUN, TRUE);
 	input_device_class_enable(machine, DEVICE_CLASS_JOYSTICK, TRUE);
@@ -226,7 +231,7 @@ void droid_ios_poll_input(running_machine *machine)
 
 		for(int i=0; i<4; i++)
 		{
-			if(i!=0  && myosd_in_menu==1)
+			if(i!=0  && myosd_in_menu==1 && myosd_num_of_joys <=1)//to avoid mapping issues when pxasp1 is active
 				break;
 
 			_pad_status = myosd_joystick_read(i);
@@ -256,7 +261,8 @@ void droid_ios_poll_input(running_machine *machine)
                 }
 			}
 
-			if(myosd_joystick_read_analog(0, 'x') == 0 && myosd_joystick_read_analog(0, 'y')==0)
+            // lo cambio de 0 a i...
+			if(myosd_joystick_read_analog(i, 'x') == 0 && myosd_joystick_read_analog(i, 'y')==0)
 			{
 			   joy_hats[i][0] = ((_pad_status & MYOSD_UP) != 0) ? 0x80 : 0;
 			   joy_hats[i][1] = ((_pad_status & MYOSD_DOWN) != 0) ? 0x80 : 0;
@@ -274,8 +280,46 @@ void droid_ios_poll_input(running_machine *machine)
 			   joy_hats[i][2] = 0;
 			   joy_hats[i][3] = 0;
 			}
+            
+            if(myosd_inGame && !myosd_in_menu && myosd_autofire )
+            {
+                old_B_pressed[i] = B_pressed[i];
+                B_pressed[i] = _pad_status & MYOSD_B;
+                
+                if(!old_B_pressed[i] && B_pressed[i])
+                {
+                   enabled_autofire[i] = !enabled_autofire[i];
+                }
+            }
+            else
+                enabled_autofire[i] = false;
 
-			joy_buttons[i][0]  = ((_pad_status & MYOSD_B) != 0) ? 0x80 : 0;
+			if(enabled_autofire[i])//AUTOFIRE
+            {
+                int value  = 0;
+                switch (myosd_autofire) {
+                    case 1: value = 1;break;
+                    case 2: value = 2;break;
+                    case 3: value = 4; break;
+                    case 4: value = 6; break;
+                    case 5: value = 8; break;
+                    case 6: value = 10; break;
+                    case 7: value = 13; break;
+                    case 8: value = 16; break;
+                    case 9: value = 20; break;
+                    default:
+                        value = 6; break;
+                        break;
+                }
+                                
+                joy_buttons[i][0] = fire[i]++ >=value ? 0x80 : 0;
+                if(fire[ i] >= value*2)
+                    fire[ i] = 0;
+                
+            }
+            else
+               joy_buttons[i][0]  = ((_pad_status & MYOSD_B) != 0) ? 0x80 : 0;
+            
 			joy_buttons[i][1]  = ((_pad_status & MYOSD_X) != 0) ? 0x80 : 0;
 			joy_buttons[i][2]  = ((_pad_status & MYOSD_A) != 0) ? 0x80 : 0;
 			joy_buttons[i][3]  = ((_pad_status & MYOSD_Y) != 0) ? 0x80 : 0;

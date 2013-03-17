@@ -104,6 +104,15 @@
    @public NSString *filterKeyword;
     
    @public int lowlsound;
+   @public int vsync;
+   @public int threaded;
+   @public int dblbuff;
+    
+   @public int mainPriority;
+   @public int videoPriority;
+    
+   @public int autofire;
+   @public int hiscore;
     
 }
 
@@ -167,6 +176,16 @@
 @property (readwrite,assign) NSString *filterKeyword;
 
 @property (readwrite,assign) int lowlsound;
+@property (readwrite,assign) int vsync;
+@property (readwrite,assign) int threaded;
+@property (readwrite,assign) int dblbuff;
+
+@property (readwrite,assign) int mainPriority;
+@property (readwrite,assign) int videoPriority;
+
+@property (readwrite,assign) int autofire;
+
+@property (readwrite,assign) int hiscore;
 
 @end
 
@@ -176,9 +195,12 @@ enum OptionSections
     kFilterSection = 1,
     kPortraitSection = 2,
     kLandscapeSection = 3,
-    kInputSection = 4,
-    kDefaultsSection = 5,
-    kMiscSection = 6
+    kCustomLayout = 4,
+    kInputSection = 5,
+    kGameDefaultsSection = 6,
+    kAppDefaultsSection = 7,
+    kMiscSection = 8,
+    kNumSections = 9
 };
 
 enum ListOptionType
@@ -198,13 +220,18 @@ enum ListOptionType
     kTypeYearGTEValue,
     kTypeYearLTEValue,
     kTypeDriverSourceValue,
-    kTypeCategoryValue
+    kTypeCategoryValue,
+    kTypeVideoPriorityValue,
+    kTypeMainPriorityValue,
+    kTypeAutofireValue,
     
 };
 
+@class EmulatorController;
+
 @interface OptionsController : UIViewController  <UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate>
 {
-   UIViewController*  emuController;
+   EmulatorController*  emuController;
    
    UISwitch*		  switchKeepAspectPort;
    UISwitch*		  switchKeepAspectLand;
@@ -261,6 +288,16 @@ enum ListOptionType
    NSMutableArray  *arrayCategoryValue;
     
    UISwitch *switchLowlsound;
+   UISwitch *switchVsync;
+   UISwitch *switchThreaded;
+   UISwitch *switchDblbuff;
+    
+   NSArray  *arrayVideoPriorityValue;
+   NSArray  *arrayMainPriorityValue;
+    
+   NSArray  *arrayAutofireValue;
+    
+   UISwitch *switchHiscore;
     
 }
 

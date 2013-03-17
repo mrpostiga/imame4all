@@ -31,6 +31,7 @@
 #include <sys/types.h>
 #include <sys/sysctl.h>
 #include <stdio.h>
+#include <dlfcn.h>
 
 #include "wiimote.h"
 
@@ -45,6 +46,9 @@
 #import "btstack/btstack.h"
 #import "btstack/run_loop.h"
 #import "btstack/hci_cmds.h"
+
+#define PSM_HID_CONTROL 0x11
+#define PSM_HID_INTERRUPT 0x13
 
 bool btOK = false;
 bool initLoop = false;
@@ -203,6 +207,22 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
                 case HCI_EVENT_PACKET://0x04
                 {
                         switch (packet[0]){
+                                
+                                case HCI_EVENT_COMMAND_COMPLETE:
+                                     if ( COMMAND_COMPLETE_EVENT(packet, hci_write_authentication_enable) ) {
+                                     // connect to device
+                                         bt_send_cmd(&l2cap_create_channel, [device address], PSM_HID_CONTROL);
+                                     }
+                                     break;
+                                
+                                case HCI_EVENT_PIN_CODE_REQUEST:
+                                     bt_flip_addr(event_addr, &packet[2]);
+                                     if (BD_ADDR_CMP([device address], event_addr)) break;
+                                
+                                     // inform about pin code request
+                                     NSLog(@"HCI_EVENT_PIN_CODE_REQUEST\n");
+                                     bt_send_cmd(&hci_pin_code_request_reply, event_addr, 6,  &packet[2]); // use inverse bd_addr as PIN
+                                     break;
 
                                 case L2CAP_EVENT_CHANNEL_OPENED:
                                         
@@ -213,24 +233,26 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
                                                 bt_flip_addr(event_addr, &packet[3]);
                                                 uint16_t psm = READ_BT_16(packet, 11);
                                                 uint16_t source_cid = READ_BT_16(packet, 13);
+                                                uint16_t dest_cid   = READ_BT_16(packet, 15);
                                                 wiiMoteConHandle = READ_BT_16(packet, 9);
                                                 NSLog(@"Channel successfully opened: handle 0x%02x, psm 0x%02x, source cid 0x%02x, dest cid 0x%02x",
-                                                           wiiMoteConHandle, psm, source_cid,  READ_BT_16(packet, 15));
+                                                           wiiMoteConHandle, psm, source_cid,  dest_cid);
                                                                                                                                                                                                                   
-                                                if (psm == 0x13) {
+                                                if (psm == PSM_HID_CONTROL) {
                                                 
-                                                        // interupt channel openedn succesfully, now open control channel, too.
-                                                        if(WIIMOTE_DBG)printf("open control channel\n");
-                                                        bt_send_cmd(&l2cap_create_channel, event_addr, 0x11);
                                                         struct wiimote_t *wm = NULL;  
                                                         wm = &joys[myosd_num_of_joys];
                                                         memset(wm, 0, sizeof(struct wiimote_t));
                                                         wm->unid = myosd_num_of_joys;                                                        
-                                                        wm->i_source_cid = source_cid;
+                                                        wm->c_source_cid = source_cid;
                                                         memcpy(&wm->addr,&event_addr,BD_ADDR_LEN);
                                                         if(WIIMOTE_DBG)printf("addr %02x:%02x:%02x:%02x:%02x:%02x\n", wm->addr[0], wm->addr[1], wm->addr[2],wm->addr[3], wm->addr[4], wm->addr[5]);                                                    
                                                         if(WIIMOTE_DBG)printf("saved 0x%02x  0x%02x\n",source_cid,wm->i_source_cid);
                                                         wm->exp.type = EXP_NONE;
+                                                    
+                                                    //control channel openedn succesfully, now open  interupt channel, too.
+                                                    if(WIIMOTE_DBG)printf("open interupt channel\n");
+                                                    bt_send_cmd(&l2cap_create_channel, event_addr, PSM_HID_INTERRUPT);
                                                         
                                                 } else {
                                                                                                         
@@ -238,7 +260,7 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
                                                         struct wiimote_t *wm = NULL;  
                                                         wm = &joys[myosd_num_of_joys];                                                                                                                                                                  
                                                         wm->wiiMoteConHandle = wiiMoteConHandle; 
-                                                        wm->c_source_cid = source_cid;                                                           
+                                                        wm->i_source_cid = source_cid;
                                                         wm->state = WIIMOTE_STATE_CONNECTED;
                                                         myosd_num_of_joys++;
                                                         if(WIIMOTE_DBG)printf("Devices Number: %d\n",myosd_num_of_joys);
@@ -285,9 +307,26 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
 
   if(!initLoop)
   {
+      void *handle = dlopen("libBTstack.dylib",RTLD_LAZY);
+      if(!handle)
+      {          
+          UIAlertView* alert =
+          [[UIAlertView alloc] initWithTitle:@"Error!"
+                                     message:@"You don't have BTstack installed."
+                                    delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles: nil];
+          [alert show];
+          
+          [alert release];
+          
+          EmulatorController *eC = (EmulatorController *)controller;
+          [eC endMenu];
+          return;
+      }
+      dlclose(handle);
+      
      run_loop_init(RUN_LOOP_COCOA);
      initLoop = true;
-  }   
+  }
   if(!btOK )
   {
 	  if (bt_open() ){
@@ -298,7 +337,7 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
 	  }
   }
   
-  if (btOK) 
+  if (btOK)
   {
     // create inq controller
     if(inqViewControl==nil)
@@ -393,7 +432,7 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
 + (void) deviceDetected:(BTInquiryViewController *) inqView device:(BTDevice*) selectedDevice {
 
         NSLog(@"deviceDetected %@", [device toString]);
-        if ([selectedDevice name] && [[selectedDevice name] caseInsensitiveCompare:@"Nintendo RVL-CNT-01"] == NSOrderedSame){
+        if ([selectedDevice name] && [[selectedDevice name] hasPrefix:@"Nintendo RVL-CNT-01"]){
                 NSLog(@"WiiMote found with address %@", [BTDevice stringForAddress:[selectedDevice address]]);
                 device = selectedDevice;
                 
@@ -405,8 +444,8 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
                 // connect to device
                 [device setConnectionState:kBluetoothConnectionConnecting];
                 [[inqViewControl tableView] reloadData];
-                bt_send_cmd(&l2cap_create_channel, [device address], 0x13);
-                
+                //bt_send_cmd(&l2cap_create_channel, [device address], 0x13);
+                bt_send_cmd(&hci_write_authentication_enable, 0);
            
         }
 }
@@ -442,6 +481,10 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
 	    activated= false;
 		btOK = false;	
     }
+}
+
+- (Class)class{
+    return self.class;
 }
 
 @end

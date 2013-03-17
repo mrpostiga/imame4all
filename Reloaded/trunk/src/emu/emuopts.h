@@ -63,6 +63,8 @@
 #define OPTION_SNAPSHOT_DIRECTORY	"snapshot_directory"
 #define OPTION_DIFF_DIRECTORY		"diff_directory"
 #define OPTION_COMMENT_DIRECTORY	"comment_directory"
+//DAV HACK
+#define OPTION_HISCORE_DIRECTORY	"hiscore_directory"
 
 /* core state/playback options */
 #define OPTION_STATE				"state"

@@ -164,6 +164,18 @@
             self.title = @"Category";
             value = op.categoryValue;
             break;
+        case kTypeVideoPriorityValue:
+            self.title = @"Video Thread Priority";
+            value = op.videoPriority;
+            break;
+        case kTypeMainPriorityValue:
+            self.title = @"Main Thread Priority";
+            value = op.mainPriority;
+            break;
+        case kTypeAutofireValue:
+            self.title = @"B as Autofire";
+            value = op.autofire;
+            break;
         default:
             break;
     }
@@ -249,6 +261,15 @@
             break;
         case kTypeCategoryValue:
             op.categoryValue =value;
+            break;
+        case kTypeVideoPriorityValue:
+            op.videoPriority =value;
+            break;
+        case kTypeMainPriorityValue:
+            op.mainPriority =value;
+            break;
+        case kTypeAutofireValue:
+            op.autofire =value;
             break;
         default:
             break;

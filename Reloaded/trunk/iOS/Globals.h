@@ -131,6 +131,7 @@ extern int g_pref_ext_control_type;
 extern int g_pref_aplusb;
 extern int g_pref_nativeTVOUT;
 extern int g_pref_overscanTVOUT;
+extern int g_skin_data;
 
 extern int ga_btnStates[NUM_BUTTONS];
 extern int g_dpad_state;
