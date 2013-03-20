@@ -398,7 +398,7 @@
 		{
 			    UIAlertView *errAlert = [[UIAlertView alloc] initWithTitle:@"Error saving preferences!" 
 															message://[NSString stringWithFormat:@"Error:%@",[err localizedDescription]]  
-															@"Preferences cannot be saved.\n Check for write permissions. chmod 777 if needed. Look at the help!." 
+															@"Preferences cannot be saved.\n Check for write permissions. 'chmod -R 777 /var/mobile/Media/ROMs' if needed. Look at the help for details!." 
 															delegate:self 
 													        cancelButtonTitle:@"OK" 
 													        otherButtonTitles: nil];	
