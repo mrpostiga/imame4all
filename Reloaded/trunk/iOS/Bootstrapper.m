@@ -91,7 +91,32 @@ const char* get_documents_path(const char* file)
 	rect.origin.x = rect.origin.y = 0.0f;
 	
 	//printf("Machine: '%s'\n",[[Helper machine] UTF8String]) ;
-	
+    NSError *error;
+    NSString *fromPath,*toPath;
+    NSFileManager* manager = nil;
+
+#ifdef JAILBREAK
+    manager = [[NSFileManager alloc] init];
+    if(![manager fileExistsAtPath:[NSString stringWithUTF8String:get_documents_path("")]] )
+    {
+        
+        if(mkdir(get_documents_path(""), 0755) != 0)
+        {
+        
+           UIAlertView *errAlert = [[UIAlertView alloc] initWithTitle:@"Error"
+                                                           message:
+                                 @"Directory cannot be created!\nCheck for write permissions.\n'chmod -R 777 /var/mobile/Media/ROMs' if needed.\nLook at the help for details."
+                                                          delegate:nil
+                                                 cancelButtonTitle:@"Dismiss"
+                                                 otherButtonTitles: nil];
+          [errAlert show];
+          [errAlert release];
+        }
+    }
+    
+    [manager release];
+#endif
+
     int r = chdir (get_documents_path(""));
 	printf("running... %d\n",r);
     
@@ -108,28 +133,7 @@ const char* get_documents_path(const char* file)
 	mkdir(get_documents_path("samples"), 0755);
 	mkdir(get_documents_path("roms"), 0755);
     
-    NSError *error;
-    NSString *fromPath,*toPath;
-    NSFileManager* manager = nil;
- 
-#ifdef JAILBREAK    
-    manager = [[NSFileManager alloc] init];
-    if(![manager fileExistsAtPath:[NSString stringWithUTF8String:get_documents_path("roms")]] ||
-       ![manager fileExistsAtPath:[NSString stringWithUTF8String:get_documents_path("cfg")]] )
-    {
-        UIAlertView *errAlert = [[UIAlertView alloc] initWithTitle:@"Error"
-                                                           message:
-                                 @"Directories cannot be created!\nCheck for write permissions.\n'chmod - R 777 /var/mobile/Media/ROMs' if needed.\nLook at the help for details."
-                                                          delegate:nil
-                                                 cancelButtonTitle:@"Dismiss"
-                                                 otherButtonTitles: nil];	
-        [errAlert show];
-        [errAlert release];
-    }
-    
-    [manager release];
-#endif
-    
+
 #ifndef JAILBREAK
     [[NSURL fileURLWithPath: [NSString stringWithUTF8String:get_documents_path("roms")]]
      setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:nil];
@@ -141,6 +145,7 @@ const char* get_documents_path(const char* file)
      setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:nil];
     [[NSURL fileURLWithPath: [NSString stringWithUTF8String:get_documents_path("cheat.zip")]]
      setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:nil];
+#endif  
     
     manager = [[NSFileManager alloc] init];
     
@@ -180,8 +185,6 @@ const char* get_documents_path(const char* file)
     }
 
     [manager release];
-#endif
-
     
     [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation : UIStatusBarAnimationNone];
     

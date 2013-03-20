@@ -312,7 +312,7 @@ void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint
       {          
           UIAlertView* alert =
           [[UIAlertView alloc] initWithTitle:@"Error!"
-                                     message:@"You don't have BTstack installed."
+                                     message:@"You don't have BTstack installed. Install from Cydia."
                                     delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles: nil];
           [alert show];
           
