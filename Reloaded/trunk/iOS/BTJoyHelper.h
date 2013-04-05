@@ -33,13 +33,13 @@
 
 #import "BTInquiryViewController.h"
 
-@interface WiiMoteHelper : NSObject<BTInquiryDelegate>
+@interface BTJoyHelper : NSObject
 {
 }
 
-+ (void)startwiimote:(UIViewController *)controller;
-+ (void)endwiimote;
-+ (void)cancelWiiMoteSearch;
++ (void)startBTJoy:(UIViewController *)controller;
++ (void)endBTJoy;
++ (void)cancelBTJoySearch;
 
 @end
 

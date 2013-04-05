@@ -66,7 +66,7 @@
 
    @public  int skinValue;
 
-   @public  int wiiDeadZoneValue;
+   @public  int btDeadZoneValue;
    @public  int touchDeadZone;
 
    @public  int overscanValue;
@@ -114,6 +114,9 @@
    @public int autofire;
    @public int hiscore;
     
+   @public int buttonSize;
+   @public int stickSize;
+    
 }
 
 - (void)loadOptions;
@@ -138,7 +141,7 @@
 
 @property (readwrite,assign) int skinValue;
 
-@property (readwrite,assign) int wiiDeadZoneValue;
+@property (readwrite,assign) int btDeadZoneValue;
 @property (readwrite,assign) int touchDeadZone;
 
 @property (readwrite,assign) int overscanValue;
@@ -187,6 +190,9 @@
 
 @property (readwrite,assign) int hiscore;
 
+@property (readwrite,assign) int buttonSize;
+@property (readwrite,assign) int stickSize;
+
 @end
 
 enum OptionSections
@@ -211,7 +217,7 @@ enum ListOptionType
     kTypeTouchType,
     kTypeControlType,
     kTypeAnalogDZValue,
-    kTypeWiiDZValue,
+    kTypeBTDZValue,
     kTypeSoundValue,
     kTypeFSValue,
     kTypeOverscanValue,
@@ -224,7 +230,8 @@ enum ListOptionType
     kTypeVideoPriorityValue,
     kTypeMainPriorityValue,
     kTypeAutofireValue,
-    
+    kTypeStickSizeValue,
+    kTypeButtonSizeValue
 };
 
 @class EmulatorController;
@@ -271,7 +278,7 @@ enum ListOptionType
    NSArray *arrayStickType;
    NSArray *arrayControlType;
    NSArray *arrayAnalogDZValue;
-   NSArray *arrayWiiDZValue;
+   NSArray *arrayBTDZValue;
    NSArray *arraySoundValue;
    NSArray *arrayFSValue;
    NSArray *arrayOverscanValue;
@@ -299,10 +306,13 @@ enum ListOptionType
     
    UISwitch *switchHiscore;
     
+   NSArray  *arrayStickSizeValue;
+   NSArray  *arrayButtonSizeValue;
+    
 }
 
 - (void)optionChanged:(id)sender;
 
-@property (nonatomic, assign) UIViewController *emuController;
+@property (nonatomic, assign) EmulatorController *emuController;
 
 @end

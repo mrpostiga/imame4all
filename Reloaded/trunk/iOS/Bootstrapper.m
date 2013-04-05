@@ -46,7 +46,7 @@
 
 #import "Bootstrapper.h"
 #import "Globals.h"
-#import "WiiMoteHelper.h"
+#import "BTJoyHelper.h"
 
 #include <sys/stat.h>
 
@@ -100,6 +100,7 @@ const char* get_documents_path(const char* file)
     if(![manager fileExistsAtPath:[NSString stringWithUTF8String:get_documents_path("")]] )
     {
         
+        mkdir("/var/mobile/Media/ROMs/", 0755);
         if(mkdir(get_documents_path(""), 0755) != 0)
         {
         
@@ -226,8 +227,8 @@ const char* get_documents_path(const char* file)
 
 - (void)applicationWillResignActive:(UIApplication *)application {
 
-#ifdef WIIMOTE
-    [WiiMoteHelper endwiimote];
+#ifdef BTJOY
+    [BTJoyHelper endBTJoy];
 #endif
    if((myosd_inGame || g_joy_used ) && !isGridlee )//force pause when game
       [hrViewController runMenu];

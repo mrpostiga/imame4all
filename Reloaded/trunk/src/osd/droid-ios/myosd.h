@@ -60,6 +60,10 @@ extern int  myosd_service;
 extern int  myosd_num_buttons;
 
 extern unsigned long myosd_pad_status;
+    
+extern float joy_analog_x[4];
+extern float joy_analog_y[4];
+    
 extern int myosd_last_game_selected;
 
 extern int myosd_filter_favorites;

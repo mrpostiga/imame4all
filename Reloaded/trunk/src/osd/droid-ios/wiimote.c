@@ -40,89 +40,26 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 #include <math.h>
 
-#include "btstack/btstack.h"
-
 #include "wiimote.h"
-#include "myosd.h"
 
-//int num_of_joys = 0;
-struct wiimote_t joys[4];
-extern int g_pref_wii_DZ_value;
-#define STICK4WAY (myosd_waysStick == 4 && myosd_inGame)
-#define STICK2WAY (myosd_waysStick == 2 && myosd_inGame)
+static int wiimote_send(struct wiimote_t* wm, byte report_type, byte* msg, int len);
+static int wiimote_read_data(struct wiimote_t* wm, unsigned int addr, unsigned short len);
+static int wiimote_write_data(struct wiimote_t* wm, unsigned int addr, byte* data, byte len);
+static int classic_ctrl_handshake(struct wiimote_t* wm, struct classic_ctrl_t* cc, byte* data, unsigned short len);
+static void classic_ctrl_event(struct classic_ctrl_t* cc, byte* msg);
 
-int wiimote_send(struct wiimote_t* wm, byte report_type, byte* msg, int len);
-int wiimote_read_data(struct wiimote_t* wm, unsigned int addr, unsigned short len);
-int wiimote_write_data(struct wiimote_t* wm, unsigned int addr, byte* data, byte len);
-void wiimote_set_leds(struct wiimote_t* wm, int leds);
-int classic_ctrl_handshake(struct wiimote_t* wm, struct classic_ctrl_t* cc, byte* data, unsigned short len);
-void classic_ctrl_event(struct classic_ctrl_t* cc, byte* msg);
+static void (*wiimote_notify_connection)(struct wiimote_t* wm) = NULL;
+static void (*wiimote_send_l2cap)(int unid, int interrupt, unsigned char *buf, int len) = NULL;
 
-int wiimote_remove(uint16_t source_cid, bd_addr_t *addr){
-
-    int i = 0;
-    int unid = -1;
-    int found = 0;
-    for(;i<myosd_num_of_joys;i++)
-    {
-       if(joys[i].c_source_cid==source_cid && !found)
-       {
-          found=1;
-           struct wiimote_t *wm = NULL;
-           wm = &joys[i];
-           if(WIIMOTE_DBG)printf("%02x:%02x:%02x:%02x:%02x:%02x\n",wm->addr[0], wm->addr[1], wm->addr[2],wm->addr[3], wm->addr[4], wm->addr[5]);
-           memcpy(addr,&(wm->addr),BD_ADDR_LEN);
-           unid = wm->unid;
-          continue;
-       }
-       if(found)
-       {
-          memcpy(&joys[i-1],&joys[i],sizeof(struct wiimote_t ));
-          joys[i-1].unid = i-1;
-          struct wiimote_t *wm = NULL;
-          wm = &joys[i-1];
-		  if(wm->unid==0)
-			  wiimote_set_leds(wm, WIIMOTE_LED_1);
-		  else if(wm->unid==1)
-			  wiimote_set_leds(wm, WIIMOTE_LED_2);
-		  else if(wm->unid==2)
-			  wiimote_set_leds(wm, WIIMOTE_LED_3);
-		  else if(wm->unid==3)
-			  wiimote_set_leds(wm, WIIMOTE_LED_4);
-       }
-    }
-    if(found)
-    {
-      myosd_num_of_joys--;
-      if(WIIMOTE_DBG)printf("NUM JOYS %d\n",myosd_num_of_joys);
-      return unid;
-    }
-    return unid;
-}
-
-/**
- *	@brief Find a wiimote_t structure by its source_cid.
- *
- *	@param wm		Pointer to a wiimote_t structure.
- *	@param wiimotes	The number of wiimote_t structures in \a wm.
- *	@param unid		The unique identifier to search for.
- *
- *	@return Pointer to a wiimote_t structure, or NULL if not found.
- */
-
-struct wiimote_t* wiimote_get_by_source_cid(uint16_t source_cid){
-
-	int i = 0;
-
-	for (; i < myosd_num_of_joys; ++i) {
-		if(WIIMOTE_DBG)printf("0x%02x 0x%02x\n",joys[i].i_source_cid,source_cid);
-		if (joys[i].i_source_cid == source_cid)
-			return &joys[i];
-	}
-
-	return NULL;
+int wiimote_init(void (*wiimote_notify_connection_callback)(struct wiimote_t* wm),
+                 void (*wiimote_send_l2cap_callback)(int unid, int interrupt, unsigned char *buf, int len) ){
+    wiimote_notify_connection = wiimote_notify_connection_callback;
+    wiimote_send_l2cap = wiimote_send_l2cap_callback;
+    return 1;
 }
 
 /**
@@ -382,6 +319,111 @@ int wiimote_handshake(struct wiimote_t* wm,  byte event, byte* data, unsigned sh
 	}
 }
 
+/**
+ *	@brief Handle data.
+ *
+ *	@param wm		A pointer to a wiimote_t structure.
+ *	@param packet	The data packet.
+ *  @param size  	The data packet size.
+ */
+int  wiimote_handle_data_packet(struct wiimote_t* wm, uint8_t *packet, uint16_t size){
+    
+    byte* msg = packet + 2;
+    byte event = packet[1];
+    
+    switch (event) {
+            
+        case WM_RPT_BTN:
+        {
+            /* button */
+            wiimote_pressed_buttons(wm, msg);
+            return 1;
+        }
+        case WM_RPT_READ:
+        {
+            /* data read */
+            
+            if(WIIMOTE_DBG)printf("WM_RPT_READ data arrive!\n");
+            
+            wiimote_pressed_buttons(wm, msg);
+            
+            byte err = msg[2] & 0x0F;
+            
+            if (err == 0x08)
+                printf("Unable to read data - address does not exist.\n");
+            else if (err == 0x07)
+                printf("Unable to read data - address is for write-only registers.\n");
+            else if (err)
+                printf("Unable to read data - unknown error code %x.\n", err);
+            
+            unsigned short offset = BIG_ENDIAN_SHORT(*(unsigned short*)(msg + 3));
+            
+            byte len = ((msg[2] & 0xF0) >> 4) + 1;
+            
+            byte *data = (msg + 5);
+            
+            if(WIIMOTE_DBG)
+            {
+                int i = 0;
+                printf("Read: 0x%04x ; ",offset);
+                for (; i < len; ++i)
+                    printf("%x ", data[i]);
+                printf("\n");
+            }
+            
+            if(wiimote_handshake(wm,WM_RPT_READ,data,len))
+            {
+                
+                if(wiimote_notify_connection!=NULL)
+                    wiimote_notify_connection(wm);
+            }
+            
+            return 1;
+        }
+        case WM_RPT_CTRL_STATUS:
+        {
+            wiimote_pressed_buttons(wm, msg);
+            
+            /* find the battery level and normalize between 0 and 1 */
+            if(WIIMOTE_DBG)
+            {
+                wm->battery_level = (msg[5] / (float)WM_MAX_BATTERY_CODE);
+                
+                printf("BATTERY LEVEL %f\n", wm->battery_level);
+            }
+            
+            //handshake stuff!
+            if(wiimote_handshake(wm,WM_RPT_CTRL_STATUS,msg,-1))
+            {
+                
+                if(wiimote_notify_connection!=NULL)
+                    wiimote_notify_connection(wm);
+            }
+            
+            return 1;
+        }
+        case WM_RPT_BTN_EXP:
+        {
+            /* button - expansion */
+            wiimote_pressed_buttons(wm, msg);
+            wiimote_handle_expansion(wm, msg+2);
+            
+            return 1;
+        }
+        case WM_RPT_WRITE:
+        {
+            /* write feedback - safe to skip */
+            return 1;
+        }
+        default:
+        {
+            printf("Unknown event, can not handle it [Code 0x%x].", event);
+            return 1;
+        }
+    }
+    
+    return 0;
+}
 
 /**
  *	@brief	Send a packet to the wiimote.
@@ -402,17 +444,11 @@ int wiimote_send(struct wiimote_t* wm, byte report_type, byte* msg, int len) {
 
 	memcpy(buf+2, msg, len);
 
-	if(WIIMOTE_DBG)
-	{
-		int x = 2;
-		printf("[DEBUG] (id %i) SEND: (%x) %.2x ", wm->unid, buf[0], buf[1]);
-		for (; x < len+2; ++x)
-			printf("%.2x ", buf[x]);
-		printf("\n");
-	}
-
-	//bt_send_l2cap( wm->c_source_cid, buf, len+2);
-    bt_send_l2cap( wm->i_source_cid, buf, len+2);
+    if(wiimote_send_l2cap!=NULL)
+       wiimote_send_l2cap(wm->unid,1,buf,len+2);
+    else
+        printf("Error: wiimote_send_l2cap is not set!");
+    
 	return 1;
 }
 
@@ -496,7 +532,7 @@ int wiimote_write_data(struct wiimote_t* wm, unsigned int addr, byte* data, byte
 /////////////////////// CLASSIC  /////////////////
 
 static void classic_ctrl_pressed_buttons(struct classic_ctrl_t* cc, short now);
-void calc_joystick_state(struct joystick_t* js, float x, float y);
+static void calc_joystick_state(struct joystick_t* js, float x, float y);
 
 /**
  *	@brief Handle the handshake data from the classic controller.
@@ -508,7 +544,6 @@ void calc_joystick_state(struct joystick_t* js, float x, float y);
  *	@return	Returns 1 if handshake was successful, 0 if not.
  */
 int classic_ctrl_handshake(struct wiimote_t* wm, struct classic_ctrl_t* cc, byte* data, unsigned short len) {
-	int i;
 	int offset = 0;
 
 	cc->btns = 0;
@@ -583,7 +618,7 @@ int classic_ctrl_handshake(struct wiimote_t* wm, struct classic_ctrl_t* cc, byte
  *	@param msg		The message specified in the event packet.
  */
 void classic_ctrl_event(struct classic_ctrl_t* cc, byte* msg) {
-	int i, lx, ly, rx, ry;
+	int lx, ly, rx, ry;
 	byte l, r;
 
 	/* decrypt data */
@@ -683,240 +718,14 @@ void calc_joystick_state(struct joystick_t* js, float x, float y) {
 		ry = ((float)(y - js->min.y) / (float)(js->center.y - js->min.y)) - 1.0f;
 
 	/* calculate the joystick angle and magnitude */
-	ang = RAD_TO_DEGREE(atanf(ry / rx));
+	ang = WIIMOTE_RAD_TO_DEGREE(atanf(ry / rx));
 	ang -= 90.0f;
 	if (rx < 0.0f)
 		ang -= 180.0f;
-	js->ang = absf(ang);
+	js->ang = wiimote_absf(ang);
 	js->mag = (float) sqrt((rx * rx) + (ry * ry));
 	js->rx = rx;
 	js->ry = ry;
 
 }
-
-////////////////////////////////////////////////////////////
-
-extern float joy_analog_x[4];
-extern float joy_analog_y[4];
-
-int iOS_wiimote_check (struct  wiimote_t  *wm){
-	 //printf("check %d\n",wm->unid);
-	 joy_analog_x[wm->unid]=0.0f;
-	 joy_analog_y[wm->unid]=0.0f;
-	 int joyExKey = 0;
-	 //myosd_exitGame = 0;
-	 if (1) {
-
-			if (IS_PRESSED(wm, WIIMOTE_BUTTON_A))		{joyExKey |= MYOSD_A;}
-			if (IS_PRESSED(wm, WIIMOTE_BUTTON_B))		{joyExKey |= MYOSD_Y;}
-
-			if (IS_PRESSED(wm, WIIMOTE_BUTTON_UP))		{joyExKey |= MYOSD_LEFT;}
-			if (IS_PRESSED(wm, WIIMOTE_BUTTON_DOWN))	{joyExKey |= MYOSD_RIGHT;}
-
-			if (IS_PRESSED(wm, WIIMOTE_BUTTON_LEFT))	{
-				if(!STICK2WAY &&
-						!(STICK4WAY && (IS_PRESSED(wm, WIIMOTE_BUTTON_UP) ||
-								       (IS_PRESSED(wm, WIIMOTE_BUTTON_DOWN)))))
-				joyExKey |= MYOSD_DOWN;
-			}
-			if (IS_PRESSED(wm, WIIMOTE_BUTTON_RIGHT))	{
-				if(!STICK2WAY &&
-						!(STICK4WAY && (IS_PRESSED(wm, WIIMOTE_BUTTON_UP) ||
-								       (IS_PRESSED(wm, WIIMOTE_BUTTON_DOWN)))))
-				joyExKey |= MYOSD_UP;
-			}
-
-			if (IS_PRESSED(wm, WIIMOTE_BUTTON_MINUS))	{joyExKey |= MYOSD_SELECT;}
-			if (IS_PRESSED(wm, WIIMOTE_BUTTON_PLUS))	{joyExKey |= MYOSD_START;}
-			if (IS_PRESSED(wm, WIIMOTE_BUTTON_ONE))		{joyExKey |= MYOSD_X;}
-			if (IS_PRESSED(wm, WIIMOTE_BUTTON_TWO))		{joyExKey |= MYOSD_B;}
-			if (IS_PRESSED(wm, WIIMOTE_BUTTON_HOME))	{
-
-	          //usleep(50000);
-	          myosd_exitGame = 1;}
-
-			 if (wm->exp.type == EXP_CLASSIC) {
-
-				    float deadZone;
-
-				    switch(g_pref_wii_DZ_value)
-				    {
-				      case 0: deadZone = 0.12f;break;
-				      case 1: deadZone = 0.15f;break;
-				      case 2: deadZone = 0.17f;break;
-				      case 3: deadZone = 0.2f;break;
-				      case 4: deadZone = 0.3f;break;
-				      case 5: deadZone = 0.4f;break;
-				    }
-
-				    //printf("deadzone %f\n",deadZone);
-
-					struct classic_ctrl_t* cc = (classic_ctrl_t*)&wm->exp.classic;
-
-					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_ZL))			joyExKey |= MYOSD_R1;
-					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_B))			joyExKey |= MYOSD_X;
-					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_Y))			joyExKey |= MYOSD_A;
-					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_A))			joyExKey |= MYOSD_B;
-					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_X))			joyExKey |= MYOSD_Y;
-					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_ZR))			joyExKey |= MYOSD_L1;
-
-
-					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_UP)){
-						if(!STICK2WAY &&
-								!(STICK4WAY && (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_LEFT) ||
-										       (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_RIGHT)))))
-						  joyExKey |= MYOSD_UP;
-					}
-					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_DOWN)){
-						if(!STICK2WAY &&
-								!(STICK4WAY && (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_LEFT) ||
-										       (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_RIGHT)))))
-						joyExKey |= MYOSD_DOWN;
-			        }
-					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_LEFT))		joyExKey |= MYOSD_LEFT;
-					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_RIGHT))		joyExKey |= MYOSD_RIGHT;
-
-
-					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_FULL_L))		joyExKey |= MYOSD_L1;
-					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_MINUS))		joyExKey |= MYOSD_SELECT;
-					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_HOME))		{//myosd_exitGame = 0;usleep(50000);
-					                                                     myosd_exitGame = 1;}
-					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_PLUS))		joyExKey |= MYOSD_START;
-					if (IS_PRESSED(cc, CLASSIC_CTRL_BUTTON_FULL_R))		joyExKey |= MYOSD_R1;
-
-					if(cc->ljs.mag >= deadZone)
-					{
-						joy_analog_x[wm->unid] =  (  cc->ljs.rx > 1.0 ) ? 1.0 : (  cc->ljs.rx < -1.0 ) ? -1.0 :  cc->ljs.rx;
-						joy_analog_y[wm->unid] =  (  cc->ljs.ry > 1.0 ) ? 1.0 : (  cc->ljs.ry < -1.0 ) ? -1.0 :  cc->ljs.ry;
-
-						float v = cc->ljs.ang;
-
-						if(STICK2WAY)
-						{
-							if( v < 180){
-								joyExKey |= MYOSD_RIGHT;
-								//printf("Right\n");
-							}
-							else if ( v >= 180){
-								joyExKey |= MYOSD_LEFT;
-								//printf("Left\n");
-							}
-						}
-						else if(STICK4WAY)
-						{
-							if(v >= 315 || v < 45){
-								joyExKey |= MYOSD_UP;
-								//printf("Up\n");
-							}
-							else if (v >= 45 && v < 135){
-								joyExKey |= MYOSD_RIGHT;
-								//printf("Right\n");
-							}
-							else if (v >= 135 && v < 225){
-								joyExKey |= MYOSD_DOWN;
-								//printf("Down\n");
-							}
-							else if (v >= 225 && v < 315){
-								joyExKey |= MYOSD_LEFT;
-								//printf("Left\n");
-							}
-						}
-						else
-						{
-							if( v >= 330 || v < 30){
-								joyExKey |= MYOSD_UP;
-								//printf("Up\n");
-							}
-							else if ( v >= 30 && v <60  )  {
-								joyExKey |= MYOSD_UP;joyExKey |= MYOSD_RIGHT;
-								//printf("UpRight\n");
-							}
-							else if ( v >= 60 && v < 120  ){
-								joyExKey |= MYOSD_RIGHT;
-								//printf("Right\n");
-							}
-							else if ( v >= 120 && v < 150  ){
-								joyExKey |= MYOSD_RIGHT;joyExKey |= MYOSD_DOWN;
-								//printf("RightDown\n");
-							}
-							else if ( v >= 150 && v < 210  ){
-								joyExKey |= MYOSD_DOWN;
-								//printf("Down\n");
-							}
-							else if ( v >= 210 && v < 240  ){
-								joyExKey |= MYOSD_DOWN;joyExKey |= MYOSD_LEFT;
-								//printf("DownLeft\n");
-							}
-							else if ( v >= 240 && v < 300  ){
-								joyExKey |= MYOSD_LEFT;
-								//printf("Left\n");
-							}
-							else if ( v >= 300 && v < 330  ){
-								joyExKey |= MYOSD_LEFT;
-								joyExKey |= MYOSD_UP;
-								//printf("LeftUp\n");
-							}
-						}
-					}
-
-					if(cc->rjs.mag >= deadZone)
-					{
-						float v = cc->rjs.ang;
-
-						if( v >= 330 || v < 30){
-						   joyExKey |= MYOSD_Y;
-						   //printf("Y\n");
-						}
-						else if ( v >= 30 && v <60  )  {
-						   joyExKey |= MYOSD_Y;joyExKey |= MYOSD_B;
-						   //printf("Y B\n");
-						}
-						else if ( v >= 60 && v < 120  ){
-							joyExKey |= MYOSD_B;
-							//printf("B\n");
-						}
-						else if ( v >= 120 && v < 150  ){
-							joyExKey |= MYOSD_B;joyExKey |= MYOSD_X;
-							//printf("B X\n");
-						}
-						else if ( v >= 150 && v < 210  ){
-							joyExKey |= MYOSD_X;
-							//printf("X\n");
-						}
-						else if ( v >= 210 && v < 240  ){
-							joyExKey |= MYOSD_X;joyExKey |= MYOSD_A;
-							//printf("X A\n");
-						}
-						else if ( v >= 240 && v < 300  ){
-							joyExKey |= MYOSD_A;
-							//printf("A\n");
-						}
-						else if ( v >= 300 && v < 330  ){
-							joyExKey |= MYOSD_A;joyExKey |= MYOSD_Y;
-							//printf("A Y\n");
-						}
-					}
-/*
-					printf("classic L button pressed:         %f\n", cc->l_shoulder);
-					printf("classic R button pressed:         %f\n", cc->r_shoulder);
-
-					printf("classic left joystick angle:      %f\n", cc->ljs.ang);
-					printf("classic left joystick magnitude:  %f\n", cc->ljs.mag);
-					printf("classic left joystick rx:         %f\n", cc->ljs.rx);
-					printf("classic left joystick ry:         %f\n", cc->ljs.ry);
-
-					printf("classic right joystick angle:     %f\n", cc->rjs.ang);
-					printf("classic right joystick magnitude: %f\n", cc->rjs.mag);
-					printf("classic right rx:                 %f\n", cc->rjs.rx);
-					printf("classic right ry:                 %f\n", cc->rjs.ry);
-*/
-				}
-
-		return joyExKey;
-	 } else {
-		joyExKey = 0;
-		return joyExKey;
-	 }
-}
-
 

@@ -11,7 +11,7 @@ OSDOBJS +=  $(IOSOBJ)/iph_main.o \
 	$(IOSOBJ)/OptionsController.o \
 	$(IOSOBJ)/ListOptionController.o \
         $(IOSOBJ)/DonateController.o \
-	$(IOSOBJ)/WiiMoteHelper.o \
+	$(IOSOBJ)/BTJoyHelper.o \
 	$(IOSOBJ)/DebugView.o \
 	$(IOSOBJ)/BTDevice.o \
 	$(IOSOBJ)/BTInquiryViewController.o \

@@ -238,19 +238,23 @@
         
         switch (ld.type) {
             case kType_ButtonRect:
-                [emuController getInputRects][ld.value] = [ld getNewRect];
+                [emuController getInputRects][ld.value].origin.x = [ld getNewRect].origin.x ;
+                [emuController getInputRects][ld.value].origin.y = [ld getNewRect].origin.y ;
                 break;
             case kType_ButtonImgRect:
-                [emuController getButtonRects][ld.value] = [ld getNewRect];
+                [emuController getButtonRects][ld.value].origin.x = [ld getNewRect].origin.x;
+                [emuController getButtonRects][ld.value].origin.y = [ld getNewRect].origin.y;
                 break;
             case kType_DPadRect:
-                [emuController getInputRects][ld.value] = [ld getNewRect];
+                [emuController getInputRects][ld.value].origin.x = [ld getNewRect].origin.x;
+                [emuController getInputRects][ld.value].origin.y = [ld getNewRect].origin.y;
                 break;
             case kType_DPadImgRect:
                 emuController.rDPadImage = [ld getNewRect];
                 break;
             case kType_StickRect:
-                emuController.rStickWindow = [ld getNewRect];
+                emuController.rStickWindow = CGRectMake( [ld getNewRect].origin.x, [ld getNewRect].origin.y, 
+                                                        emuController.rStickWindow.size.width, emuController.rStickWindow.size.height) ;
                 break;
             default:
                 break;
@@ -258,6 +262,5 @@
     }
     
 }
-
 
 @end

@@ -124,9 +124,9 @@
             self.title = @"Stick Touch DZ";
             value = op.analogDeadZoneValue;
             break;
-        case kTypeWiiDZValue:
-            self.title = @"Wii Classic DZ";
-            value = op.wiiDeadZoneValue;
+        case kTypeBTDZValue:
+            self.title = @"BT Analog DZ";
+            value = op.btDeadZoneValue;
             break;
         case kTypeSoundValue:
             self.title = @"Sound";
@@ -175,6 +175,14 @@
         case kTypeAutofireValue:
             self.title = @"B as Autofire";
             value = op.autofire;
+            break;
+        case kTypeButtonSizeValue:
+            self.title = @"Buttons Size";
+            value = op.buttonSize;
+            break;
+        case kTypeStickSizeValue:
+            self.title = @"Fullscreen Stick Size";
+            value = op.stickSize;
             break;
         default:
             break;
@@ -232,8 +240,8 @@
         case kTypeAnalogDZValue:
             op.analogDeadZoneValue =value;
             break;
-        case kTypeWiiDZValue:
-            op.wiiDeadZoneValue =value;
+        case kTypeBTDZValue:
+            op.btDeadZoneValue =value;
             break;
         case kTypeSoundValue:
             op.soundValue =value;
@@ -270,6 +278,12 @@
             break;
         case kTypeAutofireValue:
             op.autofire =value;
+            break;
+        case kTypeButtonSizeValue:
+            op.buttonSize =value;
+            break;
+        case kTypeStickSizeValue:
+            op.stickSize =value;
             break;
         default:
             break;

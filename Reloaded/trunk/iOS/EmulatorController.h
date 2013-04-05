@@ -162,6 +162,8 @@
 - (void)finishCustomizeCurrentLayout;
 - (void)resetCurrentLayout;
 
+- (void)adjustSizes;
+
 @property (readwrite,assign)  UIView *externalView;
 @property (readwrite,assign) int dpad_state;
 @property (readonly,assign) int num_debug_rects;

@@ -11,7 +11,8 @@
 
 
 #include "myosd.h"
-#include "wiimote.h"
+
+#include "bt_joy.h"
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -165,26 +166,6 @@ void myosd_set_video_mode(int width,int height,int vis_width,int vis_height)
   	 myosd_video_flip();
 }
 
-/*
-unsigned long myosd_joystick_read(int n)
-{
-    unsigned long res=0;
-	res = myosd_pad_status;
-		
-	if ((res & MYOSD_VOL_UP) && (res & MYOSD_VOL_DOWN))
-	  		res |= MYOSD_PUSH;
-
-	if (myosd_num_of_joys>n)
-	{
-		//printf("%d %d\n",num_of_joys,n);
-		res |= iOS_wiimote_check(&joys[n]);
-		res |= myosd_joy_status[n];
-	}
-  	
-	return res;
-}
-*/
-
 unsigned long myosd_joystick_read(int n)
 {
     unsigned long res=0;
@@ -195,8 +176,8 @@ unsigned long myosd_joystick_read(int n)
 
        if(myosd_pxasp1 && myosd_num_of_joys==1)
        {
-#ifdef WIIMOTE           
-    	   res |= iOS_wiimote_check(&joys[0]);
+#ifdef BTJOY
+           res |= bt_joy_poll(0);
 #endif
     	   res |= myosd_joy_status[0];
        }
@@ -205,8 +186,8 @@ unsigned long myosd_joystick_read(int n)
 
 	if (n<myosd_num_of_joys)
 	{
-#ifdef WIIMOTE
-	    res |= iOS_wiimote_check(&joys[n]);
+#ifdef BTJOY
+        res |= bt_joy_poll(n);
 #endif
         res |= myosd_joy_status[n];
 	}
@@ -220,9 +201,11 @@ float myosd_joystick_read_analog(int n, char axis)
 
     if(n==0 || myosd_pxasp1 && (myosd_num_of_joys==0 || myosd_num_of_joys==1))
     {
-#ifdef WIIMOTE
+#ifdef BTJOY
         if(myosd_pxasp1 && myosd_num_of_joys==1)
-          iOS_wiimote_check(&joys[0]);
+        {
+            bt_joy_poll(0);
+        }
 #endif
        if(axis=='x')
 		   res = joy_analog_x[0];
@@ -232,8 +215,8 @@ float myosd_joystick_read_analog(int n, char axis)
 
 	if (n<myosd_num_of_joys)
 	{
-#ifdef WIIMOTE	 	
-        iOS_wiimote_check(&joys[n]);
+#ifdef BTJOY
+        bt_joy_poll(n);
 #endif        
 	   	if(axis=='x')
 			res = joy_analog_x[n];

@@ -4,17 +4,17 @@
    version = "1.0">
    <FileBreakpoints>
       <FileBreakpoint
-         shouldBeEnabled = "Yes"
+         shouldBeEnabled = "No"
          ignoreCount = "0"
          continueAfterRunningActions = "No"
-         filePath = "../../iOS/OptionsController.m"
-         timestampString = "385207213.586439"
+         filePath = "../../src/osd/droid-ios/sixaxis.c"
+         timestampString = "386635286.596737"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "1589"
-         endingLineNumber = "1589"
-         landmarkName = "-tableView:didSelectRowAtIndexPath:"
-         landmarkType = "5">
+         startingLineNumber = "233"
+         endingLineNumber = "233"
+         landmarkName = "sixaxis_calc_joystick_state()"
+         landmarkType = "7">
       </FileBreakpoint>
    </FileBreakpoints>
 </Bucket>

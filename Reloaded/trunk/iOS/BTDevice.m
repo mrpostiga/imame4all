@@ -1,54 +1,66 @@
 /*
- * Copyright (C) 2009 by Matthias Ringwald
+ * This file is part of MAME4iOS.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * Copyright (C) 2013 David Valdeita (Seleuco)
  *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- * THIS SOFTWARE IS PROVIDED BY MATTHIAS RINGWALD AND CONTRIBUTORS
- * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL MATTHIAS
- * RINGWALD OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
- * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
  *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, see <http://www.gnu.org/licenses>.
+ *
+ * Linking MAME4iOS statically or dynamically with other modules is
+ * making a combined work based on MAME4iOS. Thus, the terms and
+ * conditions of the GNU General Public License cover the whole
+ * combination.
+ *
+ * In addition, as a special exception, the copyright holders of MAME4iOS
+ * give you permission to combine MAME4iOS with free software programs
+ * or libraries that are released under the GNU LGPL and with code included
+ * in the standard release of MAME under the MAME License (or modified
+ * versions of such code, with unchanged license). You may copy and
+ * distribute such a system following the terms of the GNU GPL for MAME4iOS
+ * and the licenses of the other code concerned, provided that you include
+ * the source code of that other code when and as the GNU GPL requires
+ * distribution of source code.
+ *
+ * Note that people who make modified versions of MAME4iOS are not
+ * obligated to grant this special exception for their modified versions; it
+ * is their choice whether to do so. The GNU General Public License
+ * gives permission to release a modified version without this exception;
+ * this exception also makes it possible to release a modified version
+ * which carries forward this exception.
+ *
+ * MAME4iOS is dual-licensed: Alternatively, you can license MAME4iOS
+ * under a MAME license, as set out in http://mamedev.org/
  */
 
-//
-//  BTDevice.m
-//
-//  Created by Matthias Ringwald on 3/30/09.
-//
+//  Based on BTDevice.m by Matthias Ringwald on 3/30/09.
 
 #import "BTDevice.h"
 
 @implementation BTDevice
 
 @synthesize name;
-@synthesize classOfDevice;
+@synthesize label;
 @synthesize connectionState;
 @synthesize pageScanRepetitionMode;
 @synthesize clockOffset;
+@synthesize c_source_cid;
+@synthesize i_source_cid;
+@synthesize unid;
+@synthesize deviceType;
 
 - (BTDevice *)init {
 	name = NULL;
 	bzero(&address, 6);
-	classOfDevice = kCODInvalid;
 	connectionState = kBluetoothConnectionNotConnected;
 	return self;
 }
@@ -67,23 +79,15 @@
 			addr[3], addr[4], addr[5]];
 }
 
-- (NSString *) nameOrAddress{
+- (NSString *) labelOrNameOrAddress{
+    if (label)return label;
 	if (name) return name;
 	return [BTDevice stringForAddress:&address];
 }
 
-- (BluetoothDeviceType) deviceType{
-	switch (classOfDevice) {
-		case kCODHID:
-			return kBluetoothDeviceTypeHID;
-		case kCODZeeMote:
-			return kBluetoothDeviceTypeZeeMote;
-		default:
-			return kBluetoothDeviceTypeGeneric;
-	}
-}
+
 - (NSString *) toString{
-	return [NSString stringWithFormat:@"Device addr %@ name %@ COD %x", [BTDevice stringForAddress:&address], name, classOfDevice];
+	return [NSString stringWithFormat:@"Device addr %@ name %@", [BTDevice stringForAddress:&address], name];
 }
 
 - (void)dealloc {

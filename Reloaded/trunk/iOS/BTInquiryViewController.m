@@ -1,46 +1,57 @@
 /*
- * Copyright (C) 2009 by Matthias Ringwald
+ * This file is part of MAME4iOS.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * Copyright (C) 2013 David Valdeita (Seleuco)
  *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- * THIS SOFTWARE IS PROVIDED BY MATTHIAS RINGWALD AND CONTRIBUTORS
- * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL MATTHIAS
- * RINGWALD OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
- * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
  *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, see <http://www.gnu.org/licenses>.
+ *
+ * Linking MAME4iOS statically or dynamically with other modules is
+ * making a combined work based on MAME4iOS. Thus, the terms and
+ * conditions of the GNU General Public License cover the whole
+ * combination.
+ *
+ * In addition, as a special exception, the copyright holders of MAME4iOS
+ * give you permission to combine MAME4iOS with free software programs
+ * or libraries that are released under the GNU LGPL and with code included
+ * in the standard release of MAME under the MAME License (or modified
+ * versions of such code, with unchanged license). You may copy and
+ * distribute such a system following the terms of the GNU GPL for MAME4iOS
+ * and the licenses of the other code concerned, provided that you include
+ * the source code of that other code when and as the GNU GPL requires
+ * distribution of source code.
+ *
+ * Note that people who make modified versions of MAME4iOS are not
+ * obligated to grant this special exception for their modified versions; it
+ * is their choice whether to do so. The GNU General Public License
+ * gives permission to release a modified version without this exception;
+ * this exception also makes it possible to release a modified version
+ * which carries forward this exception.
+ *
+ * MAME4iOS is dual-licensed: Alternatively, you can license MAME4iOS
+ * under a MAME license, as set out in http://mamedev.org/
  */
 
-//
-//  BTInquiryViewController.m
-//
-//  Created by Matthias Ringwald on 10/8/09.
-//
+//  Based on BTInquiryViewController.m by Matthias Ringwald on 10/8/09.
+
 
 #import "BTInquiryViewController.h"
 #import "BTDevice.h"
 #import <UIKit/UIToolbar.h>
 
 #include "btstack/btstack.h"
-#include "wiimote.h"
+#include "myosd.h"
+#include "bt_joy.h"
 
 #define INQUIRY_INTERVAL 3
 
@@ -50,7 +61,6 @@ static uint8_t remoteNameIndex;
 
 @interface BTInquiryViewController (Private) 
 - (void) handlePacket:(uint8_t) packet_type channel:(uint16_t) channel packet:(uint8_t*) packet size:(uint16_t) size;
-- (BTDevice *) getDeviceForAddress:(bd_addr_t *)addr;
 - (void) getNextRemoteName;
 - (void) startInquiry;
 @end
@@ -65,28 +75,18 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 
 
 @synthesize devices;
-@synthesize delegate;
-@synthesize allowSelection;
-@synthesize showIcons;
 
 - (id) init {
 	self = [super initWithStyle:UITableViewStyleGrouped];
 	bluetoothState = HCI_STATE_OFF;
 	inquiryState = kInquiryInactive;
-	allowSelection = false;
-	showIcons = false;
-	remoteDevice = nil;
+
+	connectingDevice = nil;
 	restartInquiry = true;
-	notifyDelegateOnInquiryStopped = false;
 	
 	macAddressFont = [UIFont fontWithName:@"Courier New" size:[UIFont labelFontSize]];
 	deviceNameFont = [UIFont boldSystemFontOfSize:[UIFont labelFontSize]];
-	
-	deviceActivity = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-	[deviceActivity startAnimating];
-	bluetoothActivity = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-	[bluetoothActivity startAnimating];
-	
+		
 	devices = [[NSMutableArray alloc] init];
 	inqView = self;
 	return self;
@@ -122,20 +122,93 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 					bluetoothState = (HCI_STATE)packet[2];
 					[[self tableView] reloadData];
 					
-					// set BT state
-/*					
+					// set BT state				
 					if (bluetoothState == HCI_STATE_WORKING) {
-						[self myStartInquiry];
+                        NSLog(@"Registering service PSM_HID_CONTROL" );
+                        bt_send_cmd(&l2cap_register_service, PSM_HID_CONTROL, 672);
 					}
-*/					
+                    
 					break;
 				}
+                case L2CAP_EVENT_SERVICE_REGISTERED:
+                {
+                    if (READ_BT_16(packet, 3) == PSM_HID_CONTROL)
+                    {
+                        NSLog(@"Registered service PSM_HID_CONTROL" );
+                        NSLog(@"Registering service PSM_HID_INTERRUPT" );
+                        bt_send_cmd(&l2cap_register_service, PSM_HID_INTERRUPT, 672);
+                    }
+                    if (READ_BT_16(packet, 3) == PSM_HID_INTERRUPT)
+                    {
+                        NSLog(@"Registered service PSM_HID_INTERRUPT" );
+                    }
+                    break;
+                }
+                case L2CAP_EVENT_INCOMING_CONNECTION:
+                {
+                    const uint32_t psm = READ_BT_16(packet, 10);
+                    const unsigned interrupt = (psm == PSM_HID_INTERRUPT) ? 1 : 0;
+                    NSLog(@"INCOMING_CONNECTION %@", interrupt==1 ? @"PSM_HID_INTERRUPT" : @"PSM_HID_CONTROL" );
+                    
+                    uint16_t source_cid = READ_BT_16(packet, 12);
+                    
+                    bd_addr_t addr;
+                    bt_flip_addr(addr, &packet[2]);
+                    
+                    if(!interrupt)
+                    {
+                        if(inquiryState == kInquiryInactive)
+                        {
+                            NSLog(@"kInquiryInactive... decline connection" );
+                            bt_send_cmd(&l2cap_decline_connection, source_cid);
+                        }
+                        else if ([inqView getDeviceForAddress:&addr]) {
+							NSLog(@"Device %@ already in list", [BTDevice stringForAddress:&addr]);
+						}
+                        else
+                        {
+                         
+                           BTDevice *dev = [[BTDevice alloc] init];
+                           [dev setAddress:&addr];
+                           dev.deviceType = kBluetoothDeviceTypeGeneric;
+                           dev.c_source_cid = source_cid;
+                           NSLog(@"--> adding %@", [dev toString] );
+                           [devices addObject:dev];
+                           [dev release];
+                           [[inqView tableView] reloadData];
+                           
+                           NSLog(@"remote name request %@", [dev toString] );
+                           bt_send_cmd(&hci_remote_name_request, addr, 0, 0, 0);
+                           
+                        }
+                    }
+                    else
+                    {
+                        BTDevice *dev = [inqView getDeviceForAddress:&addr];
+                        if (dev != nil) {
+                            NSLog(@"accept connection" );
+                            
+                            dev.i_source_cid = source_cid;
+                            [[inqView tableView] reloadData];
+                        
+                            bt_send_cmd(&l2cap_accept_connection, source_cid);
+                            //usleep(500000);
+                        }
+                        else
+                        {
+                            NSLog(@"decline connection" );
+                            bt_send_cmd(&l2cap_decline_connection,source_cid);
+                        }
+                    }
+                    
+                    break;
+                }
 				case BTSTACK_EVENT_POWERON_FAILED:
 				{
 					bluetoothState = HCI_STATE_OFF;
 					[[self tableView] reloadData];
 					
-					UIAlertView* alertView = [[UIAlertView alloc] init];
+					UIAlertView* alertView = [[[UIAlertView alloc] init] autorelease];
 					alertView.title = @"Bluetooth not accessible!";
 					alertView.message = @"Hardware initialization failed!\n"
 					"Make sure you have turned off Bluetooth in the System Settings.";
@@ -147,7 +220,8 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 				case HCI_EVENT_INQUIRY_RESULT:
 				case HCI_EVENT_INQUIRY_RESULT_WITH_RSSI:
 				{
-					int numResponses = packet[2];
+                    NSLog(@"HCI_EVENT_INQUIRY_RESULT" );
+                    int numResponses = packet[2];
 					int i;
 					for (i=0; i<numResponses;i++){
 						bd_addr_t addr;
@@ -159,15 +233,13 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 						BTDevice *dev = [[BTDevice alloc] init];
 						[dev setAddress:&addr];
 						[dev setPageScanRepetitionMode:packet[3 + numResponses*6 + i]];
-						[dev setClassOfDevice:READ_BT_24(packet, 3 + numResponses*(6+1+1+1) + i*3)];
 						[dev setClockOffset:(READ_BT_16(packet, 3 + numResponses*(6+1+1+1+3) + i*2) & 0x7fff)];
+                        dev.deviceType = kBluetoothDeviceTypeGeneric;
+                        dev.c_source_cid = 0;
 						// hexdump(packet, size);
 						NSLog(@"--> adding %@", [dev toString] );
 						[devices addObject:dev];
-                        
-						if (delegate) {						   
-							[[delegate class] deviceDetected:self device:dev];
-						}
+                        [dev release];
 					}
 				  
 					[[inqView tableView] reloadData];
@@ -176,15 +248,47 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 				}	
 				case HCI_EVENT_REMOTE_NAME_REQUEST_COMPLETE:
 				{
-					bt_flip_addr(event_addr, &packet[3]);
+					NSLog(@"HCI_EVENT_REMOTE_NAME_REQUEST_COMPLETE" );
+                    
+                    bt_flip_addr(event_addr, &packet[3]);
 					BTDevice *dev = [inqView getDeviceForAddress:&event_addr];
 					if (!dev) break;
 					[dev setConnectionState:kBluetoothConnectionNotConnected];
 					if (packet[2] == 0) {
 						[dev setName:[NSString stringWithUTF8String:(const char *) &packet[9]]];
-						if (delegate) {
-							[[delegate class ] deviceDetected:self device:dev];
-						}
+
+                        bool found = false;
+                        if ([[dev name] hasPrefix:@"Nintendo RVL-CNT-01"]){
+                            found=true;
+                            NSLog(@"WiiMote found with address %@", [BTDevice stringForAddress:[dev address]]);
+                            [self stopInquiry];
+
+                            dev.deviceType = kBluetoothDeviceTypeWiiMote;
+                            [dev setConnectionState:kBluetoothConnectionConnecting];
+                            [self setConnectingDevice:dev];
+                            
+                            NSLog(@"write authentication enable" );
+                            bt_send_cmd(&hci_write_authentication_enable, 0);
+                            NSLog(@"done authentication enable" );
+                        }
+                        else if([[dev name] hasPrefix:@"PLAYSTATION(R)3 Controller"]){
+                            found = true;
+                            NSLog(@"Sixaxis found with address %@", [BTDevice stringForAddress:[dev address]]);
+                            [self stopInquiry];
+                            
+                            dev.deviceType = kBluetoothDeviceTypeSixaxis;
+                            [dev setConnectionState:kBluetoothConnectionConnecting];
+                            [self setConnectingDevice:dev];
+                            
+                            NSLog(@"accept connection" );
+                            bt_send_cmd(&l2cap_accept_connection, dev.c_source_cid);
+                            NSLog(@"done accept connection" );
+                        }
+                        if(!found)
+                        {
+                            if(dev.c_source_cid != 0)
+                               bt_send_cmd(&l2cap_decline_connection, dev.c_source_cid);
+                        }
 					}
 					[[self tableView] reloadData];
 					remoteNameIndex++;
@@ -198,24 +302,13 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 						NSLog(@"Inquiry cancelled successfully");
 						inquiryState = kInquiryInactive;
 						[[self tableView] reloadData];
-						if (notifyDelegateOnInquiryStopped){
-							notifyDelegateOnInquiryStopped = false;
-							if (delegate) {
-								[[delegate class ]inquiryStopped];
-							}
-						}
+
 					}
 					if (COMMAND_COMPLETE_EVENT(packet, hci_remote_name_request_cancel)){
 						// inquiry canceled
 						NSLog(@"Remote name request cancelled successfully");
 						inquiryState = kInquiryInactive;
 						[[self tableView] reloadData];
-						if (notifyDelegateOnInquiryStopped){
-							notifyDelegateOnInquiryStopped = false;
-							if (delegate) {
-								[[delegate class] inquiryStopped];
-							}
-						}
 					}
 					
 					break;
@@ -253,6 +346,25 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 	return nil;
 }
 
+- (void) removeAllDevices {
+    [devices removeAllObjects];
+    [[self tableView] reloadData];
+}
+
+- (void) removeAllDevicesNotConnected {
+    uint8_t j;
+    NSMutableArray *discardedItems = [NSMutableArray array];
+    
+	for (j=0; j<[devices count]; j++){
+		BTDevice *dev = [devices objectAtIndex:j];
+		if (dev.connectionState != kBluetoothConnectionConnected){
+		    NSLog(@"-->add to be removed %@", [dev toString] );
+			[discardedItems addObject:dev];
+		}
+	}
+    [devices removeObjectsInArray:discardedItems];
+    [[self tableView] reloadData];
+}
 
 - (void) removeDeviceForAddress:(bd_addr_t *)addr {
 	uint8_t j;
@@ -265,7 +377,6 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 			return;
 		}
 	}
-	
 }
 
 - (void) getNextRemoteName{
@@ -274,13 +385,6 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 	if (stopRemoteNameGathering) {
 		inquiryState = kInquiryInactive;
 		[[self tableView] reloadData];
-		
-		if (notifyDelegateOnInquiryStopped){
-			notifyDelegateOnInquiryStopped = false;
-			if (delegate) {
-				[[delegate class ]inquiryStopped];
-			}
-		}
 		return;
 	}
 	
@@ -288,7 +392,8 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 		
 	for (remoteNameIndex = 0; remoteNameIndex < [devices count]; remoteNameIndex++){
 		BTDevice *dev = [devices objectAtIndex:remoteNameIndex];
-		if (![dev name]){
+        printf("c_source_cid %d\n",dev.c_source_cid);
+		if (![dev name] && dev.c_source_cid==0){
 			remoteNameDevice = dev;
 			break;
 		}
@@ -296,6 +401,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 	if (remoteNameDevice) {
 		inquiryState = kInquiryRemoteName;
 		[remoteNameDevice setConnectionState:kBluetoothConnectionRemoteName];
+        NSLog(@"remote name request%@", [remoteNameDevice toString] );
 		bt_send_cmd(&hci_remote_name_request, [remoteNameDevice address], [remoteNameDevice pageScanRepetitionMode], 0, [remoteNameDevice clockOffset] | 0x8000);
 	} else  {
 		inquiryState = kInquiryInactive;
@@ -304,17 +410,13 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 			[self myStartInquiry];
 		}
 	}
+
 	[[self tableView] reloadData];
+    
 }
 
 - (void) startInquiry {
-   //static int b = 0;
-   //if(!b)
-   //{
-	 //b=1;
-	// put into loop
 
-	// @TODO: cannot be called a second time!
 	clientHandler = bt_register_packet_handler(packet_handler);
 
 	bluetoothState = HCI_STATE_INITIALIZING;
@@ -324,7 +426,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 	restartInquiry = true;
 	
 	bt_send_cmd(&btstack_set_power_mode, HCI_POWER_ON );
-	//}
+
 }
 
 - (void) stopInquiry {
@@ -353,61 +455,17 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 		default:
 			break;
 	}
-	if (immediateNotify && delegate){
-		[[delegate class ]inquiryStopped];
-	} else {
-		notifyDelegateOnInquiryStopped = true;
-	}
 }
 
+- (BTDevice *)getConnectingDevice{
+    return connectingDevice;
+}
 
-- (void) showConnecting:(BTDevice *) device {
-	remoteDevice = device;
+- (void) setConnectingDevice:(BTDevice *) device {
+	connectingDevice = device;
 	[[self tableView] reloadData];
 }
 
-- (void) showConnected:(BTDevice *) device {
-	connectedDevice = device;
-	[[self tableView] reloadData];
-}
-
-/*
-- (void)loadView {
-    
-    [super loadView];
-    
-}
-*/
-/*
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    
-    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-    //self.navigationItem.rightBarButtonItem = self.editButtonItem;
-    
-}
-*/
-
-/*
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-}
-*/
-/*
-- (void)viewDidAppear:(BOOL)animated {
-    [super viewDidAppear:animated];
-}
-*/
-/*
-- (void)viewWillDisappear:(BOOL)animated {
-	[super viewWillDisappear:animated];
-}
-*/
-/*
-- (void)viewDidDisappear:(BOOL)animated {
-	[super viewDidDisappear:animated];
-}
-*/
 
 // Override to allow orientations other than the default portrait orientation.
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
@@ -432,6 +490,9 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 	// unregister self
 	bt_register_packet_handler(clientHandler);
 	// done
+
+    [devices release];
+    
     [super dealloc];
 }
 
@@ -464,27 +525,30 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
     
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
     if (cell == nil) {
-        cell = [[[UITableViewCell alloc] initWithStyle:/* UITableViewCellStyleDefault = */(UITableViewCellStyle)0 reuseIdentifier:CellIdentifier] autorelease];
-		// cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier] autorelease];
+		//cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        UIActivityIndicatorView *spin = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+        spin.hidesWhenStopped = true;
+        cell.accessoryView = spin;
+        [spin release];
     }
     
     // Set up the cell...
 	NSString *label = nil;
 	int idx = [indexPath indexAtPosition:1];
+    
 	if (bluetoothState != HCI_STATE_WORKING || idx >= [devices count]) {
+        cell.textLabel.font = deviceNameFont;
 		if (bluetoothState == HCI_STATE_INITIALIZING){
 			label = @"Activating BTstack...";
-			cell.accessoryView = bluetoothActivity;
+            [(UIActivityIndicatorView *)cell.accessoryView startAnimating];
 		} else if (bluetoothState == HCI_STATE_OFF){
 			label = @"Bluetooth not accessible!";
-			cell.accessoryView = nil;
+             [(UIActivityIndicatorView *)cell.accessoryView stopAnimating];
 		} else {
-			if (connectedDevice) {
-				label = @"Disconnect";
-				cell.accessoryView = nil;
-			} else if (remoteDevice) {
+			if (connectingDevice) {
 				label = @"Connecting...";
-				cell.accessoryView = bluetoothActivity;
+                [(UIActivityIndicatorView *)cell.accessoryView startAnimating];
 			} else {
 				switch (inquiryState){
 					case kInquiryInactive:
@@ -496,97 +560,68 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 							label = @"Press here to find more devices...";
 						} else {
 							label = @"Press here to find first device...";
+                                    
 						}
-						cell.accessoryView = nil;
+                        [(UIActivityIndicatorView *)cell.accessoryView stopAnimating];
 						break;
 					case kInquiryActive:
 						//label = @"Searching...";
-						label = @"Press 1+2 or red little button to sync";
-						cell.accessoryView = bluetoothActivity;
+						label = @"Press PS (Sixaxis) or 1+2 (WiiMote)";
+                        [(UIActivityIndicatorView *)cell.accessoryView startAnimating];
 						break;
 					case kInquiryRemoteName:
 						label = @"Query device names...";
-						cell.accessoryView = bluetoothActivity;
+                        [(UIActivityIndicatorView *)cell.accessoryView startAnimating];
 						break;
 				}
 			}
 		}
 	} else {
 		BTDevice *dev = [devices objectAtIndex:idx];
-		label = [dev nameOrAddress];
+        label = [dev labelOrNameOrAddress];
+                  
 		if ([dev name]){
 			cell.textLabel.font = deviceNameFont;
 		} else {
 			cell.textLabel.font = macAddressFont;
 		}
-		// pick an icon for the devices
-		if (showIcons) {
-			int major = ([dev classOfDevice] & 0x1f00) >> 8;
-			if (major == 0x01) {
-				cell.imageView.image = [UIImage imageNamed:@"computer.png"];
-			} else if (major == 0x02) {
-				cell.imageView.image = [UIImage imageNamed:@"smartphone.png"];
-			} else if ( major == 0x05 && ([dev classOfDevice] & 0xff) == 0x40){ 
-				cell.imageView.image = [UIImage imageNamed:@"keyboard.png"];
-			} else {
-				cell.imageView.image = [UIImage imageNamed:@"bluetooth.png"];
-			}
-		}
+
 		switch ([dev connectionState]) {
 			case kBluetoothConnectionNotConnected:
 			case kBluetoothConnectionConnected:
-				cell.accessoryView = nil;
+                [(UIActivityIndicatorView *)cell.accessoryView stopAnimating];
 				break;
 			case kBluetoothConnectionConnecting:
 			case kBluetoothConnectionRemoteName:
-				cell.accessoryView = deviceActivity;
+                [(UIActivityIndicatorView *)cell.accessoryView startAnimating];
 				break;
 		}
+
 	}
+
 	cell.textLabel.text = label;
     return cell;
 }
 
-
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 	NSLog(@"didSelectRowAtIndexPath %@", indexPath);
-    // Navigation logic may go here. Create and push another view controller.
-	// AnotherViewController *anotherViewController = [[AnotherViewController alloc] initWithNibName:@"AnotherView" bundle:nil];
-	// [self.navigationController pushViewController:anotherViewController];
-	// [anotherViewController release];
-	
-	// valid selection?
-	
-	
+
 	int idx = [indexPath indexAtPosition:1];
-	//printf("sleccion %d\n",idx);
 	if (bluetoothState == HCI_STATE_WORKING) {
-		if (delegate) {
+		
 			if (idx < [devices count]){
-				[[delegate class ]deviceChoosen:self device:[devices objectAtIndex:idx]];
+               /* nothing */
 			} else if (idx == [devices count]) {
-			    //printf("seleccionado %d %d\n",idx,connectedDevice);
-				if (connectedDevice) {
-					// DISCONNECT button 
-					[[delegate class ]disconnectDevice:self device:connectedDevice];
-				} else if (myosd_num_of_joys<4){
-					// Find more devices
+				if (myosd_num_of_joys<4){
 					[self myStartInquiry];
 				}
 			}
-		}
+		
 	} else {
 		[tableView deselectRowAtIndexPath:indexPath animated:TRUE];
 	}
-	
 }
 
-- (NSIndexPath *)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-	if (allowSelection) {
-		return indexPath;
-	}
-	return nil;
-}
 
 @end
 
