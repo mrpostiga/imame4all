@@ -72,7 +72,7 @@
 
 @synthesize skinValue;
 
-@synthesize wiiDeadZoneValue;
+@synthesize btDeadZoneValue;
 @synthesize touchDeadZone;
 
 @synthesize overscanValue;
@@ -119,6 +119,9 @@
 
 @synthesize hiscore;
 
+@synthesize buttonSize;
+@synthesize stickSize;
+
 - (id)init {
 
     if (self = [super init]) {
@@ -132,7 +135,7 @@
 {
 	
 	//NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v5.bin")];
-    NSString *path=[NSString stringWithUTF8String:get_documents_path("iOS/options_v17.bin")];
+    NSString *path=[NSString stringWithUTF8String:get_documents_path("iOS/options_v18.bin")];
 	
 	NSData *plistData;
 	id plist;
@@ -176,7 +179,7 @@
         
         skinValue = 0;
         
-        wiiDeadZoneValue = 2;
+        btDeadZoneValue = 2;
         touchDeadZone = 1;
         
         overscanValue = 0;
@@ -223,6 +226,9 @@
         autofire = 0;
         hiscore = 0;
         
+        stickSize = 2;
+        buttonSize= 2;
+        
 		//[self saveOptions];
 	}
 	else
@@ -250,7 +256,7 @@
         
         skinValue =  [[[optionsArray objectAtIndex:0] objectForKey:@"skinValue"] intValue];
         
-        wiiDeadZoneValue =  [[[optionsArray objectAtIndex:0] objectForKey:@"wiiDeadZoneValue"] intValue];
+        btDeadZoneValue =  [[[optionsArray objectAtIndex:0] objectForKey:@"btDeadZoneValue"] intValue];
         touchDeadZone =  [[[optionsArray objectAtIndex:0] objectForKey:@"touchDeadZone"] intValue];
 
         overscanValue =  [[[optionsArray objectAtIndex:0] objectForKey:@"overscanValue"] intValue];
@@ -298,6 +304,9 @@
         
         hiscore  =  [[[optionsArray objectAtIndex:0] objectForKey:@"hiscore"] intValue];
         
+        buttonSize =  [[[optionsArray objectAtIndex:0] objectForKey:@"buttonSize"] intValue];
+        stickSize =  [[[optionsArray objectAtIndex:0] objectForKey:@"stickSize"] intValue];
+        
 	}
 			
 }
@@ -327,7 +336,7 @@
 							 
 							 [NSString stringWithFormat:@"%d", skinValue], @"skinValue",
 							  
-							 [NSString stringWithFormat:@"%d", wiiDeadZoneValue], @"wiiDeadZoneValue",
+							 [NSString stringWithFormat:@"%d", btDeadZoneValue], @"btDeadZoneValue",
 							 [NSString stringWithFormat:@"%d", touchDeadZone], @"touchDeadZone",
 							 
 							 [NSString stringWithFormat:@"%d", overscanValue], @"overscanValue",
@@ -372,6 +381,9 @@
                              [NSString stringWithFormat:@"%d", autofire], @"autofire",
                              [NSString stringWithFormat:@"%d", hiscore], @"hiscore",
                              
+                             [NSString stringWithFormat:@"%d", stickSize], @"stickSize",
+                             [NSString stringWithFormat:@"%d", buttonSize], @"buttonSize",
+                             
                              filterKeyword, @"filterKeyword", //CUIADO si es nill termina la lista
                                                                                      
 							 nil]];
@@ -379,7 +391,7 @@
 
 	
     //NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v5.bin")];
-	NSString *path=[NSString stringWithUTF8String:get_documents_path("iOS/options_v17.bin")];
+	NSString *path=[NSString stringWithUTF8String:get_documents_path("iOS/options_v18.bin")];
     
 	NSData *plistData;
 	
@@ -471,7 +483,7 @@
         arrayControlType = [[NSArray alloc] initWithObjects:@"None",@"iCade",@"iCP, Gametel",@"iMpulse", nil];
         
         arrayAnalogDZValue = [[NSArray alloc] initWithObjects:@"1", @"2", @"3",@"4", @"5", @"6", nil];
-        arrayWiiDZValue = [[NSArray alloc] initWithObjects:@"1", @"2", @"3",@"4", @"5", @"6", nil];
+        arrayBTDZValue = [[NSArray alloc] initWithObjects:@"1", @"2", @"3",@"4", @"5", @"6", nil];
         
         arraySoundValue = [[NSArray alloc] initWithObjects:@"Off", @"On (11 KHz)", @"On (22 KHz)",@"On (33 KHz)", @"On (44 KHz)", @"On (48 KHz)", nil];
         
@@ -498,9 +510,11 @@
         arrayAutofireValue = [[NSArray alloc] initWithObjects:@"Disabled", @"Speed 1", @"Speed 2",@"Speed 3",
                               @"Speed 4", @"Speed 5",@"Speed 6",@"Speed 7",@"Speed 8",@"Speed 9",nil];
         
+        arrayStickSizeValue = [[NSArray alloc] initWithObjects:@"Smaller", @"Small", @"Normal", @"Big", @"Bigger",nil];
+        arrayButtonSizeValue = [[NSArray alloc] initWithObjects:@"Smaller", @"Small", @"Normal", @"Big", @"Bigger",nil];
+        
         int i = 0;
-        
-        
+                
         while(myosd_array_years[i][0]!='\0'){
             [arrayYearGTEValue addObject:[NSString stringWithUTF8String: myosd_array_years[i]]];
             [arrayYearLTEValue addObject:[NSString stringWithUTF8String: myosd_array_years[i]]];
@@ -757,7 +771,7 @@
                }
                case 3:
                {                
-                   cell.textLabel.text   = @"Full Screen Buttons";
+                   cell.textLabel.text   = @"Fullscreen Buttons";
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                    cell.detailTextLabel.text = [arrayNumbuttons objectAtIndex:op.numbuttons];
                    
@@ -772,8 +786,27 @@
                    [switchAplusB setOn:[op aplusb] animated:NO];
                    [switchAplusB addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
                    break;
-               }                                             
+               }
                 case 5:
+                {
+                    cell.textLabel.text   = @"Buttons Size";
+                    
+                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                    cell.detailTextLabel.text = [arrayButtonSizeValue objectAtIndex:op.buttonSize];
+                    
+                    break;
+                }
+                case 6:
+                {
+                    cell.textLabel.text   = @"Fullscreen Stick Size";
+                    
+                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                    cell.detailTextLabel.text = [arrayStickSizeValue objectAtIndex:op.stickSize];
+                    
+                    break;
+                }
+                    
+                case 7:
                 {
                     cell.textLabel.text   = @"External Controller";
 
@@ -783,7 +816,7 @@
                    break;
                 }    
                 
-               case 6:
+               case 8:
                {
                    cell.textLabel.text   = @"P1 as P2,P3,P4";
                    [switchP1aspx release];
@@ -793,7 +826,7 @@
                    [switchP1aspx addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
                    break;
                }
-                case 7:
+                case 9:
                 {
                     
                     cell.textLabel.text   = @"Button B as Autofire";
@@ -801,7 +834,7 @@
                     cell.detailTextLabel.text = [arrayAutofireValue objectAtIndex:op.autofire];
                     break;
                 }
-                case 8:
+                case 10:
                 {
                     cell.textLabel.text   = @"DPAD Touch DZ";
                     [switchTouchDeadZone release];
@@ -811,7 +844,7 @@
                     [switchTouchDeadZone addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
                     break;
                 }
-                case 9:
+                case 11:
                 {
                     cell.textLabel.text   = @"Stick Touch DZ";
                     
@@ -819,14 +852,14 @@
                     cell.detailTextLabel.text = [arrayAnalogDZValue objectAtIndex:op.analogDeadZoneValue];
                     break;
                 }
-                case 10:
+                case 12:
                 {
-                    if(g_wiimote_avalible)
+                    if(g_btjoy_available)
                     {
-                        cell.textLabel.text   = @"Wii Classic DZ";
+                        cell.textLabel.text   = @"BT Analog DZ";
                         
                         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                        cell.detailTextLabel.text = [arrayWiiDZValue objectAtIndex:op.wiiDeadZoneValue];
+                        cell.detailTextLabel.text = [arrayBTDZValue objectAtIndex:op.btDeadZoneValue];
                     }
                     
                     break;
@@ -1215,7 +1248,7 @@
           case kSupportSection: return 2;
           case kPortraitSection: return 5;
           case kLandscapeSection: return 5;
-          case kInputSection: return 11-!g_wiimote_avalible;
+          case kInputSection: return 13-!g_btjoy_available;
           case kCustomLayout: return 2;
           case kGameDefaultsSection: return 4;
           case kAppDefaultsSection: return 5;
@@ -1276,7 +1309,7 @@
     [arrayTouchType release];
     [arrayControlType release];
     [arrayAnalogDZValue release];
-    [arrayWiiDZValue release];
+    [arrayBTDZValue release];
     [arraySoundValue release];
     [arrayFSValue release];
     [arrayOverscanValue release];
@@ -1301,6 +1334,9 @@
     
     [arrayAutofireValue release];
     [switchHiscore release];
+    
+    [arrayButtonSizeValue release];
+    [arrayStickSizeValue release];
     
     [super dealloc];
 }
@@ -1442,25 +1478,37 @@
             }
             if (row==5){
                 ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                               type:kTypeControlType list:arrayControlType]; 
+                                                                                              type:kTypeButtonSizeValue list:arrayButtonSizeValue];
+                [[self navigationController] pushViewController:listController animated:YES];
+                [listController release];
+            }
+            if (row==6){
+                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
+                                                                                              type:kTypeStickSizeValue list:arrayStickSizeValue];
                 [[self navigationController] pushViewController:listController animated:YES];
                 [listController release];
             }
             if (row==7){
                 ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                                                                              type:kTypeAutofireValue list:arrayAutofireValue];
+                                               type:kTypeControlType list:arrayControlType]; 
                 [[self navigationController] pushViewController:listController animated:YES];
                 [listController release];
             }
             if (row==9){
                 ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
+                                                                                              type:kTypeAutofireValue list:arrayAutofireValue];
+                [[self navigationController] pushViewController:listController animated:YES];
+                [listController release];
+            }
+            if (row==11){
+                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
                                     type:kTypeAnalogDZValue list:arrayAnalogDZValue];
                 [[self navigationController] pushViewController:listController animated:YES];
                 [listController release];
             }
-            if (row==10){
+            if (row==12){
                 ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                type:kTypeWiiDZValue list:arrayWiiDZValue];                        
+                                type:kTypeBTDZValue list:arrayBTDZValue];                        
                 [[self navigationController] pushViewController:listController animated:YES];
                 [listController release];
             }

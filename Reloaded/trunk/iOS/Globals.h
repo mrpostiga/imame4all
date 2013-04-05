@@ -98,7 +98,7 @@ extern int g_emulation_paused;
 
 extern int g_joy_used;
 extern int g_iCade_used;
-extern int g_wiimote_avalible;
+extern int g_btjoy_available;
 
 extern int g_menu_option;
 
@@ -123,7 +123,7 @@ extern int g_pref_hide_LR;
 extern int g_pref_BplusX;
 extern int g_pref_full_num_buttons;
 extern int g_pref_skin;
-extern int g_pref_wii_DZ_value;
+extern int g_pref_BT_DZ_value;
 extern int g_pref_touch_DZ;
 extern int g_pref_analog_DZ_value;
 extern int g_pref_input_touch_type;
@@ -132,6 +132,9 @@ extern int g_pref_aplusb;
 extern int g_pref_nativeTVOUT;
 extern int g_pref_overscanTVOUT;
 extern int g_skin_data;
+
+extern float g_buttons_size;
+extern float g_stick_size;
 
 extern int ga_btnStates[NUM_BUTTONS];
 extern int g_dpad_state;
@@ -185,7 +188,7 @@ enum {
     MENU_OPTIONS            =  6,
     MENU_DONATE             =  9,
     MENU_DOWNLOAD           = 11,
-    MENU_WIIMOTE            = 12};
+    MENU_BTJOY            = 12};
 
 
 enum { TOUCH_INPUT_DPAD=0,TOUCH_INPUT_DSTICK=1, TOUCH_INPUT_ANALOG=2};

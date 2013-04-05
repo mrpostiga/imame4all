@@ -32,6 +32,8 @@ OSDOBJS += $(MYOSDOBJ)/osd-ios.o
 
 ifndef iOSNOJAILBREAK
 OSDOBJS += $(MYOSDOBJ)/wiimote.o
+OSDOBJS += $(MYOSDOBJ)/sixaxis.o
+OSDOBJS += $(MYOSDOBJ)/bt_joy.o
 endif
 	
 endif

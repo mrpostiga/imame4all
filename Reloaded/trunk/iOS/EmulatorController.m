@@ -54,8 +54,8 @@
 #import "AnalogStick.h"
 #import "LayoutView.h"
 #import "LayoutData.h"
-#ifdef WIIMOTE
-#import "WiiMoteHelper.h"
+#ifdef BTJOY
+#import "BTJoyHelper.h"
 #endif
 #import <pthread.h>
 
@@ -67,10 +67,10 @@ int g_emulation_initiated=0;
 
 int g_joy_used = 0;
 int g_iCade_used = 0;
-#ifdef WIIMOTE
-int g_wiimote_avalible = 1;
+#ifdef BTJOY
+int g_btjoy_available = 1;
 #else
-int g_wiimote_avalible = 0;
+int g_btjoy_available = 0;
 #endif
 int g_menu_option = MENU_NONE;
 
@@ -99,7 +99,7 @@ int g_pref_hide_LR=0;
 int g_pref_BplusX=0;
 int g_pref_full_num_buttons=4;
 int g_pref_skin = 1;
-int g_pref_wii_DZ_value = 2;
+int g_pref_BT_DZ_value = 2;
 int g_pref_touch_DZ = 1;
 
 int g_pref_input_touch_type = TOUCH_INPUT_DSTICK;
@@ -112,6 +112,9 @@ int g_pref_nativeTVOUT = 1;
 int g_pref_overscanTVOUT = 1;
 
 int g_skin_data = 1;
+
+float g_buttons_size = 1.0f;
+float g_stick_size = 1.0f;
 
 int global_low_latency_sound = 0;
 static int main_thread_priority = 46;
@@ -277,12 +280,12 @@ void* app_Thread_Start(void* args)
 
        [addController release];
     }
-#ifdef WIIMOTE
+#ifdef BTJOY
     else if(buttonIndex == 1 + enable_menu_exit_option + loadsave)
     {
-       g_menu_option = MENU_WIIMOTE;
+       g_menu_option = MENU_BTJOY;
 
-       [WiiMoteHelper startwiimote:self];
+       [BTJoyHelper startBTJoy:self];
     }
 #endif    
     else   	    
@@ -329,8 +332,8 @@ void* app_Thread_Start(void* args)
        [menu addButtonWithTitle:@"Save State"];
     }
     [menu addButtonWithTitle:@"Settings"];
-    if(g_wiimote_avalible)
-       [menu addButtonWithTitle:@"WiiMote"];
+    if(g_btjoy_available)
+       [menu addButtonWithTitle:@"WiiMote/Sixaxis"];
     [menu addButtonWithTitle:@"Cancel"];
     	   
     [menu showInView:self.view];
@@ -403,7 +406,7 @@ void* app_Thread_Start(void* args)
     if(g_pref_skin == 2 && g_isIpad)
         g_pref_skin = 3;
     
-    g_pref_wii_DZ_value = [op wiiDeadZoneValue];
+    g_pref_BT_DZ_value = [op btDeadZoneValue];
     g_pref_touch_DZ = [op touchDeadZone];
     
     g_pref_nativeTVOUT = [op tvoutNative];
@@ -544,7 +547,23 @@ void* app_Thread_Start(void* args)
     
     myosd_autofire = [op autofire];
     myosd_hiscore = [op hiscore];
-
+    
+    switch ([op buttonSize]) {
+        case 0: g_buttons_size = 0.8; break;
+        case 1: g_buttons_size = 0.9; break;
+        case 2: g_buttons_size = 1.0; break;
+        case 3: g_buttons_size = 1.1; break;
+        case 4: g_buttons_size = 1.2; break;
+    }
+    
+    switch ([op stickSize]) {
+        case 0: g_stick_size = 0.8; break;
+        case 1: g_stick_size = 0.9; break;
+        case 2: g_stick_size = 1.0; break;
+        case 3: g_stick_size = 1.1; break;
+        case 4: g_stick_size = 1.2; break;
+    }
+    
     [op release];
 }
 
@@ -912,10 +931,14 @@ void* app_Thread_Start(void* args)
      [imageOverlay release];
      imageOverlay = nil;
    }
+    
+   [[UIApplication sharedApplication]   setStatusBarOrientation:self.interfaceOrientation];
    
    if((self.interfaceOrientation ==  UIDeviceOrientationLandscapeLeft) || (self.interfaceOrientation == UIDeviceOrientationLandscapeRight)){
-	   [self buildLandscape];	        	
-   } else	if((self.interfaceOrientation == UIDeviceOrientationPortrait) || (self.interfaceOrientation == UIDeviceOrientationPortraitUpsideDown)){	
+	          
+       [self buildLandscape];
+   } else	if((self.interfaceOrientation == UIDeviceOrientationPortrait) || (self.interfaceOrientation == UIDeviceOrientationPortraitUpsideDown)){
+              
        [self buildPortrait];
    }
 
@@ -1154,6 +1177,8 @@ void* app_Thread_Start(void* args)
    g_device_is_landscape = 0;
    [ self getControllerCoords:0 ];
     
+   [ self adjustSizes];
+    
    [LayoutData loadLayoutData:self];
    
    [self buildPortraitImageBack];
@@ -1345,6 +1370,8 @@ void* app_Thread_Start(void* args)
    g_device_is_landscape = 1;
       
    [self getControllerCoords:1 ];
+    
+   [self adjustSizes];
     
    [LayoutData loadLayoutData:self];
    
@@ -2294,6 +2321,45 @@ void* app_Thread_Start(void* args)
                                                     otherButtonTitles:@"Yes",@"No",nil];
         [exitAlertView show];
         [exitAlertView release];
+    }
+}
+
+-(void)adjustSizes{
+    
+    int i= 0;
+    
+    for(i=0;i<INPUT_LAST_VALUE;i++)
+    {
+        if(i==BTN_Y_RECT ||
+           i==BTN_A_RECT ||
+           i==BTN_X_RECT ||
+           i==BTN_B_RECT ||
+           i==BTN_A_Y_RECT ||
+           i==BTN_B_X_RECT ||
+           i==BTN_B_Y_RECT ||
+           i==BTN_X_A_RECT ||
+           i==BTN_L1_RECT ||
+           i==BTN_R1_RECT
+           ){
+        
+              rInput[i].size.height *= g_buttons_size;
+              rInput[i].size.width *= g_buttons_size;
+        }
+    }
+    
+    for(i=0;i<NUM_BUTTONS;i++)
+    {
+        if(i==BTN_A || i==BTN_B || i==BTN_X || i==BTN_Y || i==BTN_R1 || i==BTN_L1)
+        {
+           rButtonImages[i].size.height *= g_buttons_size;
+           rButtonImages[i].size.width *= g_buttons_size;
+        }
+    }
+    
+    if((!g_device_is_landscape && g_pref_full_screen_port) || (g_device_is_landscape && g_pref_full_screen_land))
+    {
+       rStickWindow.size.height *= g_stick_size;
+       rStickWindow.size.width *= g_stick_size;
     }
 }
 

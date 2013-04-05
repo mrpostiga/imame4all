@@ -55,15 +55,14 @@ extern "C" {
     #define WIIMOTE_DBG			0
 
 	/* Convert between radians and degrees */
-	#define RAD_TO_DEGREE(r)	((r * 180.0f) / WIIMOTE_PI)
-	#define DEGREE_TO_RAD(d)	(d * (WIIMOTE_PI / 180.0f))
+	#define WIIMOTE_RAD_TO_DEGREE(r)	((r * 180.0f) / WIIMOTE_PI)
+	#define WIIMOTE_DEGREE_TO_RAD(d)	(d * (WIIMOTE_PI / 180.0f))
 
 	/* Convert to big endian */
 	#define BIG_ENDIAN_LONG(i)				(htonl(i))
 	#define BIG_ENDIAN_SHORT(i)				(htons(i))
 
-	#define absf(x)						((x >= 0) ? (x) : (x * -1.0f))
-	#define diff_f(x, y)				((x >= y) ? (absf(x - y)) : (absf(y - x)))
+	#define wiimote_absf(x)						((x >= 0) ? (x) : (x * -1.0f))
 
 	/* wiimote state flags*/
 	#define WIIMOTE_STATE_DEV_FOUND				0x0001
@@ -240,11 +239,6 @@ extern "C" {
 	typedef struct wiimote_t {
 		int unid;						/**< user specified id						*/
 
-		uint16_t wiiMoteConHandle;
-		uint16_t i_source_cid;
-		uint16_t c_source_cid;
-		bd_addr_t addr;
-
    	    int state;						/**< various state flags					*/
 		byte leds;						/**< currently lit leds						*/
 		float battery_level;				/**< battery level							*/
@@ -262,7 +256,7 @@ extern "C" {
 	 *	@param button	The button you are interested in.
 	 *	@return 1 if the button is pressed, 0 if not.
 	 */
-	#define IS_PRESSED(dev, button)		((dev->btns & button) == button)
+	#define WM_IS_PRESSED(dev, button)		((dev->btns & button) == button)
 
 	/* macro to manage states */
 	#define WIIMOTE_IS_SET(wm, s)			((wm->state & (s)) == (s))
@@ -272,19 +266,17 @@ extern "C" {
 
     #define WIIMOTE_IS_CONNECTED(wm)		(WIIMOTE_IS_SET(wm, WIIMOTE_STATE_CONNECTED))
 
-	extern struct wiimote_t joys[4];
-	extern int myosd_num_of_joys;
 
-
-//devuelve un int haciendo polling de lo guardado en el wiimote
-int iOS_wiimote_check (struct  wiimote_t  *wm);
-int wiimote_remove(uint16_t source_cid, bd_addr_t *addr);
-struct wiimote_t* wiimote_get_by_source_cid(uint16_t source_cid);
-int  wiimote_handshake(struct wiimote_t* wm,  byte event, byte* data, unsigned short len);
-void wiimote_status(struct wiimote_t* wm);
-void wiimote_data_report(struct wiimote_t* wm, byte type);
-void wiimote_pressed_buttons(struct wiimote_t* wm, byte* msg);
-void wiimote_handle_expansion(struct wiimote_t* wm, byte* msg);
+    int wiimote_init(void (*wiimote_notify_connection_callback)(struct wiimote_t* wm),
+                     void (*wiimote_send_l2cap_callback)(int unid, int interrupt, unsigned char *buf, int len) );
+    
+    void wiimote_set_leds(struct wiimote_t* wm, int leds);
+    int  wiimote_handshake(struct wiimote_t* wm,  byte event, byte* data, unsigned short len);
+    void wiimote_status(struct wiimote_t* wm);
+    void wiimote_data_report(struct wiimote_t* wm, byte type);
+    void wiimote_pressed_buttons(struct wiimote_t* wm, byte* msg);
+    void wiimote_handle_expansion(struct wiimote_t* wm, byte* msg);
+    int  wiimote_handle_data_packet(struct wiimote_t* wm, uint8_t *packet, uint16_t size);
 
 
 #if defined(__cplusplus)

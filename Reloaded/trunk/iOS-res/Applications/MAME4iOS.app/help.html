@@ -15,7 +15,7 @@
 </head>
 <body>
 <h1>
-MAME4iOS Reloaded (0.139u1 ) 1.4 (March 17, 2013) by David Valdeita (Seleuco)
+MAME4iOS Reloaded (0.139u1 ) 1.5 (April 05, 2013) by David Valdeita (Seleuco)
 </h1>
 
 
@@ -61,8 +61,8 @@ Official web page for news, source code & additional information:<p/>
 <li>Full screen, windowed.</li>
 <li>Selectable animated touch DPad, Digital Stick or Analog Stick.</li>
 <li>1/6 touch buttons selectable.</li>
-<li>WiiMote/WiiClassic control thanks to BTstack. (Jailbroken only).</li>
-<li>Support for up to 4 WiiMotes/Classic (multiplayer) (Jailbroken only).</li>
+<li>Sixaxis/WiiMote/WiiClassic control thanks to BTstack. (Jailbroken only).</li>
+<li>Support for up to 4 Sixaxis/WiiMotes/Classic (multiplayer) (Jailbroken only).</li>
 <li> External controller support: iCade (or compatible), iControlPad, iMpulse (1 or 2 Players).</li>
 <li>TV-OUT</li>
 </ul>
@@ -114,7 +114,11 @@ NOTE: To type OK when MAME requires it, press LEFT and then RIGHT.<p/>
 <b>-Full Screen Buttons.</b> Show 1-4/6 Buttons: Hide/show B/Y/A/X/L/R buttons if needed.<p/>
 
 <b>-Button A = B + X.</b> Select it to use A button as B and X simultaneous press.<p/>
+    
+<b>-Buttons Size.</b> Lets you change the touch buttons size.<p/>
 
+<b>-Fullscreen Stick Size.</b> Lets you change the stick size (not DPAD) on lanscape or portrait fullscreen mode.<p/>
+    
 <b>-External Controller:</b> Enable external controller: iCade, iControlPad as iCade mode or iMpulse.<p/>
     
 <b>-P4,P3,P2 as P1.</b> Send Player 1 input data to Player2,3,4 so you can use the 2-4 players at the same time. Funny :). It makes some weird problems with some roms like D&D.<p/>
@@ -125,7 +129,7 @@ NOTE: To type OK when MAME requires it, press LEFT and then RIGHT.<p/>
 
 <b>-Stick Touch DZ:</b> Touch stick deadzone selector.  Lower to gets more sensitivity.<p/>
 
-<b>-Wii Classic DZ:</b> Wii classic stick deadzone selector. Upper if you have problems with stick (controller going crazy). Lower to gets more sensitivity. (only jailbroken)<p/>
+<b>-BT Analog DZ:</b> Sixaxis or Wii classic stick deadzone selector. Upper if you have problems with stick (controller going crazy). Lower to gets more sensitivity. (only jailbroken)<p/>
 
 <p/>
 <b>-Sound:</b> Enable or set the default sound rate for games.<p/>
@@ -179,22 +183,30 @@ In the filtering options you can filter your ROMS by favorites, category, manufa
     
 You can save or load game states by pressing the MENU button when you are gaming, and select save or load state option. Also you can press button A+COIN (Load) or A+START (Save) on a external controller. Then you should press button B (slot1) or button X (slot 2) to save or load the state<p/>
     
-    
-<h2>WIIMOTE</h2>
+<h2>WiiMote/Sixaxis</h2>
 
 (only MAME4iOS for jailbroken devices)<p/>
     
-MAME4iOS lets you use up to 4 WiiMotes or Wii Classic controllers over bluetooth to play (multiplayer).<p/> 
+MAME4iOS lets you use up to 4 Sixaxis, WiiMotes or Wii Classic controllers over bluetooth to play (local multiplayer).<p/> 
 
-MAME4iOS uses btstack project to support WiiMote:<p/>
+MAME4iOS uses btstack project to support Sixaxis/WiiMote:<p/>
 
 <a href="http://code.google.com/p/btstack/">http://code.google.com/p/btstack/</a><p/>
 
-To use WiiMote you have to first launch MAME4iOS menu pressing MENU button, and select WiiMote option. Then, press to find first WiiMote and make your WiiMote discoverable by pressing the 1+2 buttons at the same time.<p/>
+To use WiiMote/Sixaxis you have to first launch MAME4iOS menu pressing MENU button, and select WiiMote/Sixaxis option. Then, press to find first WiiMote/Sixaxis. Make your WiiMote discoverable by pressing the 1+2 buttons at the same time (on newer WiiMoters you should press the small red button near battery instead). To make your Sixaxis discoverable, press the PS button on the Sixaxis controller<p/>
 
-You can add new WiiMote anytime, selecting WiiMote option again. If a WiiMote is disconnected (battery drained) you can reconnect it or connect another WiiMote and continue playing.<p/>
+You can add new WiiMote/Sixaxis anytime, selecting WiiMote/Sixaxis option again. If a WiiMote/Sixaxis is disconnected (battery drained) you can reconnect it or connect another WiiMote/Sixaxis and continue playing.<p/>
+    
+To connect the PS3 controller to your iOS device, you must store the Bluetooth address of your iOS device in your controller:<p/>
+    
+Step 1. On Windows, download and run <a href="http://www.dancingpixelstudios.com/sixaxiscontroller/tool.html"/>SixaxisPairTool</a>.<p/> 
 
-Buttons mapping:<p/>
+Step 2. Connect your iOS device to your computer with the lightning cable or 30-pin cable. Connect your PS3 controller to your computer with a USB cable and wait for the Bluetooth address to come up. Once it's paired with your computer, get your iOS device's Bluetooth address by heading into Settings > About > Bluetooth. Enter that address into SixaxisPairTool and click update. Now your iOS device should be linked to your PS3 controller.<p/>
+
+On Mac, Download <a href="http://ringwald.ch/cydia/blutrol/SixPairMac-v1.0.zip"/>SixPair Tool</a> and run the app.<p/>
+
+    
+WiiMote Buttons mapping:<p/>
 <ul>
 <li>2 = B</li>
 <li>1 = X</li>
@@ -204,6 +216,20 @@ Buttons mapping:<p/>
 <li>A = A</li>
 <li>home: exit game</li>
 </ul>
+    
+Sixaxis Buttons mapping:<p/>
+<ul>
+    <li>Circle = B</li>
+    <li>Cross = X</li>
+    <li>start = START</li>
+    <li>select = SELECT</li>
+    <li>triangle = Y</li>
+    <li>square = A</li>
+    <li>PS: exit game</li>
+    <li>L1,R2: L1</li>
+    <li>R1,L2: R1</li>
+</ul>
+        
 In landscape mode touch anywhere on the screen to show the emulator options.<p/>
 
 <h2>iCADE (or compatible)</h2>
@@ -311,7 +337,8 @@ Port to iOS by David Valdeita (Seleuco)
 
 <h2>DEVELOPMENT</h2>
 <ul>
-<li>2013-03-17 Version 1.4 Added in app touch layout customization. Added hiscores saving (MKChamp patch). Added switch to force 60Hz video for smoother gameplay in some games (use with caution since could broke other games like cave ones). Added autofire with different speeds. Added threaded video and thread priority switches. Fixed some anonymous timers on sega and cave drivers to fix save states problems (AWJ patch). Fixed 2nd controller mapping issues. Fixed simultaneous analog and digital input on external controllers. Added support for newer Wiimotes.</li>
+<li>2013-04-05 Version 1.5. Added native bluetooth support for PS3 Sixaxis (up to 4 controllers) (you must store the Bluetooth address of your iOS device in your controller with a 3rd party utility). Added button and stick size selector. Fixed permissions errors when creating files on jailbroken devices. Bluetooth manager bug fixes.</li>
+<li>2013-03-17 Version 1.4. Added in app touch layout customization. Added hiscores saving (MKChamp patch). Added switch to force 60Hz video for smoother gameplay in some games (use with caution since could broke other games like cave ones). Added autofire with different speeds. Added threaded video and thread priority switches. Fixed some anonymous timers on sega and cave drivers to fix save states problems (AWJ patch). Fixed 2nd controller mapping issues. Fixed simultaneous analog and digital input on external controllers. Added support for newer Wiimotes.</li>
 <li>2013-02-09 Version 1.3.1 Minor bug fixes. Updated to Jailbroken devices.</li>  
 <li>2013-01-14 Version 1.3. Added iPhone 5 support. Universal armv7+armv7s binary. Code refactoring for iOS 6. Added game filtering (manufacturer, driver source, year, category, keyword, clones). Added favorites. Added option to delete games in rom manager. Added iTunes file sharing to upload roms. Added auto selection for 1-6 buttons & 2-8 ways stick. Added iMpulse controller support (+ TwiMpulse). Added low latency audio option. Improved rom manager. A lot of bug fixes.
   </li>  
