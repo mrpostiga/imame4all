@@ -18,6 +18,7 @@
 #include "uimenu.h"
 
 #include "myosd.h"
+#include "netplay.h"
 
 enum
 {
@@ -38,6 +39,12 @@ enum
 	STATE_LOADSAVE
 };
 
+enum  {
+    NP_EXIT=0x1,
+    NP_SAVE=1<<2,
+    NP_LOAD=1<<3
+};
+
 static int mystate = STATE_NORMAL;
 static int B_pressed[4] ={0,0,0,0};
 static int old_B_pressed[4] = {0,0,0,0};
@@ -56,6 +63,8 @@ static int poll_ports = 0;
 static int fire[4] = {0,0,0,0};
 
 static void my_poll_ports(running_machine *machine);
+static long joystick_read(int i);
+float joystick_read_analog(int n, char axis);
 static INT32 my_get_state(void *device_internal, void *item_internal);
 static INT32 my_axis_get_state(void *device_internal, void *item_internal);
 
@@ -161,7 +170,7 @@ void my_poll_ports(running_machine *machine)
         poll_ports=0;
         
         //8 si analog o lightgun o up o down
-        if (myosd_num_ways!=4){            
+        if (myosd_num_ways!=4){
             if(way8 || counter>1)
                 myosd_num_ways = 8;
             else
@@ -173,23 +182,111 @@ void my_poll_ports(running_machine *machine)
     
 }
 
+long joystick_read(int i)
+{
+    netplay_t *handle = netplay_get_handle();
+    
+    if(handle->has_connection)
+    {
+        long res = 0;
+        if(i==0)
+        {
+            if(handle->player1)
+                res = handle->state.digital;
+            else
+                res = handle->peer_state.digital;
+        }
+        else if(i==1)
+        {
+            if(handle->player1)
+                res = handle->peer_state.digital;
+            else
+                res = handle->state.digital;
+        }
+        return res;
+    }
+    else
+    {
+        return  myosd_joystick_read(i);
+    }
+}
+
+float joystick_read_analog(int n, char axis)
+{
+    netplay_t *handle = netplay_get_handle();
+    
+    if(handle->has_connection)
+    {
+        float res = 0.0;
+        if(n==0)
+        {
+            if(handle->player1)
+                res = (float) (axis=='x' ? handle->state.analog_x : handle->state.analog_y);
+            else
+                res = (float) (axis=='x' ? handle->peer_state.analog_x : handle->peer_state.analog_y);
+        }
+        else if(n==1)
+        {
+            if(handle->player1)
+                res = (float) (axis=='x' ? handle->peer_state.analog_x : handle->peer_state.analog_y);
+            else
+                res = (float) (axis=='x' ? handle->state.analog_x : handle->state.analog_y);
+        }
+        return res;
+    }
+    else
+    {
+        return  myosd_joystick_read_analog(n,axis);
+    }
+}
 
 void droid_ios_poll_input(running_machine *machine)
-{
+{    
     my_poll_ports(machine);
     
-    long _pad_status = myosd_joystick_read(0);
-
+    long _pad_status = joystick_read(0);
+    
+    netplay_t *handle = netplay_get_handle();
+    int netplay = handle->has_connection && handle->has_begun_game;
+    
 	if(mystate == STATE_NORMAL)
 	{
 
 		keyboard_state[KEY_1] = 0;
 		keyboard_state[KEY_2] = 0;
 
-		if(myosd_exitGame)
+		if(myosd_exitGame || handle->state.ext & NP_EXIT || handle->peer_state.ext & NP_EXIT)
 		{
-			keyboard_state[KEY_ESCAPE] = 0x80;
-			myosd_exitGame = 0;
+            if(netplay)
+            {
+                if(myosd_in_menu)
+                {
+                    if(handle->state.ext & NP_EXIT || handle->peer_state.ext & NP_EXIT)
+                    {
+                        keyboard_state[KEY_ESCAPE] = 0x80;
+                        myosd_ext_status &= ~ NP_EXIT;
+                    }
+                    else
+                    {
+                        myosd_ext_status |= NP_EXIT;
+                    }
+                }
+                else
+                {
+                    handle->has_connection = 0;
+                    handle->has_begun_game = 0;
+                    keyboard_state[KEY_ESCAPE] = 0x80;
+                }
+            }
+            else
+            {
+                handle->has_begun_game = 0;//ensure for auto disconnect 
+                keyboard_state[KEY_ESCAPE] = 0x80;
+			}
+            
+            myosd_exitGame = 0;
+            handle->state.ext &= ~ NP_EXIT;
+            handle->peer_state.ext &= ~ NP_EXIT;
 		}
 	    else
 	    {
@@ -200,7 +297,7 @@ void droid_ios_poll_input(running_machine *machine)
             }
         }
         
-		if(myosd_service && !myosd_in_menu)
+		if(myosd_service && !myosd_in_menu && !netplay)
 		{
 			keyboard_state[KEY_SERVICE] = 0x80;
 			myosd_service = 0;
@@ -213,19 +310,57 @@ void droid_ios_poll_input(running_machine *machine)
 		keyboard_state[KEY_LOAD] =  0;
 		keyboard_state[KEY_SAVE] =  0;
 
-		if(myosd_savestate)
+		if(myosd_savestate || handle->state.ext & NP_SAVE || handle->peer_state.ext & NP_SAVE)
 		{
-			keyboard_state[KEY_SAVE] =  0x80;
-			myosd_savestate = 0;
-			mystate = STATE_LOADSAVE;
+            if(netplay)
+            {
+                if(handle->state.ext & NP_SAVE || handle->peer_state.ext & NP_SAVE)
+                {
+                    keyboard_state[KEY_SAVE] =  0x80;
+                    mystate = STATE_LOADSAVE;
+                    myosd_ext_status &= ~ NP_SAVE;
+                }
+                else
+                {
+                    myosd_ext_status |= NP_SAVE;
+                }
+            }
+            else
+            {
+                keyboard_state[KEY_SAVE] =  0x80;
+                mystate = STATE_LOADSAVE;
+            }
+
+            handle->state.ext &= ~ NP_SAVE;
+            handle->peer_state.ext &= ~ NP_SAVE;
+            myosd_savestate = 0;
             return;
 		}
 
-		if(myosd_loadstate)
+		if(myosd_loadstate || handle->state.ext & NP_LOAD || handle->peer_state.ext & NP_LOAD)
 		{
-			keyboard_state[KEY_LOAD] =  0x80;
-			myosd_loadstate = 0;
-			mystate = STATE_LOADSAVE;
+            if(netplay)
+            {
+                if(handle->state.ext & NP_LOAD || handle->peer_state.ext & NP_LOAD)
+                {
+                    keyboard_state[KEY_LOAD] =  0x80;
+                    mystate = STATE_LOADSAVE;
+                    myosd_ext_status &= ~ NP_LOAD;
+                }
+                else
+                {
+                    myosd_ext_status |= NP_LOAD;
+                }
+            }
+            else
+            {
+               keyboard_state[KEY_LOAD] =  0x80;
+			   mystate = STATE_LOADSAVE;
+            }
+            
+            handle->state.ext &= ~ NP_LOAD;
+            handle->peer_state.ext &= ~ NP_LOAD;
+            myosd_loadstate = 0;
             return;
 		}
 
@@ -234,7 +369,7 @@ void droid_ios_poll_input(running_machine *machine)
 			if(i!=0  && myosd_in_menu==1 && myosd_num_of_joys <=1)//to avoid mapping issues when pxasp1 is active
 				break;
 
-			_pad_status = myosd_joystick_read(i);
+			_pad_status = joystick_read(i);
 
 			if(i==0)
 			{
@@ -262,7 +397,7 @@ void droid_ios_poll_input(running_machine *machine)
 			}
 
             // lo cambio de 0 a i...
-			if(myosd_joystick_read_analog(i, 'x') == 0 && myosd_joystick_read_analog(i, 'y')==0)
+			if(joystick_read_analog(i, 'x') == 0 && joystick_read_analog(i, 'y')==0)
 			{
 			   joy_hats[i][0] = ((_pad_status & MYOSD_UP) != 0) ? 0x80 : 0;
 			   joy_hats[i][1] = ((_pad_status & MYOSD_DOWN) != 0) ? 0x80 : 0;
@@ -273,15 +408,15 @@ void droid_ios_poll_input(running_machine *machine)
 			}
 			else
 			{
-			   joy_axis[i][0] = (int)(myosd_joystick_read_analog(i, 'x') *  32767 *  2 );
-			   joy_axis[i][1] = (int)(myosd_joystick_read_analog(i, 'y') *  32767 * -2 );
+			   joy_axis[i][0] = (int)(joystick_read_analog(i, 'x') *  32767 *  2 );
+			   joy_axis[i][1] = (int)(joystick_read_analog(i, 'y') *  32767 * -2 );
 			   joy_hats[i][0] = 0;
 			   joy_hats[i][1] = 0;
 			   joy_hats[i][2] = 0;
 			   joy_hats[i][3] = 0;
 			}
             
-            if(myosd_inGame && !myosd_in_menu && myosd_autofire )
+            if(myosd_inGame && !myosd_in_menu && myosd_autofire && !netplay)
             {
                 old_B_pressed[i] = B_pressed[i];
                 B_pressed[i] = _pad_status & MYOSD_B;
@@ -326,7 +461,7 @@ void droid_ios_poll_input(running_machine *machine)
 			joy_buttons[i][4]  = ((_pad_status & MYOSD_L1) != 0) ? 0x80 : 0;
 			joy_buttons[i][5]  = ((_pad_status & MYOSD_R1) != 0) ? 0x80 : 0;
 
-			if(i!=0  && (myosd_num_of_joys==1 || myosd_num_of_joys==0))
+			if(i!=0  && (myosd_num_of_joys==1 || myosd_num_of_joys==0) && !netplay)
 				continue;
 
 			joy_buttons[i][6]  = ((_pad_status & MYOSD_SELECT ) != 0) ? 0x80 : 0;
@@ -340,11 +475,30 @@ void droid_ios_poll_input(running_machine *machine)
 		keyboard_state[KEY_1] = 0;
 		keyboard_state[KEY_2] = 0;
 
-		if(myosd_exitGame)
+		if(myosd_exitGame || handle->state.ext & NP_EXIT || handle->peer_state.ext & NP_EXIT)
 		{
-			keyboard_state[KEY_ESCAPE] = 0x80;
-			myosd_exitGame = 0;
-			mystate = STATE_NORMAL;
+            if(netplay)
+            {
+                if(handle->state.ext & NP_EXIT || handle->peer_state.ext & NP_EXIT)
+                {
+                    keyboard_state[KEY_ESCAPE] = 0x80;
+                    mystate = STATE_NORMAL;
+                    myosd_ext_status &= ~ NP_EXIT;
+                }
+                else
+                {
+                    myosd_ext_status |= NP_EXIT;
+                }
+            }
+            else
+            {
+                keyboard_state[KEY_ESCAPE] = 0x80;
+                mystate = STATE_NORMAL;
+			}
+			
+            myosd_exitGame = 0;
+            handle->state.ext &= ~ NP_EXIT;
+            handle->peer_state.ext &= ~ NP_EXIT;
 		}
 
 		if ((_pad_status & MYOSD_B) != 0)

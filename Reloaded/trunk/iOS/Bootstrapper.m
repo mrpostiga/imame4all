@@ -225,15 +225,19 @@ const char* get_documents_path(const char* file)
     [self prepareScreen];
 }
 
-- (void)applicationWillResignActive:(UIApplication *)application {
+- (void)applicationDidEnterBackground:(UIApplication *)application {
 
+   if((myosd_inGame || g_joy_used ) && !isGridlee )//force pause when game
+      [hrViewController runMenu];
+}
+
+- (void)applicationWillResignActive:(UIApplication *)application {
+    
 #ifdef BTJOY
     [BTJoyHelper endBTJoy];
 #endif
-   if((myosd_inGame || g_joy_used ) && !isGridlee )//force pause when game
-      [hrViewController runMenu];
-   //usleep(1000000);
 }
+
 /*
 - (void)applicationDidBecomeActive:(UIApplication  *)application {
   

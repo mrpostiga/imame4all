@@ -121,6 +121,7 @@
 #include <time.h>
 
 #include "myosd.h"
+#include "netplay.h"
 
 
 
@@ -300,6 +301,12 @@ void running_machine::start()
 	time_t newbase = input_port_init(this, m_game.ipt);
 	if (newbase != 0)
 		m_base_time = newbase;
+    
+    ///DAV HACK
+    netplay_t *handle = netplay_get_handle();
+    if(handle->has_connection)
+        m_base_time = handle->basetime;
+    //////
 
 	// intialize UI input
 	ui_input_init(this);

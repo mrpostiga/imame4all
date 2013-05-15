@@ -67,21 +67,6 @@ void sixaxis_pressed_buttons(struct sixaxis_t* sixaxis, unsigned char* msg){
     if(sixaxis==NULL || !SIXAXIS_IS_CONNECTED(sixaxis))
         return;
     
-    if(SIXAXIS_IS_SET(sixaxis, SIXAXIS_STATE_HANDSHAKE))
-    {
-       SIXAXIS_DISABLE_STATE(sixaxis, SIXAXIS_STATE_HANDSHAKE);
-       SIXAXIS_ENABLE_STATE(sixaxis, SIXAXIS_STATE_HANDSHAKE_COMPLETE);
-        
-        if(sixaxis->unid==0)
-            sixaxis_set_leds(sixaxis, SIXAXIS_LED_1);
-        else if(sixaxis->unid==1)
-            sixaxis_set_leds(sixaxis, SIXAXIS_LED_2);
-        else if(sixaxis->unid==2)
-            sixaxis_set_leds(sixaxis, SIXAXIS_LED_3);
-        else if(sixaxis->unid==3)
-            sixaxis_set_leds(sixaxis, SIXAXIS_LED_4);
-    }
-    
     if(!SIXAXIS_IS_SET(sixaxis, SIXAXIS_STATE_HANDSHAKE_COMPLETE))
         return;
     
@@ -206,13 +191,25 @@ int sixaxis_handle_data_packet(struct sixaxis_t* sixaxis, uint8_t *packet, uint1
     if (packet[0] ==  (SIXAXIS_DATA | SIXAXIS_INPUT) && packet[1] == SIXAXIS_INPUT_01)
     {
         
-        sixaxis_pressed_buttons(sixaxis, packet);
-        
-        if(sixaxis_handshake(sixaxis)){
+        if(SIXAXIS_IS_SET(sixaxis, SIXAXIS_STATE_HANDSHAKE))
+        {
+            SIXAXIS_DISABLE_STATE(sixaxis, SIXAXIS_STATE_HANDSHAKE);
+            SIXAXIS_ENABLE_STATE(sixaxis, SIXAXIS_STATE_HANDSHAKE_COMPLETE);
+            
+            if(sixaxis->unid==0)
+                sixaxis_set_leds(sixaxis, SIXAXIS_LED_1);
+            else if(sixaxis->unid==1)
+                sixaxis_set_leds(sixaxis, SIXAXIS_LED_2);
+            else if(sixaxis->unid==2)
+                sixaxis_set_leds(sixaxis, SIXAXIS_LED_3);
+            else if(sixaxis->unid==3)
+                sixaxis_set_leds(sixaxis, SIXAXIS_LED_4);
             
             if(sixaxis_notify_connection!=NULL)
                 sixaxis_notify_connection(sixaxis);
         }
+        
+        sixaxis_pressed_buttons(sixaxis, packet);
         
         return 1;
     }

@@ -56,6 +56,7 @@
 @class AnalogStickView;
 @class iCadeView;
 @class LayoutView;
+@class NetplayGameKit;
 
 @interface EmulatorController : UIViewController <UIActionSheetDelegate>
 {
@@ -74,6 +75,8 @@
   iCadeView         *icadeView;
     
   LayoutView        *layoutView;
+    
+  NetplayGameKit     *netplayHelper;
 
   UIActionSheet     *menu;
   
@@ -128,6 +131,8 @@
 - (void)filldebugRects;
 
 - (void)startEmulation;
+
+- (void)done:(id)sender;
 
 - (void)removeTouchControllerViews;
 - (void)buildTouchControllerViews;

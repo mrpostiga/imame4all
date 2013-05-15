@@ -16,7 +16,10 @@ OSDCOREOBJS = \
 
 OSDOBJS =  $(MYOSDOBJ)/osdmain.o \
 	$(MYOSDOBJ)/osdinput.o \
-	$(MYOSDOBJ)/osdsound.o  $(MYOSDOBJ)/osdvideo.o \
+	$(MYOSDOBJ)/osdsound.o \
+	$(MYOSDOBJ)/osdvideo.o \
+	$(MYOSDOBJ)/netplay.o \
+	$(MYOSDOBJ)/skt_netplay.o \
 	
 ifdef ANDROID
 

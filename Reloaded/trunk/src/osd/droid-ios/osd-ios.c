@@ -31,6 +31,7 @@ int  myosd_showinfo = 0;
 int  myosd_sleep = 1;
 int  myosd_inGame = 0;
 int  myosd_exitGame = 0;
+int  myosd_pause = 0;
 int  myosd_exitPause = 0;
 int  myosd_last_game_selected = 0;
 int  myosd_frameskip_value = -1;
@@ -81,6 +82,14 @@ int myosd_vsync = -1;
 int myosd_autofire=1;
 int myosd_hiscore=1;
 
+int myosd_vector_bean2x = 1;
+int myosd_vector_antialias = 1;
+int myosd_vector_flicker = 0;
+
+int  myosd_speed = 100;
+
+char myosd_selected_game[MAX_GAME_NAME] = {'\0'};
+
 
 /*extern */float joy_analog_x[4];
 /*extern */float joy_analog_y[4];
@@ -92,6 +101,7 @@ static int videot_running = 0;
 
 unsigned long myosd_pad_status = 0;
 unsigned long myosd_joy_status[4];
+unsigned short myosd_ext_status = 0;
 
 static unsigned short myosd_screen [1024 * 768 * 4];
 unsigned short 	*myosd_screen15 = NULL;
@@ -166,6 +176,7 @@ void myosd_set_video_mode(int width,int height,int vis_width,int vis_height)
   	 myosd_video_flip();
 }
 
+
 unsigned long myosd_joystick_read(int n)
 {
     unsigned long res=0;
@@ -173,7 +184,7 @@ unsigned long myosd_joystick_read(int n)
     if(n==0 || myosd_pxasp1 && (myosd_num_of_joys==0 || myosd_num_of_joys==1))
     {
        res = myosd_pad_status;
-
+        
        if(myosd_pxasp1 && myosd_num_of_joys==1)
        {
 #ifdef BTJOY
@@ -328,7 +339,8 @@ void change_pause(int value){
 
     if(!isPause)
     {
-		pthread_cond_signal( &condition_var );
+		myosd_exitPause = 1;
+        pthread_cond_signal( &condition_var );
     }
 
 	pthread_mutex_unlock( &cond_mutex );
@@ -340,8 +352,10 @@ void myosd_check_pause(void){
 
 	while(isPause)
 	{
-		pthread_cond_wait( &condition_var, &cond_mutex );
+		myosd_pause = 1;
+        pthread_cond_wait( &condition_var, &cond_mutex );
 	}
+    myosd_pause = 0;
 
 	pthread_mutex_unlock( &cond_mutex );
 }

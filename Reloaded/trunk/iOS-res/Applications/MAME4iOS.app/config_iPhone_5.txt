@@ -7,6 +7,5 @@
 0,0,568,320//LandscapeImageBackFrame
 125,0,320,320//LandscapeImageOverlayFrame
 0//drawcoords
-1//main_thread_priority_type
-1//video_thread_priority_type
+
 

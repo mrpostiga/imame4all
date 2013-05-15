@@ -18,10 +18,12 @@ OSDOBJS +=  $(IOSOBJ)/iph_main.o \
 	$(IOSOBJ)/LayoutData.o \
 	$(IOSOBJ)/LayoutView.o \
 	$(IOSOBJ)/iCadeView.o \
-	$(IOSOBJ)/AnalogStick.o   
-
-
-
+	$(IOSOBJ)/AnalogStick.o \
+	$(IOSOBJ)/FilterOptionController.o \
+	$(IOSOBJ)/InputOptionController.o \
+	$(IOSOBJ)/DefaultOptionController.o \
+	$(IOSOBJ)/NetplayController.o \
+	$(IOSOBJ)/NetplayGameKit.o
 	
 
 

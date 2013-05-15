@@ -31,6 +31,8 @@ enum  { MYOSD_UP=0x1,       MYOSD_LEFT=0x4,       MYOSD_DOWN=0x10,  MYOSD_RIGHT=
         MYOSD_VOL_UP=1<<23, MYOSD_VOL_DOWN=1<<22, MYOSD_PUSH=1<<27, MYOSD_ESC=1<<28 };
     
 #define MAX_FILTER_KEYWORD 30
+#define MAX_GAME_NAME 14
+#define NETPLAY_PORT 55435
         
 extern unsigned short *myosd_screen15;
 extern int  myosd_fps;
@@ -38,6 +40,7 @@ extern int  myosd_showinfo;
 extern int  myosd_sleep;
 extern int  myosd_inGame;
 extern int  myosd_exitGame;
+extern int  myosd_pause;
 extern int  myosd_exitPause;
 extern int  myosd_autosave;
 extern int  myosd_cheat;
@@ -63,6 +66,8 @@ extern unsigned long myosd_pad_status;
     
 extern float joy_analog_x[4];
 extern float joy_analog_y[4];
+
+extern unsigned short myosd_ext_status;
     
 extern int myosd_last_game_selected;
 
@@ -83,8 +88,15 @@ extern int myosd_vsync;
 extern int myosd_dbl_buffer;
 extern int myosd_autofire;
 extern int myosd_hiscore;
-
     
+extern int myosd_vector_bean2x;
+extern int myosd_vector_antialias;
+extern int myosd_vector_flicker;
+    
+extern int  myosd_speed;
+    
+extern char myosd_selected_game[MAX_GAME_NAME];
+
 extern void myosd_init(void);
 extern void myosd_deinit(void);
 extern void myosd_video_flip(void);

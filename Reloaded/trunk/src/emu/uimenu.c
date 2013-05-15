@@ -24,6 +24,7 @@
 #endif /* MESS */
 
 #include <ctype.h>
+#include <sys/stat.h>
 
 #include "myosd.h"
 
@@ -3996,8 +3997,8 @@ static void menu_select_game_build_driver_list(ui_menu *menu, select_game_state 
 //DAV HACK
 			/* if found, mark the corresponding entry in the array */
 			if (!skip)
-			{
-				int index = found_driver - menustate->driverlist;
+			{                
+                int index = found_driver - menustate->driverlist;
 				found[index / 8] |= 1 << (index % 8);
 			}
 		}
@@ -4090,7 +4091,7 @@ static void menu_select_game_custom_render(running_machine *machine, ui_menu *me
     {
 			//sprintf(&tempbuf[0][0], "Type name or select: _");
 	#ifdef IOS
-			sprintf(&tempbuf[0][0], "MAME4iOS Reloaded 1.5 by David Valdeita (Seleuco). Game: %d/%d",MIN(myosd_last_game_selected+1,nroms), nroms);
+			sprintf(&tempbuf[0][0], "MAME4iOS Reloaded 1.6 by David Valdeita (Seleuco). Game: %d/%d",MIN(myosd_last_game_selected+1,nroms), nroms);
 	#else
 			sprintf(&tempbuf[0][0], "MAME4droid Reloaded 1.2 by David Valdeita (Seleuco). Game: %d/%d",MIN(myosd_last_game_selected+1,nroms), nroms);
 	#endif
@@ -4133,11 +4134,23 @@ static void menu_select_game_custom_render(running_machine *machine, ui_menu *me
 		sprintf(&tempbuf[0][0], "%-.100s", driver->description);
         
         char *category = find_category(driver->name);
+        
         astring source_name;
         core_filename_extract_base(&source_name,driver->source_file,true);
+        
+        char buf[256];
+        const char* path = options_get_string(menu->machine->options(), OPTION_ROMPATH);
+        sprintf(buf,"%s/%s.zip",path,driver->name);
+        struct stat st;
+        stat(buf,&st);
+        int sz = st.st_size / 1024;
+        if(sz < 1024)
+            sprintf(buf,"%d KB",sz);
+        else
+            sprintf(buf,"%.2f MB",sz/1024.0f);
 
 		/* next line is year, manufacturer */
-		sprintf(&tempbuf[1][0], "%s, %-.50s, %s", driver->year, driver->manufacturer, source_name.cstr());
+		sprintf(&tempbuf[1][0], "%s, %-.50s, %s.c, %s", driver->year, driver->manufacturer, source_name.cstr(),buf);
 
         sprintf(&tempbuf[2][0], "%-.100s", category == NULL? "No Category":category);
         
@@ -4167,6 +4180,10 @@ static void menu_select_game_custom_render(running_machine *machine, ui_menu *me
 			soundstat = "OK";
 
 		sprintf(&tempbuf[3][0], "%s: Gfx: %s, Sound: %s",overall, gfxstat, soundstat);
+        
+//DAV HACK
+        strcpy(myosd_selected_game,driver->name);
+//END DAV HACK
 	}
 	else
 	{
@@ -4191,6 +4208,9 @@ static void menu_select_game_custom_render(running_machine *machine, ui_menu *me
 			if (*s != 0)
 				s++;
 		}
+        //DAV HACK
+        strcpy(myosd_selected_game,"");
+        //END DAV HACK
 	}
 
 	/* get the size of the text */

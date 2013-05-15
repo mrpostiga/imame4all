@@ -47,6 +47,10 @@
 #import "OptionsController.h"
 #import "Globals.h"
 #import "ListOptionController.h"
+#import "NetplayController.h"
+#import "FilterOptionController.h"
+#import "InputOptionController.h"
+#import "DefaultOptionController.h"
 #import "DonateController.h"
 #import "HelpController.h"
 #import "EmulatorController.h"
@@ -122,6 +126,21 @@
 @synthesize buttonSize;
 @synthesize stickSize;
 
+@synthesize wpantype;
+@synthesize wfpeeraddr;
+@synthesize wfport;
+@synthesize wfframesync;
+@synthesize btlatency;
+
+@synthesize vbean2x;
+@synthesize vantialias;
+@synthesize vflicker;
+
+@synthesize emuspeed;
+
+@synthesize mainThreadType;
+@synthesize videoThreadType;
+
 - (id)init {
 
     if (self = [super init]) {
@@ -133,9 +152,7 @@
 
 - (void)loadOptions
 {
-	
-	//NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v5.bin")];
-    NSString *path=[NSString stringWithUTF8String:get_documents_path("iOS/options_v18.bin")];
+    NSString *path=[NSString stringWithUTF8String:get_documents_path("iOS/options_v23.bin")];
 	
 	NSData *plistData;
 	id plist;
@@ -229,7 +246,20 @@
         stickSize = 2;
         buttonSize= 2;
         
-		//[self saveOptions];
+        wpantype = 0;
+        wfpeeraddr = nil;
+        wfport = NETPLAY_PORT;
+        wfframesync = 0;
+        btlatency = 1;
+        
+        vbean2x = 1;
+        vantialias = 1;
+        vflicker = 0;
+        
+        emuspeed = 0;
+        
+        mainThreadType = 0;
+        videoThreadType = 0;
 	}
 	else
 	{
@@ -307,6 +337,25 @@
         buttonSize =  [[[optionsArray objectAtIndex:0] objectForKey:@"buttonSize"] intValue];
         stickSize =  [[[optionsArray objectAtIndex:0] objectForKey:@"stickSize"] intValue];
         
+        wpantype  =  [[[optionsArray objectAtIndex:0] objectForKey:@"wpantype"] intValue];
+        wfpeeraddr  =  [[optionsArray objectAtIndex:0] objectForKey:@"wfpeeraddr"];
+        wfport  =  [[[optionsArray objectAtIndex:0] objectForKey:@"wfport"] intValue];
+        wfframesync  =  [[[optionsArray objectAtIndex:0] objectForKey:@"wfframesync"] intValue];
+        btlatency  =  [[[optionsArray objectAtIndex:0] objectForKey:@"btlatency"] intValue];
+        
+        if([wfpeeraddr isEqualToString:@""])
+            wfpeeraddr = nil;
+        if([filterKeyword isEqualToString:@""])
+            filterKeyword = nil;
+        
+        vbean2x  =  [[[optionsArray objectAtIndex:0] objectForKey:@"vbean2x"] intValue];
+        vantialias  =  [[[optionsArray objectAtIndex:0] objectForKey:@"vantialias"] intValue];
+        vflicker  =  [[[optionsArray objectAtIndex:0] objectForKey:@"vflicker"] intValue];
+        
+        emuspeed  =  [[[optionsArray objectAtIndex:0] objectForKey:@"emuspeed"] intValue];
+        
+        mainThreadType  =  [[[optionsArray objectAtIndex:0] objectForKey:@"mainThreadType"] intValue];
+        videoThreadType  =  [[[optionsArray objectAtIndex:0] objectForKey:@"videoThreadType"] intValue];
 	}
 			
 }
@@ -314,6 +363,9 @@
 - (void)saveOptions
 {
 
+    NSString *wfpeeraddr_tmp = wfpeeraddr == nil ? @"" : wfpeeraddr;
+    NSString *filterKeyword_tmp = filterKeyword == nil ? @"" : filterKeyword;
+    
 	[optionsArray removeAllObjects];
 	[optionsArray addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 							 [NSString stringWithFormat:@"%d", keepAspectRatioPort], @"KeepAspectPort",
@@ -384,14 +436,27 @@
                              [NSString stringWithFormat:@"%d", stickSize], @"stickSize",
                              [NSString stringWithFormat:@"%d", buttonSize], @"buttonSize",
                              
-                             filterKeyword, @"filterKeyword", //CUIADO si es nill termina la lista
-                                                                                     
+                             [NSString stringWithFormat:@"%d", wpantype], @"wpantype",
+                             [NSString stringWithFormat:@"%d", wfport], @"wfport",
+                             [NSString stringWithFormat:@"%d", wfframesync], @"wfframesync",
+                             [NSString stringWithFormat:@"%d", btlatency], @"btlatency",
+                             wfpeeraddr_tmp, @"wfpeeraddr",
+                             
+                             filterKeyword_tmp, @"filterKeyword", //CUIADO si es nill termina la lista
+                             
+                             [NSString stringWithFormat:@"%d", vbean2x], @"vbean2x",
+                             [NSString stringWithFormat:@"%d", vantialias], @"vantialias",
+                             [NSString stringWithFormat:@"%d", vflicker], @"vflicker",
+                             
+                             [NSString stringWithFormat:@"%d", emuspeed], @"emuspeed",
+                             
+                             [NSString stringWithFormat:@"%d", mainThreadType], @"mainThreadType",
+                             [NSString stringWithFormat:@"%d", videoThreadType], @"videoThreadType",
+                             
 							 nil]];
 
 
-	
-    //NSString *path=[NSString stringWithCString:get_documents_path("iOS/options_v5.bin")];
-	NSString *path=[NSString stringWithUTF8String:get_documents_path("iOS/options_v18.bin")];
+	NSString *path=[NSString stringWithUTF8String:get_documents_path("iOS/options_v23.bin")];
     
 	NSData *plistData;
 	
@@ -455,95 +520,33 @@
         
         switchShowFPS=nil;
         switchShowINFO=nil;
-        switchAnimatedButtons=nil;
-        
+
         switchfullLand=nil;
         switchfullPort=nil;
-                
-        switchTouchDeadZone = nil;
-        
-        switchTvoutNative = nil;
-                
+                                        
         switchThrottle = nil;
         
-        switchAplusB = nil;
-        switchCheats = nil;
+
         switchSleep = nil;
         
         switchForcepxa = nil;
-            
-        arrayNumbuttons = [[NSArray alloc] initWithObjects:@"Auto",@"0 Buttons",@"1 Buttons",@"2 Buttons",@"3 Buttons",@"4 Buttons",@"All Buttons", nil];
         
         arrayEmuRes = [[NSArray alloc] initWithObjects:@"Auto",@"320x200",@"320x240",@"400x300",@"480x300",@"512x384",@"640x400",@"640x480",@"800x600",@"1024x768", nil];
-        
-        arrayTouchType = [[NSArray alloc] initWithObjects:@"Digital DPAD",@"Digital Stick",@"Analog Stick", nil];
-        
-        arrayStickType = [[NSArray alloc] initWithObjects:@"Auto",@"2-Way",@"4-Way",@"8-Way", nil];
-        
-        arrayControlType = [[NSArray alloc] initWithObjects:@"None",@"iCade",@"iCP, Gametel",@"iMpulse", nil];
-        
-        arrayAnalogDZValue = [[NSArray alloc] initWithObjects:@"1", @"2", @"3",@"4", @"5", @"6", nil];
-        arrayBTDZValue = [[NSArray alloc] initWithObjects:@"1", @"2", @"3",@"4", @"5", @"6", nil];
-        
-        arraySoundValue = [[NSArray alloc] initWithObjects:@"Off", @"On (11 KHz)", @"On (22 KHz)",@"On (33 KHz)", @"On (44 KHz)", @"On (48 KHz)", nil];
-        
+                        
         arrayFSValue = [[NSArray alloc] initWithObjects:@"Auto",@"None", @"1", @"2", @"3",@"4", @"5", @"6", @"7", @"8", @"9", @"10",nil];
         
         arrayOverscanValue = [[NSArray alloc] initWithObjects:@"None",@"1", @"2", @"3",@"4", @"5", @"6", nil];
         
         arraySkinValue = 
         [[NSArray alloc] initWithObjects: @"A", @"B (Layout 1)", @"B (Layout 2)", nil];
-        
-        
-        switchFilterClones = nil;
-        switchFilterFavorites = nil;
-        switchFilterNotWorking = nil;
-        arrayManufacturerValue = [[NSMutableArray  alloc] initWithObjects:@"# All",nil];
-        arrayYearGTEValue = [[NSMutableArray  alloc] initWithObjects:@"Any",nil];
-        arrayYearLTEValue = [[NSMutableArray  alloc] initWithObjects:@"Any",nil];
-        arrayDriverSourceValue = [[NSMutableArray  alloc] initWithObjects:@"# All",nil];
-        arrayCategoryValue = [[NSMutableArray  alloc] initWithObjects:@"# All",nil];
-        
-        arrayMainPriorityValue = [[NSArray alloc] initWithObjects:@"0", @"1", @"2", @"3",@"4", @"5", @"6", @"7", @"8", @"9", @"10",nil];
-        arrayVideoPriorityValue = [[NSArray alloc] initWithObjects:@"0", @"1", @"2", @"3",@"4", @"5", @"6", @"7", @"8", @"9", @"10",nil];
-        
-        arrayAutofireValue = [[NSArray alloc] initWithObjects:@"Disabled", @"Speed 1", @"Speed 2",@"Speed 3",
-                              @"Speed 4", @"Speed 5",@"Speed 6",@"Speed 7",@"Speed 8",@"Speed 9",nil];
-        
-        arrayStickSizeValue = [[NSArray alloc] initWithObjects:@"Smaller", @"Small", @"Normal", @"Big", @"Bigger",nil];
-        arrayButtonSizeValue = [[NSArray alloc] initWithObjects:@"Smaller", @"Small", @"Normal", @"Big", @"Bigger",nil];
-        
-        int i = 0;
                 
-        while(myosd_array_years[i][0]!='\0'){
-            [arrayYearGTEValue addObject:[NSString stringWithUTF8String: myosd_array_years[i]]];
-            [arrayYearLTEValue addObject:[NSString stringWithUTF8String: myosd_array_years[i]]];
-            i++;
-        }
-        i=0;
-        while(myosd_array_main_manufacturers[i][0]!='\0'){
-            [arrayManufacturerValue addObject:[NSString stringWithUTF8String: myosd_array_main_manufacturers[i]]];
-            i++;
-        }
-        i=0;
-        while(myosd_array_main_driver_source[i][0]!='\0'){
-            [arrayDriverSourceValue addObject:[NSString stringWithUTF8String: myosd_array_main_driver_source[i]]];
-            i++;
-        }
-        [arrayManufacturerValue replaceObjectAtIndex:[arrayManufacturerValue indexOfObject:@"Other"] withObject: @"# Other / Unknow"];
-        [arrayDriverSourceValue replaceObjectAtIndex:[arrayDriverSourceValue indexOfObject:@"Other"] withObject: @"# Other / Unknow"];
-        i=0;
-        while(myosd_array_categories[i][0]!='\0'){
-            [arrayCategoryValue addObject:[NSString stringWithUTF8String: myosd_array_categories[i]]];
-            i++;
-        }
-        
         switchLowlsound = nil;
-        switchVsync = nil;
-        switchThreaded = nil;
-        switchDblbuff = nil;
-        switchHiscore = nil;
+
         
+        arrayEmuSpeed = [[NSArray alloc] initWithObjects: @"Default",
+                         @"50%", @"60%", @"70%", @"80%", @"85%",@"90%",@"95%",@"100%",
+                         @"105%", @"110%", @"115%", @"120%", @"130%",@"140%",@"150%",
+                         nil];
     }
 
     return self;
@@ -581,7 +584,11 @@
        
       UITableViewCellStyle style;
        
-      if((indexPath.section==kFilterSection && indexPath.row==9) || indexPath.section==kCustomLayout )
+      if((indexPath.section==kFilterSection && indexPath.row==9)
+          || (indexPath.section==kMultiplayerSection && indexPath.row==0)
+          || (indexPath.section==kMultiplayerSection && indexPath.row==1)
+          || (indexPath.section==kMultiplayerSection && indexPath.row==2)
+         )
           style = UITableViewCellStyleDefault;
        else
           style = UITableViewCellStyleValue1;
@@ -742,260 +749,30 @@
         }    
         case kInputSection:  //Input
         {
-            switch (indexPath.row) 
+            switch (indexPath.row)
             {
-               case 0:
-               {
-                   cell.textLabel.text   = @"Animated";
-                   [switchAnimatedButtons release];
-                   switchAnimatedButtons  = [[UISwitch alloc] initWithFrame:CGRectZero];                
-                   cell.accessoryView = switchAnimatedButtons ;
-                   [switchAnimatedButtons setOn:[op animatedButtons] animated:NO];
-                   [switchAnimatedButtons addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
-                   break;
-              }
-              case 1:
-              {
-                   cell.textLabel.text   = @"Touch Type";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [arrayTouchType objectAtIndex:op.touchtype];
-                   break;
-               }
-               case 2:
-               {                   
-                   cell.textLabel.text   = @"Stick Type";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [arrayStickType objectAtIndex:op.sticktype];
-                   
-                   break;
-               }
-               case 3:
-               {                
-                   cell.textLabel.text   = @"Fullscreen Buttons";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [arrayNumbuttons objectAtIndex:op.numbuttons];
-                   
-                   break;
-               }
-               case 4:
-               {
-                   cell.textLabel.text   = @"Button A = B + X";
-                   [switchAplusB release];
-                   switchAplusB  = [[UISwitch alloc] initWithFrame:CGRectZero];                
-                   cell.accessoryView = switchAplusB ;
-                   [switchAplusB setOn:[op aplusb] animated:NO];
-                   [switchAplusB addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
-                   break;
-               }
-                case 5:
+                case 0:
                 {
-                    cell.textLabel.text   = @"Buttons Size";
-                    
+                    cell.textLabel.text = @"Game Input";
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    cell.detailTextLabel.text = [arrayButtonSizeValue objectAtIndex:op.buttonSize];
-                    
                     break;
                 }
-                case 6:
-                {
-                    cell.textLabel.text   = @"Fullscreen Stick Size";
-                    
-                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    cell.detailTextLabel.text = [arrayStickSizeValue objectAtIndex:op.stickSize];
-                    
-                    break;
-                }
-                    
-                case 7:
-                {
-                    cell.textLabel.text   = @"External Controller";
-
-                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    cell.detailTextLabel.text = [arrayControlType objectAtIndex:op.controltype];
-                    
-                   break;
-                }    
-                
-               case 8:
-               {
-                   cell.textLabel.text   = @"P1 as P2,P3,P4";
-                   [switchP1aspx release];
-                   switchP1aspx  = [[UISwitch alloc] initWithFrame:CGRectZero];                
-                   cell.accessoryView = switchP1aspx ;
-                   [switchP1aspx setOn:[op p1aspx] animated:NO];
-                   [switchP1aspx addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
-                   break;
-               }
-                case 9:
-                {
-                    
-                    cell.textLabel.text   = @"Button B as Autofire";
-                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    cell.detailTextLabel.text = [arrayAutofireValue objectAtIndex:op.autofire];
-                    break;
-                }
-                case 10:
-                {
-                    cell.textLabel.text   = @"DPAD Touch DZ";
-                    [switchTouchDeadZone release];
-                    switchTouchDeadZone  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                    cell.accessoryView = switchTouchDeadZone ;
-                    [switchTouchDeadZone setOn:[op touchDeadZone] animated:NO];
-                    [switchTouchDeadZone addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-                    break;
-                }
-                case 11:
-                {
-                    cell.textLabel.text   = @"Stick Touch DZ";
-                    
-                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    cell.detailTextLabel.text = [arrayAnalogDZValue objectAtIndex:op.analogDeadZoneValue];
-                    break;
-                }
-                case 12:
-                {
-                    if(g_btjoy_available)
-                    {
-                        cell.textLabel.text   = @"BT Analog DZ";
-                        
-                        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                        cell.detailTextLabel.text = [arrayBTDZValue objectAtIndex:op.btDeadZoneValue];
-                    }
-                    
-                    break;
-                }
-
-            }   
+            }
             break;
         }
-           
-       case kCustomLayout:
+       case kDefaultsSection:
        {
            switch (indexPath.row)
            {
                case 0:
                {
-
-                   cell.selectionStyle = UITableViewCellSelectionStyleBlue;
-                   cell.textLabel.text = @"Change Current Layout";
-                   cell.textLabel.textAlignment = UITextAlignmentCenter;
-                   break;
-               }
-               case 1:
-               {
-
-                   cell.selectionStyle = UITableViewCellSelectionStyleBlue;
-                   cell.textLabel.text = @"Reset Current Layout to Default";
-                   cell.textLabel.textAlignment = UITextAlignmentCenter;
+                   cell.textLabel.text = @"Defaults";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                    break;
                }
            }
            break;
        }
-           
-       case kGameDefaultsSection:
-       {
-           switch (indexPath.row) 
-           {
-               case 0:
-               {
-                   cell.textLabel.text   = @"Sound";
-                   
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [arraySoundValue objectAtIndex:op.soundValue];
-                   break;
-               }
-               case 1:
-               {
-                   cell.textLabel.text   = @"Cheats";
-                   [switchCheats release];
-                   switchCheats  = [[UISwitch alloc] initWithFrame:CGRectZero];                
-                   cell.accessoryView = switchCheats ;
-                   [switchCheats setOn:[op cheats] animated:NO];
-                   [switchCheats addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
-                   break;
-               }
-               case 2:
-               {
-                   cell.textLabel.text   = @"Force 60Hz Sync";
-                   [switchVsync release];
-                   switchVsync  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                   cell.accessoryView = switchVsync ;
-                   [switchVsync setOn:[op vsync] animated:NO];
-                   [switchVsync addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-                   break;
-               }
-               case 3:
-               {
-                   cell.textLabel.text   = @"Save Hiscores";
-                   [switchHiscore release];
-                   switchHiscore  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                   cell.accessoryView = switchHiscore ;
-                   [switchHiscore setOn:[op hiscore] animated:NO];
-                   [switchHiscore addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-                   break;
-               }
-           }
-           break;
-       }
-           
-       case kAppDefaultsSection:
-       {
-           switch (indexPath.row)
-           {
-               case 0:
-               {
-                       cell.textLabel.text   = @"Native TV-OUT";
-                       [switchTvoutNative release];
-                       switchTvoutNative  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                       cell.accessoryView = switchTvoutNative ;
-                       [switchTvoutNative setOn:[op tvoutNative] animated:NO];
-                       [switchTvoutNative addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-                       break;
-               }
-               case 1:
-               {
-                   cell.textLabel.text   = @"Threaded Video";
-                   [switchThreaded release];
-                   switchThreaded  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                   cell.accessoryView = switchThreaded ;
-                   [switchThreaded setOn:[op threaded] animated:NO];
-                   [switchThreaded addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-                   break;
-               }
-               case 2://video thread p
-               {
-
-                   cell.textLabel.text   = @"Video Thread Priority";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [arrayVideoPriorityValue objectAtIndex:op.videoPriority];
-                   break;
-               }
-               case 3:
-               {
-                   cell.textLabel.text   = @"Double Buffer";
-                   [switchDblbuff release];
-                   switchDblbuff  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                   cell.accessoryView = switchDblbuff ;
-                   [switchDblbuff setOn:[op dblbuff] animated:NO];
-                   [switchDblbuff addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-                   break;
-                   
-                   break;
-               }
-               case 4:
-               {
-                       
-                   cell.textLabel.text   = @"Main Thread Priority";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [arrayMainPriorityValue objectAtIndex:op.mainPriority];
-                   break;
-               }
-            
-           }
-           break;
-       }
-
         case kMiscSection:  //Miscellaneous
         {
             switch (indexPath.row) 
@@ -1017,8 +794,17 @@
                    cell.detailTextLabel.text = [arrayEmuRes objectAtIndex:op.emures];
 
                    break;
-               }               
-              case 2:
+               }
+               case 2:
+               {
+                    cell.textLabel.text   = @"Emulated Speed";
+                    
+                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                    cell.detailTextLabel.text = [arrayEmuSpeed objectAtIndex:op.emuspeed];
+                    
+                    break;
+               }
+               case 3:
                {
                    cell.textLabel.text   = @"Throttle";
                    [switchThrottle release];
@@ -1028,7 +814,7 @@
                    [switchThrottle addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
                    break;
                }
-               case 3:
+               case 4:
                {
                    cell.textLabel.text   = @"Frame Skip";
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
@@ -1036,7 +822,7 @@
     
                    break;
                }
-               case 4:
+               case 5:
                {
                    cell.textLabel.text   = @"Force Pixel Aspect";
                    [switchForcepxa release];
@@ -1046,7 +832,7 @@
                    [switchForcepxa addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
                    break;
                }  
-              case 5:
+              case 6:
                {
                    cell.textLabel.text   = @"Sleep on Idle";
                    [switchSleep release];
@@ -1056,7 +842,7 @@
                    [switchSleep addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
                    break;
                }                                                                             
-              case 6:
+              case 7:
                {
                    cell.textLabel.text   = @"Show Info/Warnings";
                    [switchShowINFO release];
@@ -1066,7 +852,7 @@
                    [switchShowINFO addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
                    break;
                }
-               case 7:
+               case 8:
                {
                     cell.textLabel.text   = @"Low Latency Audio";
                     [switchLowlsound release];
@@ -1076,7 +862,7 @@
                     [switchLowlsound addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
                     break;
                }
-               case 8:
+               case 9:
                {
                    cell.textLabel.text   = @"Skin";
                    
@@ -1085,7 +871,7 @@
 
                    break;
                }
-               case 9:
+               case 10:
                {
                    cell.textLabel.text   = @"Overscan TV-OUT";
                    
@@ -1093,8 +879,7 @@
                    cell.detailTextLabel.text = [arrayOverscanValue objectAtIndex:op.overscanValue];
                    
                    break;
-               }               
-
+               }
             }
             break;   
         }
@@ -1104,118 +889,31 @@
            {
                case 0:
                {
-                   cell.textLabel.text = @"Hide Non-Favorites";
-                   [switchFilterFavorites release];
-                   switchFilterFavorites  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                   cell.accessoryView = switchFilterFavorites ;
-                   [switchFilterFavorites setOn:[op filterFavorites] animated:NO];
-                   [switchFilterFavorites addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-                   break;
-                   
-                   break;
-               }
-               
-               case 1:
-               {
-                   cell.textLabel.text = @"Hide Clones";
-                   [switchFilterClones release];
-                   switchFilterClones  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                   cell.accessoryView = switchFilterClones ;
-                   [switchFilterClones setOn:[op filterClones] animated:NO];
-                   [switchFilterClones addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-                   break;
-               }
-
-               case 2:
-               {
-                   cell.textLabel.text = @"Hide Not Working";
-                   [switchFilterNotWorking release];
-                   switchFilterNotWorking  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                   cell.accessoryView = switchFilterNotWorking ;
-                   [switchFilterNotWorking setOn:[op filterNotWorking] animated:NO];
-                   [switchFilterNotWorking addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-                   break;
-               }
-                   
-               case 3:
-               {
-                   cell.textLabel.text   = @"Keyword";
-                   UITextField *textField = [[UITextField alloc] initWithFrame:CGRectMake(110, 40, 185, 25)] ;
-                   textField.placeholder = @"Empty Text";
-                   textField.text =  op.filterKeyword;
-                   textField.tag = indexPath.row/2;
-                   textField.returnKeyType = UIReturnKeyDone;
-                   textField.autocorrectionType = UITextAutocorrectionTypeNo;
-                   textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
-                   textField.spellCheckingType = UITextSpellCheckingTypeNo;
-                   textField.clearButtonMode = UITextFieldViewModeNever;
-                   textField.textAlignment = UITextAlignmentRight;
-                   textField.keyboardType = UIKeyboardTypeASCIICapable;
-                   textField.clearsOnBeginEditing = YES;
-                   //textField.borderStyle = UITextBorderStyleRoundedRect;
-                   textField.delegate = self;
-                   cell.accessoryView = textField;
-                   //[cell.contentView addSubview:textField];
-                   [textField release];
-                   
-                   break;
-               }
-                   
-               case 4:
-               {
-                   cell.textLabel.text   = @"Year >=";
+                   cell.textLabel.text = @"Game Filter";
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [arrayYearGTEValue objectAtIndex:op.yearGTEValue];
-                   break;
-               }
-               case 5:
-               {
-                   cell.textLabel.text   = @"Year <=";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [arrayYearLTEValue objectAtIndex:op.yearLTEValue];
-                   break;
-               }
-                   
-               case 6:
-               {
-                   cell.textLabel.text   = @"Manufacturer";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [[arrayManufacturerValue objectAtIndex:op.manufacturerValue] stringByReplacingOccurrencesOfString:@"#" withString:@""];
-                   break;
-               }
-                   
-               case 7:
-               {
-                   
-                   cell.textLabel.text   = @"Driver Source";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [[arrayDriverSourceValue objectAtIndex:op.driverSourceValue]
-                   stringByReplacingOccurrencesOfString:@"#" withString:@""];
-                   break;
-               }
-               case 8:
-               {
-                   
-                   cell.textLabel.text   = @"Category";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [[arrayCategoryValue objectAtIndex:op.categoryValue]
-                                                stringByReplacingOccurrencesOfString:@"#" withString:@""];
-                   break;
-               }
-               case 9:
-               {
-                    cell.selectionStyle = UITableViewCellSelectionStyleBlue;
-                    cell.textLabel.text = @"Reset Filters to Default";
-                    cell.textLabel.textAlignment = UITextAlignmentCenter;
                    break;
                }
            }
+           break;
+       }
+       case kMultiplayerSection:
+       {
+           switch (indexPath.row)
+           {
+               case 0:
+               {
+                   cell.textLabel.text = @"Peer-to-peer Netplay";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   break;
+               }
+           }
+           break;
        }
    }
-     
+
    [op release];
-           
-   return cell;    
+
+   return cell;
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
@@ -1230,12 +928,11 @@
           case kSupportSection: return @"Support";
           case kPortraitSection: return @"Portrait";
           case kLandscapeSection: return @"Landscape";
-          case kInputSection: return @"Input";
-          case kCustomLayout: return @"Custom Layout";
-          case kGameDefaultsSection: return @"Game Defaults";
-          case kAppDefaultsSection: return @"App Defaults";
-          case kMiscSection: return @"Miscellaneous";
-          case kFilterSection: return @"Game Filter";
+          case kInputSection: return @"";//@"Game Input";
+          case kDefaultsSection: return @"";
+          case kMiscSection: return @"";
+          case kFilterSection: return @"";//@"Game Filter";
+          case kMultiplayerSection: return @"";//@"Peer-to-peer Netplay";
     }
     return @"Error!";
 }
@@ -1248,12 +945,11 @@
           case kSupportSection: return 2;
           case kPortraitSection: return 5;
           case kLandscapeSection: return 5;
-          case kInputSection: return 13-!g_btjoy_available;
-          case kCustomLayout: return 2;
-          case kGameDefaultsSection: return 4;
-          case kAppDefaultsSection: return 5;
-          case kMiscSection: return 10;
-          case kFilterSection: return 10;
+          case kInputSection: return 1;
+          case kDefaultsSection: return 1;
+          case kMiscSection: return 11;
+          case kFilterSection: return 1;
+          case kMultiplayerSection: return 1;
       }
     return -1;
 }
@@ -1286,57 +982,24 @@
     
     [switchShowFPS release];
     [switchShowINFO release];
-    [switchAnimatedButtons release];
+
     
     [switchfullLand release];
     [switchfullPort release];
-    
-    [switchTouchDeadZone release];
-    
-    [switchTvoutNative release];
-    
+            
     [switchThrottle release];
-    [switchAplusB release];
-    [switchCheats release];
     [switchSleep release];
     [switchForcepxa release];
     
-    [switchP1aspx release];
-    
-    [arrayNumbuttons release];
     [arrayEmuRes release];
-    [arrayStickType release];
-    [arrayTouchType release];
-    [arrayControlType release];
-    [arrayAnalogDZValue release];
-    [arrayBTDZValue release];
-    [arraySoundValue release];
+
     [arrayFSValue release];
     [arrayOverscanValue release];
     [arraySkinValue release];
-    
-    [switchFilterClones release];
-    [switchFilterFavorites release];
-    [switchFilterNotWorking release];
-    [arrayManufacturerValue release];
-    [arrayYearGTEValue release];
-    [arrayYearLTEValue release];
-    [arrayDriverSourceValue release];
-    [arrayCategoryValue release];
-    
+        
     [switchLowlsound release];
-    [switchVsync release];
-    [switchThreaded release];
-    [switchDblbuff release];
     
-    [arrayMainPriorityValue release];
-    [arrayVideoPriorityValue release];
-    
-    [arrayAutofireValue release];
-    [switchHiscore release];
-    
-    [arrayButtonSizeValue release];
-    [arrayStickSizeValue release];
+    [arrayEmuSpeed release];
     
     [super dealloc];
 }
@@ -1374,60 +1037,25 @@
 
     if(sender == switchShowINFO)
 	   op.showINFO =  [switchShowINFO isOn];
-	
-	if(sender == switchAnimatedButtons) 
-	   op.animatedButtons=  [switchAnimatedButtons isOn];
-			
+				
 	if(sender == switchfullLand) 
 	   op.fullLand =  [switchfullLand isOn];
 
 	if(sender == switchfullPort) 
 	   op.fullPort =  [switchfullPort isOn];
-  	   	   
-	if(sender == switchTouchDeadZone)
-	  op.touchDeadZone = [switchTouchDeadZone isOn];
-  	   
-	if(sender == switchTvoutNative)
-	  op.tvoutNative = [switchTvoutNative isOn];  
-	         
+  	   	     	   	         
     if(sender == switchThrottle)
         op.throttle = [switchThrottle isOn];    
-     
-    if(sender == switchAplusB)
-        op.aplusb = [switchAplusB isOn];   
-    if(sender == switchCheats)
-        op.cheats = [switchCheats isOn];   
+       
     if(sender == switchSleep)
         op.sleep = [switchSleep isOn];
 
     if(sender == switchForcepxa)
         op.forcepxa = [switchForcepxa isOn];
-    
-    if(sender == switchP1aspx)
-        op.p1aspx = [switchP1aspx isOn];
-    
-    if(sender == switchFilterClones)
-        op.filterClones = [switchFilterClones isOn];
-    if(sender == switchFilterFavorites)
-        op.filterFavorites = [switchFilterFavorites isOn];
-    if(sender == switchFilterNotWorking)
-        op.filterNotWorking = [switchFilterNotWorking isOn];
-    
+            
     if(sender == switchLowlsound)
         op.lowlsound = [switchLowlsound isOn];
-    
-    if(sender == switchVsync)
-        op.vsync = [switchVsync isOn];
-    
-    if(sender == switchThreaded)
-        op.threaded = [switchThreaded isOn];
-    
-    if(sender == switchDblbuff)
-        op.dblbuff = [switchDblbuff isOn];
-    
-    if(sender == switchHiscore)
-        op.hiscore = [switchHiscore isOn];
-    
+        
 	[op saveOptions];
 		
 	[op release];
@@ -1459,84 +1087,25 @@
         }
         case kInputSection:
         {
-            if (row==1){
-                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped type:kTypeTouchType list:arrayTouchType];
-                [[self navigationController] pushViewController:listController animated:YES];
-                [listController release];
-            }
-            if (row==2){
-                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                                        type:kTypeStickType list:arrayStickType];
-                [[self navigationController] pushViewController:listController animated:YES];
-                [listController release];
-            }
-            if (row==3){
-                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                                   type:kTypeNumButtons list:arrayNumbuttons];      
-                [[self navigationController] pushViewController:listController animated:YES];
-                [listController release];
-            }
-            if (row==5){
-                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                                                                              type:kTypeButtonSizeValue list:arrayButtonSizeValue];
-                [[self navigationController] pushViewController:listController animated:YES];
-                [listController release];
-            }
-            if (row==6){
-                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                                                                              type:kTypeStickSizeValue list:arrayStickSizeValue];
-                [[self navigationController] pushViewController:listController animated:YES];
-                [listController release];
-            }
-            if (row==7){
-                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                               type:kTypeControlType list:arrayControlType]; 
-                [[self navigationController] pushViewController:listController animated:YES];
-                [listController release];
-            }
-            if (row==9){
-                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                                                                              type:kTypeAutofireValue list:arrayAutofireValue];
-                [[self navigationController] pushViewController:listController animated:YES];
-                [listController release];
-            }
-            if (row==11){
-                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                    type:kTypeAnalogDZValue list:arrayAnalogDZValue];
-                [[self navigationController] pushViewController:listController animated:YES];
-                [listController release];
-            }
-            if (row==12){
-                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                type:kTypeBTDZValue list:arrayBTDZValue];                        
-                [[self navigationController] pushViewController:listController animated:YES];
-                [listController release];
+            if (row==0){
+                InputOptionController *inputOptController = [[InputOptionController alloc] init];
+                inputOptController.emuController = self.emuController;
+                
+                [[self navigationController] pushViewController:inputOptController animated:YES];
+                [inputOptController release];
+                [tableView reloadData];
             }
             break;
         }
-        case kGameDefaultsSection:
+        case kDefaultsSection:
         {
             if (row==0){
-                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                                         type:kTypeSoundValue list:arraySoundValue]; 
-                [[self navigationController] pushViewController:listController animated:YES];
-                [listController release];
-            }
-            break;
-        }
-        case kAppDefaultsSection:
-        {
-            if (row==2){
-                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                                                                              type:kTypeVideoPriorityValue list:arrayVideoPriorityValue];
-                [[self navigationController] pushViewController:listController animated:YES];
-                [listController release];
-            }
-            if (row==4){
-                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                                                                              type:kTypeMainPriorityValue list:arrayMainPriorityValue];
-                [[self navigationController] pushViewController:listController animated:YES];
-                [listController release];
+                DefaultOptionController *defaultOptController = [[DefaultOptionController alloc] init];
+                defaultOptController.emuController = self.emuController;
+                
+                [[self navigationController] pushViewController:defaultOptController animated:YES];
+                [defaultOptController release];
+                [tableView reloadData];
             }
             break;
         }
@@ -1548,13 +1117,19 @@
                 [[self navigationController] pushViewController:listController animated:YES];
                 [listController release];
             }
-            if (row==3){
+            if (row==2){
+                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
+                                                                                              type:kTypeEmuSpeed list:arrayEmuSpeed];
+                [[self navigationController] pushViewController:listController animated:YES];
+                [listController release];
+            }
+            if (row==4){
                 ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
                                 type:kTypeFSValue list:arrayFSValue];                         
                 [[self navigationController] pushViewController:listController animated:YES];
                 [listController release];
             }
-            if (row==8){
+            if (row==9){
                 ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
                                                         type:kTypeSkinValue list:arraySkinValue];  
                 [[self navigationController] pushViewController:listController animated:YES];
@@ -1566,140 +1141,42 @@
                 [[self navigationController] pushViewController:listController animated:YES];
                 [listController release];
             }
+
+            break;
+        }
+        case kMultiplayerSection:
+        {
+            if(row==0)
+            {
+                NetplayController *netplayOptController = [[NetplayController alloc] init];
+                netplayOptController.emuController = self.emuController;
+                
+                [[self navigationController] pushViewController:netplayOptController animated:YES];
+                [netplayOptController release];
+                [tableView reloadData];
+            }
             break;
         }
         case kFilterSection:
         {
-            
-            if(row==3)
-            {
-                UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-                [(UITextField *)cell.accessoryView  becomeFirstResponder];
-            }
-            
-            
-            if (row==4){
-                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStylePlain
-                                                         type:kTypeYearGTEValue list:arrayYearGTEValue];
-
-                [[self navigationController] pushViewController:listController animated:YES];
-                [listController release];
-            }
-            if (row==5){
-                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStylePlain
-                                                        type:kTypeYearLTEValue list:arrayYearLTEValue];
-
-                [[self navigationController] pushViewController:listController animated:YES];
-                [listController release];
-            }
-            
-            if (row==6){
-                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStylePlain
-                                                        type:kTypeManufacturerValue list:arrayManufacturerValue];
-                
-                [[self navigationController] pushViewController:listController animated:YES];
-                [listController release];
-            }
-            
-            if (row==7){
-                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStylePlain
-                                                          type:kTypeDriverSourceValue list:arrayDriverSourceValue];
-                                                        
-                [[self navigationController] pushViewController:listController animated:YES];
-                [listController release];
-            }
-            
-            if (row==8){
-                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStylePlain
-                                                                                              type:kTypeCategoryValue list:arrayCategoryValue];
-                
-                [[self navigationController] pushViewController:listController animated:YES];
-                [listController release];
-            }
-
-            if (row==9){
-                Options *op = [[Options alloc] init];
-                
-                op.filterClones=0;
-                op.filterFavorites=0;
-                op.filterNotWorking=0;
-                op.yearLTEValue =0;
-                op.yearGTEValue =0;
-                op.manufacturerValue =0;
-                op.driverSourceValue =0;
-                op.categoryValue =0;
-                op.filterKeyword = nil;
-                
-                [op saveOptions];
-                [op release];
-                
-               [tableView reloadData];
-                /*
-                NSFileManager *filemgr = [[NSFileManager alloc] init];
-                NSError *error = nil;
-                [filemgr removeItemAtPath:[NSString stringWithUTF8String:get_documents_path("cfg")] error:&error];
-                [filemgr release];
-                */
-            }
-            break;
-        }
-        case kCustomLayout:
-        {
-            
             if(row==0)
             {
-                [emuController beginCustomizeCurrentLayout];
-                [tableView reloadData];
-            }
-            if(row==1)
-            {
-                [emuController resetCurrentLayout];
+                FilterOptionController *filterOptController = [[FilterOptionController alloc] init];
+                filterOptController.emuController = self.emuController;
+                
+                [[self navigationController] pushViewController:filterOptController animated:YES];
+                [filterOptController release];
                 [tableView reloadData];
             }
             break;
         }
     }
-    
-}
-           
- - (void) viewWillAppear:(BOOL)animated {
-     [super viewWillAppear:animated];
-     UITableView *tableView = (UITableView *)self.view;
-     [tableView reloadData];
 }
 
-- (void) textFieldDidBeginEditing:(UITextField *)textField {
-    UITableViewCell *cell = (UITableViewCell*) [textField superview];
+- (void) viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
     UITableView *tableView = (UITableView *)self.view;
-    [tableView scrollToRowAtIndexPath:[tableView indexPathForCell:cell] atScrollPosition:/*UITableViewScrollPositionMiddle*/UITableViewScrollPositionTop animated:YES];
-}
-
-- (void) textFieldDidEndEditing:(UITextField *)textField {
-    Options *op = [[Options alloc] init];
-    if(textField.text == nil ||  textField.text.length==0)
-        op.filterKeyword = nil;
-    else
-        op.filterKeyword = [textField.text substringToIndex:MIN(MAX_FILTER_KEYWORD-1,textField.text.length)];
-    [op saveOptions];
-    [op release];
-    /*
-    UITableViewCell *cell = (UITableViewCell*) [textField superview];
-    UITableView *tableView = (UITableView *)self.view;
-    [tableView scrollToRowAtIndexPath:[tableView indexPathForCell:cell] atScrollPosition:UITableViewScrollPositionMiddle animated:YES];*/
-}
-
-- (BOOL) textFieldShouldReturn:(UITextField *)textField
-{
-    [textField resignFirstResponder];
-    return YES;
-}
-
-- (BOOL) textFieldShouldClear:(UITextField *)textField {
-    Options *op = [[Options alloc] init];
-    op.filterKeyword = nil;
-    [op saveOptions];
-    [op release];
-    return YES;
+    [tableView reloadData];
 }
 
 @end
