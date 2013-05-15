@@ -58,6 +58,7 @@
 #import "BTJoyHelper.h"
 #endif
 #import <pthread.h>
+#import "NetplayGameKit.h"
 
 int g_isIpad = 0;
 int g_isIphone5 = 0;
@@ -139,7 +140,11 @@ static int button_auto = 0;
 static int ways_auto = 0;
 static int change_layout=0;
 
+static int exit_status = 0;
+
 static EmulatorController *sharedInstance = nil;
+
+
 	
 void iphone_Reset_Views(void)
 {
@@ -153,7 +158,7 @@ void iphone_Reset_Views(void)
 
 void* app_Thread_Start(void* args)
 {
-	g_emulation_initiated = 1;
+    g_emulation_initiated = 1;
 	
 	iOS_main(0,NULL);
 
@@ -176,7 +181,6 @@ void* app_Thread_Start(void* args)
 @synthesize externalView;
 @synthesize rExternalView;
 @synthesize stick_radio;
-//@synthesize rStickArea;
 @synthesize rStickWindow;
 @synthesize rDPadImage;
 
@@ -210,10 +214,6 @@ void* app_Thread_Start(void* args)
 		
 	struct sched_param param;
  
-    //param.sched_priority = 67;
-    //param.sched_priority = 50;
-    //param.sched_priority = 46;  
-    //param.sched_priority = 100;
     printf("main priority %d\n",main_thread_priority);
     param.sched_priority = main_thread_priority;
     int policy;
@@ -380,6 +380,8 @@ void* app_Thread_Start(void* args)
 
 -(void)updateOptions{
     
+    //printf("load options\n");
+    
     Options *op = [[Options alloc] init];
     
     g_pref_keep_aspect_ratio_land = [op keepAspectRatioLand];
@@ -539,10 +541,14 @@ void* app_Thread_Start(void* args)
     global_low_latency_sound = [op lowlsound];
     if(myosd_video_threaded==-1)
     {
+          
         myosd_video_threaded = [op threaded];
-        main_thread_priority =  MIN(1,[op mainPriority] * 10);
-        video_thread_priority = MIN(1,[op videoPriority] * 10);
+        main_thread_priority =  MAX(1,[op mainPriority] * 10);
+        video_thread_priority = MAX(1,[op videoPriority] * 10);
         myosd_dbl_buffer = [op dblbuff];
+        main_thread_priority_type = [op mainThreadType]+1;
+        main_thread_priority_type = [op videoThreadType]+1;
+        printf("thread Type %d %d\n",main_thread_priority_type,main_thread_priority_type);
     }
     
     myosd_autofire = [op autofire];
@@ -562,6 +568,29 @@ void* app_Thread_Start(void* args)
         case 2: g_stick_size = 1.0; break;
         case 3: g_stick_size = 1.1; break;
         case 4: g_stick_size = 1.2; break;
+    }
+    
+    myosd_vector_bean2x = [op vbean2x];
+    myosd_vector_antialias = [op vantialias];
+    myosd_vector_flicker = [op vflicker];
+
+    switch ([op emuspeed]) {
+        case 0: myosd_speed = -1; break;
+        case 1: myosd_speed = 50; break;
+        case 2: myosd_speed = 60; break;
+        case 3: myosd_speed = 70; break;
+        case 4: myosd_speed = 80; break;
+        case 5: myosd_speed = 85; break;
+        case 6: myosd_speed = 90; break;
+        case 7: myosd_speed = 95; break;
+        case 8: myosd_speed = 100; break;
+        case 9: myosd_speed = 105; break;
+        case 10: myosd_speed = 110; break;
+        case 11: myosd_speed = 115; break;
+        case 12: myosd_speed = 120; break;
+        case 13: myosd_speed = 130; break;
+        case 14: myosd_speed = 140; break;
+        case 15: myosd_speed = 150; break;
     }
     
     [op release];
@@ -591,11 +620,7 @@ void* app_Thread_Start(void* args)
 	       [warnAlert show];
 	       [warnAlert release];
        }
-/*
-       [self performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:YES];
-  
-    }
-*/
+
     
     int keyword_changed = 0;    
     if(myosd_filter_keyword[0]!='\0' && [op.filterKeyword UTF8String] != nil)
@@ -656,9 +681,6 @@ void* app_Thread_Start(void* args)
         
         [self done:self];
         
-        //[self changeUI];
-        
-        //[self endMenu];
     }
     else
     {
@@ -682,9 +704,11 @@ void* app_Thread_Start(void* args)
 
 - (void)handle_MENU
 {
-    if(btnStates[BTN_L2] == BUTTON_PRESS && !actionPending)
+    if(/*btnStates[BTN_L2] == BUTTON_PRESS*/exit_status==2 && !actionPending)
     {				  				
 
+        exit_status = 0;
+        
         if(myosd_in_menu==0 && myosd_inGame)
         {
             actionPending=1;
@@ -1781,6 +1805,7 @@ void* app_Thread_Start(void* args)
 				//NSLog(@"MYOSD_L2");
                 if(isGridlee)continue;
 				btnStates[BTN_L2] = BUTTON_PRESS;
+                exit_status = 1;
 			}
 			else if (MyCGRectContainsPoint(rInput[BTN_R2_RECT], point)) {
 				//NSLog(@"MYOSD_R2");
@@ -1815,6 +1840,10 @@ void* app_Thread_Start(void* args)
                  }
 				 stickTouch = nil;
 		    }
+            else
+            {
+                if(exit_status==1)exit_status=2;
+            }
 	    }
 	}
 	
@@ -2028,8 +2057,8 @@ void* app_Thread_Start(void* args)
 	    		case 7:    rFrames[LANDSCAPE_IMAGE_OVERLAY]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
                     
 	            case 8:    g_enable_debug_view = coords[0]; break;
-	            case 9:    main_thread_priority_type = coords[0]; break;
-	            case 10:   video_thread_priority_type = coords[0]; break;
+	            //case 9:    main_thread_priority_type = coords[0]; break;
+	            //case 10:   video_thread_priority_type = coords[0]; break;
 			}
       i++;
     }

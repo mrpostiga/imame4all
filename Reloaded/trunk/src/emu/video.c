@@ -51,6 +51,9 @@
 #include "snap.lh"
 
 #include "myosd.h"
+#include "netplay.h"
+
+static int old_speed;
 
 
 /***************************************************************************
@@ -271,7 +274,17 @@ INLINE int effective_throttle(running_machine *machine)
 
 INLINE int original_speed_setting(void)
 {
-	return options_get_float(mame_options(), OPTION_SPEED) * 100.0 + 0.5;
+    int res = 100;
+    
+    if(myosd_speed != -1 && !netplay_get_handle()->has_connection)
+        res = myosd_speed;
+    else
+        res = options_get_float(mame_options(), OPTION_SPEED) * 100.0 + 0.5;
+    
+    old_speed = myosd_speed;
+    
+    printf("Emulated speed %d\n",res);
+    return res;
 }
 
 
@@ -782,6 +795,11 @@ static void update_throttle(running_machine *machine, attotime emutime)
 	osd_ticks_t ticks_per_second;
 	osd_ticks_t target_ticks;
 	osd_ticks_t diff_ticks;
+    
+    //dav hack
+    if(myosd_speed!=old_speed)
+       global.speed = original_speed_setting();
+    //end dav hack
 
 	/* apply speed factor to emu time */
 	if (global.speed != 0 && global.speed != 100)
@@ -1923,7 +1941,7 @@ void screen_device::device_start()
 
     
     //DAV HACK
-    vsync_hack = (myosd_vsync != -1) && (ATTOSECONDS_TO_HZ(m_config.m_refresh) >= 50.00f);
+    vsync_hack = (myosd_vsync != -1) && (ATTOSECONDS_TO_HZ(m_config.m_refresh) >= 50.00f) && !(netplay_get_handle()->has_connection);
    
     
 	// configure the screen with the default parameters

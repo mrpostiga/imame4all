@@ -7,6 +7,7 @@
 //
 //============================================================
 
+
 #ifdef ANDROID
 #include <android/log.h>
 #endif
@@ -31,6 +32,8 @@
 #include "osdvideo.h"
 #include "myosd.h"
 
+#include "netplay.h"
+
 /*
 void mylog(char * msg){
 	  FILE *f;
@@ -40,8 +43,8 @@ void mylog(char * msg){
 		  fclose(f);
 		  sync();
 	  }
-}
-*/
+}*/
+
 //============================================================
 //  GLOBALS
 //============================================================
@@ -157,24 +160,25 @@ int main(int argc, char **argv)
 	static char *args[255];	int n=0;
 	int ret;
 	FILE *f;
-
+    
 	printf("Iniciando\n");
-
-
+    
+    
 	myosd_init();
-
+    
 	while(1)
 	{
 		droid_ios_setup_video();
-
-	   // cli_execute does the heavy lifting; if we have osd-specific options, we
-	  // would pass them as the third parameter here
+        
+        // cli_execute does the heavy lifting; if we have osd-specific options, we
+        // would pass them as the third parameter here
 		n=0;
-		args[n]= (char *)"mame4droid";n++;
-		//args[n]= (char *)"-skip_gameinfo"; n++;
+		args[n]= (char *)"mame4x";n++;
+
 		//args[n]= (char *)"starforc"; n++;
 		//args[n]= (char *)"1944"; n++;
 		//args[n]= (char *)"mslug3"; n++;
+        //args[n]= (char *)"dino"; n++;
 		//args[n]= (char *)"outrun"; n++;
 		//args[n]= (char *)"-autoframeskip"; n++;
 		//args[n]= (char *)"-noautoframeskip"; n++;
@@ -189,41 +193,58 @@ int main(int argc, char **argv)
 		args[n]= (char *)"-nocoinlock"; n++;
         
         if(isGridlee){
-           args[n]= (char *)"gridlee"; n++;
+            args[n]= (char *)"gridlee"; n++;
         }
-
-	  if(myosd_reset_filter==0)
-      {
-         f=fopen("mame4x.cfg","r");
-	     if (f) {
-			fscanf(f,"%d",&myosd_last_game_selected);
-			fclose(f);
-	     }
-      }
-      else
-      {
-          myosd_last_game_selected = 0;
-          f=fopen("mame4x.cfg","w");
-          if (f) {
-              fprintf(f,"%d",myosd_last_game_selected);
-              fclose(f);
-              sync();
-          }
-          myosd_reset_filter = 0;
-      }
-
-	  ret = cli_execute(n, args, droid_mame_options);
-
-	  f=fopen("mame4x.cfg","w");
-	  if (f) {
-		  fprintf(f,"%d",myosd_last_game_selected);
-		  fclose(f);
-		  sync();
-	  }
+        
+        netplay_t *handle = netplay_get_handle();
+        if(handle->has_connection)
+        {
+            if(!handle->has_begun_game)
+            {
+                args[n]= (char *)handle->game_name; n++;
+            }
+            else
+            {
+                char buf[256];
+                sprintf(buf,"%s not found!",handle->game_name);
+                handle->netplay_warn(buf);
+                handle->has_begun_game = 0;
+                handle->has_connection = 0;
+            }
+        }
+                
+        if(myosd_reset_filter==0)
+        {
+            f=fopen("mame4x.cfg","r");
+            if (f) {
+                fscanf(f,"%d",&myosd_last_game_selected);
+                fclose(f);
+            }
+        }
+        else
+        {
+            myosd_last_game_selected = 0;
+            f=fopen("mame4x.cfg","w");
+            if (f) {
+                fprintf(f,"%d",myosd_last_game_selected);
+                fclose(f);
+                sync();
+            }
+            myosd_reset_filter = 0;
+        }
+        
+        ret = cli_execute(n, args, droid_mame_options);
+        
+        f=fopen("mame4x.cfg","w");
+        if (f) {
+            fprintf(f,"%d",myosd_last_game_selected);
+            fclose(f);
+            sync();
+        }
 	}
-
+    
 	myosd_deinit();
-
+    
 	return ret;
 }
 
@@ -242,17 +263,27 @@ void osd_init(running_machine *machine)
 		fatalerror("Error creating render target");
 
 	myosd_inGame = !(machine->gamedrv == &GAME_NAME(empty));
-
-
+    
 	options_set_bool(mame_options(), OPTION_CHEAT,myosd_cheat,OPTION_PRIORITY_CMDLINE);
     options_set_bool(mame_options(), OPTION_AUTOSAVE,myosd_autosave,OPTION_PRIORITY_CMDLINE);
     options_set_bool(mame_options(), OPTION_SOUND,myosd_sound_value != -1,OPTION_PRIORITY_CMDLINE);
     if(myosd_sound_value!=-1)
        options_set_int(mame_options(), OPTION_SAMPLERATE,myosd_sound_value,OPTION_PRIORITY_CMDLINE);
-
+    
+    options_set_float(mame_options(), OPTION_BEAM,myosd_vector_bean2x ? 2.5 : 1.0, OPTION_PRIORITY_CMDLINE);
+    options_set_float(mame_options(), OPTION_FLICKER,myosd_vector_flicker ? 0.4 : 0.0, OPTION_PRIORITY_CMDLINE);
+    options_set_bool(mame_options(), OPTION_ANTIALIAS,myosd_vector_antialias,OPTION_PRIORITY_CMDLINE);
+    
 	droid_ios_init_input(machine);
 	droid_ios_init_sound(machine);
 	droid_ios_init_video(machine);
+    
+    netplay_t *handle = netplay_get_handle();
+        
+    if(handle->has_connection)
+    {
+        handle->has_begun_game = 1;
+    }
 }
 
 //void osd_exit(running_machine *machine)
@@ -263,7 +294,6 @@ static void osd_exit(running_machine &machine)
 	our_target = NULL;
 }
 
-
 void osd_update(running_machine *machine, int skip_redraw)
 {
     
@@ -271,10 +301,27 @@ void osd_update(running_machine *machine, int skip_redraw)
 	{
 		droid_ios_video_render(our_target);
 	}
-
-	//myosd_in_menu = ui_is_menu_active() && !ui_menu_is_force_game_select();
+    
+    netplay_t *handle = netplay_get_handle();
+    
+    attotime current_time = timer_get_time(machine);
+    
+    //char m[256];
+    //sprintf(m,"fr: %d emutime sec:%d ms: %d\n",fr,current_time.seconds,(int)(current_time.attoseconds / ATTOSECONDS_PER_MILLISECOND));
+    //mylog(m);
+            
+    netplay_pre_frame_net(handle);
 
 	droid_ios_poll_input(machine);
+    
+    netplay_post_frame_net(handle);
+    
+    if(handle->has_connection && handle->has_begun_game && current_time.seconds==0 && current_time.attoseconds==0)
+    {
+        printf("Not emulation...\n");
+        handle->frame = 0;
+        handle->target_frame = 0;
+    }
 
 	myosd_check_pause();
 }

@@ -109,11 +109,11 @@
             value = op.emures;
             break;
         case kTypeStickType:
-            self.title = @"Stick Type";
+            self.title = @"Ways Stick";
             value = op.sticktype;
             break;
         case kTypeTouchType:
-            self.title = @"Input Touch Type";
+            self.title = @"Touch Type";
             value = op.touchtype;
             break;
         case kTypeControlType:
@@ -183,6 +183,30 @@
         case kTypeStickSizeValue:
             self.title = @"Fullscreen Stick Size";
             value = op.stickSize;
+            break;
+        case kTypeArrayWPANtype:
+            self.title = @"WPAN mode";
+            value = op.wpantype;
+            break;
+        case kTypeWFframeSync:
+            self.title = @"Wi-Fi Frame Sync";
+            value = op.wfframesync;
+            break;
+        case kTypeBTlatency:
+            self.title = @"Bluetooth Latency";
+            value = op.btlatency;
+            break;
+        case kTypeEmuSpeed:
+            self.title = @"Emulation Speed";
+            value = op.emuspeed;
+            break;
+        case kTypeVideoThreadTypeValue:
+            self.title = @"Video Thread Type";
+            value = op.videoThreadType;
+            break;
+        case kTypeMainThreadTypeValue:
+            self.title = @"Main Thread Type";
+            value = op.mainThreadType;
             break;
         default:
             break;
@@ -284,6 +308,24 @@
             break;
         case kTypeStickSizeValue:
             op.stickSize =value;
+            break;
+        case kTypeArrayWPANtype:
+            op.wpantype =value;
+            break;
+        case kTypeWFframeSync:
+            op.wfframesync =value;
+            break;
+        case kTypeBTlatency:
+            op.btlatency =value;
+            break;
+        case kTypeEmuSpeed:
+            op.emuspeed =value;
+            break;
+        case kTypeMainThreadTypeValue:
+            op.mainThreadType =value;
+            break;
+        case kTypeVideoThreadTypeValue:
+            op.videoThreadType =value;
             break;
         default:
             break;

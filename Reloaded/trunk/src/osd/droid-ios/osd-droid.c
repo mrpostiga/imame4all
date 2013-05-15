@@ -26,6 +26,7 @@ int  myosd_showinfo = 1;
 int  myosd_sleep = 0;
 int  myosd_inGame = 0;
 int  myosd_exitGame = 0;
+int  myosd_pause = 0;
 int  myosd_exitPause = 0;
 int  myosd_last_game_selected = 0;
 int  myosd_frameskip_value = 2;
@@ -70,6 +71,14 @@ int myosd_dbl_buffer=1;
 int myosd_autofire=0;
 int myosd_hiscore=0;
 
+int myosd_vector_bean2x = 1;
+int myosd_vector_antialias = 1;
+int myosd_vector_flicker = 0;
+
+int  myosd_speed = 100;
+
+char myosd_selected_game[MAX_GAME_NAME] = {'\0'};
+
 float joy_analog_x[4];
 float joy_analog_y[4];
 
@@ -79,6 +88,8 @@ static int isPause = 0;
 
 unsigned long myosd_pad_status = 0;
 unsigned long myosd_joy_status[4];
+unsigned short myosd_ext_status = 0;
+
 unsigned short 	*myosd_screen15 = NULL;
 
 //////////////////////// android

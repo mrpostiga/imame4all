@@ -271,7 +271,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
                             bt_send_cmd(&hci_write_authentication_enable, 0);
                             NSLog(@"done authentication enable" );
                         }
-                        else if([[dev name] hasPrefix:@"PLAYSTATION(R)3 Controller"]){
+                        else if([[dev name] hasPrefix:@"PLAYSTATION(R)3"]){
                             found = true;
                             NSLog(@"Sixaxis found with address %@", [BTDevice stringForAddress:[dev address]]);
                             [self stopInquiry];
@@ -566,7 +566,7 @@ static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
 						break;
 					case kInquiryActive:
 						//label = @"Searching...";
-						label = @"Press PS (Sixaxis) or 1+2 (WiiMote)";
+						label = @"Press PS(Sixaxis) or 1+2(WiiMote)";
                         [(UIActivityIndicatorView *)cell.accessoryView startAnimating];
 						break;
 					case kInquiryRemoteName:

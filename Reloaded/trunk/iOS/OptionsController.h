@@ -117,6 +117,18 @@
    @public int buttonSize;
    @public int stickSize;
     
+   @public int wpantype;
+   @public NSString *wfpeeraddr;
+   @public int wfport;
+   @public int wframesync;
+   @public int btlatency;
+    
+   @public int vbean2x;
+   @public int vantialias;
+   @public int vflicker;
+    
+   @public int emuspeed;
+    
 }
 
 - (void)loadOptions;
@@ -193,20 +205,34 @@
 @property (readwrite,assign) int buttonSize;
 @property (readwrite,assign) int stickSize;
 
+@property (readwrite,assign) int wpantype;
+@property (readwrite,assign) NSString *wfpeeraddr;
+@property (readwrite,assign) int wfport;
+@property (readwrite,assign) int wfframesync;
+@property (readwrite,assign) int btlatency;
+
+@property (readwrite,assign) int vbean2x;
+@property (readwrite,assign) int vantialias;
+@property (readwrite,assign) int vflicker;
+
+@property (readwrite,assign) int emuspeed;
+
+@property (readwrite,assign) int mainThreadType;
+@property (readwrite,assign) int videoThreadType;
+
 @end
 
 enum OptionSections
 {
     kSupportSection = 0,
-    kFilterSection = 1,
-    kPortraitSection = 2,
-    kLandscapeSection = 3,
-    kCustomLayout = 4,
-    kInputSection = 5,
-    kGameDefaultsSection = 6,
-    kAppDefaultsSection = 7,
-    kMiscSection = 8,
-    kNumSections = 9
+    kMultiplayerSection = 1,
+    kFilterSection = 2,
+    kInputSection = 3,
+    kPortraitSection = 4,
+    kLandscapeSection = 5,
+    kMiscSection = 6,
+    kDefaultsSection = 7,
+    kNumSections = 8
 };
 
 enum ListOptionType
@@ -231,84 +257,53 @@ enum ListOptionType
     kTypeMainPriorityValue,
     kTypeAutofireValue,
     kTypeStickSizeValue,
-    kTypeButtonSizeValue
+    kTypeButtonSizeValue,
+    kTypeArrayWPANtype,
+    kTypeWFframeSync,
+    kTypeBTlatency,
+    kTypeEmuSpeed,
+    kTypeVideoThreadTypeValue,
+    kTypeMainThreadTypeValue
 };
 
 @class EmulatorController;
 
-@interface OptionsController : UIViewController  <UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate>
+@interface OptionsController : UIViewController  <UITableViewDelegate, UITableViewDataSource>
 {
-   EmulatorController*  emuController;
-   
-   UISwitch*		  switchKeepAspectPort;
-   UISwitch*		  switchKeepAspectLand;
-   UISwitch*		  switchSmoothedPort;
-   UISwitch*		  switchSmoothedLand;
-
-   UISwitch*		  switchTvFilterPort;
-   UISwitch*		  switchScanlineFilterPort;
-
-   UISwitch*		  switchTvFilterLand;
-   UISwitch*		  switchScanlineFilterLand;
-
-   UISwitch*		  switchShowFPS;
-   UISwitch*		  switchShowINFO;
-   UISwitch*		  switchAnimatedButtons;
-
-   UISwitch*		  switchfullLand;
-   UISwitch*		  switchfullPort;
-
-   UISwitch           *switchTouchDeadZone;
-
-   UISwitch           *switchTvoutNative;
-       
-   UISwitch *switchThrottle;
-
-   UISwitch *switchAplusB;
-   UISwitch *switchCheats;
-   UISwitch *switchSleep;
-
-   UISwitch *switchForcepxa;
-
-   UISwitch *switchP1aspx;
-   
-   NSArray *arrayNumbuttons;
-   NSArray *arrayEmuRes;
-   NSArray *arrayTouchType;
-   NSArray *arrayStickType;
-   NSArray *arrayControlType;
-   NSArray *arrayAnalogDZValue;
-   NSArray *arrayBTDZValue;
-   NSArray *arraySoundValue;
-   NSArray *arrayFSValue;
-   NSArray *arrayOverscanValue;
-   NSArray *arraySkinValue;
+    EmulatorController*  emuController;
     
+    UISwitch*		  switchKeepAspectPort;
+    UISwitch*		  switchKeepAspectLand;
+    UISwitch*		  switchSmoothedPort;
+    UISwitch*		  switchSmoothedLand;
     
-   UISwitch *switchFilterClones;
-   UISwitch *switchFilterFavorites;
-   UISwitch *switchFilterNotWorking;
-   NSMutableArray  *arrayManufacturerValue;
-   NSMutableArray  *arrayYearGTEValue;
-   NSMutableArray  *arrayYearLTEValue;
-   NSMutableArray  *arrayDriverSourceValue;
-   NSMutableArray  *arrayCategoryValue;
+    UISwitch*		  switchTvFilterPort;
+    UISwitch*		  switchScanlineFilterPort;
     
-   UISwitch *switchLowlsound;
-   UISwitch *switchVsync;
-   UISwitch *switchThreaded;
-   UISwitch *switchDblbuff;
+    UISwitch*		  switchTvFilterLand;
+    UISwitch*		  switchScanlineFilterLand;
     
-   NSArray  *arrayVideoPriorityValue;
-   NSArray  *arrayMainPriorityValue;
+    UISwitch*		  switchShowFPS;
+    UISwitch*		  switchShowINFO;
     
-   NSArray  *arrayAutofireValue;
+    UISwitch*		  switchfullLand;
+    UISwitch*		  switchfullPort;
+        
+    UISwitch *switchThrottle;
     
-   UISwitch *switchHiscore;
+    UISwitch *switchSleep;
     
-   NSArray  *arrayStickSizeValue;
-   NSArray  *arrayButtonSizeValue;
+    UISwitch *switchForcepxa;
     
+    NSArray *arrayEmuRes;
+    
+    NSArray *arrayFSValue;
+    NSArray *arrayOverscanValue;
+    NSArray *arraySkinValue;
+    
+    UISwitch *switchLowlsound;
+            
+    NSArray  *arrayEmuSpeed;
 }
 
 - (void)optionChanged:(id)sender;

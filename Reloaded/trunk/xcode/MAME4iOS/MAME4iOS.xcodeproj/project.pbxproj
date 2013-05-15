@@ -22,7 +22,20 @@
 		CE8D87DA16501C2200685BC4 /* libmamearmv7.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CE8D87D916501C2200685BC4 /* libmamearmv7.a */; };
 		CE8D87DD1653121200685BC4 /* iCadeView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8D87DC1653121200685BC4 /* iCadeView.m */; };
 		CE8D87E0165708AC00685BC4 /* libmamesim.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CEBFBC30163D634700A05CD0 /* libmamesim.a */; };
+		CE8F08841741580100E2D5FB /* InputOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8F08831741580100E2D5FB /* InputOptionController.m */; };
+		CE8F08851741580100E2D5FB /* InputOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8F08831741580100E2D5FB /* InputOptionController.m */; };
+		CE8F088817435C3B00E2D5FB /* DefaultOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8F088717435C3A00E2D5FB /* DefaultOptionController.m */; };
+		CE8F088917435C3B00E2D5FB /* DefaultOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8F088717435C3A00E2D5FB /* DefaultOptionController.m */; };
+		CE8F1C601735199400D3F527 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE8F1C5F1735199400D3F527 /* CoreBluetooth.framework */; };
 		CE8F768D164D080D009AEDBC /* libmamearmv7s.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CE8F768C164D080D009AEDBC /* libmamearmv7s.a */; };
+		CE9454C8172BB23100B81C32 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE9454C7172BB23100B81C32 /* GameKit.framework */; };
+		CE9454C9172BB26100B81C32 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE9454C7172BB23100B81C32 /* GameKit.framework */; };
+		CE9454CC173160A300B81C32 /* NetplayController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE9454CB173160A300B81C32 /* NetplayController.m */; };
+		CE9454CD173160A300B81C32 /* NetplayController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE9454CB173160A300B81C32 /* NetplayController.m */; };
+		CE9454D41731DE4E00B81C32 /* NetplayGameKit.m in Sources */ = {isa = PBXBuildFile; fileRef = CE9454D31731DE4D00B81C32 /* NetplayGameKit.m */; };
+		CE9454D51731DE4E00B81C32 /* NetplayGameKit.m in Sources */ = {isa = PBXBuildFile; fileRef = CE9454D31731DE4D00B81C32 /* NetplayGameKit.m */; };
+		CE9454D81731DF2700B81C32 /* FilterOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE9454D71731DF2700B81C32 /* FilterOptionController.m */; };
+		CE9454D91731DF2700B81C32 /* FilterOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE9454D71731DF2700B81C32 /* FilterOptionController.m */; };
 		CEAC6C2E16AAA80400AF3275 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680891635BA7000051BC2 /* UIKit.framework */; };
 		CEAC6C2F16AAA80400AF3275 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE6808B1635BA7000051BC2 /* Foundation.framework */; };
 		CEAC6C3016AAA80400AF3275 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE6808D1635BA7000051BC2 /* CoreGraphics.framework */; };
@@ -122,11 +135,25 @@
 		CE8D87DB1653121100685BC4 /* iCadeView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = iCadeView.h; path = ../../iOS/iCadeView.h; sourceTree = "<group>"; };
 		CE8D87DC1653121200685BC4 /* iCadeView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = iCadeView.m; path = ../../iOS/iCadeView.m; sourceTree = "<group>"; };
 		CE8D87DF16541AC400685BC4 /* Globals.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Globals.h; path = ../../iOS/Globals.h; sourceTree = "<group>"; };
+		CE8F0880174066B900E2D5FB /* skt_netplay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = skt_netplay.h; path = "../../../src/osd/droid-ios/skt_netplay.h"; sourceTree = "<group>"; };
+		CE8F0881174066DC00E2D5FB /* netplay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = netplay.h; path = "../../../src/osd/droid-ios/netplay.h"; sourceTree = "<group>"; };
+		CE8F08821741580100E2D5FB /* InputOptionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InputOptionController.h; path = ../../iOS/InputOptionController.h; sourceTree = "<group>"; };
+		CE8F08831741580100E2D5FB /* InputOptionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = InputOptionController.m; path = ../../iOS/InputOptionController.m; sourceTree = "<group>"; };
+		CE8F088617435C3A00E2D5FB /* DefaultOptionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DefaultOptionController.h; path = ../../iOS/DefaultOptionController.h; sourceTree = "<group>"; };
+		CE8F088717435C3A00E2D5FB /* DefaultOptionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DefaultOptionController.m; path = ../../iOS/DefaultOptionController.m; sourceTree = "<group>"; };
 		CE8F0D7B16585C2A0048D63C /* DebugView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DebugView.h; path = ../../iOS/DebugView.h; sourceTree = "<group>"; };
 		CE8F0D7C16585C2B0048D63C /* DebugView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = DebugView.m; path = ../../iOS/DebugView.m; sourceTree = "<group>"; };
+		CE8F1C5F1735199400D3F527 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
 		CE8F768C164D080D009AEDBC /* libmamearmv7s.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmamearmv7s.a; path = ../../libmamearmv7s.a; sourceTree = "<group>"; };
 		CE90575A166A89D000653872 /* ListOptionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ListOptionController.h; path = ../../iOS/ListOptionController.h; sourceTree = "<group>"; };
 		CE90575B166A89D000653872 /* ListOptionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ListOptionController.m; path = ../../iOS/ListOptionController.m; sourceTree = "<group>"; };
+		CE9454C7172BB23100B81C32 /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
+		CE9454CA173160A200B81C32 /* NetplayController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NetplayController.h; path = ../../iOS/NetplayController.h; sourceTree = "<group>"; };
+		CE9454CB173160A300B81C32 /* NetplayController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NetplayController.m; path = ../../iOS/NetplayController.m; sourceTree = "<group>"; };
+		CE9454D21731DE4D00B81C32 /* NetplayGameKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NetplayGameKit.h; path = ../../iOS/NetplayGameKit.h; sourceTree = "<group>"; };
+		CE9454D31731DE4D00B81C32 /* NetplayGameKit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NetplayGameKit.m; path = ../../iOS/NetplayGameKit.m; sourceTree = "<group>"; };
+		CE9454D61731DF2600B81C32 /* FilterOptionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FilterOptionController.h; path = ../../iOS/FilterOptionController.h; sourceTree = "<group>"; };
+		CE9454D71731DF2700B81C32 /* FilterOptionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FilterOptionController.m; path = ../../iOS/FilterOptionController.m; sourceTree = "<group>"; };
 		CEAC6C2C16AAA80400AF3275 /* Gridlee.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Gridlee.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CEAC6C3316AAA80400AF3275 /* Gridlee-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Gridlee-Info.plist"; sourceTree = "<group>"; };
 		CEAC6C3516AAA80400AF3275 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -192,6 +219,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CE9454C9172BB26100B81C32 /* GameKit.framework in Frameworks */,
 				CEAC6C2E16AAA80400AF3275 /* UIKit.framework in Frameworks */,
 				CEAC6C2F16AAA80400AF3275 /* Foundation.framework in Frameworks */,
 				CEAC6C3016AAA80400AF3275 /* CoreGraphics.framework in Frameworks */,
@@ -210,6 +238,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CE8F1C601735199400D3F527 /* CoreBluetooth.framework in Frameworks */,
 				CE8D87E0165708AC00685BC4 /* libmamesim.a in Frameworks */,
 				CE8D87DA16501C2200685BC4 /* libmamearmv7.a in Frameworks */,
 				CE8F768D164D080D009AEDBC /* libmamearmv7s.a in Frameworks */,
@@ -219,6 +248,7 @@
 				CEE6808A1635BA7000051BC2 /* UIKit.framework in Frameworks */,
 				CEE6808C1635BA7000051BC2 /* Foundation.framework in Frameworks */,
 				CEE6808E1635BA7000051BC2 /* CoreGraphics.framework in Frameworks */,
+				CE9454C8172BB23100B81C32 /* GameKit.framework in Frameworks */,
 				CEAC6C6716AAAB2D00AF3275 /* libz.dylib in Frameworks */,
 				CEAC6C6816AAAB3000AF3275 /* libstdc++.dylib in Frameworks */,
 			);
@@ -231,6 +261,16 @@
 			isa = PBXGroup;
 			children = (
 				CE8D87DF16541AC400685BC4 /* Globals.h */,
+				CE9454D21731DE4D00B81C32 /* NetplayGameKit.h */,
+				CE9454D31731DE4D00B81C32 /* NetplayGameKit.m */,
+				CE9454CA173160A200B81C32 /* NetplayController.h */,
+				CE9454CB173160A300B81C32 /* NetplayController.m */,
+				CE9454D61731DF2600B81C32 /* FilterOptionController.h */,
+				CE9454D71731DF2700B81C32 /* FilterOptionController.m */,
+				CE8F088617435C3A00E2D5FB /* DefaultOptionController.h */,
+				CE8F088717435C3A00E2D5FB /* DefaultOptionController.m */,
+				CE8F08821741580100E2D5FB /* InputOptionController.h */,
+				CE8F08831741580100E2D5FB /* InputOptionController.m */,
 				CE90575A166A89D000653872 /* ListOptionController.h */,
 				CE90575B166A89D000653872 /* ListOptionController.m */,
 				CEE680BF1635BB6100051BC2 /* OptionsController.h */,
@@ -340,6 +380,8 @@
 			children = (
 				CEE680CD163B147100051BC2 /* libz.dylib */,
 				CEE680CB163B13E400051BC2 /* libstdc++.dylib */,
+				CE8F1C5F1735199400D3F527 /* CoreBluetooth.framework */,
+				CE9454C7172BB23100B81C32 /* GameKit.framework */,
 				CEE680C9163B13AB00051BC2 /* AudioToolbox.framework */,
 				CEE680D1163BE5C400051BC2 /* CoreFoundation.framework */,
 				CEE680A61635BAA400051BC2 /* QuartzCore.framework */,
@@ -379,6 +421,8 @@
 		CEE680C51635BB8500051BC2 /* Includes */ = {
 			isa = PBXGroup;
 			children = (
+				CE8F0881174066DC00E2D5FB /* netplay.h */,
+				CE8F0880174066B900E2D5FB /* skt_netplay.h */,
 				CE8A4192170F41FC001ADFA4 /* myosd.h */,
 			);
 			name = Includes;
@@ -532,6 +576,11 @@
 				CEAC6C5516AAA97800AF3275 /* Bootstrapper.m in Sources */,
 				CE6D6E1516D8CADF00F265B7 /* LayoutData.m in Sources */,
 				CE6D6E1716D8CADF00F265B7 /* LayoutView.m in Sources */,
+				CE9454CD173160A300B81C32 /* NetplayController.m in Sources */,
+				CE9454D51731DE4E00B81C32 /* NetplayGameKit.m in Sources */,
+				CE9454D91731DF2700B81C32 /* FilterOptionController.m in Sources */,
+				CE8F08851741580100E2D5FB /* InputOptionController.m in Sources */,
+				CE8F088917435C3B00E2D5FB /* DefaultOptionController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -552,6 +601,11 @@
 				CEAC6C5416AAA97800AF3275 /* Bootstrapper.m in Sources */,
 				CE6D6E1416D8CADF00F265B7 /* LayoutData.m in Sources */,
 				CE6D6E1616D8CADF00F265B7 /* LayoutView.m in Sources */,
+				CE9454CC173160A300B81C32 /* NetplayController.m in Sources */,
+				CE9454D41731DE4E00B81C32 /* NetplayGameKit.m in Sources */,
+				CE9454D81731DF2700B81C32 /* FilterOptionController.m in Sources */,
+				CE8F08841741580100E2D5FB /* InputOptionController.m in Sources */,
+				CE8F088817435C3B00E2D5FB /* DefaultOptionController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
