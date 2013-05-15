@@ -40,9 +40,9 @@ iOSNOJAILBREAK = 1
 
 #iOSSIMULATOR = 1
 
-iOSARMV7=1
+#iOSARMV7=1
 
-#iOSARMV7S=1
+iOSARMV7S=1
 
 ################
 
