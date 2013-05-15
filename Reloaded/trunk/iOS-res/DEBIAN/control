@@ -1,8 +1,9 @@
 Package: com.seleuco.mame4ios
 Name: MAME4iOS
-Version: 1.5-0
+Version: 1.6-0
 Architecture: iphoneos-arm
 Description: Multiple Arcade Machine Emulator.
+ V1.6: Added Peer to peer netplay over WI-FI or bluetooth. Reworked options menu. Added vector defaults. Added speed emulation and thread type options. Some sixaxis fixes. Other bug fixes.
  V1.5: Added Sixaxis support. Added button & stick size selector. Fixed permissions. Bluetooth manager fixes.
  V1.4: Added in app touch layout customization. Added hiscores saving. Added switch to force 60Hz.  Added autofire. Fixed some anonymous timers. Fixed simultaneous analog and digital input. Fixed 2nd controller mapping issues. Added support for newer Wiimotes.
  V1.3.1: iPhone 5 support. iOS 6.x compatibility. Added game filtering & favorities. Improved rom manager. Added iMpulse controller support. A lot of bug fixes.
