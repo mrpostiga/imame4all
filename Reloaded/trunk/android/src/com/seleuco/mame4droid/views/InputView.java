@@ -74,6 +74,7 @@ public class InputView extends ImageView {
 	protected Paint pnt = new Paint();
 	protected Rect rsrc = new Rect();
 	protected Rect rdst = new Rect();
+	protected Rect rclip = new Rect();
 	protected int   ax = 0;
 	protected int   ay = 0;
 	protected float dx = 1;
@@ -319,34 +320,44 @@ public class InputView extends ImageView {
 		if(mm==null)return;
 		
         ArrayList<InputValue> data = mm.getInputHandler().getAllInputData();
+        
+        boolean hideStick = mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE && 
+        		(mm.getPrefsHelper().isHideStick() || mm.getInputHandler().isControllerDevice()) 
+        		&& !ControlCustomizer.isEnabled();
+        
         for(int i=0; i<data.size();i++)
         {
         	InputValue v = data.get(i); 
         	BitmapDrawable d = null;
+        	canvas.getClipBounds(rclip);
         	if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL_DPAD 
-        			&& v.getType()==InputHandler.TYPE_STICK_IMG && canvas.getClipBounds().intersect(v.getRect()))
+        			&& v.getType()==InputHandler.TYPE_STICK_IMG && /*canvas.getClipBounds()*/rclip.intersect(v.getRect()))
         	{
-               //canvas.drawBitmap(stick_images[mm.getInputHandler().getStick_state()].getBitmap(), null, v.getRect(), null);
-        	   if(!(mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE && mm.getPrefsHelper().isHideStick()))
+        	   if(!hideStick)
         	       d = stick_images[mm.getInputHandler().getStick_state()];
         	}
         	else if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL_DPAD && 
-        			v.getType()==InputHandler.TYPE_ANALOG_RECT && canvas.getClipBounds().intersect(v.getRect()) )
+        			v.getType()==InputHandler.TYPE_ANALOG_RECT && /*canvas.getClipBounds()*/rclip.intersect(v.getRect()) )
         	{
-         	   if(!(mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE && mm.getPrefsHelper().isHideStick()))
-        		  mm.getInputHandler().getAnalogStick().draw(canvas);
+        		if(!hideStick)
+        		    mm.getInputHandler().getAnalogStick().draw(canvas);
         	}        	
-        	else if(v.getType()==InputHandler.TYPE_BUTTON_IMG && canvas.getClipBounds().intersect(v.getRect()) )
+        	else if(v.getType()==InputHandler.TYPE_BUTTON_IMG && /*canvas.getClipBounds()*/rclip.intersect(v.getRect()) )
         	{
-        	   //canvas.drawBitmap(btns_images[v.getValue()][mm.getInputHandler().getBtnStates()[v.getValue()]].getBitmap(), null, v.getRect(), null);
         	   if(mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE)
         	   {  
         		      int n;
-        		      if(!Emulator.isInMAME())
+        		      if(mm.getInputHandler().isControllerDevice())
+                          n = 0;
+        		      else if(!Emulator.isInMAME())
         		    	  n = 2;
         		      else
+        		      {	
         		    	  n = mm.getPrefsHelper().getNumButtons();
-            	      int b = v.getValue();
+        		    	  if(n==-1)
+        		    		  n = Emulator.getValue(Emulator.NUMBTNS);
+        		      }
+        		      int b = v.getValue();
             	      if(!ControlCustomizer.isEnabled())
             	      { 	  
 	        		      if(b==InputHandler.BTN_Y && n < 4)continue;
@@ -396,7 +407,7 @@ public class InputView extends ImageView {
 			}
 			
             p2.setTextSize(20);
-            if(TiltSensor.isEnabled())
+            if(TiltSensor.isEnabled() && TiltSensor.str != null)
 			   canvas.drawText(TiltSensor.str, 100, 100, p2);
         }	
 	}	

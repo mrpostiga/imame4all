@@ -261,7 +261,7 @@ public class GLRenderer implements Renderer {
 	}
     
     public void onDrawFrame(GL10 gl) {
-       // Log.v("mm","onDrawFrame called "+shortBuffer); 
+     // Log.v("mm","onDrawFrame called "+shortBuffer); 
     //gl.glClearColor(50, 50, 50, 1.0f);
     //gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
     			

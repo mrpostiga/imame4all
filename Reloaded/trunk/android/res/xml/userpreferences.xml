@@ -4,7 +4,7 @@
 
 	<PreferenceCategory android:title="Global">
 					
-		<ListPreference
+		<com.seleuco.mame4droid.prefs.ListPrefWithWarn
 			android:entries="@array/pref_global_video_render_options"
 			android:title='Video render mode'			
 			android:key="PREF_GLOBAL_VIDEO_RENDER_MODE"
@@ -16,7 +16,14 @@
 			android:title='Emulated Resolution'			
 			android:key="PREF_GLOBAL_RESOLUTION"
 			android:entryValues="@array/pref_resolution_values"
-			android:defaultValue="1" />				
+			android:defaultValue="1" />		
+		
+		<ListPreference
+			android:entries="@array/pref_speed_options"
+			android:title='Emulated Speed'			
+			android:key="PREF_GLOBAL_SPEED"
+			android:entryValues="@array/pref_speed_values"
+			android:defaultValue="-1" />						
 			
 	    <CheckBoxPreference android:key="PREF_GLOBAL_SOUND_SYNC"
 			android:title="Audio Sync" android:summary="Enable it to get smoother gameplay and better sound in some cases. You should also disable Throttle, and set 6 or 8 manual frame skip if needed"
@@ -25,15 +32,15 @@
 	    <CheckBoxPreference android:key="PREF_GLOBAL_THROTTLE"
 			android:title="Throttle" android:summary="Enable it to turn speed throttling on. If you disable it autoframeskip is disabled also"
 			android:defaultValue="true" />
-	    
+	   
 	    <ListPreference
 			android:entries="@array/pref_frameskip_options"
 			android:title='Frame skip'			
 			android:key="PREF_GLOBAL_FRAMESKIP"
 			android:entryValues="@array/pref_frameskip_values"
-			android:defaultValue="-1" />	
-	    	    	    
-	    <ListPreference
+			android:defaultValue="-1" />
+	    	    	    	    
+	    <com.seleuco.mame4droid.prefs.ListPrefWithWarn
 			android:entries="@array/pref_sound_options"
 			android:title='Sound'			
 			android:key="PREF_GLOBAL_SOUND"
@@ -47,8 +54,12 @@
 	   	<CheckBoxPreference android:key="PREF_GLOBAL_SHOW_INFOWARNINGS"
 			android:title="Show info/warnings" android:summary="Shows Game Info and any warnings when a game is selected"
 			android:defaultValue="true" />
+	    
+	    <CheckBoxPreference android:key="PREF_GLOBAL_FAVORITES"
+			android:title="Show only favorites" android:summary="Enable it to show only favorites games in ROM manager"
+			android:defaultValue="false" />	   	
 	   	
-	   	<CheckBoxPreference android:key="PREF_GLOBAL_CHEAT"
+	   	<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_GLOBAL_CHEAT"
 			android:title="Cheats" android:summary="Enables the reading of the cheat database"
 			android:defaultValue="false" />
 	<!--     	
@@ -65,9 +76,24 @@
 			android:defaultValue="true" />	
 			
 	    <CheckBoxPreference android:key="PREF_GLOBAL_FORCE_PXASPECT"
-			android:title="Force Pixel Aspect" android:summary="Enable it to force pixel aspect ratio bypassing MAME video selection"
+			android:title="Forced Pixel Aspect" android:summary="Enable it to force pixel aspect ratio bypassing MAME video selection"
 			android:defaultValue="false" />
 	    
+	    <com.seleuco.mame4droid.prefs.ListPrefWithWarn
+			android:entries="@array/pref_vsync_options"
+			android:title='Forced refresh rate (Hz)'			
+			android:key="PREF_GLOBAL_VSYNC"
+			android:entryValues="@array/pref_vsync_values"
+			android:defaultValue="-1" />	    
+	    
+	    <com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_GLOBAL_HISCORE"
+			android:title="Save Hiscores" android:summary="If enabled, saves hiscores on some games not saving on NVRAM. It could cause problems with some games or save states"
+			android:defaultValue="false" />		    
+	    
+	    <CheckBoxPreference android:key="PREF_GLOBAL_WARN_ON_EXIT"
+			android:title="Warn on exit" android:summary="Enable it to warn when you press the exit button in the external controller (GamePad) when gaming"
+			android:defaultValue="true" />	
+	    	    
 	    <CheckBoxPreference android:key="PREF_GLOBAL_SUSPEND_NOTIFICATION"
 			android:title="Notification Icon" android:summary="Enable it to show a notification icon when MAME4droid is suspended"
 			android:defaultValue="true" />			    			
@@ -92,9 +118,9 @@
 		<ListPreference
 			android:entries="@array/pref_numbuttons_options"
 			android:title='Number of buttons '			
-			android:key="PREF_NUMBUTTONS"
+			android:key="PREF_NUMBUTTONS_2"
 			android:entryValues="@array/pref_numbuttons_values"
-			android:defaultValue="5" />
+			android:defaultValue="-1" />
 		
 		<CheckBoxPreference android:key="PREF_HIDE_STICK"
 			android:title="Hide stick" android:summary="Enable to hide stick or dpad when full screen"
@@ -112,9 +138,16 @@
 		<ListPreference
 			android:entries="@array/pref_input_external_options"
 			android:title='External controller'			
-			android:key="PREF_INPUT_EXTERNAL"
+			android:key="PREF_INPUT_EXTERNAL_2"
 			android:entryValues="@array/pref_input_external_values"
-			android:defaultValue="1" />		
+			android:defaultValue="2" />
+		
+		<ListPreference
+			android:entries="@array/pref_automap_options"
+			android:title='GamePad automap options'			
+			android:key="PREF_AUTOMAP_OPTIONS"
+			android:entryValues="@array/pref_automap_values"
+			android:defaultValue="2" />					
 																
 		<CheckBoxPreference android:key="PREF_ANIMATED_INPUT"
 			android:title="Animated" android:summary="Animated touch control. Disable for huge performance boost"
@@ -122,7 +155,7 @@
 			
 		<CheckBoxPreference android:key="PREF_VIBRATE"
 			android:title="Vibrate on keypress" android:summary="Enable to vibrate when touch"
-			android:defaultValue="true" />		
+			android:defaultValue="false" />		
 				
 		<ListPreference
 			android:entries="@array/pref_controller_type_options"
@@ -134,14 +167,21 @@
 		<ListPreference
 			android:entries="@array/pref_stick_options"
 			android:title='Stick type'			
-			android:key="PREF_STICK_TYPE"
+			android:key="PREF_STICK_TYPE_2"
 			android:entryValues="@array/pref_stick_values"
-			android:defaultValue="8" />
+			android:defaultValue="-1" />
 		
 		<CheckBoxPreference android:key="PREF_TOUCH_DZ"
 			android:title="Digital touch dead zone" android:summary="Enable Touch Dead Zone"
 			android:defaultValue="true" />
-			
+	    
+	    <ListPreference
+			android:entries="@array/pref_autofire_options"
+			android:title='Button B as autofire'			
+			android:key="PREF_AUTOFIRE"
+			android:entryValues="@array/pref_autofire_values"
+			android:defaultValue="0" />
+							
 	    <ListPreference
 			android:entries="@array/pref_dz_options"
 			android:title='Analog touch dead zone'			
@@ -149,12 +189,19 @@
 			android:entryValues="@array/pref_dz_values"
 			android:defaultValue="2" />
 	    
+	     <ListPreference
+			android:entries="@array/pref_dz_options"
+			android:title='Analog gamepad dead zone'			
+			android:key="PREF_GAMEPAD_DZ"
+			android:entryValues="@array/pref_dz_values"
+			android:defaultValue="3" />
+	    
 	    <CheckBoxPreference android:key="PREF_PXASP1"
 			android:title="P4,P3,P2 as P1" android:summary="Send Player 1 input to Player 2,3,4. Could cause problems in some ROMs"
 			android:defaultValue="False" />
 	            
     </PreferenceCategory>	    
-	    			
+<!-- 	    			
 	<PreferenceCategory android:title="Hardware Trackball">			
 												
 		<com.seleuco.mame4droid.prefs.SensitivityPrefScreen
@@ -167,7 +214,7 @@
 			android:defaultValue="false" />					
 
 	</PreferenceCategory>
-	
+-->	
 	<PreferenceCategory android:title="Tilt Sensor">
 	
 		<CheckBoxPreference android:key="PREF_TILT_SENSOR"
@@ -202,7 +249,7 @@
 			android:defaultValue="1" />	
 
 		<CheckBoxPreference android:key="PREF_PORTRAIT_TOUCH_CONTROLLER"
-			android:title="Touch controller visible" android:summary="Disable to get more room for scaling if not need it"
+			android:title="Touch controller visible" android:summary="Disable to switch to full screen mode hiding stick and buttons when you are using a GamePad"
 			android:defaultValue="true" />
 
 		<CheckBoxPreference android:key="PREF_PORTRAIT_BITMAP_FILTERING"
@@ -224,7 +271,7 @@
 			android:defaultValue="1" />
 			
 		<CheckBoxPreference android:key="PREF_LANDSCAPE_TOUCH_CONTROLLER"
-			android:title="Touch controller visible" android:summary="Disable to get more room for scaling if not need it"
+			android:title="Touch controller visible" android:summary="Disable to hide stick and buttons when you are using a GamePad"
 			android:defaultValue="true" />
 
 		<CheckBoxPreference android:key="PREF_LANDSCAPE_BITMAP_FILTERING"
@@ -232,10 +279,26 @@
 			android:defaultValue="false" />
 	
 	</PreferenceCategory>
+	
+	<PreferenceCategory android:title="Vector">			
+															
+	    <com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_BEAM2X"
+			android:title="Beam 2x" android:summary="Sets the width of the vectors to 2x"
+			android:defaultValue="true" />					
 
-    <PreferenceCategory android:title="Advanced (could needs app restart)">
+	    <com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_ANTIALIAS"
+			android:title="Antialias" android:summary="Enables antialiased line rendering for vector games"
+			android:defaultValue="true" />	    
+
+	    <com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_FLICKER"
+			android:title="Flicker" android:summary="Simulates a vector flicker effect"
+			android:defaultValue="false" />	    	    
+	    
+	</PreferenceCategory>
+
+    <PreferenceCategory android:title="Advanced">
         
-        <CheckBoxPreference android:key="PREF_THREADED_VIDEO"
+        <com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_THREADED_VIDEO"
 			android:title="Threaded Video Render" android:summary="Performance boost on double core devices"
 			android:defaultValue="True" />	
 			      			
@@ -248,17 +311,17 @@
 			android:title="Double Buffer" android:summary="Avoids flickering at the expense of performance"
 			android:defaultValue="True" />  		
 		
-		<ListPreference android:entries="@array/pref_low_norm_or_hight_options"
+		<com.seleuco.mame4droid.prefs.ListPrefWithWarn android:entries="@array/pref_low_norm_or_hight_options"
 			android:title='Main Thread Priority' android:key="PREF_MAIN_THREAD_PRIORITY"
 			android:entryValues="@array/pref_low_norm_or_hight_values"
 			android:defaultValue="2" />
 
-		<ListPreference android:entries="@array/pref_low_norm_or_hight_options"
+		<com.seleuco.mame4droid.prefs.ListPrefWithWarn android:entries="@array/pref_low_norm_or_hight_options"
 			android:title='Sound Latency' android:key="PREF_SOUND_LATENCY"
 			android:entryValues="@array/pref_low_norm_or_hight_values"
 			android:defaultValue="2" />
 		
-        <CheckBoxPreference android:key="PREF_FORCE_GLES10"
+        <com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_FORCE_GLES10"
 			android:title="Force OpenGL ES 1.0" android:summary="Forces OpenGL ES 1.0 render path"
 			android:defaultValue="False" />				
 			

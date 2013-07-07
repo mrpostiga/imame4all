@@ -184,9 +184,16 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	
 	protected int [] pad_data = new int[4];
 	
-	protected int newtouch;
-	protected int oldtouch;
-	protected boolean touchstate;
+	//protected int newtouch;
+	//protected int oldtouch;
+	//protected boolean touchstate;
+	
+	protected int [] touchContrData = new int[20];
+	protected InputValue [] touchKeyData = new InputValue[20];
+	
+	protected static int [] newtouches = new int[20];
+	protected static int [] oldtouches = new int[20];
+	protected static boolean [] touchstates = new boolean[20];
 
 	private boolean up_icade = false;
 	private boolean down_icade = false;
@@ -228,6 +235,8 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	protected int old_btnStates[] = new int[NUM_BUTTONS];
 	
 	protected MAME4droid mm = null;
+	
+	protected boolean iCade = false;
 	
 	//protected Timer timer = new Timer();
 	
@@ -273,7 +282,11 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
     	for(int i=0;i<4;i++)
     	{	
 	    	pad_data[i] = 0;
-	    	Emulator.setPadData(i,pad_data[i]);
+	    	try
+	    	{
+	    	  Emulator.setPadData(i,pad_data[i]);
+	    	}
+	    	catch(Error e){}
     	}
 		
 		stick.setMAME4droid(mm);
@@ -338,24 +351,34 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		
 	    if(v==L2_VALUE)
 	    { 
-			if(!Emulator.isInMAME())
-			{	
-			  mm.showDialog(DialogHelper.DIALOG_EXIT);
-			}  
-	        else
-	        {
-	        	Emulator.setValue(Emulator.EXIT_GAME_KEY, 1);		    	
-		    	try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				Emulator.setValue(Emulator.EXIT_GAME_KEY, 0);
-	        }  
+	    	if( event.getAction()==KeyEvent.ACTION_UP) {
+		    	if(Emulator.getValue(Emulator.IN_MENU)!=0)
+			    {
+			        Emulator.setValue(Emulator.EXIT_GAME_KEY, 1);		    	
+			    	try {Thread.sleep(100);} catch (InterruptedException e) {}
+					Emulator.setValue(Emulator.EXIT_GAME_KEY, 0);									    	
+			    }	    	
+			    else if(!Emulator.isInMAME())
+				{	
+				   mm.showDialog(DialogHelper.DIALOG_EXIT);
+				}  
+		        else
+		        {
+		           if(mm.getPrefsHelper().isWarnOnExit())
+		        	  mm.showDialog(DialogHelper.DIALOG_EXIT_GAME);
+		           else
+		           {
+				        Emulator.setValue(Emulator.EXIT_GAME_KEY, 1);		    	
+				    	try {Thread.sleep(100);} catch (InterruptedException e) {}
+						Emulator.setValue(Emulator.EXIT_GAME_KEY, 0);			        	   
+		           }
+		        }
+	    	}
 		}
 		else if(v==R2_VALUE)
 		{
-			 mm.showDialog(DialogHelper.DIALOG_OPTIONS);
+			if( event.getAction()==KeyEvent.ACTION_UP)  
+			   mm.showDialog(DialogHelper.DIALOG_OPTIONS);
 		}
 		else
 		{				
@@ -379,7 +402,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 			 return true;
 		 }
           
-		 if(mm.getPrefsHelper().getInputExternal() != PrefsHelper.PREF_INPUT_DEFAULT)
+		 if(mm.getPrefsHelper().getInputExternal() == PrefsHelper.PREF_INPUT_ICADE || mm.getPrefsHelper().getInputExternal() == PrefsHelper.PREF_INPUT_ICP)
 		 {	 
 			this.handleIcade(event);
 			return true;
@@ -430,51 +453,6 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		}		
 		return null;	
 	}
-	
-	/*
-	protected boolean handleTouchController(MotionEvent event){
-		boolean b = false;
-		
-		if(event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == MotionEvent.ACTION_MOVE)
-		{
-		   //int x = (int)event.getRawX();
-		   //int y = (int)event.getRawY();
-		   
-		   int x = (int)event.getX();
-		   int y = (int)event.getY();
-		   
-		   for(int i =0; i< values.size();i++)
-		   {
-			   InputValue iv = values.get(i);
-			   
-			   if(iv.getRect().contains(x, y))
-			   {	
-				   if(iv.getType()==TYPE_ACTION)
-				   {	 
-				       pad_data |= getButtonValue(iv.getValue());				  
-				       b =  true;//NO MULTITOUCH (SIC)
-				  }
-				  else if(iv.getType()==TYPE_SWITCH)
-				  {					  
-					  changeState();
-					  mm.getMainHelper().updateViews();
-					  return true;
-				  }		
-			   }				   
-		   }	   		   
-		}   
-		else
-		{
-			pad_data = 0; b = true;
-		}
-		
-		if(b)
-	       Emulator.setPadData(pad_data);
-		
-        return b;
-		
-	}
-	*/
 	
 	protected void handleImageStates(){
 		
@@ -557,99 +535,143 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	protected boolean handleTouchController(MotionEvent event) {
 
 		int action = event.getAction();
+		int actionEvent = action & MotionEvent.ACTION_MASK;
 		
-		oldtouch = newtouch;
+		int pid = 0;
 				
-		int x = (int) event.getX();
-		int y = (int) event.getY();
+        try
+        {
+		   int pointerIndex = (event.getAction() & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
+           pid = event.getPointerId(pointerIndex);
+        }
+        catch(Error e)
+        {
+            pid = (action & MotionEvent.ACTION_POINTER_ID_SHIFT) >> MotionEvent.ACTION_POINTER_ID_SHIFT;
+        }    
+		
+		//dumpEvent(event);
+		
+		for (int i = 0; i < 10; i++) 
+		{
+		    touchstates[i] = false;
+		    oldtouches[i] = newtouches[i];
+		}
+		
+		for (int i = 0; i < event.getPointerCount(); i++) {
 
-		if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
-			touchstate = false;
+			int actionPointerId = event.getPointerId(i);
+						
+			int x = (int) event.getX(i);
+			int y = (int) event.getY(i);
 			
-		} else {
-
-			touchstate = true;
-
-			for (int j = 0; j < values.size(); j++) {
-				InputValue iv = values.get(j);
-
-				if (iv.getRect().contains(x, y)) {
-
-					if (iv.getType() == TYPE_BUTTON_RECT || iv.getType() == TYPE_STICK_RECT) {
-
-						switch (action) {
-
-						case MotionEvent.ACTION_DOWN:
-						case MotionEvent.ACTION_POINTER_DOWN://ESTO NO ESTA en 1.6
-						case MotionEvent.ACTION_MOVE:
+			if(actionEvent == MotionEvent.ACTION_UP 
+			   || (actionEvent == MotionEvent.ACTION_POINTER_UP && actionPointerId==pid) 
+			   || actionEvent == MotionEvent.ACTION_CANCEL)
+			{
+                //nada
+			}	
+			else
+			{		
+				//int id = i;
+				int id = actionPointerId;
+				if(id>touchstates.length)continue;//strange but i have this error on my development console
+				touchstates[id] = true;
+				//newtouches[id] = 0;
+				
+				for (int j = 0; j < values.size(); j++) {
+					InputValue iv = values.get(j);
+										
+					if (iv.getRect().contains(x, y)) {
+						
+						//Log.d("touch","HIT "+iv.getType()+" "+iv.getRect()+ " "+iv.getOrigRect());
+						
+						if (iv.getType() == TYPE_BUTTON_RECT || iv.getType() == TYPE_STICK_RECT) {
+						
+							switch (actionEvent) {
 							
-							if(iv.getType() == TYPE_BUTTON_RECT)
-							{	
-							   newtouch = getButtonValue(iv.getValue(),true);
-								 
-							   if(iv.getValue()==BTN_L2)
-							   { 
-								    if(!Emulator.isInMAME())
-									    mm.showDialog(DialogHelper.DIALOG_EXIT);
-								    else
-								    {
-								    	if(Emulator.getValue(Emulator.IN_MENU)==0)
-								    	{
-								           mm.showDialog(DialogHelper.DIALOG_EXIT_GAME);
-								    	}
-								    	else
-								    	{
-					    		           Emulator.setValue(Emulator.EXIT_GAME_KEY, 1);		    	
-				    			    	   try {Thread.sleep(100);} catch (InterruptedException e) {}
-				    					   Emulator.setValue(Emulator.EXIT_GAME_KEY, 0);
-								    	}
-								    }
+							case MotionEvent.ACTION_DOWN:
+							case MotionEvent.ACTION_POINTER_DOWN:
+							case MotionEvent.ACTION_MOVE:
+															
+								if(iv.getType() == TYPE_BUTTON_RECT)
+								{	
+								     newtouches[id] |= getButtonValue(iv.getValue(),true);
+									 if(iv.getValue()==BTN_L2 && actionEvent!=MotionEvent.ACTION_MOVE)
+									 { 
+									    if(Emulator.getValue(Emulator.IN_MENU)!=0)
+									    {
+						    		        Emulator.setValue(Emulator.EXIT_GAME_KEY, 1);		    	
+					    			    	try {Thread.sleep(100);} catch (InterruptedException e) {}
+					    					Emulator.setValue(Emulator.EXIT_GAME_KEY, 0);									    	
+									    }										 
+									    else if(!Emulator.isInMAME())
+										    mm.showDialog(DialogHelper.DIALOG_EXIT);
+									    else
+									        mm.showDialog(DialogHelper.DIALOG_EXIT_GAME);
+									 } 
+									 else if(iv.getValue()==BTN_R2)
+									 {
+										 mm.showDialog(DialogHelper.DIALOG_OPTIONS);
+									 }
 								}
-								else if(iv.getValue()==BTN_R2)
+								else if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL_DPAD
+										&& !(TiltSensor.isEnabled() && Emulator.isInMAME()))
 								{
-									 mm.showDialog(DialogHelper.DIALOG_OPTIONS);
+									 newtouches[id] = getStickValue(iv.getValue());
 								}
-							}   
-							else if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL_DPAD
-									&& !(TiltSensor.isEnabled() && Emulator.isInMAME()))
-							{	
-							   newtouch = getStickValue(iv.getValue());
-							}   
+					            
+								if(oldtouches[id] != newtouches[id])	            
+					            	pad_data[0] &= ~(oldtouches[id]);
+					            
+								pad_data[0] |= newtouches[id];
+							}
 							
-							if (oldtouch != newtouch) 
-								pad_data[0] &= ~oldtouch;							
-							pad_data[0] |= newtouch ;
-						}
-						break;
-					} 
-					/*
-                   else if (iv.getType() == TYPE_SWITCH) {
-						if (event.getAction() == MotionEvent.ACTION_DOWN) {
-							touchstate = false;
-							oldtouch = 0;
-							changeState();
-							mm.getMainHelper().updateMAME4droid();
-							return true;
-						}
+							if(mm.getPrefsHelper().isBplusX() && (iv.getValue()==BTN_B || iv.getValue()==BTN_X))
+							   break;
+							
+						}/* else if (iv.getType() == TYPE_SWITCH) {
+							if (event.getAction() == MotionEvent.ACTION_DOWN) {
+																
+								for (int ii = 0; ii < 10; ii++) 
+								{
+								    touchstates[ii] = false;
+								    oldtouches[ii] = 0;
+								}
+								changeState();
+								mm.getMainHelper().updateMAME4droid();
+								return true;
+							}
+						}*/
 					}
-					*/
+				}	                	            
+			} 
+		}
+
+		for (int i = 0; i < touchstates.length; i++) {
+			if (!touchstates[i] && newtouches[i]!=0) {
+				boolean really = true;
+
+				for (int j = 0; j < 10 && really; j++) {
+					if (j == i)
+						continue;
+					really = (newtouches[j] & newtouches[i]) == 0;//try to fix something buggy touch screens
 				}
-			}			
+
+				if (really)
+				{
+					pad_data[0] &= ~(newtouches[i]);
+				}
+				
+				newtouches[i] = 0;
+				oldtouches[i] = 0;
+			}
 		}
-
-		if (!touchstate) {
-
-			pad_data[0] &= ~oldtouch;
-			newtouch = 0;
-			oldtouch = 0;
-		}
-
+		
 		handleImageStates();
 		
 		Emulator.setPadData(0,pad_data[0]);
-		
 		return true;
-	}
+	}	
 	
 	public boolean onTouch(View v, MotionEvent event) {
 		
@@ -677,6 +699,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 				return false;
 			if(mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE && state != STATE_SHOWING_NONE)
 				return false;
+			
 	    	mm.showDialog(DialogHelper.DIALOG_FULLSCREEN);
 			return true;
         }
@@ -886,6 +909,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	
 	int getStickValue(int i){
 		int ways = mm.getPrefsHelper().getStickWays();
+		if(ways==-1)ways = Emulator.getValue(Emulator.NUMWAYS);
 		boolean b = Emulator.isInMAME();
 		
 		if(ways==2 && b)
@@ -952,7 +976,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		   case 9: return  START_VALUE;
 		   
 		   case 10: return  X_VALUE | A_VALUE;
-		   case 11:
+		   case 11://TODO
 			    if(mm.getPrefsHelper().isBplusX() && mm.getPrefsHelper().getNumButtons() >=3 )
 			    {
 			    	return X_VALUE | B_VALUE;
@@ -1001,11 +1025,14 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 			return;
 	    
 		int ways = mm.getPrefsHelper().getStickWays();
+		if(ways==-1)ways = Emulator.getValue(Emulator.NUMWAYS);
 		boolean b = Emulator.isInMAME();
 			    
 	    int keyCode = event.getKeyCode();
 	    
 	    boolean bCadeLayout = mm.getPrefsHelper().getInputExternal() == PrefsHelper.PREF_INPUT_ICADE;
+	    
+	    long old_pad_data = pad_data[0];
 	    
 	    switch (keyCode)
 	    {
@@ -1175,6 +1202,25 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	            pad_data[0] &= ~R1_VALUE;
 	            break;
 	    }
+	    if(!iCade && old_pad_data==0 && pad_data[0]!=0)
+	    {
+	       iCade = true;
+	       mm.getMainHelper().updateMAME4droid();
+	    }
+	    
 		Emulator.setPadData(0,pad_data[0]);
 	}
+	
+	public void setInputListeners(){ 
+	   mm.getEmuView().setOnKeyListener(this);
+	   mm.getEmuView().setOnTouchListener(this);
+	                     
+	   mm.getInputView().setOnTouchListener(this);
+	   mm.getInputView().setOnKeyListener(this);
+	}
+	
+	public boolean isControllerDevice(){
+	   return iCade;
+	}
+	
 }

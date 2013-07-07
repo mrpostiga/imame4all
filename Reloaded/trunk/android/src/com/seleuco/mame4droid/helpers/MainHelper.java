@@ -54,6 +54,11 @@ import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import android.app.AlarmManager;
+import android.app.AlertDialog;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
@@ -69,6 +74,7 @@ import com.seleuco.mame4droid.MAME4droid;
 import com.seleuco.mame4droid.R;
 import com.seleuco.mame4droid.input.ControlCustomizer;
 import com.seleuco.mame4droid.input.InputHandler;
+import com.seleuco.mame4droid.input.InputHandlerExt;
 import com.seleuco.mame4droid.prefs.UserPreferences;
 import com.seleuco.mame4droid.views.FilterView;
 import com.seleuco.mame4droid.views.IEmuView;
@@ -80,8 +86,7 @@ public class MainHelper {
 	final static public  int SUBACTIVITY_HELP = 2;
 	final static public  int BUFFER_SIZE = 1024*48;
 	
-	final static public  String MAGIC_FILE = "dont-delete-00001.bin";
-	final static public  String MAGIC_FILE_2 = "dont-delete-00002.bin";
+	final static public  String MAGIC_FILE = "dont-delete-00003.bin";
 	
 	protected MAME4droid mm = null;
 	
@@ -155,23 +160,6 @@ public class MainHelper {
 		{			
 			mm.getDialogHelper().setInfoMsg("Created: \n'"+roms_dir+"'\nCopy or move your zipped ROMs under './MAME4droid/roms' directory!.\n\nMAME4droid Reloaded uses only 0.139 MAME romset.");
 			mm.showDialog(DialogHelper.DIALOG_INFO);
-		}
-
-	    try
-		{
-				
-			File fm = new File(roms_dir + File.separator + "saves/" + MAGIC_FILE_2);
-			if(!fm.exists())
-			{
-			   fm.createNewFile();
-			   if(!created)
-			   {
-			      mm.getDialogHelper().setInfoMsg("Warning . MAME4droid Reloaded has been updated to MAME 0.139. Update your romset to 0.139 as well.");
-				  mm.showDialog(DialogHelper.DIALOG_INFO);			      
-			   }
-			}   
-		} catch (Exception e) {
-				e.printStackTrace();
 		}
 						
 		return true;		
@@ -297,10 +285,10 @@ public class MainHelper {
 	public boolean updateVideoRender (){
 		
 		if(Emulator.getVideoRenderMode() != mm.getPrefsHelper().getVideoRenderMode())
-		{
+		{						
 			Emulator.setVideoRenderMode(mm.getPrefsHelper().getVideoRenderMode());
 			reload();				
-			return true;
+			return true;		
 		}
 		else
 		{
@@ -310,6 +298,9 @@ public class MainHelper {
     }
 	
 	public void setBorder(){
+		
+		if(true)
+		  return;
 		
 		int size = mm.getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK; 
 		
@@ -331,7 +322,7 @@ public class MainHelper {
 			    else
 			    {
 			    	v.setBackgroundDrawable(null);
-			    	v.setBackgroundColor(R.color.emu_back_color);
+			    	v.setBackgroundColor(mm.getResources().getColor(R.color.emu_back_color));
 			    	lp.setMargins(0, 0, 0, 0);
 				    if(lp2!=null)
 					  lp2.setMargins(0, 0, 0, 0);
@@ -339,8 +330,58 @@ public class MainHelper {
 			}		   	
 	}
 	
+	public void updateEmuValues(){
+		
+		PrefsHelper prefsHelper = mm.getPrefsHelper();
+		
+		Emulator.setValue(Emulator.FPS_SHOWED_KEY, prefsHelper.isFPSShowed() ? 1 : 0);
+		Emulator.setValue(Emulator.INFOWARN_KEY, prefsHelper.isShowInfoWarnings() ? 1 : 0);
+		
+		Emulator.setValue(Emulator.IDLE_WAIT,prefsHelper.isIdleWait() ? 1 : 0);	
+		Emulator.setValue(Emulator.THROTTLE,prefsHelper.isThrottle() ? 1 : 0);
+		Emulator.setValue(Emulator.AUTOSAVE,prefsHelper.isAutosave() ? 1 : 0);
+		Emulator.setValue(Emulator.CHEAT,prefsHelper.isCheat() ? 1 : 0);
+		Emulator.setValue(Emulator.SOUND_VALUE,prefsHelper.getSoundValue());
+		Emulator.setValue(Emulator.FRAME_SKIP_VALUE,prefsHelper.getFrameSkipValue());
+
+		Emulator.setValue(Emulator.EMU_RESOLUTION,prefsHelper.getEmulatedResolution());
+		Emulator.setValue(Emulator.FORCE_PXASPECT,prefsHelper.isForcedPixelAspect() ? 1 : 0);
+		
+		Emulator.setValue(Emulator.DOUBLE_BUFFER,mm.getPrefsHelper().isDoubleBuffer() ? 1 : 0);
+		Emulator.setValue(Emulator.PXASP1,mm.getPrefsHelper().isPlayerXasPlayer1() ? 1 : 0);
+				
+		Emulator.setValue(Emulator.FAVORITES,mm.getPrefsHelper().isFavorites() ? 1 : 0);
+		
+		Emulator.setValue(Emulator.AUTOFIRE,mm.getPrefsHelper().getAutofireValue());
+		
+		Emulator.setValue(Emulator.HISCORE,mm.getPrefsHelper().isHiscore() ? 1 : 0);
+		
+		Emulator.setValue(Emulator.VBEAN2X,mm.getPrefsHelper().isVectorBeam2x() ? 1 : 0);
+		Emulator.setValue(Emulator.VANTIALIAS,mm.getPrefsHelper().isVectorAntialias() ? 1 : 0);
+		Emulator.setValue(Emulator.VFLICKER,mm.getPrefsHelper().isVectorFlicker() ? 1 : 0);
+		
+		if(Emulator.isFavOnly()!=mm.getPrefsHelper().isFavorites())
+		{
+			if(!Emulator.isInMAME())
+				Emulator.setValue(Emulator.RESET_FILTER, 1);
+			Emulator.setValue(Emulator.LAST_GAME_SELECTED, 0);
+			Emulator.setFavOnly(mm.getPrefsHelper().isFavorites());
+		}
+					
+		Emulator.setValue(Emulator.EMU_SPEED,mm.getPrefsHelper().getEmulatedSpeed());
+		Emulator.setValue(Emulator.VSYNC,mm.getPrefsHelper().getVSync());	
+		
+		//System.out.println("VSYNC ES:"+mm.getPrefsHelper().getVSync());
+		
+	}
 	
-	public void updateMAME4droid(){
+	 public void updateMAME4droid(){
+		
+		if(Emulator.isRestartNeeded())
+		{
+			mm.showDialog(DialogHelper.DIALOG_EMU_RESTART);
+			return;
+		}
 		
 		if(updateVideoRender())return;
 		if(updateOverlayFilter())return;
@@ -357,23 +398,10 @@ public class MainHelper {
 		for(int i=0;i<keys.length;i++)
 			InputHandler.keyMapping[i]=Integer.valueOf(keys[i]).intValue();
 		
-		Emulator.setValue(Emulator.FPS_SHOWED_KEY, prefsHelper.isFPSShowed() ? 1 : 0);
-		Emulator.setValue(Emulator.INFOWARN_KEY, prefsHelper.isShowInfoWarnings() ? 1 : 0);
 		Emulator.setDebug(prefsHelper.isDebugEnabled());
-		Emulator.setValue(Emulator.IDLE_WAIT,prefsHelper.isIdleWait() ? 1 : 0);		
 		Emulator.setThreadedSound(!prefsHelper.isSoundSync());
 		
-		Emulator.setValue(Emulator.THROTTLE,prefsHelper.isThrottle() ? 1 : 0);
-		Emulator.setValue(Emulator.AUTOSAVE,prefsHelper.isAutosave() ? 1 : 0);
-		Emulator.setValue(Emulator.CHEAT,prefsHelper.isCheat() ? 1 : 0);
-		Emulator.setValue(Emulator.SOUND_VALUE,prefsHelper.getSoundValue());
-		Emulator.setValue(Emulator.FRAME_SKIP_VALUE,prefsHelper.getFrameSkipValue());
-
-		Emulator.setValue(Emulator.EMU_RESOLUTION,prefsHelper.getEmulatedResolution());
-		Emulator.setValue(Emulator.FORCE_PXASPECT,prefsHelper.isForcedPixelAspect() ? 1 : 0);
-		
-		Emulator.setValue(Emulator.DOUBLE_BUFFER,mm.getPrefsHelper().isDoubleBuffer() ? 1 : 0);
-		Emulator.setValue(Emulator.PXASP1,mm.getPrefsHelper().isPlayerXasPlayer1() ? 1 : 0);
+		updateEmuValues();
 		
 		setBorder();
 		
@@ -484,15 +512,16 @@ public class MainHelper {
 		if (op != -1 && (state == InputHandler.STATE_SHOWING_CONTROLLER) )
 			inputView.setAlpha(op);
 
-		inputView.requestLayout();		  				
+		inputView.requestLayout();
+				
 		emuView.requestLayout();
 		if(filterView!=null)
 		   filterView.requestLayout();
-				
+		
 		inputView.invalidate();
 		emuView.invalidate();
 		if(filterView!=null)
-		   filterView.invalidate();				
+		   filterView.invalidate();
 	}
 	
 	public void showWeb(){		
@@ -606,8 +635,8 @@ public class MainHelper {
 		}
 		
 		ArrayList<Integer> l = new ArrayList<Integer>();
-		l.add(new Integer(widthSize));
-		l.add(new Integer(heightSize));
+		l.add(Integer.valueOf(widthSize));
+		l.add(Integer.valueOf(heightSize));
 		return l;
 		
 	}		

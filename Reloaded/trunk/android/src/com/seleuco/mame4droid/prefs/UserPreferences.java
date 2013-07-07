@@ -49,6 +49,7 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.ListPreference;
@@ -57,24 +58,29 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 
+import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.R;
 import com.seleuco.mame4droid.helpers.PrefsHelper;
 import com.seleuco.mame4droid.input.ControlCustomizer;
 import com.seleuco.mame4droid.input.InputHandler;
+import com.seleuco.mame4droid.input.InputHandlerExt;
 
 public class UserPreferences extends PreferenceActivity implements OnSharedPreferenceChangeListener {
 	
 	private SharedPreferences settings;
 
 	protected ListPreference mPrefGlobalVideoRenderMode;
-	protected ListPreference mPrefResolution;	
+	protected ListPreference mPrefResolution;
+	protected ListPreference mPrefSpeed;	
 	protected ListPreference mPrefPortraitMode;
     protected ListPreference mPrefLandsMode;
 	protected ListPreference mPrefPortraitFilterType;
     protected ListPreference mPrefLandsFilterType;
     protected ListPreference mPrefControllerType;
     protected ListPreference mPrefExtInput;
+    protected ListPreference mPrefAutomap;
     protected ListPreference mPrefAnalogDZ;
+    protected ListPreference mPrefGamepadDZ;
     protected ListPreference mPrefTiltDZ;
     protected ListPreference mPrefFrameSkip;
     protected ListPreference mPrefSound;
@@ -84,6 +90,8 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
     protected ListPreference mPrefVideoThPr;
     protected ListPreference mPrefMainThPr;
     protected ListPreference mPrefSoundLantency;
+    protected ListPreference mPrefAutofire;
+    protected ListPreference mPrefVSync;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -97,13 +105,16 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 		
 		mPrefGlobalVideoRenderMode = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GLOBAL_VIDEO_RENDER_MODE);
 		mPrefResolution = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GLOBAL_RESOLUTION);
+		mPrefSpeed = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GLOBAL_SPEED);
         mPrefPortraitMode = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_PORTRAIT_SCALING_MODE);
         mPrefLandsMode = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_LANDSCAPE_SCALING_MODE);
         mPrefPortraitFilterType = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_PORTRAIT_FILTER_TYPE);
         mPrefLandsFilterType = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_LANDSCAPE_FILTER_TYPE);        
         mPrefControllerType = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_CONTROLLER_TYPE);
         mPrefExtInput = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_INPUT_EXTERNAL);
-        mPrefAnalogDZ = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_ANALOG_DZ);        
+        mPrefAutomap = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_AUTOMAP_OPTIONS);
+        mPrefAnalogDZ = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_ANALOG_DZ); 
+        mPrefGamepadDZ = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GAMEPAD_DZ);
         mPrefTiltDZ = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_TILT_DZ);
         mPrefFrameSkip = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GLOBAL_FRAMESKIP);
         mPrefSound = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GLOBAL_SOUND);
@@ -113,6 +124,8 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
         mPrefVideoThPr = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_VIDEO_THREAD_PRIORITY);
         mPrefMainThPr = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_MAIN_THREAD_PRIORITY);
         mPrefSoundLantency = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_SOUND_LATENCY);
+        mPrefAutofire = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_AUTOFIRE);
+        mPrefVSync = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GLOBAL_VSYNC);
 	}
 	
 	  @Override
@@ -123,13 +136,16 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	        //mCheckBoxPreference.setSummary(sharedPreferences.getBoolean(key, false) ? "Disable this setting" : "Enable this setting");
 	        mPrefGlobalVideoRenderMode.setSummary("Current value is '" + mPrefGlobalVideoRenderMode.getEntry()+"'");
 	        mPrefResolution.setSummary("Current value is '" + mPrefResolution.getEntry()+"'");
+	        mPrefSpeed.setSummary("Current value is '" + mPrefSpeed.getEntry()+"'");
 	        mPrefPortraitMode.setSummary("Current value is '" + mPrefPortraitMode.getEntry()+"'"); 
 	        mPrefLandsMode.setSummary("Current value is '" + mPrefLandsMode.getEntry()+"'"); 
 	        mPrefPortraitFilterType.setSummary("Current value is '" + mPrefPortraitFilterType.getEntry()+"'"); 
 	        mPrefLandsFilterType.setSummary("Current value is '" + mPrefLandsFilterType.getEntry()+"'"); 	        
 	        mPrefControllerType.setSummary("Current value is '" + mPrefControllerType.getEntry()+"'");
 	        mPrefExtInput.setSummary("Current value is '" + mPrefExtInput.getEntry()+"'");
+	        mPrefAutomap.setSummary("Current value is '" + mPrefAutomap.getEntry()+"'");
 	        mPrefAnalogDZ.setSummary("Current value is '" + mPrefAnalogDZ.getEntry()+"'");
+	        mPrefGamepadDZ.setSummary("Current value is '" + mPrefGamepadDZ.getEntry()+"'");
 	        mPrefTiltDZ.setSummary("Current value is '" + mPrefTiltDZ.getEntry()+"'");
 	        mPrefFrameSkip.setSummary("Current value is '" + mPrefFrameSkip.getEntry()+"'");
 	        mPrefSound.setSummary("Current value is '" + mPrefSound.getEntry()+"'");
@@ -139,6 +155,8 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	        mPrefVideoThPr.setSummary("Current value is '" + mPrefVideoThPr.getEntry()+"'");
 	        mPrefMainThPr.setSummary("Current value is '" + mPrefMainThPr.getEntry()+"'");
 	        mPrefSoundLantency.setSummary("Current value is '" + mPrefSoundLantency.getEntry()+"'");
+	        mPrefAutofire.setSummary("Current value is '" + mPrefAutofire.getEntry()+"'");
+	        mPrefVSync.setSummary("Current value is '" + mPrefVSync.getEntry()+"'");
 	        
 	        // Set up a listener whenever a key changes            
 	        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
@@ -180,21 +198,35 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	            mPrefControllerType.setSummary("Current values is '" + mPrefControllerType.getEntry()+"'");
 	        }
 	        else if(key.equals(PrefsHelper.PREF_GLOBAL_VIDEO_RENDER_MODE))
-	        {	
-	        	mPrefGlobalVideoRenderMode.setSummary("Current value is '" + mPrefGlobalVideoRenderMode.getEntry()+"'"); 
+	        {		        	
+				mPrefGlobalVideoRenderMode.setSummary("Current value is '" + mPrefGlobalVideoRenderMode.getEntry()+"'"); 
 	        }
 	        else if(key.equals(PrefsHelper.PREF_GLOBAL_RESOLUTION))
 	        {	
-	        	mPrefGlobalVideoRenderMode.setSummary("Current value is '" + mPrefResolution.getEntry()+"'"); 
+	        	mPrefResolution.setSummary("Current value is '" + mPrefResolution.getEntry()+"'"); 
+	        }	
+	        else if(key.equals(PrefsHelper.PREF_GLOBAL_SPEED))
+	        {	
+	        	mPrefSpeed.setSummary("Current value is '" + mPrefSpeed.getEntry()+"'"); 
 	        }	        
 	        else if(key.equals(PrefsHelper.PREF_INPUT_EXTERNAL))
 	        {	
+	        	try{InputHandlerExt.resetAutodetected();}catch(Error e){};
 	        	mPrefExtInput.setSummary("Current value is '" + mPrefExtInput.getEntry()+"'"); 
 	        }
+	        else if(key.equals(PrefsHelper.PREF_AUTOMAP_OPTIONS))
+	        {	
+	        	try{InputHandlerExt.resetAutodetected();}catch(Error e){};
+	        	mPrefAutomap.setSummary("Current value is '" + mPrefAutomap.getEntry()+"'"); 
+	        }	        
 	        else if(key.equals(PrefsHelper.PREF_ANALOG_DZ))
 	        {	
 	        	mPrefAnalogDZ.setSummary("Current value is '" + mPrefAnalogDZ.getEntry()+"'"); 
 	        }
+	        else if(key.equals(PrefsHelper.PREF_GAMEPAD_DZ))
+	        {	
+	        	mPrefGamepadDZ.setSummary("Current value is '" + mPrefGamepadDZ.getEntry()+"'"); 
+	        }	        
 	        else if(key.equals(PrefsHelper.PREF_TILT_DZ))
 	        {	
 	        	mPrefTiltDZ.setSummary("Current value is '" + mPrefTiltDZ.getEntry()+"'"); 
@@ -231,7 +263,14 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 		    {
 	            mPrefSoundLantency.setSummary("Current value is '" + mPrefSoundLantency.getEntry()+"'");
 		    }    
-	        	        
+		    else if(key.equals(PrefsHelper.PREF_AUTOFIRE))
+		    {
+		    	mPrefAutofire.setSummary("Current value is '" + mPrefAutofire.getEntry()+"'");
+		    }  	
+		    else if(key.equals(PrefsHelper.PREF_GLOBAL_VSYNC))
+		    {
+		    	mPrefVSync.setSummary("Current value is '" + mPrefVSync.getEntry()+"'");
+		    } 	        
 	    }
 
 		@Override
@@ -243,13 +282,14 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 			}
 			else if (pref.getKey().equals("changeRomPath")) {
 				 AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			    	builder.setMessage("Are you sure to change? (needs app restart)")
+			    	builder.setMessage("Are you sure? (app restart needed)")
 		    	       .setCancelable(false)
 		    	       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 		    	           public void onClick(DialogInterface dialog, int id) {
 		    					SharedPreferences.Editor editor =  settings.edit();
 		    					editor.putString(PrefsHelper.PREF_ROMsDIR, null);
 		    					editor.commit();
+		    					Emulator.setNeedRestart(true);
 		    	                //android.os.Process.killProcess(android.os.Process.myPid());  
 		    	           }
 		    	       })
@@ -314,7 +354,8 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 		    	       });
 			    	Dialog dialog = builder.create();
 			    	dialog.show();
-			}			
+			}	
+			
 			return super.onPreferenceTreeClick(preferenceScreen, pref);
 		}
 	    

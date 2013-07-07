@@ -44,7 +44,7 @@
 
 #include <sys/socket.h>
 #include <netdb.h>
-#include <ifaddrs.h>
+
 #include <net/if.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
@@ -59,6 +59,12 @@
 
 #include <stdio.h>
 #include <string.h>
+
+#ifndef ANDROID
+#include <ifaddrs.h>
+#else
+//#include <ifaddrs-android.h>
+#endif
 
 #include "netplay.h"
 #include "skt_netplay.h"
@@ -241,6 +247,7 @@ static int skt_init_tcp_socket(netplay_t *handle, const char *server, uint16_t p
     return 1;
 }*/
 
+#ifndef ANDROID
 int skt_netplay_get_address(const char *name, char*ip)
 {
     struct ifaddrs *allInterfaces;
@@ -279,6 +286,7 @@ int skt_netplay_get_address(const char *name, char*ip)
     }
     return find;
 }
+#endif
 
 static void* skt_threaded_data(void* args)
 {

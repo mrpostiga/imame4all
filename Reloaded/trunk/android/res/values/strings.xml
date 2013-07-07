@@ -10,6 +10,5 @@
     <string name="menu_options">Options</string>
     <string name="menu_quit_game">Exit Game</string>        
     <string name="menu_quit">Exit App</string>
-    <string name="menu_help">Help</string>
     <string name="app_name">MAME4droid Reloaded</string>
 </resources>

@@ -129,18 +129,19 @@ public class AnalogStick implements IController{
 	{	     
 		 switch(mm.getPrefsHelper().getAnalogDZ())
 	     {
-	       case 0: deadZone = 0.01f;break;
-	       case 1: deadZone = 0.05f;break;
+	       case 1: deadZone = 0.01f;break;
 	       case 2: deadZone = 0.1f;break;
 	       case 3: deadZone = 0.15f;break;
 	       case 4: deadZone = 0.2f;break;
 	       case 5: deadZone = 0.3f;break;
 	     }
+		 
+		 //System.out.println("ANALOG DEAD ZONE IS "+deadZone);
 	 
-
 	 	if(mag >= deadZone)
 	 	{
 			int ways = mm.getPrefsHelper().getStickWays();
+			if(ways==-1)ways = Emulator.getValue(Emulator.NUMWAYS);
 			boolean b = Emulator.isInMAME();
 				
 			if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL_STICK)
@@ -318,6 +319,7 @@ public class AnalogStick implements IController{
 	protected void calculateStickPosition(Point pt) 
 	{
 		int ways = mm.getPrefsHelper().getStickWays();
+		if(ways==-1)ways = Emulator.getValue(Emulator.NUMWAYS);
 		boolean b = Emulator.isInMAME();
 		   
 	    if(ways==2 && b)

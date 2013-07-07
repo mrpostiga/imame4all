@@ -1,7 +1,7 @@
 ###########################################################################
 #
 #   makefile
-#
+#f
 #   Core makefile for building MAME and derivatives
 #
 #   Copyright (c) Nicola Salmoria and the MAME Team.
@@ -20,11 +20,11 @@ NOWERROR = 1
 
 ############ ANDROID
 
-#ANDROID = 1
+ANDROID = 1
 
 #AMIPS=1
 
-#AX86=1
+AX86=1
 
 #AARMV7=1
 
@@ -32,17 +32,17 @@ NOWERROR = 1
 
 ########## iOS
 
-iOS = 1
+#iOS = 1
 
-iOSOSX = 1
+#iOSOSX = 1
 
-iOSNOJAILBREAK = 1
+#iOSNOJAILBREAK = 1
 
 #iOSSIMULATOR = 1
 
 #iOSARMV7=1
 
-iOSARMV7S=1
+#iOSARMV7S=1
 
 ################
 
@@ -75,8 +75,9 @@ BASE_DEV=/home/david/Projects/android/my-android-toolchain-r8/sysroot
 endif
 
 ifdef AARMV7
-MYPREFIX=/home/david/Projects/android/my-android-toolchain-r8/bin/arm-linux-androideabi-
-BASE_DEV=/home/david/Projects/android/my-android-toolchain-r8/sysroot
+MYPREFIX=/home/david/Projects/android/my-android-toolchain-r8e-14/bin/arm-linux-androideabi-
+#MYPREFIX=/home/david/Projects/android/my-android-toolchain-r8e-14/bin/
+BASE_DEV=/home/david/Projects/android/my-android-toolchain-r8e-14/sysroot
 endif
 
 #MYPREFIX=/home/david/Projects/android/my-android-toolchain-14-crystax/bin/arm-linux-androideabi-
@@ -94,10 +95,10 @@ else
 ##OSX
 
 ifndef iOSSIMULATOR
-#MYPREFIX=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/arm-apple-darwin10-
+MYPREFIX=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/arm-apple-darwin10-
 #MYPREFIX=/Developer/Platforms/iPhoneOS.platform/Developer/usr/llvm-gcc-4.2/bin/arm-apple-darwin10-llvm-
 #MYPREFIX=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/llvm-gcc-4.2/bin/arm-apple-darwin10-llvm-
-MYPREFIX=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/
+#MYPREFIX=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/
 
 #BASE_DEV=/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.2.sdk
 BASE_DEV=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.1.sdk
@@ -410,6 +411,10 @@ AR = @$(MYPREFIX)ar
 CC = @$(MYPREFIX)gcc
 LD = @$(MYPREFIX)g++
 
+#AR = @$(MYPREFIX)clang
+#CC = @$(MYPREFIX)clang
+#LD = @$(MYPREFIX)clang++
+
 endif
 
 MD = -mkdir$(EXE)
@@ -595,9 +600,8 @@ CCOMFLAGS += \
 	-Wformat -Wformat-security \
 	-Wwrite-strings \
 	-Wno-sign-compare \
-	
-#	-Wundef \	
-#	-Wall \
+	-Wundef \
+	-Wall \
 #	-Wcast-align \
 	
 # warnings only applicable to C compiles
@@ -746,32 +750,47 @@ CCOMFLAGS += --sysroot $(BASE_DEV)
 CCOMFLAGS += -DANDROID
 CCOMFLAGS += -fpic
 
+#CCOMFLAGS += -fno-strict-aliasing
+#CCOMFLAGS += -mno-unaligned-access
+
 ifdef AARMV7
-CCOMFLAGS += -march=armv7-a -mfloat-abi=softfp -DARMV7
+CCOMFLAGS += -mthumb 
+CCOMFLAGS += -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 -DARMV7
 #CCOMFLAGS += -mfpu=neon
 #CCOMFLAGS += -pipe  -mtune=cortex-a9
-LDFLAGS += -Wl,--fix-cortex-a8
+LDFLAGS += -march=armv7-a -Wl,--fix-cortex-a8
 endif
 
 ifdef AARMV6
+CCOMFLAGS += -mthumb
 LDFLAGS += -Wl,--fix-cortex-a8
 endif
 
+#CLANG
+#CCOMFLAGS += -Wno-constant-logical-operand
+#CCOMFLAGS += -Wno-literal-conversion
+#CCOMFLAGS += -Wno-parentheses-equality
+#CCOMFLAGS += -Wno-tautological-compare
+#CCOMFLAGS += -Wno-sizeof-pointer-memaccess
 
-CCOMFLAGS += -Wno-psabi
+#GCC
+#CCOMFLAGS += -Wno-psabi 
+CCOMFLAGS += -Wno-sign-compare 
 
 LDFLAGS += -llog -lgcc
 LDFLAGS += -Wl,-soname,libMAME4droid.so -shared
 LDFLAGS += -lc -lm 
 
 
-CCOMFLAGS += -fsigned-char -finline  
+#CCOMFLAGS += -fsigned-char -finline  
 
 #CCOMFLAGS += -fno-common -fno-builtin
 
 #CCOMFLAGS += -Wno-sign-compare -Wunused -Wpointer-arith -Wcast-align -Waggregate-return -Wshadow
 
-CCOMFLAGS += -ffast-math  -fsingle-precision-constant
+#CCOMFLAGS += -ffast-math  -fsingle-precision-constant
+
+CCOMFLAGS += -ffast-math
 
 #CCOMFLAGS += -falign-functions=16
 

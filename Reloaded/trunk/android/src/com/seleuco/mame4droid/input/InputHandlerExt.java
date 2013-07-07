@@ -44,166 +44,879 @@
 
 package com.seleuco.mame4droid.input;
 
+import android.annotation.TargetApi;
+import android.os.Build;
+import android.provider.Settings;
+import android.util.SparseIntArray;
+import android.view.InputDevice;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnGenericMotionListener;
 
 import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.MAME4droid;
 import com.seleuco.mame4droid.helpers.DialogHelper;
 import com.seleuco.mame4droid.helpers.PrefsHelper;
 
-public class InputHandlerExt extends InputHandler {
+@TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1) 
+public class InputHandlerExt extends InputHandler implements OnGenericMotionListener  {
 	
-
-	protected int [] touchContrData = new int[20];
-	protected InputValue [] touchKeyData = new InputValue[20];
+	protected int MAX_DEVICES	= 4;
+	protected int MAX_KEYS	= 250;
 	
-	protected static int [] newtouches = new int[20];
-	protected static int [] oldtouches = new int[20];
-	protected static boolean [] touchstates = new boolean[20];
+	protected float MY_PI	= 3.14159265f;
+	protected int oldinput[] = new int[MAX_DEVICES], newinput[] = new int[MAX_DEVICES];
+	
+	protected int deviceIDs [] = new int[MAX_DEVICES];
+	public  static int numDevs = 0;
+	
+	protected int [][]deviceMappings = new int[MAX_KEYS][MAX_DEVICES];
+	
+	protected static SparseIntArray banDev = new SparseIntArray(50);
+	
+	protected boolean isShield = false;
+	
+	public static void resetAutodetected(){
+		numDevs = 0;
+		banDev.clear();
+	}
 	
 	public InputHandlerExt(MAME4droid value) {
 		super(value);
+		
+		//vemos dispositivos!
+		/*
+		int ids[] = InputDevice.getDeviceIds();
+		for(int i=0; i< ids.length; i++)
+		{
+			InputDevice id = InputDevice.getDevice(ids[i]);
+			System.out.println("name: "+id.getName());
+			System.out.println(id.toString());
+		}
+		
+		for(int i=0; i < MAX_DEVICES; i++)
+		{
+			for(int j=0; j < MAX_KEYS; j++)
+			{
+				deviceMappings[j][i] = -1;
+			}
+		}*/
+		
+		InputHandlerExt.resetAutodetected();
+	}
+	
+	final public float rad2degree(float r){
+		   return ((r * 180.0f) / MY_PI);
+	}
+	
+	protected float processAxis(InputDevice.MotionRange range, float axisvalue){
+		float absaxisvalue = Math.abs(axisvalue);
+		float deadzone = range.getFlat();
+		//System.out.println("deadzone: "+deadzone);
+		//deadzone = Math.max(deadzone, 0.2f);
+		if(absaxisvalue <= deadzone ){
+			return 0.0f;
+		}
+		float nomralizedvalue;
+		if(axisvalue < 0.0f){
+			nomralizedvalue = absaxisvalue / range.getMin();
+		}else{
+			nomralizedvalue = absaxisvalue / range.getMax();
+		}
+		
+		return nomralizedvalue;
 	}
 		
 	@Override
-	protected boolean handleTouchController(MotionEvent event) {
+	public boolean onGenericMotion(View view, MotionEvent event) {
+	      if (((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) == 0)
+	 	         || (event.getAction() != MotionEvent.ACTION_MOVE)) {
+	 	          return false;
+	 	     }
+          int historySize = event.getHistorySize();
+          for (int i = 0; i < historySize; i++) {
+             processJoystickInput(event,i);
+          }
 
-		int action = event.getAction();
-		int actionEvent = action & MotionEvent.ACTION_MASK;
-		
-		int pid = 0;
-				
-        try
-        {
-		   int pointerIndex = (event.getAction() & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
-           pid = event.getPointerId(pointerIndex);
-        }
-        catch(Error e)
-        {
-            pid = (action & MotionEvent.ACTION_POINTER_ID_SHIFT) >> MotionEvent.ACTION_POINTER_ID_SHIFT;
-        }    
-		
-		//dumpEvent(event);
-		
-		for (int i = 0; i < 10; i++) 
+          processJoystickInput(event,-1);
+          return true;
+  
+	}
+	
+	final public float getAxisValue(int axis, MotionEvent event, int historyPos ){
+		float value = 0.0f;
+		InputDevice device = event.getDevice();
+		if(device!=null)
 		{
-		    touchstates[i] = false;
-		    oldtouches[i] = newtouches[i];
-		}
+		    InputDevice.MotionRange range = device.getMotionRange(axis, event.getSource());
+		    if (range != null) {
+		         float axisValue;
+		         if (historyPos >= 0) {
+		             axisValue = event.getHistoricalAxisValue(axis, historyPos);
+		         } else {
+		             axisValue = event.getAxisValue(axis);
+		         }
+		         value = this.processAxis(range, axisValue);
+		    	 //System.out.print("x: "+x);
+		    }
+	    }		
+		return value;
+	}
+	
+	final public float  getAngle(float x, float y){
+		float ang = rad2degree((float)Math.atan(y / x));
+		ang -= 90.0f;
+		if (x < 0.0f)
+			ang -= 180.0f;
+		ang = Math.abs(ang);
+		   return ang;
+	}
+	
+	final public float  getMagnitude(float x, float y){
+		return (float) Math.sqrt((x * x) + (y * y));
+	}
+	
+	protected void processJoystickInput(MotionEvent event, int historyPos){
+	 
+		int ways = mm.getPrefsHelper().getStickWays();
+		if(ways==-1)ways = Emulator.getValue(Emulator.NUMWAYS);
+		boolean b = Emulator.isInMAME();
 		
-		for (int i = 0; i < event.getPointerCount(); i++) {
-
-			int actionPointerId = event.getPointerId(i);
-						
-			int x = (int) event.getX(i);
-			int y = (int) event.getY(i);
-			
-			if(actionEvent == MotionEvent.ACTION_UP 
-			   || (actionEvent == MotionEvent.ACTION_POINTER_UP && actionPointerId==pid) 
-			   || actionEvent == MotionEvent.ACTION_CANCEL)
+		int dev = getDevice(event.getDevice());
+		int joy = dev!= -1 ? dev : 0;
+	    
+	    newinput[joy] = 0;
+	    
+	    float deadZone = 0.2f;
+	    
+		switch(mm.getPrefsHelper().getGamepadDZ())
+	    {
+	       case 1: deadZone = 0.01f;break;
+	       case 2: deadZone = 0.15f;break;
+	       case 3: deadZone = 0.2f;break;
+	       case 4: deadZone = 0.3f;break;
+	       case 5: deadZone = 0.5f;break;
+	    }
+		
+		//System.out.println("DEAD ZONE IS "+deadZone);
+	    
+	    float x = 0.0f;
+	    float y = 0.0f;
+	    float mag = 0.0f;
+		
+	    for(int i= 0; i < 2; i++)
+	    {
+			if(i==0)
 			{
-                //nada
-			}	
-			else
-			{		
-				//int id = i;
-				int id = actionPointerId;
-				if(id>touchstates.length)continue;//strange but i have this error on my development console
-				touchstates[id] = true;
-				//newtouches[id] = 0;
-				
-				for (int j = 0; j < values.size(); j++) {
-					InputValue iv = values.get(j);
-										
-					if (iv.getRect().contains(x, y)) {
-						
-						//Log.d("touch","HIT "+iv.getType()+" "+iv.getRect()+ " "+iv.getOrigRect());
-						
-						if (iv.getType() == TYPE_BUTTON_RECT || iv.getType() == TYPE_STICK_RECT) {
-						
-							switch (actionEvent) {
-							
-							case MotionEvent.ACTION_DOWN:
-							case MotionEvent.ACTION_POINTER_DOWN:
-							case MotionEvent.ACTION_MOVE:
-															
-								if(iv.getType() == TYPE_BUTTON_RECT)
-								{	
-								     newtouches[id] |= getButtonValue(iv.getValue(),true);
-									 if(iv.getValue()==BTN_L2 && actionEvent!=MotionEvent.ACTION_MOVE)
-									 { 
-									    if(Emulator.getValue(Emulator.IN_MENU)!=0)
-									    {
-						    		        Emulator.setValue(Emulator.EXIT_GAME_KEY, 1);		    	
-					    			    	try {Thread.sleep(100);} catch (InterruptedException e) {}
-					    					Emulator.setValue(Emulator.EXIT_GAME_KEY, 0);									    	
-									    }										 
-									    else if(!Emulator.isInMAME())
-										    mm.showDialog(DialogHelper.DIALOG_EXIT);
-									    else
-									        mm.showDialog(DialogHelper.DIALOG_EXIT_GAME);
-									 } 
-									 else if(iv.getValue()==BTN_R2)
-									 {
-										 mm.showDialog(DialogHelper.DIALOG_OPTIONS);
-									 }
-								}
-								else if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL_DPAD
-										&& !(TiltSensor.isEnabled() && Emulator.isInMAME()))
-								{
-									 newtouches[id] = getStickValue(iv.getValue());
-								}
-					            
-								if(oldtouches[id] != newtouches[id])	            
-					            	pad_data[0] &= ~(oldtouches[id]);
-					            
-								pad_data[0] |= newtouches[id];
-							}
-							
-							if(mm.getPrefsHelper().isBplusX() && (iv.getValue()==BTN_B || iv.getValue()==BTN_X))
-							   break;
-							
-						}/* else if (iv.getType() == TYPE_SWITCH) {
-							if (event.getAction() == MotionEvent.ACTION_DOWN) {
-																
-								for (int ii = 0; ii < 10; ii++) 
-								{
-								    touchstates[ii] = false;
-								    oldtouches[ii] = 0;
-								}
-								changeState();
-								mm.getMainHelper().updateMAME4droid();
-								return true;
-							}
-						}*/
-					}
-				}	                	            
-			} 
-		}
-
-		for (int i = 0; i < touchstates.length; i++) {
-			if (!touchstates[i] && newtouches[i]!=0) {
-				boolean really = true;
-
-				for (int j = 0; j < 10 && really; j++) {
-					if (j == i)
-						continue;
-					really = (newtouches[j] & newtouches[i]) == 0;//try to fix something buggy touch screens
-				}
-
-				if (really)
-				{
-					pad_data[0] &= ~(newtouches[i]);
-				}
-				
-				newtouches[i] = 0;
-				oldtouches[i] = 0;
+				x = getAxisValue(MotionEvent.AXIS_X, event, historyPos );
+				y = getAxisValue(MotionEvent.AXIS_Y, event, historyPos );
 			}
+			else
+			{
+				x = getAxisValue(MotionEvent.AXIS_HAT_X, event, historyPos );
+				y = getAxisValue(MotionEvent.AXIS_HAT_Y, event, historyPos );
+			}
+	    	
+			mag =  getMagnitude(x,y);	
+			
+	    	if(mag>=deadZone)
+			{
+				if(i==0)
+	    		   Emulator.setAnalogData(joy,x,y * -1.0f);
+							
+		 		float v =  getAngle(x,y);
+		 		
+		 		if(ways==2 && b)
+		 		{
+		            if ( v < 180  ){
+		                newinput[joy] |= RIGHT_VALUE;					
+		 			}
+		 			else if ( v >= 180  ){
+		 				newinput[joy] |= LEFT_VALUE;
+		 			}
+		 		}
+		 		else if(ways==4 || !b)
+		 		{
+		 			if( v >= 315 || v < 45){
+		 				newinput[joy] |= DOWN_VALUE;	
+		 			}
+		 			else if ( v >= 45 && v < 135){
+		 				newinput[joy] |= RIGHT_VALUE;						
+		 			}
+		 			else if ( v >= 135 && v < 225){
+		 				newinput[joy] |= UP_VALUE;
+		 			}
+		 			else if ( v >= 225 && v < 315 ){
+		 				newinput[joy] |= LEFT_VALUE;
+		 			}						
+		 		}
+		        else
+		        {
+		 			if( v >= 330 || v < 30){
+		 				newinput[joy] |= DOWN_VALUE;						
+		 			}
+		 			else if ( v >= 30 && v <60  )  {
+		 				newinput[joy] |= DOWN_VALUE;
+		 				newinput[joy] |= RIGHT_VALUE;						
+		 			}
+		 			else if ( v >= 60 && v < 120  ){
+		 				newinput[joy] |= RIGHT_VALUE;						
+		 			}
+		 			else if ( v >= 120 && v < 150  ){
+		 				newinput[joy] |= RIGHT_VALUE;
+		 				newinput[joy] |= UP_VALUE;
+		 			}
+		 			else if ( v >= 150 && v < 210  ){
+		 				newinput[joy] |= UP_VALUE;
+		 			}
+		 			else if ( v >= 210 && v < 240  ){
+		 				newinput[joy] |= UP_VALUE;
+		 				newinput[joy] |= LEFT_VALUE;						
+		 			}
+		 			else if ( v >= 240 && v < 300  ){
+		 				newinput[joy] |= LEFT_VALUE;
+		 			}
+		 			else if ( v >= 300 && v < 330  ){
+		 				newinput[joy] |= LEFT_VALUE;
+		 				newinput[joy] |= DOWN_VALUE;
+		 			}
+		        }
+			}
+			else
+			{
+				if(i==0)
+				   Emulator.setAnalogData(joy,0,0);
+			}
+	    }
+	    
+	    x = getAxisValue(MotionEvent.AXIS_Z, event, historyPos );
+	    y = getAxisValue(MotionEvent.AXIS_RZ, event, historyPos ) * -1;
+	    
+		mag =  getMagnitude(x,y);	
+		
+		if(mag>=deadZone)
+		{
+	 		float v =  getAngle(x,y);
+	 		
+			if( v >= 330 || v < 30){
+	        	newinput[joy] |= Y_VALUE;
+	        }
+	        else if ( v >= 30 && v <60  )  {
+	        	newinput[joy] |= Y_VALUE;newinput[joy] |= B_VALUE;
+	        }
+	        else if ( v >= 60 && v < 120  ){
+	        	newinput[joy] |= B_VALUE;
+	        }
+	        else if ( v >= 120 && v < 150  ){
+	        	newinput[joy] |= B_VALUE;newinput[joy] |= X_VALUE;
+	        }
+	        else if ( v >= 150 && v < 210  ){
+	        	newinput[joy] |= X_VALUE;
+	        }
+	        else if ( v >= 210 && v < 240  ){
+	        	newinput[joy] |= X_VALUE;newinput[joy] |= A_VALUE;
+	        }
+	        else if ( v >= 240 && v < 300  ){
+	        	newinput[joy] |= A_VALUE;
+	        }
+	        else if ( v >= 300 && v < 330  ){
+	        	newinput[joy] |= A_VALUE;newinput[joy] |= Y_VALUE;
+	        }
 		}
 		
-		handleImageStates();
+	    x = getAxisValue(MotionEvent.AXIS_LTRIGGER, event, historyPos );
+	    //System.out.println("x:"+x);
+	    if(x>=0.25f)
+	    {
+	    	newinput[joy] |= L1_VALUE;
+	    }
+	    y = getAxisValue(MotionEvent.AXIS_RTRIGGER, event, historyPos );
+	    //System.out.println("y:"+y);
+	    if(y>=0.25f)
+	    {
+	    	newinput[joy] |= R1_VALUE;
+	    }    
 		
-		Emulator.setPadData(0,pad_data[0]);
-		return true;
+		pad_data[joy] &= ~ (oldinput[joy] & ~newinput[joy]);
+		pad_data[joy] |= newinput[joy];
+		
+		Emulator.setPadData(joy,pad_data[joy]);
+		
+		oldinput[joy] = newinput[joy];
+	}
+	
+	public boolean onKey(View vw, int keyCode, KeyEvent event) {
+		
+	  
+	  if(ControlCustomizer.isEnabled())
+	  {
+			 if(keyCode == KeyEvent.KEYCODE_BACK)
+			 {	 
+				 mm.showDialog(DialogHelper.DIALOG_FINISH_CUSTOM_LAYOUT);
+			 }	 
+			 return true;
+	   }
+         
+	   if(mm.getPrefsHelper().getInputExternal() == PrefsHelper.PREF_INPUT_ICADE || mm.getPrefsHelper().getInputExternal() == PrefsHelper.PREF_INPUT_ICP)
+	   {	 
+			this.handleIcade(event);
+			return true;
+	    }
+				
+		int dev = getDevice(event.getDevice());
+		
+		//System.out.println(event.getDevice().getName()+" "+dev+" "+" "+event.getKeyCode());
+		//System.out.println("IME:"+Settings.Secure.getString(mm.getContentResolver(), Settings.Secure.DEFAULT_INPUT_METHOD));
+		
+		if(dev==-1)
+		{
+			if(isShield && event.getKeyCode()==KeyEvent.KEYCODE_BACK)
+			{
+				handlePADKey(10, event);
+				return true;
+			}
+			
+			return  super.onKey(vw, keyCode, event);
+		}
+		
+		int v = deviceMappings[event.getKeyCode()][dev];
+		
+		if(v != -1)
+		{
+		    if(v==L2_VALUE)
+		    { 
+			    if(event.getAction()==KeyEvent.ACTION_UP)
+			    {
+			    	if(Emulator.getValue(Emulator.IN_MENU)!=0)
+				    {
+				        Emulator.setValue(Emulator.EXIT_GAME_KEY, 1);		    	
+				    	try {Thread.sleep(100);} catch (InterruptedException e) {}
+						Emulator.setValue(Emulator.EXIT_GAME_KEY, 0);									    	
+				    }	    	
+				    else if(!Emulator.isInMAME())
+					{	
+					   mm.showDialog(DialogHelper.DIALOG_EXIT);
+					}  
+			        else
+			        {
+			           if(mm.getPrefsHelper().isWarnOnExit())
+			        	  mm.showDialog(DialogHelper.DIALOG_EXIT_GAME);
+			           else
+			           {
+					        Emulator.setValue(Emulator.EXIT_GAME_KEY, 1);		    	
+					    	try {Thread.sleep(100);} catch (InterruptedException e) {}
+							Emulator.setValue(Emulator.EXIT_GAME_KEY, 0);			        	   
+			           }
+			        }
+			    }
+			}
+			else if(v==R2_VALUE)
+			{
+				if( event.getAction()==KeyEvent.ACTION_UP) 
+				    mm.showDialog(DialogHelper.DIALOG_OPTIONS);
+			}
+			else
+			{
+				int action = event.getAction();
+				if(action == KeyEvent.ACTION_DOWN)
+					pad_data[dev] |= v;
+				else if(action == KeyEvent.ACTION_UP)
+					pad_data[dev] &= ~ v;
+				Emulator.setPadData(dev,pad_data[dev]);
+			}
+			return true;			
+		}
+
+		return false;
+	}
+	
+	public void setInputListeners(){ 
+		
+		super.setInputListeners();
+		                
+		mm.getEmuView().setOnGenericMotionListener(this);
+		mm.getInputView().setOnGenericMotionListener(this);
+	}
+	
+	protected int getDevice(InputDevice device){
+		
+		if(mm.getPrefsHelper().getInputExternal() != PrefsHelper.PREF_INPUT_USB_AUTO)
+		{
+			return -1;
+		}
+			
+		for(int i=0; i<numDevs; i++)
+		{
+			if(deviceIDs[i]==device.getId())
+				return i;
+		}
+		
+		return detectDevice(device);
+	}
+	
+	protected void mapDPAD(){
+		deviceMappings[KeyEvent.KEYCODE_DPAD_UP][numDevs] = UP_VALUE;
+		deviceMappings[KeyEvent.KEYCODE_DPAD_DOWN][numDevs] = DOWN_VALUE;
+		deviceMappings[KeyEvent.KEYCODE_DPAD_LEFT][numDevs] = LEFT_VALUE;
+		deviceMappings[KeyEvent.KEYCODE_DPAD_RIGHT][numDevs] = RIGHT_VALUE;		
+	}
+	
+	protected void mapL1R1(){
+		if(mm.getPrefsHelper().getAutomapOptions() == PrefsHelper.PREF_AUTOMAP_L1L2_AS_L2R2)
+		{
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][numDevs] = R2_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][numDevs] = L2_VALUE;			
+		}
+		else if(mm.getPrefsHelper().getAutomapOptions() == PrefsHelper.PREF_AUTOMAP_L1L2_AS_SELECTSTART)
+		{
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][numDevs] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][numDevs] = START_VALUE;			
+		}
+		else
+		{
+		   deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][numDevs] = L1_VALUE;
+		   deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][numDevs] = R1_VALUE;
+		}
+	}
+	
+	protected void mapTHUMBS(){
+		if(mm.getPrefsHelper().getAutomapOptions() == PrefsHelper.PREF_AUTOMAP_THUMBS_AS_L2R2)
+		{
+		   deviceMappings[KeyEvent.KEYCODE_BUTTON_THUMBL][numDevs] = R2_VALUE;
+		   deviceMappings[KeyEvent.KEYCODE_BUTTON_THUMBR] [numDevs]= L2_VALUE;
+		}
+		else if(mm.getPrefsHelper().getAutomapOptions() == PrefsHelper.PREF_AUTOMAP_THUMBS_AS_SELECTSTART){
+		   deviceMappings[KeyEvent.KEYCODE_BUTTON_THUMBL][numDevs] = SELECT_VALUE;
+		   deviceMappings[KeyEvent.KEYCODE_BUTTON_THUMBR] [numDevs]= START_VALUE;			
+		}		
+	}
+	
+	protected void mapSelectStart(){
+		deviceMappings[KeyEvent.KEYCODE_BUTTON_SELECT][numDevs] = SELECT_VALUE;
+		deviceMappings[KeyEvent.KEYCODE_BUTTON_START][numDevs] = START_VALUE;	
+	}
+	
+	
+	protected int detectDevice(InputDevice device){
+	
+		boolean  detected = false;
+						 
+		if(numDevs+1==MAX_DEVICES )
+			return -1;
+		
+		if(device==null || banDev == null)
+			return -1;
+		
+		if(banDev.get(device.getId())==1)
+		   return -1;
+			        
+		String name = device.getName();
+				
+		if(name.indexOf("PLAYSTATION(R)3")!=-1 || name.indexOf("Dualshock3")!=-1 
+		   || name.indexOf("Sixaxis")!=-1 || name.indexOf("Gasia,Co")!=-1
+			){
+									
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][numDevs] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][numDevs] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][numDevs] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][numDevs] = B_VALUE;
+			
+			mapDPAD();mapL1R1();mapTHUMBS();mapSelectStart();
+			
+			detected = true;
+		}
+		else if(name.indexOf("Gamepad 0")!=-1 || name.indexOf("Gamepad 1")!=-1 //Sixaxis Controller
+				|| name.indexOf("Gamepad 1")!=-1 || name.indexOf("Gamepad 2")!=-1){
+								
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][numDevs] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][numDevs] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][numDevs] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][numDevs] = Y_VALUE;
+						
+			mapDPAD();mapL1R1();mapTHUMBS();mapSelectStart();
+			
+			detected = true;
+		}
+		else if(name.indexOf("nvidia_joypad")!=-1 ) {
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][numDevs] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][numDevs] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][numDevs] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][numDevs] = Y_VALUE;
+			
+			mapL1R1();mapTHUMBS();
+			
+			deviceMappings[KeyEvent.KEYCODE_BACK][numDevs] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_START] [numDevs]= START_VALUE;
+			isShield = true;			
+			detected = true;
+		}
+		else if (name.indexOf("X-Box 360")!=-1 || name.indexOf("X-Box")!=-1 
+				   || name.indexOf("Xbox 360 Wireless Receiver")!=-1 ){
+			
+
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][numDevs] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][numDevs] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][numDevs] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][numDevs] = Y_VALUE;
+
+			mapDPAD();mapL1R1();mapTHUMBS();mapSelectStart();
+			
+			detected = true;			
+		}
+		else if (name.indexOf("Logitech")!=-1 && name.indexOf("Dual Action")!=-1){
+		
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][numDevs] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][numDevs] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][numDevs] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][numDevs] = B_VALUE;
+			
+			mapL1R1();mapTHUMBS();mapSelectStart();
+	            			
+			detected = true;
+		}
+		else if (name.indexOf("Logitech")!=-1 && name.indexOf("RumblePad 2")!=-1){
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_2][numDevs] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_1][numDevs] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_3][numDevs] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_4][numDevs] = Y_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_9][numDevs] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_10][numDevs] = START_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_5][numDevs] = L1_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_6][numDevs] = R1_VALUE;   
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_11][numDevs] = R2_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_12][numDevs] = L2_VALUE;  
+	            
+			detected = true;	
+			
+		}		
+		else if (name.indexOf("Logitech")!=-1 && name.indexOf("Precision")!=-1){
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_2][numDevs] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_1][numDevs] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_3][numDevs] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_4][numDevs] = Y_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_5][numDevs] = L1_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_6][numDevs] = R1_VALUE;   
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_7][numDevs] = R2_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_8][numDevs] = L2_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_9][numDevs] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_10][numDevs] = START_VALUE;
+		    
+			detected = true;
+		}
+		else if (name.indexOf("TTT THT Arcade console 2P USB Play")!=-1){
+		
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_1][numDevs] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_2][numDevs] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_5][numDevs] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_6][numDevs] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_3][numDevs] = L1_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_7][numDevs] = R1_VALUE;  			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_4][numDevs] = R2_VALUE;		
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_8][numDevs] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_9][numDevs] = START_VALUE;
+			
+			detected = true;
+		}
+		else if (name.indexOf("TOMMO NEOGEOX Arcade Stick")!=-1){
+			
+			mapDPAD();
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][numDevs] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][numDevs] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][numDevs] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_C][numDevs] = Y_VALUE;
+					
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R2][numDevs] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L2][numDevs] = START_VALUE;
+			
+			detected = true;
+		}
+		else if (name.indexOf("Onlive Wireless Controller")!=-1){
+			
+			mapDPAD();
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][numDevs] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][numDevs] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][numDevs] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][numDevs] = B_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][numDevs] = L1_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][numDevs] = R1_VALUE;  			
+	
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][numDevs] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BACK][numDevs] = START_VALUE;
+						
+			detected = true;
+		}
+		else if (name.indexOf("MadCatz")!=-1 && name.indexOf("PC USB Wired Stick")!=-1){
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][numDevs] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][numDevs] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_C][numDevs] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][numDevs] = Y_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][numDevs] = L1_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Z][numDevs] = L1_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][numDevs] = L1_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][numDevs] = R1_VALUE;   
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L2][numDevs] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R2][numDevs] = START_VALUE;
+			
+			detected = true;
+		}
+		else if (name.indexOf("Logicool")!=-1 && name.indexOf("RumblePad 2")!=-1){
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][numDevs] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_C][numDevs] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][numDevs] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][numDevs] = A_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][numDevs] = L1_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Z][numDevs] = R1_VALUE;   
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][numDevs] = R2_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][numDevs] = L2_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L2][numDevs] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R2][numDevs] = START_VALUE;
+					    
+			detected = true;
+		}	
+		else if (name.indexOf("Zeemote")!=-1 && name.indexOf("Steelseries free")!=-1){
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][numDevs] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][numDevs] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][numDevs] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][numDevs] = A_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_MODE][numDevs] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_START][numDevs] = START_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][numDevs] = L1_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][numDevs] = R1_VALUE;   
+	            
+			detected = true;				
+		}			
+		else if (name.indexOf("HuiJia  USB GamePad")!=-1){
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_3][numDevs] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_4][numDevs] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_2][numDevs] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_1][numDevs] = Y_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_7][numDevs] = L1_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_8][numDevs] = R1_VALUE;   
+		
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_9][numDevs] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_10][numDevs] = START_VALUE;
+				    
+			detected = true;
+		}	
+		else if (name.indexOf("Smartjoy Family Super Smartjoy 2")!=-1){
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_3][numDevs] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_4][numDevs] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_2][numDevs] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_1][numDevs] = Y_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_7][numDevs] = L1_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_8][numDevs] = R1_VALUE;   
+		
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_5][numDevs] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_6][numDevs] = START_VALUE;
+						    
+			detected = true;
+		}	
+		else if (name.indexOf("Jess Tech Dual Analog Rumble Pad")!=-1){
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_3][numDevs] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_1][numDevs] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_4][numDevs] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_2][numDevs] = Y_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_5][numDevs] = L1_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_7][numDevs] = R1_VALUE;   
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_6][numDevs] = R2_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_8][numDevs] = L2_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_11][numDevs] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_12][numDevs] = START_VALUE;
+					    
+			detected = true;
+		}	
+		else if (name.indexOf("Microsoft")!=-1 && name.indexOf("Dual Strike")!=-1){
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_4][numDevs] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_2][numDevs] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_3][numDevs] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_1][numDevs] = Y_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_7][numDevs] = L1_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_8][numDevs] = R1_VALUE;   
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_9][numDevs] = R2_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_6][numDevs] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_5][numDevs] = START_VALUE;
+		    			
+			detected = true;
+		}
+		else if (name.indexOf("Microsoft")!=-1 && name.indexOf("SideWinder")!=-1){
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][numDevs] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][numDevs] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][numDevs] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][numDevs] = Y_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][numDevs] = L1_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][numDevs] = R1_VALUE;   
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Z][numDevs] = R2_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_C][numDevs] = L2_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_11][numDevs] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_12][numDevs] = START_VALUE;
+
+			detected = true;
+		}	
+		else if (name.indexOf("WiseGroup")!=-1 && 
+				(name.indexOf("JC-PS102U")!=-1 || name.indexOf("TigerGame")!=-1) || 
+				 name.indexOf("Game Controller Adapter")!=-1 || name.indexOf("Dual USB Joypad")!=-1 ||
+				 name.indexOf("Twin USB Joystick")!=-1 
+				){
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_13][numDevs] = UP_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_15][numDevs] = DOWN_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_16][numDevs] = LEFT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_14][numDevs] = RIGHT_VALUE;		
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_4][numDevs] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_1][numDevs] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_3][numDevs] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_2][numDevs] = B_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_7][numDevs] = L1_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_8][numDevs] = R1_VALUE;   
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_5][numDevs] = R2_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_6][numDevs] = L2_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_10][numDevs] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_9][numDevs] = START_VALUE;
+             		
+			detected = true;
+		}
+		else if (name.indexOf("MOGA")!=-1){
+			
+			mapDPAD();
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][numDevs] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][numDevs] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][numDevs] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][numDevs] = Y_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][numDevs] = L1_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][numDevs] = R1_VALUE;   
+						
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_SELECT][numDevs] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_START][numDevs] = START_VALUE;
+			
+			detected = true;
+		}
+		else if (name.indexOf("OUYA Game Controller")!=-1){
+			
+			mapDPAD();
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][numDevs] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][numDevs] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][numDevs] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][numDevs] = B_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][numDevs] = L1_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][numDevs] = R1_VALUE;   
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_THUMBL][numDevs] = R2_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_THUMBR][numDevs] = L2_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L2][numDevs] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R2][numDevs] = START_VALUE;
+					    
+			detected = true;
+		}	
+		else if (name.indexOf("DragonRise")!=-1){
+			
+			mapDPAD();
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_2][numDevs] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_3][numDevs] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_4][numDevs] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_1][numDevs] = Y_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_5][numDevs] = L1_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_6][numDevs] = R1_VALUE;   
+						
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_7][numDevs] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_8][numDevs] = START_VALUE;
+					    
+			detected = true;
+		}
+		else if (name.indexOf("Thrustmaster T Mini")!=-1){
+			
+			mapDPAD();
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][numDevs] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][numDevs] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][numDevs] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_C][numDevs] = B_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][numDevs] = L1_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Z][numDevs] = R1_VALUE;   
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L2][numDevs] = R2_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][numDevs] = L2_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R2][numDevs] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L2][numDevs] = START_VALUE;
+					    			
+			detected = true;
+		}			
+		
+		//JOYPAD_B = X_VALUE
+		//JOYPAD_Y = A_VALUE
+		//JOYPAD_A = B_VALUE
+		//JOYPAD_X = Y_VALUE
+
+		if(detected)
+		{
+			System.out.println("Controller detected: "+device.getName());
+			deviceIDs[numDevs] = device.getId();
+			numDevs++;
+			if(numDevs == 1)
+			   mm.getMainHelper().updateMAME4droid();	
+			return numDevs-1;
+		}
+		else
+		{
+			banDev.append(device.getId(), 1);
+		}
+		
+		return -1;
+	}
+
+	public boolean isControllerDevice(){
+		   return numDevs!=0 || iCade;
 	}
 }

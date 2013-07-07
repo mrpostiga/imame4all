@@ -14,7 +14,12 @@
 
 
     <style name="Theme.MAME4droid" parent="android:Theme.Holo.NoActionBar.Fullscreen">
-        <!--  <item name="android:windowBackground">@null</item>--> 
+        <!--  <item name="android:windowBackground">@null</item>-->
+        <!--  
+        <item name="android:windowEnterAnimation">@null</item>
+        <item name="android:windowExitAnimation">@null</item>
+        <item name="android:windowAnimationStyle">@null</item>
+         -->
     </style>
     
     <style name="Theme.MAME4droid.TitleBar" parent="android:Theme.Holo.NoActionBar.Fullscreen">
