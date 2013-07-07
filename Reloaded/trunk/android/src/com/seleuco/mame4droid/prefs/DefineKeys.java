@@ -44,8 +44,10 @@
 
 package com.seleuco.mame4droid.prefs;
 
+import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -55,7 +57,10 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.R;
+import com.seleuco.mame4droid.helpers.DialogHelper;
+import com.seleuco.mame4droid.input.InputHandlerExt;
 
 public class DefineKeys extends ListActivity {
 		
@@ -99,8 +104,27 @@ public class DefineKeys extends ListActivity {
 	@Override
 	public void onListItemClick(ListView parent, View v, int position, long id) {
 		playerIndex = position;
-		startActivityForResult(new Intent(this, ListKeys.class).putExtra(
+		
+		int n = 0;
+		try{n = InputHandlerExt.numDevs;}catch(Error e){}
+		
+		if(position + 1 <= n)
+		{
+			AlertDialog.Builder alertDialog =new AlertDialog.Builder(this);
+			
+			alertDialog.setTitle("GamePad Autodetect is enabled!");
+			alertDialog.setPositiveButton("Dismiss", new DialogInterface.OnClickListener() {
+				   public void onClick(DialogInterface dialog, int which) {
+				   }
+				});
+			alertDialog.setMessage("Player "+(position+1)+ " gamepad is autodetected! You need to disable autodetection to change keys for this player.");
+			alertDialog.show();
+		}
+		else
+		{
+		     startActivityForResult(new Intent(this, ListKeys.class).putExtra(
 				"playerIndex", playerIndex), 0);
+		}
 	}
 
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {

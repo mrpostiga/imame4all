@@ -44,8 +44,8 @@ typedef struct _input_seq input_seq;
 struct _input_seq
 {
 	//DAV HACK
-	//input_code code[16];
-	input_code code[32];
+	input_code code[16];
+	//input_code code[32];
 };
 
 

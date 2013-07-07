@@ -56,13 +56,13 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.view.SurfaceHolder;
+import android.view.View;
 
 import com.seleuco.mame4droid.helpers.PrefsHelper;
 import com.seleuco.mame4droid.views.EmulatorViewGL;
 
 public class Emulator 
 {
-	 
 	
 	final static public int FPS_SHOWED_KEY = 1;
 	final static public int EXIT_GAME_KEY = 2;	
@@ -88,6 +88,18 @@ public class Emulator
 	final static public int THREADED_VIDEO = 22;
 	final static public int DOUBLE_BUFFER = 23;
 	final static public int PXASP1 = 24;
+	final static public int NUMBTNS = 25;
+	final static public int NUMWAYS = 26;
+	final static public int FAVORITES = 27;
+	final static public int RESET_FILTER = 28;	
+	final static public int LAST_GAME_SELECTED = 29;	
+	final static public int EMU_SPEED = 30;	
+	final static public int AUTOFIRE = 31;
+	final static public int VSYNC = 32;
+	final static public int HISCORE = 33;
+	final static public int VBEAN2X = 34;
+	final static public int VANTIALIAS = 35;
+	final static public int VFLICKER = 36;
 	
     private static MAME4droid mm = null;
     
@@ -150,6 +162,36 @@ public class Emulator
 
 	public static void setOverlayFilterType(int overlayFilterType) {
 		Emulator.overlayFilterType = overlayFilterType;
+	}
+	
+	private static boolean needsRestart = false;
+	
+	public static void setNeedRestart(boolean value){
+		needsRestart = value;
+	}
+	
+	public static boolean isRestartNeeded(){
+		return needsRestart;
+	}
+	
+	private static boolean isFavOnly = false;
+
+	public static boolean isFavOnly() {
+		return isFavOnly;
+	}
+
+	public static void setFavOnly(boolean isFavOnly) {
+		Emulator.isFavOnly = isFavOnly;
+	}
+	
+	private static boolean warnResChanged = false;
+
+	public static boolean isWarnResChanged() {
+		return warnResChanged;
+	}
+
+	public static void setWarnResChanged(boolean warnResChanged) {
+		Emulator.warnResChanged = warnResChanged;
 	}
 
 	static long j = 0;
@@ -291,6 +333,8 @@ public class Emulator
 	//VIDEO
 	public static void setWindowSize(int w, int h) {
 		
+		//System.out.println("window size "+w+" "+h);
+		
 		window_width = w;
 		window_height = h;
 		
@@ -359,12 +403,14 @@ public class Emulator
 	
 	//synchronized 
 	static public void changeVideo(int newWidth, int newHeight, int newVisWidth, int newVisHeight){	
-				
+			
 		//Log.d("Thread Video", "changeVideo");
 		synchronized(lock1){
 		
 		for(int i=0;i<4;i++)
 			Emulator.setPadData(i,0);
+		
+		 warnResChanged = emu_width!=newWidth || emu_height!=newHeight || emu_vis_width != newVisWidth || emu_vis_height != newVisHeight;
 		
 		//if(emu_width!=newWidth || emu_height!=newHeight)
 		//{
@@ -381,15 +427,21 @@ public class Emulator
 				GLRenderer r = (GLRenderer)((EmulatorViewGL)mm.getEmuView()).getRender();				
 				if(r!=null)r.changedEmulatedSize();	
 			}
-	    				
+		    
+			mm.getMainHelper().updateEmuValues();
+			
 			mm.runOnUiThread(new Runnable() {
                 public void run() {
+                	if(warnResChanged && videoRenderMode == PrefsHelper.PREF_RENDER_GL)
+                	    mm.getEmuView().setVisibility(View.INVISIBLE);
                 	mm.getMainHelper().updateMAME4droid();
+                	if(mm.getEmuView().getVisibility()!=View.VISIBLE)
+                	    mm.getEmuView().setVisibility(View.VISIBLE);
                 }
             });
 		//}		  
 		  }
-						
+								
 		if(nativeVideoT==null)
 		{
 			nativeVideoT = new Thread(new Runnable(){
@@ -491,6 +543,9 @@ public class Emulator
 	
 	public static void resume(){
 		//Log.d("EMULATOR", "RESUME");
+		
+		if(isRestartNeeded())
+			return;
 		
 		if(audioTrack!=null)
 		    audioTrack.play();

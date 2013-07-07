@@ -30,6 +30,7 @@
 
 #ifdef ANDROID
 #include <android/log.h>
+extern char globalpath[247];
 #endif
 
 /***************************************************************************
@@ -448,6 +449,11 @@ void ui_menu_init(running_machine *machine)
 -------------------------------------------------*/
 
 static void ui_menu_exit(running_machine &machine)
+
+
+
+
+
 {
 	/* free menus */
 	ui_menu_stack_reset(&machine);
@@ -701,10 +707,13 @@ void *ui_menu_pool_alloc(ui_menu *menu, size_t size)
 	assert(size < UI_MENU_POOL_SIZE);
 ////DAC HACK
     //FIZ some weird opmization compiler bug with align
-    if(size%2!=0)
+//#ifndef ANDROID
+    int align = 4;
+    if(size%align!=0)
     {
-        size+=1;
+        size+=align - (size % align);
     }
+//#endif
 /////////
 	/* find a pool with enough room */
 	for (pool = menu->pool; pool != NULL; pool = pool->next)
@@ -728,7 +737,9 @@ void *ui_menu_pool_alloc(ui_menu *menu, size_t size)
 
 
 /*-------------------------------------------------
+
     ui_menu_pool_strdup - make a temporary string
+
     copy in the menu's memory pool
 -------------------------------------------------*/
 
@@ -904,7 +915,7 @@ static void ui_menu_draw(running_machine *machine, ui_menu *menu, int customonly
             int favorite = isFavorite(item->subtext);
             if(favorite)
             {
-                fgcolor = fgcolor2 = fgcolor3 = MAKE_ARGB(0xFF,0xad,0xd8,0xe6);
+                fgcolor = fgcolor2 = fgcolor3 = MAKE_ARGB(0xFF,0x7C,0xCD,0x7C);//MAKE_ARGB(0xFF,0x9A,0xFF,0x9A);
             }
             
             if(item->flags & MENU_FLAG_CLONE)
@@ -928,7 +939,7 @@ static void ui_menu_draw(running_machine *machine, ui_menu *menu, int customonly
 //DAV HACK
                 if(favorite)
                 {
-                    fgcolor = fgcolor2 = fgcolor3 = MAKE_ARGB(0xFF,0xad,0xd8,0xe6);
+                    fgcolor = fgcolor2 = fgcolor3 =   MAKE_ARGB(0xFF,0x7C,0xCD,0x7C);//MAKE_ARGB(0xFF,0x9A,0xFF,0x9A);
                 }
 //DAV HACK
 			}
@@ -1141,6 +1152,7 @@ static void ui_menu_draw_text_box(ui_menu *menu)
 				JUSTIFY_CENTER, WRAP_TRUNCATE, DRAW_NORMAL, UI_SELECTED_COLOR, UI_SELECTED_BG_COLOR, NULL, NULL);
 
 	/* artificially set the hover to the last item so a double-click exits */
+
 	menu->hover = menu->numitems - 1;
 }
 
@@ -2197,6 +2209,7 @@ static void menu_settings_common(running_machine *machine, ui_menu *menu, void *
 			case IPT_UI_LEFT:
 				input_field_select_previous_setting(field);
 				changed = TRUE;
+
 				break;
 
 			/* right goes to next setting */
@@ -3000,6 +3013,7 @@ static void menu_sliders(running_machine *machine, ui_menu *menu, void *paramete
 
 				/* decrease value */
 				case IPT_UI_LEFT:
+
 					if (input_code_pressed(machine, KEYCODE_LALT) || input_code_pressed(machine, KEYCODE_RALT))
 						increment = -1;
 					else if (input_code_pressed(machine, KEYCODE_LSHIFT) || input_code_pressed(machine, KEYCODE_RSHIFT))
@@ -3216,6 +3230,7 @@ static void menu_video_targets_populate(running_machine *machine, ui_menu *menu)
     menu_video_options - handle the video options
     menu
 -------------------------------------------------*/
+
 
 static void menu_video_options(running_machine *machine, ui_menu *menu, void *parameter, void *state)
 {
@@ -3736,6 +3751,7 @@ static void menu_select_game(running_machine *machine, ui_menu *menu, void *para
 				ui_menu_reset(menu, UI_MENU_RESET_SELECT_FIRST);
 			}
 
+
 			/* if it's any other key and we're not maxed out, update */
 			else if (event->unichar >= ' ' && event->unichar < 0x7f)
 			{
@@ -3786,8 +3802,10 @@ static void menu_select_game_populate(running_machine *machine, ui_menu *menu, s
                                  "On MAME4iOS for NO jailbroken devices, use iTunes file sharing or use a 3rd party app, like iFunBox or iExplorer, to copy ROMs on sandboxed MAME4iOS 'Documents' folder."
 								  , NULL, MENU_FLAG_MULTILINE | MENU_FLAG_REDTEXT, NULL);
 #else
-       ui_menu_item_append(menu, "No games found. After installing, place your MAME-titled zipped roms in MAME4droid ROMs folder\n\n"
-                                                , NULL, MENU_FLAG_MULTILINE | MENU_FLAG_REDTEXT, NULL);
+        char buf[512];
+        sprintf(buf, "No games found. After installing, place your MAME-titled (lower case) zipped roms in MAME4droid '%s' folder.",globalpath);
+         
+        ui_menu_item_append(menu, buf , NULL, MENU_FLAG_MULTILINE | MENU_FLAG_REDTEXT, NULL);
 #endif
 		return;
 	}
@@ -4093,7 +4111,7 @@ static void menu_select_game_custom_render(running_machine *machine, ui_menu *me
 	#ifdef IOS
 			sprintf(&tempbuf[0][0], "MAME4iOS Reloaded 1.6 by David Valdeita (Seleuco). Game: %d/%d",MIN(myosd_last_game_selected+1,nroms), nroms);
 	#else
-			sprintf(&tempbuf[0][0], "MAME4droid Reloaded 1.2 by David Valdeita (Seleuco). Game: %d/%d",MIN(myosd_last_game_selected+1,nroms), nroms);
+			sprintf(&tempbuf[0][0], "MAME4droid Reloaded 1.3 by David Valdeita (Seleuco). Game: %d/%d",MIN(myosd_last_game_selected+1,nroms), nroms);
 	#endif
     }
     
@@ -4400,7 +4418,7 @@ static void favorites_read(void)
     //SQ: Read the favorites list from the favorites.ini file
     FILE *file;
     int counter=0;
-    int startread=0;
+    //int startread=0;
     
     favarray[0][0] = '\0';
         
@@ -4430,8 +4448,8 @@ static void favorites_remove(char *game)
     //SQ: Scan through the favorites file and remove
     //the requested line, creating a new file.
     FILE *file, *file2;
-    int counter=0;
-    int startread=0;
+    //int counter=0;
+    //int startread=0;
         
     file = fopen ("Favorites.ini", "r");
     file2 = fopen ("Favorites.ini.new", "w");
@@ -4550,7 +4568,7 @@ static void categories_read(void)
 {
     FILE *file;
     int counter=0;
-    int startread=0;
+    //int startread=0;
     char curcat[256];
     
     if(num_cat_items!=-1)
@@ -4599,7 +4617,7 @@ static void categories_read(void)
 }
 
 static char *find_category(const char *name){
-    int counter=0;
+    //int counter=0;
     cat_record cat,*pcat;
     
     if(name==NULL)return NULL;

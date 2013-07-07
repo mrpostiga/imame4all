@@ -41,15 +41,6 @@
 		<item>6</item>					
 	</string-array>
 	
-	<string-array name="pref_landscape_controllerType_options">
-		<item>No multitouch capable touch controller</item>
-		<item>Transparent touch controller suited for multitouch</item>
-	</string-array>
-	<string-array name="pref_landscape_controllerType_values">
-		<item>1</item>
-		<item>2</item>
-	</string-array>
-
 	<string-array name="pref_global_video_render_options">
 		<item>SW (Compatibility)</item>
 		<item>GL (Faster)</item>
@@ -73,9 +64,10 @@
 	</string-array>
 	
 	<string-array name="pref_input_external_options">
-		<item>Default</item>
-		<item>iCade</item>
-		<item>iCP</item>
+		<item>Normal</item>
+		<item>GamePad Autodetection</item>
+		<item>Original iCade</item>
+		<item>iCP, Gametel or iCade compatible</item>
 	</string-array>
 	<string-array name="pref_input_external_values">
 		<item>1</item>
@@ -86,7 +78,7 @@
 	<string-array name="pref_dz_options">
 		<item>none</item>
 		<item>low</item>
-		<item>medium</item>
+		<item>normal</item>
 		<item>high</item>
 		<item>very high</item>		
 	</string-array>
@@ -96,7 +88,6 @@
 		<item>3</item>
 		<item>4</item>
 		<item>5</item>
-		<item>6</item>
 	</string-array>	
 	
 	<string-array name="pref_frameskip_options">
@@ -146,17 +137,20 @@
 	</string-array>
 	
 	<string-array name="pref_stick_options">
+	    <item>Auto</item> 
 		<item>2-way</item>
 		<item>4-way</item>
 		<item>8-way</item>		
 	</string-array>
 	<string-array name="pref_stick_values">
+	    <item>-1</item> 
 		<item>2</item>
 		<item>4</item>
 		<item>8</item>
 	</string-array>	
 		
 	<string-array name="pref_numbuttons_options">
+	    <item>Auto</item>
 	    <item>0 buttons</item>
 	    <item>1 buttons</item>
 		<item>2 buttons</item>
@@ -166,6 +160,7 @@
 		<item>All buttons</item>		
 	</string-array>
 	<string-array name="pref_numbuttons_values">
+	    <item>-1</item>
 	    <item>0</item>
 		<item>1</item>
 		<item>2</item>
@@ -225,5 +220,97 @@
 		<item>2</item>
 		<item>3</item>																
 	</string-array>
+		
+	<string-array name="pref_speed_options">
+	    <item>Default</item>
+		<item>50 pct.</item>
+		<item>60 pct.</item>		
+	    <item>70 pct.</item>
+		<item>80 pct.</item>
+		<item>85 pct.</item>			
+		<item>90 pct.</item>
+		<item>95 pct.</item>
+		<item>100 pct.</item>
+		<item>105 pct.</item>
+		<item>110 pct.</item>
+		<item>115 pct.</item>
+		<item>120 pct.</item>
+		<item>130 pct.</item>
+		<item>140 pct.</item>
+		<item>150 pct.</item>													
+	</string-array>
+	<string-array name="pref_speed_values">
+		<item>-1</item>
+		<item>50</item>
+		<item>60</item>
+		<item>70</item>
+		<item>80</item>
+		<item>85</item>
+		<item>90</item>
+		<item>95</item>
+		<item>100</item>
+		<item>105</item>
+		<item>110</item>
+		<item>115</item>
+		<item>120</item>
+		<item>130</item>
+		<item>140</item>
+		<item>150</item>																												
+	</string-array>	
+	
+	<string-array name="pref_autofire_options">
+	    <item>Disabled</item>
+		<item>Speed 1</item>
+		<item>Speed 2</item>		
+	    <item>Speed 3</item>
+		<item>Speed 4</item>
+		<item>Speed 5</item>			
+		<item>Speed 6</item>
+		<item>Speed 7</item>
+		<item>Speed 8</item>
+		<item>Speed 9</item>													
+	</string-array>
+	<string-array name="pref_autofire_values">
+		<item>0</item>
+		<item>1</item>
+		<item>2</item>
+		<item>3</item>
+		<item>4</item>
+		<item>5</item>
+		<item>6</item>
+		<item>7</item>
+		<item>8</item>
+		<item>9</item>																												
+	</string-array>	
+	
+	<string-array name="pref_vsync_options">
+	    <item>Safe (Game reported)</item>
+		<item>50Hz</item>
+		<item>60HZ</item>		
+	    <item>OS-reported</item>													
+	</string-array>
+	
+	<string-array name="pref_vsync_values">
+		<item>-1</item>
+		<item>5000</item>
+		<item>6000 </item>
+		<item>3</item>																												
+	</string-array>	
+	
+   <string-array name="pref_automap_options">
+	    <item>Thumbs disabled</item>
+		<item>Thumbs as Options and Exit</item>
+		<item>Thumbs as Coin and Start</item>
+		<item>L1,R1 as Options and Exit</item>
+		<item>L1,R1 as Coin and Start</item>																	
+	</string-array>
+	
+	<string-array name="pref_automap_values">
+		<item>1</item>
+		<item>2</item>
+		<item>3</item>		
+		<item>4</item>
+		<item>5</item>																							
+	</string-array>	
 							
 </resources>

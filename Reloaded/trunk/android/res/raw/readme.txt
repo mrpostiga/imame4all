@@ -1,5 +1,5 @@
 =================================================================
-MAME4droid Reloaded (0.139 ) 1.2.1 (June 08, 2012) 
+MAME4droid Reloaded (0.139 ) 1.3.1 (July 08, 2013) 
 by David Valdeita (Seleuco)
 =================================================================
 
@@ -50,9 +50,9 @@ Smooth image.
 Overlay Filters, scalines, CRT..
 Digital or Analog touch selectable.
 Animated touch stick or DPAD.
-Button Layout customizable control. 
+In-App button Layout customizable control. 
 iON's iCade and iCP (as iCade mode) external controllers supported. 
-Wiimote support using WiiCrotroller Market app.
+Plug and play detection of many USB / Bluetooth gamepads.
 Tilt Sensor as left/right.
 1 to 6 buttons optionally shown.
 Options for video aspect ratio, scaling, rotate.
@@ -67,6 +67,8 @@ The emulator controls are the following ones:
 - Buttons B,X,A,Y,L,R: Buttons A,B,C,D,E,F.
 - Button SELECT (Coin): Insert credits (UP+SELECT = 2P credits, RIGHT+SELECT = 3P credits, DOWN+SELECT = 4P credits).
 - Button START: start (UP+START = 2P start, RIGHT+START = 3P start, DOWN+START = 4P start).
+- Buttons A+COIN: Load State.
+- Buttons A+START: Save State.
 - Buttons L2: Exit to selection menu to select another game.
 - Buttons START+SELECT simultaneously: Access to the MAME menu.
 - Button R2: Open help, global settings.
@@ -83,6 +85,8 @@ GLOBAL OPTIONS
 
 -Emulated Resolution: Force MAME internal drawing resolution, use hires resolution to improve artwork rendering at the expense of performance or to minimize 4:3 scaling artifacts. 
 
+-Emulated Speed: Changes the way MAME throttles gameplay such that the game runs at some multiplier of the original speed. It's useful to make playables high demanding games using lower nominal speed ( ex, 80%).
+
 -Audio Sync. Enable it to get smoother gameplay and better sound in some cases. You should also disable Throttle, and set 6 or 8 manual frame skip if needed.
 
 -Throttle: Configures the default thottling setting. When throttling is on, MAME attempts to keep the game running at the game's intended speed. When throttling is off, MAME runs the game as fast as it can. Note that the fastest speed is more often than not limited by your graphics card, especially for older games.
@@ -95,13 +99,23 @@ GLOBAL OPTIONS
 
 -Show Info/Warnings: Shows Game Info and any warnings when a game is selected.
 
+-Show Only Favorites: Show only favorites games in ROM manager.
+
 -Cheats: Enables the reading of the cheat database, if present, and the Cheat menu in the user interface.
 
 -Change ROMs path: Change current ROMs path. You need to restart app. You must move roms from older folder to the new one also.
 
 -Save battery: Allows MAME to give time back to the system (sleep) when running with -throttle. This allows other programs to have some CPU time, assuming that the game isn't taxing 100% of your CPU resources. This option can potentially cause hiccups in performance if other demanding programs are running.
 
--Force Pixel Aspect: Enable it to force pixel aspect ratio bypassing MAME video selection.
+-Forced Pixel Aspect: Enable it to force pixel aspect ratio bypassing MAME video selection.
+
+-Forced Refresh Rate: If enabled, forces refresh video emulation for smoother gameplay in some games (use with caution since it could broke other games like cave ones).
+
+-Save Hiscores: If enabled, saves hiscores on some games not saving on NVRAM. It could cause problems with some games or save states.
+
+-Warn on exit: Enable it to warn when you press the exit button in the external controller (GamePad) when gaming.
+
+-Notification Icon: Enable it to show a notification icon when MAME4droid is suspended.
 
 -Customize touch layout: Select to customize landscape touch control layout. You should press 'back' when you finish.
 
@@ -113,15 +127,18 @@ GLOBAL OPTIONS
 
 -Hide stick: Enable to hide stick on full screen mode.
 
--Define Keys. Let you define or map the HW keys to emulator controls. (Xperia Play and any other devices with physical keyboards users should configure their buttons or keys here)
+-Define Keys. Let you define or map the HW keys to emulator controls. (Xperia Play and any other devices with physical keyboards users should configure their buttons or keys here). If a gamepad is auto detected, you should disable autodetection to redefine buttons.
 
 -Defaults Keys. Restore key mappings to defaults.
 
 -External Controller
 
-   * Default. Select this value to use an external keyboard or devices based on keyboard IMES like WiiController.
-   * iCade. Select this value to use iON's iCade controller. You should be bluetooth paired before.
-   * iCP. Select this value to use ICP layout. iCP should be configured on iCade mode.
+   * Normal. Select this value to use an external keyboard or devices based on keyboard IMES like WiiController.
+   * GamePad autodetection. Plug and play detection of many USB / Bluetooth gamepads. Support of multiple gamepads.
+   * Original iCade. Select this value to use iON's iCade controller. You should be bluetooth paired before.
+   * iCP, Gametel or iCade compatible. Select this value to use an iCade compatible layout. Controller should be configured on iCade mode.
+
+GamePad automap options: Let you define the Thumbs or L1,L2 buttons behaviour when a GamePad is autodetected. 
 
 -Animated. Animates ON/OFF DPad/Stick. Disable to for better performance.
 
@@ -138,14 +155,14 @@ GLOBAL OPTIONS
 
 -Digital Touch Dead Zone: Enable/Disable a deadzone on DPAD touch center. It could be better for some games. Disable if you don't like it.
 
+-Button B as Autofire: If enabled, press B to switch autofire on/off.
+
 -Analog Touch Dead Zone: Select the deadzone amount on stick touch center.
+
+-Analog GamePad Dead Zone: Select the deadzone amount on external GamePad analog nubs.
 
 -P4,P3,P2 as P1. Send Player 1 input data to Player2,3,4 so you can use the 2-4 players at the same time. Funny :). It makes some weird problems with some roms like D&D.
 
--Trackball sensitivity: Set trackball persistance.
-
--Trackball fire only: Disable trackball movement.
-   
 -Tilt sensor. Enable to use tilt sensor as left/right.
 
 -Tilt sensor dead zone.  Select the deadzone amount on tilt sensor.
@@ -161,11 +178,17 @@ GLOBAL OPTIONS
      * Keep Aspect: keeps the aspect ratio
      * Stretch to fit screen, will use all available screen.
      
--Filter overlay. Applies an image filter (scanlines or CRT) at the expense of performance.      
+-Effect overlay. Applies an image filter (scanlines or CRT) at the expense of performance.      
 
 -Touch controller visible: Hide/Show the touch controller. Disable if you want to use an external controller like a keyboard or Wiimote.
 
 -Smooth scaling: Turn on bitmap filtering at the expense of performance.
+
+-Beam 2x: Sets the width of the vectors to 2x.
+
+-Antialias: Enables antialiased line rendering for vector games.
+
+-Flicker: Simulates a vector "flicker" effect, similar to a vector monitor that needs adjustment.
 
 -Threaded Video render. Enable it to use a dedicate thread to do the video rendering (performance gain on double core devices). Disable if you have stuttering.
 
@@ -181,6 +204,13 @@ GLOBAL OPTIONS
 
 -Debug Mode. Enable debug mode. Only for developers.
 
+FAVORITES
+---------------
+   
+You can mark (or unmark) your ROMs in the MAME4iOS game selection window as favorites by pressing the X button (you can also delete the GAME physical files). A favorite ROM appears in green in the game list. The favorites are saved to the file: Favorites.ini.
+
+This file is compatible with the standard MAME Favorites.ini file format so you can copy this over from your PC version of MAME to the iOS version.
+   
 INSTALLATION
 ---------------
 
@@ -188,6 +218,7 @@ After installing, place your MAME-titled zipped roms in /sdcard/ROMs/MAME4droid/
 
 artwork/    -> Artwork directory
 cfg/        -> MAME configuration files directory
+hi/         -> Hiscores directory
 nvram/      -> NVRAM files directory
 roms/       -> ROMs directory
 samples/    -> Samples directory
@@ -221,19 +252,20 @@ The directory and the ZIP files are named using low case!.
 ARTWORK
 ----------
 
-http://mameworld.info/mrdo/mame_artwork.html
+http://mameworld.info/mrdo/mame_artwork.php
 
 ORIGINAL CREDITS
 -------------------
 
-- MAME 0.139 original version by Nicola Salmoria and the MAME Team (http://www.mame.net).
+- MAME 0.139 original version by Nicola Salmoria and the MAME Team.
 
 PORT CREDITS
 ----------------
 - Port to Android by David Valdeita (Seleuco)
 
 DEVELOPMENT
-
+- 2013-08-08 Version 1.3.1 Some bug fixes.
+- 2013-08-04 Version 1.3 Added NVIDIA Shield support. Added Plug and play detection of many USB / Bluetooth gamepads. Added ICS full game controller support (multiple controllers, analog input and dual stick) for detected gamepads. Added hiscores saving (MKChamp patch). Added switch to force refresh rate for smoother gameplay in some games. Added autofire. Fixed some anonymous timers on SEGA and CAVE drivers to fix save states problems (AWJ patch). Added favorites. Added option to delete games in ROM manager. Added Vector defaults options. Added Emulation speed. Added auto selection for 1-6 buttons & 2-8 ways stick.  Improved ROM manager. A lot of bug fixes.
 - 2012-06-08 Version 1.2.1 Added default button mapping for dual stick ROMs like robotron. Added selectable suspend notification.Some bug Fixes.
 - 2012-05-08 Version 1.2. Added local multiplayer (up to 4 players). Added true analog control (It makes more playable analog games like StarWars and lightgun games like owolf). 
   Fixed Taito X system (now Superman works). Added P1 Player as P2,P3,P4 input option. Some bug fixes.
@@ -254,8 +286,8 @@ also ICS has some bugs thats made sound stutter in 4.0 to 4.0.3.
 INTERESTING WEBPAGES ABOUT MAME
 -----------------------------------
 
-- http://www.mame.net/
-- http://www.mameworld.net/
+- http://mamedev.org
+- http://www.mameworld.info
 
 ART
 ---------
@@ -281,8 +313,7 @@ The only limitation is for MAME4droid. MAME4droid cannot include external GPL so
 MAME LICENSE
 ----------------
 
-http://www.mame.net
-http://www.mamedev.com
+http://mamedev.org
 
 Copyright © 1997-2013, Nicola Salmoria and the MAME team. All rights reserved. 
 

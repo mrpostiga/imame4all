@@ -48,6 +48,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.preference.PreferenceManager;
+import android.view.Display;
+import android.view.WindowManager;
 
 import com.seleuco.mame4droid.MAME4droid;
 import com.seleuco.mame4droid.input.InputHandler;
@@ -58,10 +60,13 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	
 	final static public String PREF_GLOBAL_VIDEO_RENDER_MODE = "PREF_GLOBAL_VIDEO_RENDER_MODE";
 	final static public String PREF_GLOBAL_RESOLUTION = "PREF_GLOBAL_RESOLUTION";
+	final static public String PREF_GLOBAL_SPEED = "PREF_GLOBAL_SPEED";	
 	final static public String PREF_GLOBAL_SOUND_SYNC = "PREF_GLOBAL_SOUND_SYNC";
 	final static public String PREF_GLOBAL_FRAMESKIP = "PREF_GLOBAL_FRAMESKIP";
 	final static public String PREF_GLOBAL_THROTTLE = "PREF_GLOBAL_THROTTLE";
+	final static public String PREF_GLOBAL_VSYNC = "PREF_GLOBAL_VSYNC";
 	final static public String PREF_GLOBAL_SOUND = "PREF_GLOBAL_SOUND";
+	final static public String PREF_GLOBAL_FAVORITES = "PREF_GLOBAL_FAVORITES";
 	final static public String PREF_GLOBAL_SHOW_FPS = "PREF_GLOBAL_SHOW_FPS";
 	final static public String PREF_GLOBAL_SHOW_INFOWARNINGS = "PREF_GLOBAL_SHOW_INFOWARNINGS";	
 	final static public String PREF_GLOBAL_CHEAT = "PREF_GLOBAL_CHEAT";
@@ -69,6 +74,8 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String PREF_GLOBAL_DEBUG = "PREF_GLOBAL_DEBUG";
 	final static public String PREF_GLOBAL_IDLE_WAIT = "PREF_GLOBAL_IDLE_WAIT"; 
 	final static public String PREF_GLOBAL_FORCE_PXASPECT = "PREF_GLOBAL_FORCE_PXASPECT";
+	final static public String PREF_GLOBAL_HISCORE = "PREF_GLOBAL_HISCORE";
+	final static public String PREF_GLOBAL_WARN_ON_EXIT = "PREF_GLOBAL_WARN_ON_EXIT";
 	final static public String PREF_GLOBAL_SUSPEND_NOTIFICATION = "PREF_GLOBAL_SUSPEND_NOTIFICATION";
 	
 	final static public String PREF_PORTRAIT_SCALING_MODE = "PREF_PORTRAIT_SCALING_MODE_2";
@@ -91,11 +98,14 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String  PREF_ANIMATED_INPUT = "PREF_ANIMATED_INPUT";
 	final static public String  PREF_TOUCH_DZ = "PREF_TOUCH_DZ";
 	final static public String  PREF_CONTROLLER_TYPE = "PREF_CONTROLLER_TYPE_2";
-	final static public String  PREF_STICK_TYPE = "PREF_STICK_TYPE";
-	final static public String  PREF_NUMBUTTONS = "PREF_NUMBUTTONS";
-	final static public String  PREF_INPUT_EXTERNAL = "PREF_INPUT_EXTERNAL";
+	final static public String  PREF_STICK_TYPE = "PREF_STICK_TYPE_2";
+	final static public String  PREF_NUMBUTTONS = "PREF_NUMBUTTONS_2";
+	final static public String  PREF_INPUT_EXTERNAL = "PREF_INPUT_EXTERNAL_2";
+	final static public String  PREF_AUTOMAP_OPTIONS = "PREF_AUTOMAP_OPTIONS";
 	final static public String  PREF_ANALOG_DZ = "PREF_ANALOG_DZ";
+	final static public String  PREF_GAMEPAD_DZ = "PREF_GAMEPAD_DZ";
 	final static public String  PREF_VIBRATE = "PREF_VIBRATE";
+	final static public String  PREF_AUTOFIRE = "PREF_AUTOFIRE";	
 	
 	final static public String  PREF_TILT_SENSOR = "PREF_TILT_SENSOR";
 	final static public String  PREF_TILT_DZ = "PREF_TILT_DZ";
@@ -113,6 +123,10 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String  PREF_FORCE_GLES10 = "PREF_FORCE_GLES10";
 	final static public String  PREF_PXASP1 = "PREF_PXASP1";
 	
+	final static public String  PREF_BEAM2X = "PREF_BEAM2X";
+	final static public String  PREF_ANTIALIAS = "PREF_ANTIALIAS";
+	final static public String  PREF_FLICKER = "PREF_FLICKER";
+	
 	final static public int  LOW = 1;
 	final static public int  NORMAL = 2;
 	final static public int  HIGHT = 2;
@@ -126,8 +140,9 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public int  PREF_ANALOG_PRETTY = 4;
 
 	final static public int  PREF_INPUT_DEFAULT = 1;
-	final static public int  PREF_INPUT_ICADE = 2;
-	final static public int  PREF_INPUT_ICP = 3;
+	final static public int  PREF_INPUT_USB_AUTO = 2;
+	final static public int  PREF_INPUT_ICADE = 3;
+	final static public int  PREF_INPUT_ICP = 4;
 	
 	final public static int PREF_ORIGINAL = 1;
 	final public static int PREF_15X = 2;	
@@ -142,7 +157,11 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final public static int PREF_CRT_1 = 4;	
 	final public static int PREF_CRT_2 = 5;
 	
-	
+	final public static int PREF_AUTOMAP_DEFAULT = 1;
+	final public static int PREF_AUTOMAP_THUMBS_AS_L2R2 = 2;	
+	final public static int PREF_AUTOMAP_THUMBS_AS_SELECTSTART = 3;	
+	final public static int PREF_AUTOMAP_L1L2_AS_L2R2 = 4;	
+	final public static int PREF_AUTOMAP_L1L2_AS_SELECTSTART = 5;		
 	
 	protected MAME4droid mm = null;
 	
@@ -236,12 +255,24 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 		return Integer.valueOf(getSharedPreferences().getString(PREF_GLOBAL_RESOLUTION,"1")).intValue();	
 	}
 	
+	public int getEmulatedSpeed(){
+		return Integer.valueOf(getSharedPreferences().getString(PREF_GLOBAL_SPEED,"-1")).intValue();	
+	}	
+	
 	public boolean isSoundSync(){
 		return getSharedPreferences().getBoolean(PREF_GLOBAL_SOUND_SYNC,false);
 	}
 	
 	public boolean isForcedPixelAspect(){
 		return getSharedPreferences().getBoolean(PREF_GLOBAL_FORCE_PXASPECT,false);
+	}
+	
+	public boolean isHiscore(){
+		return getSharedPreferences().getBoolean(PREF_GLOBAL_HISCORE,false);
+	}	
+	
+	public boolean isWarnOnExit(){
+		return getSharedPreferences().getBoolean(PREF_GLOBAL_WARN_ON_EXIT,true);
 	}
 	
 	public boolean isNotifyWhenSuspend(){
@@ -254,6 +285,17 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 
 	public boolean isThrottle(){
 		return getSharedPreferences().getBoolean(PREF_GLOBAL_THROTTLE,true);
+	}
+	
+	public int getVSync(){
+		int r = Integer.valueOf(getSharedPreferences().getString(PREF_GLOBAL_VSYNC,"-1")).intValue();
+		if(r==3)
+		{
+			WindowManager wm = (WindowManager) mm.getSystemService(Context.WINDOW_SERVICE);
+			Display display = wm.getDefaultDisplay();
+			r = (int) (display.getRefreshRate() * 100);
+		}
+		return r;
 	}
 	
 	public int getSoundValue(){
@@ -302,31 +344,43 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	}
 
 	public int getStickWays(){
-		return Integer.valueOf(getSharedPreferences().getString(PREF_STICK_TYPE,"8")).intValue();	
+		return Integer.valueOf(getSharedPreferences().getString(PREF_STICK_TYPE,"-1")).intValue();	
 	}
 	
 	public int getNumButtons(){
-		int n = Integer.valueOf(getSharedPreferences().getString(PREF_NUMBUTTONS,"5")).intValue();
+		int n = Integer.valueOf(getSharedPreferences().getString(PREF_NUMBUTTONS,"-1")).intValue();
 		if(n==33)n=3;
 		return n;
 	}
 	
 	public boolean isBplusX(){
-		return Integer.valueOf(getSharedPreferences().getString(PREF_NUMBUTTONS,"5")).intValue()==33;	
+		return Integer.valueOf(getSharedPreferences().getString(PREF_NUMBUTTONS,"-1")).intValue()==33;	
 	}
 	
 	public int getInputExternal(){
-		return Integer.valueOf(getSharedPreferences().getString(PREF_INPUT_EXTERNAL,"1")).intValue();	
+		return Integer.valueOf(getSharedPreferences().getString(PREF_INPUT_EXTERNAL,"2")).intValue();	
+	}
+	
+	public int getAutomapOptions(){
+		return Integer.valueOf(getSharedPreferences().getString(PREF_AUTOMAP_OPTIONS,"2")).intValue();	
 	}
 	
 	public int getAnalogDZ(){
-		return Integer.valueOf(getSharedPreferences().getString(PREF_ANALOG_DZ,"1")).intValue();	
+		return Integer.valueOf(getSharedPreferences().getString(PREF_ANALOG_DZ,"2")).intValue();	
 	}
+	
+	public int getGamepadDZ(){
+		return Integer.valueOf(getSharedPreferences().getString(PREF_GAMEPAD_DZ,"3")).intValue();	
+	}	
 	
 	public boolean isVibrate(){
-		return getSharedPreferences().getBoolean(PREF_VIBRATE,true);
+		return getSharedPreferences().getBoolean(PREF_VIBRATE,false);
 	}
 	
+	public int getAutofireValue(){
+		return Integer.valueOf(getSharedPreferences().getString(PREF_AUTOFIRE,"0")).intValue();	
+	}	
+		
 	public String getROMsDIR(){
 		return getSharedPreferences().getString(PREF_ROMsDIR,null);
 	}
@@ -391,4 +445,20 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	public boolean isPlayerXasPlayer1(){
 		return getSharedPreferences().getBoolean(PREF_PXASP1,false);
 	}
+	
+	public boolean isFavorites(){
+		return getSharedPreferences().getBoolean(PREF_GLOBAL_FAVORITES,false);
+	}
+	
+	public boolean isVectorBeam2x(){
+		return getSharedPreferences().getBoolean(PREF_BEAM2X,true);
+	}	
+	
+	public boolean isVectorAntialias(){
+		return getSharedPreferences().getBoolean(PREF_ANTIALIAS,true);
+	}	
+	
+	public boolean isVectorFlicker(){
+		return getSharedPreferences().getBoolean(PREF_FLICKER,false);
+	}	
 }

@@ -191,6 +191,9 @@ public class MAME4droid extends Activity {
         inputHandler = InputHandlerFactory.createInputHandler(this);
                 
         FrameLayout fl = (FrameLayout)this.findViewById(R.id.EmulatorFrame);
+        
+        //Coment to avoid BUG on 2.3.4 (reload instead)
+        //Emulator.setVideoRenderMode(getPrefsHelper().getVideoRenderMode());
                
         if(prefsHelper.getVideoRenderMode()==PrefsHelper.PREF_RENDER_SW)
         {
@@ -202,7 +205,7 @@ public class MAME4droid extends Activity {
         	this.getLayoutInflater().inflate(R.layout.emuview_gl, fl);
         	emuView = this.findViewById(R.id.EmulatorViewGL);
         }
-               
+                       
         inputView = (InputView) this.findViewById(R.id.InputView);
                 
         ((IEmuView)emuView).setMAME4droid(this);
@@ -272,11 +275,14 @@ public class MAME4droid extends Activity {
             }
         }
                 
+        /*
         emuView.setOnKeyListener(inputHandler);
         emuView.setOnTouchListener(inputHandler);
                      
         inputView.setOnTouchListener(inputHandler);
         inputView.setOnKeyListener(inputHandler);
+        */
+        inputHandler.setInputListeners();
         
         mainHelper.updateMAME4droid();
                

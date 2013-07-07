@@ -42,84 +42,56 @@
  * under a MAME license, as set out in http://mamedev.org/
  */
 
-package com.seleuco.mame4droid.views;
-
-import java.util.ArrayList;
-
-import android.content.Context;
-import android.opengl.GLSurfaceView;
-import android.util.AttributeSet;
-import android.view.MotionEvent;
+package com.seleuco.mame4droid.prefs;
 
 import com.seleuco.mame4droid.Emulator;
-import com.seleuco.mame4droid.GLRenderer;
-import com.seleuco.mame4droid.MAME4droid;
-import com.seleuco.mame4droid.helpers.PrefsHelper;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.preference.ListPreference;
+import android.util.AttributeSet;
 
-public class EmulatorViewGL extends GLSurfaceView implements IEmuView{
-	
-	protected int scaleType = PrefsHelper.PREF_ORIGINAL;
-		
-	protected MAME4droid mm = null;
-	
-	protected GLRenderer render = null;
+public class ListPrefWithWarn extends ListPreference {
 
-	public Renderer getRender() {
-		return render;
-	}
+	private Context context;
 
-	public int getScaleType() {
-		return scaleType;
-	}
-
-	public void setScaleType(int scaleType) {
-		this.scaleType = scaleType;
-	}
-
-	public void setMAME4droid(MAME4droid mm) {
-		this.mm = mm;
-		render.setMAME4droid(mm);
-	}
-	
-	public EmulatorViewGL(Context context) {
+	public ListPrefWithWarn(Context context) {
 		super(context);
-		init();
+		this.context = context;
 	}
 
-	public EmulatorViewGL(Context context, AttributeSet attrs) {
+	public ListPrefWithWarn(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		init();
+		this.context = context;
+	}
+    
+	@Override
+	protected void onDialogClosed(boolean positiveResult) {
+
+		if (!positiveResult) {
+			super.onDialogClosed(false);
+			return;
+		}
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(context);
+		builder.setMessage("Are you sure? (app restart needed)")
+				.setCancelable(false)
+				.setPositiveButton("Yes",
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int id) {
+								ListPrefWithWarn.super.onDialogClosed(true);
+								Emulator.setNeedRestart(true);
+							}
+						})
+				.setNegativeButton("No", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						ListPrefWithWarn.super.onDialogClosed(false);
+					}
+				});
+		Dialog dialog = builder.create();
+		dialog.show();
 	}
 	
-	protected void init(){
-		this.setKeepScreenOn(true);
-		this.setFocusable(true);
-		this.setFocusableInTouchMode(true);
-		this.requestFocus();
-		render = new GLRenderer();
-		//setDebugFlags(DEBUG_CHECK_GL_ERROR | DEBUG_LOG_GL_CALLS);
-		setRenderer(render);
-        setRenderMode(RENDERMODE_WHEN_DIRTY);
-        //setRenderMode(RENDERMODE_CONTINUOUSLY);
-	}
-		
-	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-		ArrayList<Integer> l = mm.getMainHelper().measureWindow(widthMeasureSpec, heightMeasureSpec, scaleType);
-		setMeasuredDimension(l.get(0).intValue(),l.get(1).intValue());
-		//System.out.println("onMeasure"+l.get(0).intValue()+" "+l.get(1).intValue());
-	}
-		
-	@Override
-	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-
-		super.onSizeChanged(w, h, oldw, oldh);
-		Emulator.setWindowSize(w, h);		
-	}
-		
-	@Override
-	public boolean onTrackballEvent(MotionEvent event) {
-		return mm.getInputHandler().onTrackballEvent(event);
-	}
-
 }

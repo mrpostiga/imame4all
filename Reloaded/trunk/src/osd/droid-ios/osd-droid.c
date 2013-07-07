@@ -60,7 +60,7 @@ int myosd_filter_gte_year = -1;
 int myosd_filter_lte_year = -1;
 int myosd_filter_driver_source= -1;
 int myosd_filter_category = -1;
-extern char myosd_filter_keyword[MAX_FILTER_KEYWORD] = {'\0'};
+char myosd_filter_keyword[MAX_FILTER_KEYWORD] = {'\0'};
 
 int myosd_reset_filter = 0;
 
@@ -152,9 +152,9 @@ void setPadStatus(int i, unsigned long pad_status)
 }
 
 extern "C" void setGlobalPath(const char *path){
-
+    /*
 	int ret;
-	/*
+	
 	char *directory = (char *)"/mnt/sdcard/app-data/com.seleuco.mame4droid2/";
 	ret = chdir (directory);
     */
@@ -163,7 +163,7 @@ extern "C" void setGlobalPath(const char *path){
 #endif
 
 	strcpy(globalpath,path);
-	ret = chdir (globalpath);
+	/*ret = */chdir (globalpath);
 }
 
 extern "C"
@@ -181,7 +181,7 @@ void setMyValue(int key,int value){
 	    case 8:
 	    	myosd_showinfo = value;break;
 	    case 9:
-	 	    myosd_exitPause = value;break;
+	 	myosd_exitPause = value;break;
 	    case 10:
 	    	myosd_sleep = value;break;
 	    case 11:
@@ -210,7 +210,26 @@ void setMyValue(int key,int value){
 	    	myosd_dbl_buffer = value;setDblBuffer();break;
 	    case 24:
 	    	myosd_pxasp1 = value;break;
-
+	    case 27:
+	    	myosd_filter_favorites = value;break;
+	    case 28:
+	    	myosd_reset_filter = value;break;
+	    case 29:
+	    	myosd_last_game_selected = value;break;
+	    case 30:
+	    	myosd_speed  = value;break;
+            case 31:
+                myosd_autofire = value;break;
+            case 32:
+                myosd_vsync = value;break;
+            case 33:
+                myosd_hiscore = value;break;
+            case 34:
+                myosd_vector_bean2x = value;break;
+            case 35:
+                myosd_vector_antialias = value;break;
+            case 36:
+                myosd_vector_flicker = value;break;
 	}
 }
 
@@ -232,6 +251,10 @@ int getMyValue(int key){
 	    	 return myosd_showinfo;
 	    case 19:
 	    	 return myosd_in_menu;
+	    case 25:
+	    	 return myosd_num_buttons;
+	    case 26:
+	    	 return myosd_num_ways;
 	    default :
 	         return -1;
 	}

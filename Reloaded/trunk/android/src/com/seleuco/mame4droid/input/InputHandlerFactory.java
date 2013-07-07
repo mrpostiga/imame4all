@@ -52,10 +52,12 @@ import com.seleuco.mame4droid.MAME4droid;
 
 public class InputHandlerFactory {
 	
+	@SuppressWarnings("unused")
 	static public InputHandler createInputHandler(MAME4droid mm){		
 	    try {
-		      @SuppressWarnings("unused")
-			  Method m = MotionEvent.class.getMethod("getPointerCount");		     
+		      Class[] cArg = new Class[1];
+		      cArg[0] = Integer.TYPE;
+			  Method m = MotionEvent.class.getMethod("getAxisValue",cArg);		     
 		      return new InputHandlerExt(mm);//MultiTouch  
 		      //return new InputHandler(mm);//FAKED para pruebas
 		} catch (NoSuchMethodException e) {
