@@ -804,8 +804,10 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	    	if(iv.getType() == InputHandler.TYPE_BUTTON_IMG 
 	    		|| iv.getType() == InputHandler.TYPE_BUTTON_RECT
 	    		|| iv.getType() == InputHandler.TYPE_STICK_IMG)
-	    	    iv.setSize(0, 0, sz, sz);
-	    	
+	    	{
+	    	    if(iv.getValue()!=BTN_L2 && iv.getValue()!=BTN_R2 && iv.getValue()!=BTN_START && iv.getValue()!=BTN_SELECT)
+	    		    iv.setSize(0, 0, sz, sz);
+	    	}
 	    	if(iv.getType() == InputHandler.TYPE_STICK_RECT)
 	    	{
 	    		switch(iv.getValue())

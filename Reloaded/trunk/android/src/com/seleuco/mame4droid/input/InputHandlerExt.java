@@ -502,7 +502,7 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 	
 		boolean  detected = false;
 						 
-		if(numDevs+1==MAX_DEVICES )
+		if(numDevs==MAX_DEVICES )
 			return -1;
 		
 		if(device==null || banDev == null)
