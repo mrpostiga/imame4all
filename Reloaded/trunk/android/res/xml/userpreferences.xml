@@ -249,7 +249,7 @@
 			android:defaultValue="1" />	
 
 		<CheckBoxPreference android:key="PREF_PORTRAIT_TOUCH_CONTROLLER"
-			android:title="Touch controller visible" android:summary="Disable to switch to full screen mode hiding stick and buttons when you are using a GamePad"
+			android:title="Touch controller visible" android:summary="Disable to switch to full screen mode, hiding all buttons. Useful when you are using a GamePad"
 			android:defaultValue="true" />
 
 		<CheckBoxPreference android:key="PREF_PORTRAIT_BITMAP_FILTERING"
@@ -271,7 +271,7 @@
 			android:defaultValue="1" />
 			
 		<CheckBoxPreference android:key="PREF_LANDSCAPE_TOUCH_CONTROLLER"
-			android:title="Touch controller visible" android:summary="Disable to hide stick and buttons when you are using a GamePad"
+			android:title="Touch controller visible" android:summary="Disable to hide all buttons. Useful when you are using a GamePad"
 			android:defaultValue="true" />
 
 		<CheckBoxPreference android:key="PREF_LANDSCAPE_BITMAP_FILTERING"
@@ -302,12 +302,12 @@
 			android:title="Threaded Video Render" android:summary="Performance boost on double core devices"
 			android:defaultValue="True" />	
 			      			
-		<ListPreference android:entries="@array/pref_low_norm_or_hight_options"
+		<com.seleuco.mame4droid.prefs.ListPrefWithWarn android:entries="@array/pref_low_norm_or_hight_options"
 			android:title='Video Thread Priority' android:key="PREF_VIDEO_THREAD_PRIORITY"
 			android:entryValues="@array/pref_low_norm_or_hight_values"
 			android:defaultValue="2" />
 		
-        <CheckBoxPreference android:key="PREF_DOUBLE_BUFFER"
+        <com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_DOUBLE_BUFFER"
 			android:title="Double Buffer" android:summary="Avoids flickering at the expense of performance"
 			android:defaultValue="True" />  		
 		

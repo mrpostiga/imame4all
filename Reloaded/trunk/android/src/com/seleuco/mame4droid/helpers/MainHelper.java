@@ -50,10 +50,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import android.annotation.TargetApi;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
@@ -61,8 +63,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Point;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
+import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.View;
 import android.view.View.MeasureSpec;
@@ -375,7 +380,8 @@ public class MainHelper {
 		
 	}
 	
-	 public void updateMAME4droid(){
+
+	public void updateMAME4droid(){
 		
 		if(Emulator.isRestartNeeded())
 		{
@@ -489,8 +495,44 @@ public class MainHelper {
 			if(state == InputHandler.STATE_SHOWING_CONTROLLER)
 			{			    				    		
 				inputView.setImageDrawable(null);
-			   	inputHandler.readControllerValues(R.raw.controller_landscape);			   	    
-								
+				
+				Display dp = mm.getWindowManager().getDefaultDisplay();
+				
+				float w = dp.getWidth();
+				float h = dp.getHeight();
+						
+				if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1)
+				{
+					Point pt = new Point();
+	                dp.getRealSize(pt);
+	                w = pt.x;
+	                h = pt.y;
+				}
+				else
+				{
+					try {
+						Method mGetRawW;
+						mGetRawW = Display.class.getMethod("getRawWidth");
+						Method mGetRawH = Display.class.getMethod("getRawHeight");
+						w = (Integer)mGetRawW.invoke(dp);
+						h = (Integer)mGetRawH.invoke(dp);					
+					} catch (Exception e) {
+					}
+				}
+				
+				if(h==0)h=1;
+				
+				//System.out.println("--->>> "+w+" "+h+ " "+w/h+ " "+ (float)(16.0/9.0));
+				
+			   	if(w/h != (float)(16.0/9.0))
+			   	{					   
+				   inputHandler.readControllerValues(R.raw.controller_landscape);
+			   	}
+			   	else
+			   	{
+			   	   inputHandler.readControllerValues(R.raw.controller_landscape_16_9);
+			   	}
+			   	
 				if(ControlCustomizer.isEnabled())
 				{
 				   mm.getEmuView().setVisibility(View.INVISIBLE);
@@ -609,7 +651,10 @@ public class MainHelper {
 
 			widthSize = Math.min(w, widthSize);
 			heightSize = Math.min(h, heightSize);
-
+			
+			if(heightSize==0)heightSize=1;
+			if(widthSize==0)widthSize=1;
+			
 			float actualAspect = (float) (widthSize / heightSize);
 
 			if (Math.abs(actualAspect - desiredAspect) > 0.0000001) {
