@@ -1,5 +1,5 @@
 =================================================================
-MAME4droid Reloaded (0.139 ) 1.3.2 (July 10, 2013) 
+MAME4droid Reloaded (0.139 ) 1.3.3 (July 14, 2013) 
 by David Valdeita (Seleuco)
 =================================================================
 
@@ -184,6 +184,8 @@ GamePad automap options: Let you define the Thumbs or L1,L2 buttons behaviour wh
 
 -Smooth scaling: Turn on bitmap filtering at the expense of performance.
 
+-Fullscreen: Enable full screen on portrait.
+
 -Beam 2x: Sets the width of the vectors to 2x.
 
 -Antialias: Enables antialiased line rendering for vector games.
@@ -264,6 +266,7 @@ PORT CREDITS
 - Port to Android by David Valdeita (Seleuco)
 
 DEVELOPMENT
+- 2013-08-14 Version 1.3.3 Added new portrait full screen mode. Some bug fixes. 
 - 2013-08-10 Version 1.3.2 Tweaked default touch layouts. Some bug fixes. 
 - 2013-08-08 Version 1.3.1 Some bug fixes.
 - 2013-08-04 Version 1.3 Added NVIDIA Shield support. Added Plug and play detection of many USB / Bluetooth gamepads. Added ICS full game controller support (multiple controllers, analog input and dual stick) for detected gamepads. Added hiscores saving (MKChamp patch). Added switch to force refresh rate for smoother gameplay in some games. Added autofire. Fixed some anonymous timers on SEGA and CAVE drivers to fix save states problems (AWJ patch). Added favorites. Added option to delete games in ROM manager. Added Vector defaults options. Added Emulation speed. Added auto selection for 1-6 buttons & 2-8 ways stick.  Improved ROM manager. A lot of bug fixes.

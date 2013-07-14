@@ -266,6 +266,7 @@ public class DialogHelper {
 		    	    
   	        	  DialogHelper.savedDialog = DIALOG_NONE;
   	        	  mm.removeDialog(DIALOG_OPTIONS);
+  	        	  mm.removeDialog(DIALOG_FULLSCREEN);
 	    	    }	    	 
 	    	});
 	    	builder.setOnCancelListener(new  DialogInterface.OnCancelListener() {				

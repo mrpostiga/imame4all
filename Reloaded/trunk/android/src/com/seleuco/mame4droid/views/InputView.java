@@ -321,7 +321,9 @@ public class InputView extends ImageView {
 		
         ArrayList<InputValue> data = mm.getInputHandler().getAllInputData();
         
-        boolean hideStick = mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE && 
+        boolean hideStick = (mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE || 
+        		mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_PORTRAIT && Emulator.isPortraitFull())
+        		&& 
         		(mm.getPrefsHelper().isHideStick() || mm.getInputHandler().isControllerDevice()) 
         		&& !ControlCustomizer.isEnabled();
         
@@ -331,20 +333,21 @@ public class InputView extends ImageView {
         	BitmapDrawable d = null;
         	canvas.getClipBounds(rclip);
         	if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL_DPAD 
-        			&& v.getType()==InputHandler.TYPE_STICK_IMG && /*canvas.getClipBounds()*/rclip.intersect(v.getRect()))
+        			&& v.getType()==InputHandler.TYPE_STICK_IMG && rclip.intersect(v.getRect()))
         	{
         	   if(!hideStick)
         	       d = stick_images[mm.getInputHandler().getStick_state()];
         	}
         	else if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL_DPAD && 
-        			v.getType()==InputHandler.TYPE_ANALOG_RECT && /*canvas.getClipBounds()*/rclip.intersect(v.getRect()) )
+        			v.getType()==InputHandler.TYPE_ANALOG_RECT && rclip.intersect(v.getRect()) )
         	{
         		if(!hideStick)
         		    mm.getInputHandler().getAnalogStick().draw(canvas);
         	}        	
-        	else if(v.getType()==InputHandler.TYPE_BUTTON_IMG && /*canvas.getClipBounds()*/rclip.intersect(v.getRect()) )
+        	else if(v.getType()==InputHandler.TYPE_BUTTON_IMG && rclip.intersect(v.getRect()) )
         	{
-        	   if(mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE)
+        	   if(mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE ||
+        		 (mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_PORTRAIT && Emulator.isPortraitFull()))
         	   {  
         		      int n;
         		      if(mm.getInputHandler().isControllerDevice())

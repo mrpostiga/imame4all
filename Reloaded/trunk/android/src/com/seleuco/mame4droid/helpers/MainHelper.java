@@ -392,6 +392,13 @@ public class MainHelper {
 		if(updateVideoRender())return;
 		if(updateOverlayFilter())return;
 		
+		if(Emulator.isPortraitFull() != mm.getPrefsHelper().isPortraitFullscreen())
+		{						
+			Emulator.setPortraitFull(true);
+			reload();				
+			return;		
+		}
+		
 		View emuView =  mm.getEmuView();
 		FilterView filterView = mm.getFilterView();
 
@@ -449,18 +456,27 @@ public class MainHelper {
 
 			if(state == InputHandler.STATE_SHOWING_CONTROLLER)
 			{			    	
-			   	inputView.setImageDrawable(mm.getResources().getDrawable(R.drawable.back_portrait));				
-			   	inputHandler.readControllerValues(R.raw.controller_portrait);
+			   	
+				if(Emulator.isPortraitFull())
+				{
+				   inputView.bringToFront();
+				   inputHandler.readControllerValues(R.raw.controller_portrait_full);
+				}
+				else 
+				{
+				   inputView.setImageDrawable(mm.getResources().getDrawable(R.drawable.back_portrait));				 
+			   	   inputHandler.readControllerValues(R.raw.controller_portrait);
+				}
 			}
 			else
 			{
 				
 			}
 			
-			if(ControlCustomizer.isEnabled() )
+			if(ControlCustomizer.isEnabled() && !Emulator.isPortraitFull())
 			{
 				ControlCustomizer.setEnabled(false);
-				mm.getDialogHelper().setInfoMsg("Control layout customization is only allowed in landscape mode");
+				mm.getDialogHelper().setInfoMsg("Control layout customization is only allowed in fullscreen mode");
 				mm.showDialog(DialogHelper.DIALOG_INFO);
 			}
 			
@@ -532,23 +548,21 @@ public class MainHelper {
 			   	{
 			   	   inputHandler.readControllerValues(R.raw.controller_landscape_16_9);
 			   	}
-			   	
-				if(ControlCustomizer.isEnabled())
-				{
-				   mm.getEmuView().setVisibility(View.INVISIBLE);
-				   mm.getInputView().requestFocus();
-				}   
-			}
-			else
-			{
-				if(ControlCustomizer.isEnabled())
-				{
-					ControlCustomizer.setEnabled(false);
-					mm.getDialogHelper().setInfoMsg("Control layout customization is only allowed when touch controller is visible");
-					mm.showDialog(DialogHelper.DIALOG_INFO);
-				}
-			}			
+			}		
 		}
+		
+		if(state != InputHandler.STATE_SHOWING_CONTROLLER && ControlCustomizer.isEnabled())
+		{
+   		    ControlCustomizer.setEnabled(false);
+		    mm.getDialogHelper().setInfoMsg("Control layout customization is only allowed when touch controller is visible");
+			mm.showDialog(DialogHelper.DIALOG_INFO);			
+		}
+		
+		if(ControlCustomizer.isEnabled())
+		{
+		    mm.getEmuView().setVisibility(View.INVISIBLE);
+		    mm.getInputView().requestFocus();
+		}   
 		
 		int op = inputHandler.getOpacity();
 		if (op != -1 && (state == InputHandler.STATE_SHOWING_CONTROLLER) )
