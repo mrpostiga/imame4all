@@ -912,7 +912,9 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	int getStickValue(int i){
 		int ways = mm.getPrefsHelper().getStickWays();
 		if(ways==-1)ways = Emulator.getValue(Emulator.NUMWAYS);
-		boolean b = Emulator.isInMAME();
+		boolean b = Emulator.isInMAME() && Emulator.getValue(Emulator.IN_MENU)==0;
+		
+		//System.out.println("in MAME "+Emulator.isInMAME()+" b:" +b+" ways:"+ways+" IN_MENU "+Emulator.getValue(Emulator.IN_MENU));
 		
 		if(ways==2 && b)
 		{
@@ -1026,9 +1028,9 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		if(action != KeyEvent.ACTION_DOWN)
 			return;
 	    
-		int ways = mm.getPrefsHelper().getStickWays();
+		int ways = mm.getPrefsHelper().getStickWays() ;
 		if(ways==-1)ways = Emulator.getValue(Emulator.NUMWAYS);
-		boolean b = Emulator.isInMAME();
+		boolean b = Emulator.isInMAME() && Emulator.getValue(Emulator.IN_MENU)==0;
 			    
 	    int keyCode = event.getKeyCode();
 	    

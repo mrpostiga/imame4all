@@ -82,6 +82,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String PREF_PORTRAIT_FILTER_TYPE = "PREF_PORTRAIT_FILTER_2";
 	final static public String PREF_PORTRAIT_TOUCH_CONTROLLER = "PREF_PORTRAIT_TOUCH_CONTROLLER";
 	final static public String PREF_PORTRAIT_BITMAP_FILTERING = "PREF_PORTRAIT_BITMAP_FILTERING";
+	final static public String PREF_PORTRAIT_FULLSCREEN = "PREF_PORTRAIT_FULLSCREEN";
 	
 	final static public String PREF_LANDSCAPE_SCALING_MODE = "PREF_LANDSCAPE_SCALING_MODE_2";
 	final static public String PREF_LANDSCAPE_FILTER_TYPE = "PREF_LANDSCAPE_FILTER_2";
@@ -92,6 +93,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String  PREF_DEFINED_KEYS = "PREF_DEFINED_KEYS";
 	
 	final static public String  PREF_DEFINED_CONTROL_LAYOUT = "PREF_DEFINED_CONTROL_LAYOUT";
+	final static public String  PREF_DEFINED_CONTROL_LAYOUT_P = "PREF_DEFINED_CONTROL_LAYOUT_P";
 	
 	final static public String  PREF_TRACKBALL_SENSITIVITY = "PREF_TRACKBALL_SENSITIVITY";
 	final static public String  PREF_TRACKBALL_NOMOVE = "PREF_TRACKBALL_NOMOVE";
@@ -215,7 +217,11 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 		
 	public boolean isPortraitBitmapFiltering(){
 		return getSharedPreferences().getBoolean(PREF_PORTRAIT_BITMAP_FILTERING,false);
-	}	
+	}
+	
+	public boolean isPortraitFullscreen(){
+		return getSharedPreferences().getBoolean(PREF_PORTRAIT_FULLSCREEN,false);
+	}
 
 	public boolean isLandscapeTouchController(){
 		return getSharedPreferences().getBoolean(PREF_LANDSCAPE_TOUCH_CONTROLLER,true);
@@ -392,13 +398,23 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 		editor.commit();
 	}
 	
-	public String getDefinedControlLayout(){
+	public String getDefinedControlLayoutLand(){
 		return getSharedPreferences().getString(PREF_DEFINED_CONTROL_LAYOUT,null);
 	}
 	
-	public void setDefinedControlLayout(String value){
+	public void setDefinedControlLayoutLand(String value){
 		SharedPreferences.Editor editor =  getSharedPreferences().edit();
 		editor.putString(PREF_DEFINED_CONTROL_LAYOUT, value);
+		editor.commit();
+	}
+	
+	public String getDefinedControlLayoutPortrait(){
+		return getSharedPreferences().getString(PREF_DEFINED_CONTROL_LAYOUT_P,null);
+	}
+	
+	public void setDefinedControlLayoutPortrait(String value){
+		SharedPreferences.Editor editor =  getSharedPreferences().edit();
+		editor.putString(PREF_DEFINED_CONTROL_LAYOUT_P, value);
 		editor.commit();
 	}
 	

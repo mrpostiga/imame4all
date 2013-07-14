@@ -54,6 +54,7 @@ import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -174,21 +175,31 @@ public class MAME4droid extends Activity {
         
         //para saber at runtime si es llarge
         //Configuration config = getResources().getConfiguration();
-                  
-        setContentView(R.layout.main);
-            
-        prefsHelper = new PrefsHelper(this);
-        
+                
+		prefsHelper = new PrefsHelper(this);
+
         dialogHelper  = new DialogHelper(this);
         
         mainHelper = new MainHelper(this);
-        
+                             
         fileExplore = new FileExplorer(this);
                 
         menuHelper = new MenuHelper(this);
                 
         //inputHandler = new InputHandler(this);
         inputHandler = InputHandlerFactory.createInputHandler(this);
+        
+        Emulator.setPortraitFull(getPrefsHelper().isPortraitFullscreen());
+        boolean full = false;
+		if(prefsHelper.isPortraitFullscreen() && mainHelper.getscrOrientation() == Configuration.ORIENTATION_PORTRAIT)
+		{
+			setContentView(R.layout.main_fullscreen);
+			full = true;
+		}
+		else
+		{
+            setContentView(R.layout.main);
+		}        
                 
         FrameLayout fl = (FrameLayout)this.findViewById(R.id.EmulatorFrame);
         
@@ -198,12 +209,18 @@ public class MAME4droid extends Activity {
         if(prefsHelper.getVideoRenderMode()==PrefsHelper.PREF_RENDER_SW)
         {
         	this.getLayoutInflater().inflate(R.layout.emuview_sw, fl);
-        	emuView = this.findViewById(R.id.EmulatorViewSW);
+        	emuView = this.findViewById(R.id.EmulatorViewSW);        
         }
         else
         {
         	this.getLayoutInflater().inflate(R.layout.emuview_gl, fl);
         	emuView = this.findViewById(R.id.EmulatorViewGL);
+        }
+        
+        if(full)
+        {
+        	FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams )emuView.getLayoutParams();
+        	lp.gravity =  Gravity.TOP;
         }
                        
         inputView = (InputView) this.findViewById(R.id.InputView);

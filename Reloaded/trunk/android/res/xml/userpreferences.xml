@@ -249,12 +249,16 @@
 			android:defaultValue="1" />	
 
 		<CheckBoxPreference android:key="PREF_PORTRAIT_TOUCH_CONTROLLER"
-			android:title="Touch controller visible" android:summary="Disable to switch to full screen mode, hiding all buttons. Useful when you are using a GamePad"
+			android:title="Touch controller visible" android:summary="Disable to hide the touch controller. Useful when you are using a GamePad"
 			android:defaultValue="true" />
 
 		<CheckBoxPreference android:key="PREF_PORTRAIT_BITMAP_FILTERING"
 			android:title="Smooth scaling" android:summary="Select to turn bitmap filtering on, at the expense of performance"
 			android:defaultValue="false" />
+		
+		<CheckBoxPreference android:key="PREF_PORTRAIT_FULLSCREEN"
+			android:title="Fullscreen" android:summary="Select to enable fullscreen portrait mode"
+			android:defaultValue="false" />		
 
 	</PreferenceCategory>
 
@@ -271,7 +275,7 @@
 			android:defaultValue="1" />
 			
 		<CheckBoxPreference android:key="PREF_LANDSCAPE_TOUCH_CONTROLLER"
-			android:title="Touch controller visible" android:summary="Disable to hide all buttons. Useful when you are using a GamePad"
+			android:title="Touch controller visible" android:summary="Disable to hide the touch controller. Useful when you are using a GamePad"
 			android:defaultValue="true" />
 
 		<CheckBoxPreference android:key="PREF_LANDSCAPE_BITMAP_FILTERING"

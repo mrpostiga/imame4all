@@ -193,6 +193,16 @@ public class Emulator
 	public static void setWarnResChanged(boolean warnResChanged) {
 		Emulator.warnResChanged = warnResChanged;
 	}
+	
+	private static boolean portraitFull = false;
+
+	public static boolean isPortraitFull() {
+		return portraitFull;
+	}
+
+	public static void setPortraitFull(boolean portraitFull) {
+		Emulator.portraitFull = portraitFull;
+	}
 
 	static long j = 0;
 	static int i = 0;

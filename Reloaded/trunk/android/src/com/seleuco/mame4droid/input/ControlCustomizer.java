@@ -54,6 +54,7 @@ import android.graphics.Rect;
 import android.graphics.Paint.Style;
 import android.view.MotionEvent;
 
+import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.MAME4droid;
 import com.seleuco.mame4droid.helpers.PrefsHelper;
 
@@ -113,17 +114,23 @@ public class ControlCustomizer {
 			definedStr.append(iv.getType()+","+iv.getValue()+","+iv.getXoff()+","+iv.getYoff());
 			first = false;
 		}
-		mm.getPrefsHelper().setDefinedControlLayout(definedStr.toString());		
+		if(mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE)
+		   mm.getPrefsHelper().setDefinedControlLayoutLand(definedStr.toString());
+		else			
+		   mm.getPrefsHelper().setDefinedControlLayoutPortrait(definedStr.toString());
+			
 	}
 	
 	public void readDefinedControlLayout(){
 		
-		if(mm.getMainHelper().getscrOrientation() != Configuration.ORIENTATION_LANDSCAPE)
+		if(mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_PORTRAIT && !Emulator.isPortraitFull())
 			return;
 		
 	    ArrayList<InputValue> values = mm.getInputHandler().getAllInputData();
 	    	   				
-		String definedStr = mm.getPrefsHelper().getDefinedControlLayout();
+		String definedStr = mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE ? 
+				            mm.getPrefsHelper().getDefinedControlLayoutLand() :
+				            mm.getPrefsHelper().getDefinedControlLayoutPortrait();
 		
 		if(definedStr!=null)
 		{	

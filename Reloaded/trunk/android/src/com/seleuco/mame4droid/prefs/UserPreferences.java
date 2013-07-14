@@ -344,6 +344,7 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 		    	           public void onClick(DialogInterface dialog, int id) {
 		    					SharedPreferences.Editor editor =  settings.edit();
 		    					editor.putString(PrefsHelper.PREF_DEFINED_CONTROL_LAYOUT, null);
+		    					editor.putString(PrefsHelper.PREF_DEFINED_CONTROL_LAYOUT_P, null);
 		    					editor.commit();
 		    	           }
 		    	       })

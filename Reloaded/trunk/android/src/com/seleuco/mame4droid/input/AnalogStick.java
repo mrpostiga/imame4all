@@ -142,7 +142,7 @@ public class AnalogStick implements IController{
 	 	{
 			int ways = mm.getPrefsHelper().getStickWays();
 			if(ways==-1)ways = Emulator.getValue(Emulator.NUMWAYS);
-			boolean b = Emulator.isInMAME();
+			boolean b = Emulator.isInMAME() && Emulator.getValue(Emulator.IN_MENU)==0;
 				
 			if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL_STICK)
 			   Emulator.setAnalogData(0,rx,ry * -1.0f);
@@ -320,7 +320,7 @@ public class AnalogStick implements IController{
 	{
 		int ways = mm.getPrefsHelper().getStickWays();
 		if(ways==-1)ways = Emulator.getValue(Emulator.NUMWAYS);
-		boolean b = Emulator.isInMAME();
+		boolean b = Emulator.isInMAME() && Emulator.getValue(Emulator.IN_MENU)==0;
 		   
 	    if(ways==2 && b)
 	    {
