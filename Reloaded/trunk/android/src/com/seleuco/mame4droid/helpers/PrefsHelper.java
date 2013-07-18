@@ -112,6 +112,8 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String  PREF_TILT_SENSOR = "PREF_TILT_SENSOR";
 	final static public String  PREF_TILT_DZ = "PREF_TILT_DZ";
 	final static public String  PREF_TILT_SENSITIVITY = "PREF_TILT_SENSITIVITY";
+	final static public String  PREF_TILT_NEUTRAL = "PREF_TILT_NEUTRAL";
+	final static public String  PREF_TILT_ANALOG = "PREF_TILT_ANALOG";	
 	
 	final static public String  PREF_HIDE_STICK = "PREF_HIDE_STICK";
 	final static public String  PREF_BUTTONS_SIZE = "PREF_BUTTONS_SIZE";
@@ -426,8 +428,16 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 		return getSharedPreferences().getInt(PREF_TILT_SENSITIVITY,6);
 	}
 	
+	public int getTiltVerticalNeutralPos(){	
+		return Integer.valueOf(getSharedPreferences().getString(PREF_TILT_NEUTRAL,"5")).intValue();	
+	}
+	
 	public int getTiltDZ(){
 		return Integer.valueOf(getSharedPreferences().getString(PREF_TILT_DZ,"3")).intValue();	
+	}	
+	
+	public boolean isTiltAnalog(){
+		return getSharedPreferences().getBoolean(PREF_TILT_ANALOG,true);
 	}	
 	
 	public int getButtonsSize(){

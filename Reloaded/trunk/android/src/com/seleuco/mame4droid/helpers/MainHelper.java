@@ -438,10 +438,10 @@ public class MainHelper {
 			Emulator.setFrameFiltering(prefsHelper.isPortraitBitmapFiltering());
 			
 			if(state == InputHandler.STATE_SHOWING_CONTROLLER && !prefsHelper.isPortraitTouchController())
-				inputHandler.changeState();
+				{reload();return;}//;inputHandler.changeState();
 				
 			if(state == InputHandler.STATE_SHOWING_NONE && prefsHelper.isPortraitTouchController())
-			    inputHandler.changeState();	
+			    {reload();return;}//;inputHandler.changeState();	
 			
 			state = mm.getInputHandler().getInputHandlerState();
 			
@@ -468,18 +468,13 @@ public class MainHelper {
 			   	   inputHandler.readControllerValues(R.raw.controller_portrait);
 				}
 			}
-			else
-			{
-				
-			}
 			
 			if(ControlCustomizer.isEnabled() && !Emulator.isPortraitFull())
 			{
 				ControlCustomizer.setEnabled(false);
 				mm.getDialogHelper().setInfoMsg("Control layout customization is only allowed in fullscreen mode");
 				mm.showDialog(DialogHelper.DIALOG_INFO);
-			}
-			
+			}			
 		}
 		else
 		{
@@ -490,10 +485,10 @@ public class MainHelper {
 			Emulator.setFrameFiltering(mm.getPrefsHelper().isLandscapeBitmapFiltering());
 			
 			if(state == InputHandler.STATE_SHOWING_CONTROLLER && !prefsHelper.isLandscapeTouchController())
-				inputHandler.changeState();
+			    {reload();return;}//;inputHandler.changeState();
 			
 			if(state == InputHandler.STATE_SHOWING_NONE && prefsHelper.isLandscapeTouchController())
-			    inputHandler.changeState();	
+			    {reload();return;}//;inputHandler.changeState();	
 			
 			state = mm.getInputHandler().getInputHandlerState();
 			

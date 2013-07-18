@@ -131,18 +131,22 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		
 	@Override
 	public boolean onGenericMotion(View view, MotionEvent event) {
-	      if (((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) == 0)
-	 	         || (event.getAction() != MotionEvent.ACTION_MOVE)) {
-	 	          return false;
-	 	     }
-          int historySize = event.getHistorySize();
-          for (int i = 0; i < historySize; i++) {
-             processJoystickInput(event,i);
-          }
+	    
+		if (mm.getPrefsHelper().getInputExternal() != PrefsHelper.PREF_INPUT_USB_AUTO) {
+			return false;
+		}
 
-          processJoystickInput(event,-1);
-          return true;
-  
+		if (((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) == 0)
+				|| (event.getAction() != MotionEvent.ACTION_MOVE)) {
+			return false;
+		}
+		int historySize = event.getHistorySize();
+		for (int i = 0; i < historySize; i++) {
+			processJoystickInput(event, i);
+		}
+
+		processJoystickInput(event, -1);
+		return true;
 	}
 	
 	final public float getAxisValue(int axis, MotionEvent event, int historyPos ){
@@ -179,7 +183,7 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 	}
 	
 	protected void processJoystickInput(MotionEvent event, int historyPos){
-	 
+	 		
 		int ways = mm.getPrefsHelper().getStickWays();
 		if(ways==-1)ways = Emulator.getValue(Emulator.NUMWAYS);
 		boolean b = Emulator.isInMAME() && Emulator.getValue(Emulator.IN_MENU)==0;
@@ -208,7 +212,10 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		
 	    for(int i= 0; i < 2; i++)
 	    {
-			if(i==0)
+	    	if(i==0 && TiltSensor.isEnabled() && Emulator.isInMAME() && Emulator.getValue(Emulator.IN_MENU)==0)
+	    		continue;
+	    	
+	    	if(i==0)
 			{
 				x = getAxisValue(MotionEvent.AXIS_X, event, historyPos );
 				y = getAxisValue(MotionEvent.AXIS_Y, event, historyPos );
@@ -342,6 +349,8 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		pad_data[joy] &= ~ (oldinput[joy] & ~newinput[joy]);
 		pad_data[joy] |= newinput[joy];
 		
+		fixTiltCoin();
+		
 		Emulator.setPadData(joy,pad_data[joy]);
 		
 		oldinput[joy] = newinput[joy];
@@ -349,7 +358,11 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 	
 	public boolean onKey(View vw, int keyCode, KeyEvent event) {
 		
-	  
+	  if(mm.getPrefsHelper().getInputExternal() != PrefsHelper.PREF_INPUT_USB_AUTO)
+	  {
+		  return  super.onKey(vw, keyCode, event);
+	  }
+		
 	  if(ControlCustomizer.isEnabled())
 	  {
 			 if(keyCode == KeyEvent.KEYCODE_BACK)
@@ -358,13 +371,7 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 			 }	 
 			 return true;
 	   }
-         
-	   if(mm.getPrefsHelper().getInputExternal() == PrefsHelper.PREF_INPUT_ICADE || mm.getPrefsHelper().getInputExternal() == PrefsHelper.PREF_INPUT_ICP)
-	   {	 
-			this.handleIcade(event);
-			return true;
-	    }
-				
+         				
 		int dev = getDevice(event.getDevice());
 		
 		//System.out.println(event.getDevice().getName()+" "+dev+" "+" "+event.getKeyCode());
@@ -418,12 +425,15 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 				    mm.showDialog(DialogHelper.DIALOG_OPTIONS);
 			}
 			else
-			{
+			{			
 				int action = event.getAction();
 				if(action == KeyEvent.ACTION_DOWN)
 					pad_data[dev] |= v;
 				else if(action == KeyEvent.ACTION_UP)
 					pad_data[dev] &= ~ v;
+				
+				fixTiltCoin();
+				
 				Emulator.setPadData(dev,pad_data[dev]);
 			}
 			return true;			

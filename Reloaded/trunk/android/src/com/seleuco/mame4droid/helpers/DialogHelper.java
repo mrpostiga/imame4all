@@ -133,7 +133,7 @@ public class DialogHelper {
 	        break;       
 	    case DIALOG_ROMs_DIR:
 	    	
-	    	builder.setMessage("Do you want to use default ROMs Path? (recomended)")
+	    	builder.setMessage("Do you want to use default installation (ROMs) path? (recomended)")
 	    	       .setCancelable(false)
 	    	       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 	    	           public void onClick(DialogInterface dialog, int id) {

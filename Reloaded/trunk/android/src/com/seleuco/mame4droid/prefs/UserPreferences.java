@@ -82,6 +82,7 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
     protected ListPreference mPrefAnalogDZ;
     protected ListPreference mPrefGamepadDZ;
     protected ListPreference mPrefTiltDZ;
+    protected ListPreference mPrefTiltNeutral;
     protected ListPreference mPrefFrameSkip;
     protected ListPreference mPrefSound;
     protected ListPreference mPrefStickType;
@@ -116,6 +117,7 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
         mPrefAnalogDZ = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_ANALOG_DZ); 
         mPrefGamepadDZ = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GAMEPAD_DZ);
         mPrefTiltDZ = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_TILT_DZ);
+        mPrefTiltNeutral = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_TILT_NEUTRAL);
         mPrefFrameSkip = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GLOBAL_FRAMESKIP);
         mPrefSound = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GLOBAL_SOUND);
         mPrefStickType = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_STICK_TYPE);
@@ -147,6 +149,7 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	        mPrefAnalogDZ.setSummary("Current value is '" + mPrefAnalogDZ.getEntry()+"'");
 	        mPrefGamepadDZ.setSummary("Current value is '" + mPrefGamepadDZ.getEntry()+"'");
 	        mPrefTiltDZ.setSummary("Current value is '" + mPrefTiltDZ.getEntry()+"'");
+	        mPrefTiltNeutral.setSummary("Current value is '" + mPrefTiltNeutral.getEntry()+"'");
 	        mPrefFrameSkip.setSummary("Current value is '" + mPrefFrameSkip.getEntry()+"'");
 	        mPrefSound.setSummary("Current value is '" + mPrefSound.getEntry()+"'");
 	        mPrefStickType.setSummary("Current value is '" + mPrefStickType.getEntry()+"'");
@@ -231,6 +234,10 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	        {	
 	        	mPrefTiltDZ.setSummary("Current value is '" + mPrefTiltDZ.getEntry()+"'"); 
 	        }
+	        else if(key.equals(PrefsHelper.PREF_TILT_NEUTRAL))
+	        {	
+	        	mPrefTiltNeutral.setSummary("Current value is '" + mPrefTiltNeutral.getEntry()+"'"); 
+	        }	        
 		    else if(key.equals(PrefsHelper.PREF_GLOBAL_FRAMESKIP))
 		    {	
 		    	mPrefFrameSkip.setSummary("Current value is '" + mPrefFrameSkip.getEntry()+"'"); 

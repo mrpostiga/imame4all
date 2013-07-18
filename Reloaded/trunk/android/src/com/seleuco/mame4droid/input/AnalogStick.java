@@ -429,9 +429,11 @@ public class AnalogStick implements IController{
 	
 	public void draw(Canvas canvas) {
 		
-		if( mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_ANALOG_PRETTY)
+		if( mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_ANALOG_PRETTY && !TiltSensor.isEnabled())
 		{
-			if(mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE)
+			if(mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE ||
+			  mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_PORTRAIT && Emulator.isPortraitFull()
+					)
 			{
 				outer_img.setBounds(rStickArea);
 				outer_img.setAlpha(mm.getInputHandler().getOpacity());
@@ -441,7 +443,9 @@ public class AnalogStick implements IController{
 			inner_img.setAlpha(mm.getInputHandler().getOpacity());
 			inner_img.draw(canvas);
 		}
-		else if( mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_ANALOG_FAST || mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL_STICK)
+		else if( mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_ANALOG_FAST || mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL_STICK ||
+				 (mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_ANALOG_PRETTY && TiltSensor.isEnabled())
+				)
 		{
 			stick_images[mm.getInputHandler().getStick_state()].setBounds(rStickArea);
 			stick_images[mm.getInputHandler().getStick_state()].setAlpha(mm.getInputHandler().getOpacity());

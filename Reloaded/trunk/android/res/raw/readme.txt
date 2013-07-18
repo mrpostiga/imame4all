@@ -1,5 +1,5 @@
 =================================================================
-MAME4droid Reloaded (0.139 ) 1.3.3 (July 14, 2013) 
+MAME4droid Reloaded (0.139) 1.3.5 (July 19, 2013) 
 by David Valdeita (Seleuco)
 =================================================================
 
@@ -103,7 +103,7 @@ GLOBAL OPTIONS
 
 -Cheats: Enables the reading of the cheat database, if present, and the Cheat menu in the user interface.
 
--Change ROMs path: Change current ROMs path. You need to restart app. You must move roms from older folder to the new one also.
+-Change installation path: Change current ROMs path. You need to restart app. You must move roms from older folder to the new one also.
 
 -Save battery: Allows MAME to give time back to the system (sleep) when running with -throttle. This allows other programs to have some CPU time, assuming that the game isn't taxing 100% of your CPU resources. This option can potentially cause hiccups in performance if other demanding programs are running.
 
@@ -133,7 +133,7 @@ GLOBAL OPTIONS
 
 -External Controller
 
-   * Normal. Select this value to use an external keyboard or devices based on keyboard IMES like WiiController.
+   * Keyboard or IME. Select this value to use an external keyboard or devices based on keyboard IMES like WiiController.
    * GamePad autodetection. Plug and play detection of many USB / Bluetooth gamepads. Support of multiple gamepads.
    * Original iCade. Select this value to use iON's iCade controller. You should be bluetooth paired before.
    * iCP, Gametel or iCade compatible. Select this value to use an iCade compatible layout. Controller should be configured on iCade mode.
@@ -163,11 +163,15 @@ GamePad automap options: Let you define the Thumbs or L1,L2 buttons behaviour wh
 
 -P4,P3,P2 as P1. Send Player 1 input data to Player2,3,4 so you can use the 2-4 players at the same time. Funny :). It makes some weird problems with some roms like D&D.
 
--Tilt sensor. Enable to use tilt sensor as left/right.
+-Tilt sensor. Enable to use tilt sensor.
 
 -Tilt sensor dead zone.  Select the deadzone amount on tilt sensor.
 
--Tilt sensor sensitivity: Set tilt sensor sensitivity.  
+-Tilt sensor sensitivity: Set tilt sensor sensitivity on x and z axis.
+
+-Tilt sensor neutral vertical position: Set tilt rest position on z axis.
+
+-Tilt as analog: Enable to use tilt sensor as analog device, disable to use as digital.  
 
 -Scaling Mode:  
      
@@ -266,6 +270,8 @@ PORT CREDITS
 - Port to Android by David Valdeita (Seleuco)
 
 DEVELOPMENT
+- 2013-08-19 Version 1.3.5 Some bug fixes.
+- 2013-08-18 Version 1.3.4 Improved tilt sensor accuracy, now with up/down. Some bug fixes.
 - 2013-08-14 Version 1.3.3 Added new portrait full screen mode. Some bug fixes. 
 - 2013-08-10 Version 1.3.2 Tweaked default touch layouts. Some bug fixes. 
 - 2013-08-08 Version 1.3.1 Some bug fixes.
