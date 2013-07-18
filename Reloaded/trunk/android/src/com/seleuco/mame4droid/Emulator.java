@@ -55,6 +55,7 @@ import android.graphics.Paint.Style;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.View;
 
@@ -194,6 +195,12 @@ public class Emulator
 		Emulator.warnResChanged = warnResChanged;
 	}
 	
+	private static boolean paused = true;
+	
+	public static boolean isPaused() {
+		return paused;
+	}
+
 	private static boolean portraitFull = false;
 
 	public static boolean isPortraitFull() {
@@ -214,7 +221,6 @@ public class Emulator
 	
 	static
 	{
-		
 		try
 		{		
 		    System.loadLibrary("mame4droid-jni");		  
@@ -300,7 +306,6 @@ public class Emulator
 	
 	public static void setHolder(SurfaceHolder value) {
 		
-		//Log.d("Thread Video", "Set holder nuevo "+values+" ant "+holder);
 		synchronized(lock1)
 		{
 			if(value!=null)
@@ -309,33 +314,14 @@ public class Emulator
 				holder.setFormat(PixelFormat.OPAQUE);
 				//holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 				holder.setKeepScreenOn(true);
-				//ensureScreenDrawed();
-				//Log.d("Thread Video", "Salgo start");
 			}
 			else
 			{
 				holder=null;
-				//Log.d("Thread Video", "Salgo stop");
 			}
 		}		
 	}
-	
-	public static Canvas lockCanvas(){
-	    if(holder!=null)
-		{
-		    return holder.lockCanvas();	
-		}
-	    else 
-	        return null;
-	}
-	
-	public static void unlockCanvas(Canvas c){
-	    if(holder!=null && c!=null)
-		{
-	       holder.unlockCanvasAndPost(c);
-		}
-	}
-	
+		
 	public static void setMAME4droid(MAME4droid mm) {
 		Emulator.mm = mm;	
 	}
@@ -352,7 +338,6 @@ public class Emulator
 			return;				
 
 		mtx.setScale((float)(window_width / (float)emu_width), (float)(window_height / (float)emu_height));
-		//mtx.setScale((float)(window_width / (float)emu_vis_width), (float)(window_height / (float)emu_vis_height));
 	}
 
 	public static void setFrameFiltering(boolean value) {
@@ -367,7 +352,6 @@ public class Emulator
 			emuPaint = null;
 		}
 	}
-	
 	
 	//synchronized 
 	static void bitblt(ByteBuffer sScreenBuff, boolean inMAME) {
@@ -385,6 +369,7 @@ public class Emulator
 			}
 			else
 			{		    					
+				//Log.d("Thread Video", "holder "+holder);
 				if (holder==null)
 					return;
 	
@@ -400,16 +385,18 @@ public class Emulator
 					canvas.drawText("Normal fps:"+fps+ " "+inMAME, 5,  40, debugPaint);
 					if(System.currentTimeMillis() - millis >= 1000) {fps = i; i=0;millis = System.currentTimeMillis();}
 				}
+				//Log.d("Thread Video", "holder UNLOCK!"+holder);
 				holder.unlockCanvasAndPost(canvas);				
 			}
+			//Log.d("Thread Video", "fin lock");	
 		/*    						
 		} catch (Throwable t) {
 			Log.getStackTraceString(t);
 		}
 		*/
 		}
+
 	}
-	
 	
 	//synchronized 
 	static public void changeVideo(int newWidth, int newHeight, int newVisWidth, int newVisHeight){	
@@ -543,11 +530,17 @@ public class Emulator
 		{		    
 			//pauseEmulation(true);
 			Emulator.setValue(Emulator.PAUSE, 1);
-			//paused = true;
+			paused = true;
 		}   
 		
 		if(audioTrack!=null)
 		    audioTrack.pause();
+		
+		try {
+			Thread.sleep(60);//ensure threads stop
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	
 	}
 	
@@ -563,7 +556,8 @@ public class Emulator
 		if(isEmulating)
 		{				
 			Emulator.setValue(Emulator.PAUSE, 0);
-			Emulator.setValue(Emulator.EXIT_PAUSE, 1);	    
+			Emulator.setValue(Emulator.EXIT_PAUSE, 1);	
+			paused = false;
 		}    
 	}
 	

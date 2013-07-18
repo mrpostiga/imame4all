@@ -358,7 +358,12 @@ public class InputView extends ImageView {
         		      {	
         		    	  n = mm.getPrefsHelper().getNumButtons();
         		    	  if(n==-1)
+        		    	  {
         		    		  n = Emulator.getValue(Emulator.NUMBTNS);
+        		    		  if(n<=2)n=2;
+        		    		  else if(n<=4)n=4;
+        		    		  else n = 6;
+        		    	  }
         		      }
         		      int b = v.getValue();
             	      if(!ControlCustomizer.isEnabled())
@@ -409,9 +414,9 @@ public class InputView extends ImageView {
 			   }  
 			}
 			
-            p2.setTextSize(20);
+            p2.setTextSize(30);
             if(TiltSensor.isEnabled() && TiltSensor.str != null)
-			   canvas.drawText(TiltSensor.str, 100, 100, p2);
+			   canvas.drawText(TiltSensor.str, 100, 150, p2);
         }	
 	}	
 }

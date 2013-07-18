@@ -48,6 +48,7 @@ import java.util.ArrayList;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -121,11 +122,13 @@ public class EmulatorViewSW extends SurfaceView implements Callback, IEmuView{
 	//@Override
 	public void surfaceCreated(SurfaceHolder holder) {
 		//Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+		//Log.d("Thread Video", "Surface created "+holder);	
 		Emulator.setHolder(holder);		
 	}
 
 	//@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
+		//Log.d("Thread Video", "Surface destroyed "+holder);
 		Emulator.setHolder(null);		
 	}
 	

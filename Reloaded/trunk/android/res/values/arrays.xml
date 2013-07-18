@@ -52,7 +52,7 @@
 
 	<string-array name="pref_controller_type_options">
 		<item>Digital DPAD</item>
-        <item>Digital Stick  (Old one)</item>		
+        <item>Digital Stick</item>		
 		<item>Analog-Digital (Performance)</item>
 		<item>Analog-Digital (Pretty)</item>
 	</string-array>
@@ -64,7 +64,7 @@
 	</string-array>
 	
 	<string-array name="pref_input_external_options">
-		<item>Normal</item>
+		<item>Keyboard or IME</item>
 		<item>GamePad Autodetection</item>
 		<item>Original iCade</item>
 		<item>iCP, Gametel or iCade compatible</item>
@@ -312,6 +312,32 @@
 		<item>3</item>		
 		<item>4</item>
 		<item>5</item>																							
+	</string-array>	
+	
+    <string-array name="pref_tilt_neutralz_options">
+	    <item>90  degrees</item>
+		<item>80 degrees</item>
+		<item>70 degrees</item>
+		<item>60 degrees</item>
+		<item>50 degrees</item>
+        <item>45 degrees</item>		
+        <item>40 degrees</item>
+		<item>30 degrees</item>
+		<item>20 degrees</item>
+		<item>10 degrees</item>																		
+	</string-array>
+	
+	<string-array name="pref_tilt_neutralz_values">
+		<item>0</item>
+		<item>1</item>
+		<item>2</item>		
+		<item>3</item>
+		<item>4</item>
+		<item>5</item>
+		<item>6</item>
+		<item>7</item>
+		<item>8</item>
+		<item>9</item>																									
 	</string-array>	
 							
 </resources>

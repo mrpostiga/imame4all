@@ -69,7 +69,7 @@
 	-->   			
 			
 		<PreferenceScreen android:key="changeRomPath"
-			android:title="Change ROMs path" android:summary="Change MAME4droid/roms location. You have to move ROM files manually" />
+			android:title="Change installation path" android:summary="Change MAME4droid/roms location. You have to move ROM files manually" />
 			
 		<CheckBoxPreference android:key="PREF_GLOBAL_IDLE_WAIT"
 			android:title="Save Battery" android:summary="Try to save battery at the expense of jitter on some devices"
@@ -219,7 +219,7 @@
 	
 		<CheckBoxPreference android:key="PREF_TILT_SENSOR"
 			android:title="Tilt sensor" 
-			android:summary="Enable to use tilt sensor as left/right."
+			android:summary="Enable to use tilt sensor."
 			android:defaultValue="false" />		
 
 	    <ListPreference
@@ -234,6 +234,18 @@
 			android:title="Tilt sensor sensitivity"
 			android:summary="Set tilt sensor sensitivity"
 			android:defaultValue="6" />	
+		
+		<ListPreference
+			android:entries="@array/pref_tilt_neutralz_options"
+			android:title='Tilt sensor neutral vertical position'			
+			android:key="PREF_TILT_NEUTRAL"
+			android:entryValues="@array/pref_tilt_neutralz_values"
+			android:defaultValue="5" />		
+		
+		<CheckBoxPreference android:key="PREF_TILT_ANALOG"
+			android:title="Tilt as analog" android:summary="Enable to use tilt sensor as analog device, disable to use as digital"
+			android:defaultValue="true" />					
+		
     </PreferenceCategory>			
 
 	<PreferenceCategory android:title="Portrait Display Settings">

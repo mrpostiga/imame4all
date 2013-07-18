@@ -302,24 +302,6 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		return state;
 	}
 	
-	public void changeState()
-	{
-	    if(state == STATE_SHOWING_CONTROLLER)
-	    {				    	
-	    	for(int i=0;i<4;i++)
-	    	{	
-		    	pad_data[i] = 0;
-		    	Emulator.setPadData(i,pad_data[i]);
-	    	}
-	    	
-	    	state = STATE_SHOWING_NONE;		    				    	
-	    }
-	    else
-	    {
-	    	state = STATE_SHOWING_CONTROLLER;
-	    }	    	    	
-	}
-	
 	public void setTrackballSensitivity(int trackballSensitivity) {
 		this.trackballSensitivity = trackballSensitivity;
 	}
@@ -383,7 +365,8 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		else
 		{				
 			int i = value/emulatorInputValues.length;
-			setPadData(i,event,v);			
+			setPadData(i,event,v);	
+			fixTiltCoin();
 			Emulator.setPadData(i,pad_data[i]);
 		}
    		
@@ -423,6 +406,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	public void handleVirtualKey(int action){
 		
 		pad_data[0] |= action;
+		fixTiltCoin();
 		Emulator.setPadData(0,pad_data[0]);
 		
 		try {
@@ -454,7 +438,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		return null;	
 	}
 	
-	protected void handleImageStates(){
+	protected void handleImageStates(boolean onlyStick){
 		
 		PrefsHelper pH = mm.getPrefsHelper();
 		
@@ -496,7 +480,8 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 			{
 				if(stick_state != old_stick_state)
 				{
-					if(pH.isAnimatedInput() && (pH.getControllerType()==PrefsHelper.PREF_ANALOG_FAST || pH.getControllerType()==PrefsHelper.PREF_DIGITAL_STICK))
+					if(pH.isAnimatedInput() && (pH.getControllerType()==PrefsHelper.PREF_ANALOG_FAST || pH.getControllerType()==PrefsHelper.PREF_DIGITAL_STICK ||
+							 (mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_ANALOG_PRETTY && TiltSensor.isEnabled())))
 					{
 					    if(pH.isDebugEnabled())
 					      mm.getInputView().invalidate();
@@ -511,7 +496,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 					old_stick_state = stick_state;
 				}
 			}			
-			else if(iv.getType()==TYPE_BUTTON_IMG)
+			else if(iv.getType()==TYPE_BUTTON_IMG && !onlyStick)
 			{
 				int i = iv.getValue();
 				
@@ -532,6 +517,17 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		}
 	}
 
+	protected void fixTiltCoin(){
+		if(TiltSensor.isEnabled() && ((pad_data[0]  & IController.SELECT_VALUE) != 0 || (pad_data[0]  &  IController.START_VALUE) != 0))
+		{
+			pad_data[0] &= ~InputHandler.LEFT_VALUE;
+			pad_data[0] &= ~InputHandler.RIGHT_VALUE;
+			pad_data[0] &= ~InputHandler.UP_VALUE;
+			pad_data[0] &= ~InputHandler.DOWN_VALUE;
+			Emulator.setAnalogData(0, 0, 0);
+		}		
+	}
+	
 	protected boolean handleTouchController(MotionEvent event) {
 
 		int action = event.getAction();
@@ -615,7 +611,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 									 }
 								}
 								else if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL_DPAD
-										&& !(TiltSensor.isEnabled() && Emulator.isInMAME()))
+										&& !(TiltSensor.isEnabled() && Emulator.isInMAME() && Emulator.getValue(Emulator.IN_MENU)==0))
 								{
 									 newtouches[id] = getStickValue(iv.getValue());
 								}
@@ -667,7 +663,9 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 			}
 		}
 		
-		handleImageStates();
+		handleImageStates(false);
+				
+		fixTiltCoin();
 		
 		Emulator.setPadData(0,pad_data[0]);
 		return true;
@@ -686,7 +684,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		    }
         	/*if(state == STATE_SHOWING_CONTROLLER)
 		    {*/	
-		    	if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL_DPAD && !(TiltSensor.isEnabled() && Emulator.isInMAME()))
+		    	if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL_DPAD && !(TiltSensor.isEnabled() && Emulator.isInMAME()  && Emulator.getValue(Emulator.IN_MENU)==0))
 		    		pad_data[0] = stick.handleMotion(event, pad_data[0]); 	 		    	
 		    	handleTouchController(event);
 		    	return true;
@@ -760,7 +758,8 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		} else if (action == MotionEvent.ACTION_UP) {
 			pad_data[0] &= ~B_VALUE;
 		}
-
+        
+		fixTiltCoin();
 		Emulator.setPadData(0,pad_data[0]);
 
 		return true;
@@ -1212,6 +1211,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	       mm.getMainHelper().updateMAME4droid();
 	    }
 	    
+	    fixTiltCoin();
 		Emulator.setPadData(0,pad_data[0]);
 	}
 	
