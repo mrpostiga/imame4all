@@ -186,7 +186,7 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 	 		
 		int ways = mm.getPrefsHelper().getStickWays();
 		if(ways==-1)ways = Emulator.getValue(Emulator.NUMWAYS);
-		boolean b = Emulator.isInMAME() && Emulator.getValue(Emulator.IN_MENU)==0;
+		boolean b = Emulator.isInMAME() && !Emulator.isInMenu();
 		
 		int dev = getDevice(event.getDevice());
 		int joy = dev!= -1 ? dev : 0;
@@ -212,7 +212,7 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		
 	    for(int i= 0; i < 2; i++)
 	    {
-	    	if(i==0 && TiltSensor.isEnabled() && Emulator.isInMAME() && Emulator.getValue(Emulator.IN_MENU)==0)
+	    	if(i==0 && TiltSensor.isEnabled() && Emulator.isInMAME() && !Emulator.isInMenu())
 	    		continue;
 	    	
 	    	if(i==0)
@@ -396,7 +396,7 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		    { 
 			    if(event.getAction()==KeyEvent.ACTION_UP)
 			    {
-			    	if(Emulator.getValue(Emulator.IN_MENU)!=0)
+			    	if(Emulator.isInMenu())
 				    {
 				        Emulator.setValue(Emulator.EXIT_GAME_KEY, 1);		    	
 				    	try {Thread.sleep(100);} catch (InterruptedException e) {}
@@ -533,12 +533,18 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		   || name.indexOf("Sixaxis")!=-1 || name.indexOf("Gasia,Co")!=-1
 			){
 									
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][numDevs] = Y_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][numDevs] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][numDevs] = A_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][numDevs] = B_VALUE;
+			//deviceMappings[KeyEvent.KEYCODE_BUTTON_B][numDevs] = Y_VALUE;
+			//deviceMappings[KeyEvent.KEYCODE_BUTTON_X][numDevs] = X_VALUE;
+			//deviceMappings[KeyEvent.KEYCODE_BUTTON_A][numDevs] = A_VALUE;
+			//deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][numDevs] = B_VALUE;
 			
-			mapDPAD();mapL1R1();mapTHUMBS();mapSelectStart();
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][numDevs] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][numDevs] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][numDevs] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][numDevs] = Y_VALUE;
+			
+			mapDPAD();
+			mapL1R1();mapTHUMBS();mapSelectStart();
 			
 			desc = "Sixaxis";
 			
@@ -581,7 +587,10 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][numDevs] = A_VALUE;
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][numDevs] = Y_VALUE;
 
-			mapDPAD();mapL1R1();mapTHUMBS();mapSelectStart();
+			//mapDPAD();
+			mapL1R1();mapTHUMBS();mapSelectStart();
+			
+			deviceMappings[KeyEvent.KEYCODE_BACK][numDevs] = SELECT_VALUE;
 			
 			desc = "XBox";
 			
@@ -898,16 +907,12 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][numDevs] = Y_VALUE;
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][numDevs] = X_VALUE;
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][numDevs] = B_VALUE;
-			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][numDevs] = L1_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][numDevs] = R1_VALUE;   
-			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_THUMBL][numDevs] = R2_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_THUMBR][numDevs] = L2_VALUE;
-			
+						
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_L2][numDevs] = SELECT_VALUE;
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_R2][numDevs] = START_VALUE;
 			
+			mapL1R1();mapTHUMBS();
+						
 			desc = "OUYA";
 			
 			detected = true;

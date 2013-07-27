@@ -142,7 +142,7 @@ public class AnalogStick implements IController{
 	 	{
 			int ways = mm.getPrefsHelper().getStickWays();
 			if(ways==-1)ways = Emulator.getValue(Emulator.NUMWAYS);
-			boolean b = Emulator.isInMAME() && Emulator.getValue(Emulator.IN_MENU)==0;
+			boolean b = Emulator.isInMAME() && !Emulator.isInMenu();
 				
 			if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL_STICK)
 			   Emulator.setAnalogData(0,rx,ry * -1.0f);
@@ -320,7 +320,7 @@ public class AnalogStick implements IController{
 	{
 		int ways = mm.getPrefsHelper().getStickWays();
 		if(ways==-1)ways = Emulator.getValue(Emulator.NUMWAYS);
-		boolean b = Emulator.isInMAME() && Emulator.getValue(Emulator.IN_MENU)==0;
+		boolean b = Emulator.isInMAME() && !Emulator.isInMenu();
 		   
 	    if(ways==2 && b)
 	    {
@@ -368,7 +368,8 @@ public class AnalogStick implements IController{
         
 		if( actionEvent == MotionEvent.ACTION_UP ||
 		    (actionEvent == MotionEvent.ACTION_POINTER_UP && pid == motion_pid) || 
-		    actionEvent == MotionEvent.ACTION_CANCEL)
+		    actionEvent == MotionEvent.ACTION_CANCEL || 
+		    (mm.getPrefsHelper().isLightgun() && Emulator.isInMAME() && !Emulator.isInMenu()))
 		{
 		       ptCur.x = ptCenter.x;
 		       ptCur.y = ptCenter.y;

@@ -67,6 +67,9 @@ extern unsigned long myosd_pad_status;
 extern float joy_analog_x[4];
 extern float joy_analog_y[4];
 
+extern float lightgun_x[4];
+extern float lightgun_y[4];
+
 extern unsigned short myosd_ext_status;
     
 extern int myosd_last_game_selected;
@@ -94,6 +97,7 @@ extern int myosd_vector_antialias;
 extern int myosd_vector_flicker;
     
 extern int  myosd_speed;
+extern int  myosd_pxasp1;
     
 extern char myosd_selected_game[MAX_GAME_NAME];
 

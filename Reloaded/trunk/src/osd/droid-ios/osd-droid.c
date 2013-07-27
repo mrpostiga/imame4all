@@ -82,6 +82,9 @@ char myosd_selected_game[MAX_GAME_NAME] = {'\0'};
 float joy_analog_x[4];
 float joy_analog_y[4];
 
+float lightgun_x[4];
+float lightgun_y[4];
+
 static int lib_inited = 0;
 static int soundInit = 0;
 static int isPause = 0;
@@ -263,8 +266,16 @@ int getMyValue(int key){
 
 extern "C"
 void setMyAnalogData(int i, float v1, float v2){
-	joy_analog_x[i]=v1;
-	joy_analog_y[i]=v2;
+        if(i>=4)
+        {
+           lightgun_x[i-4]=v1;
+           lightgun_y[i-4]=v2;
+        }
+        else
+        {
+	   joy_analog_x[i]=v1;
+	   joy_analog_y[i]=v2;
+        }
 	//__android_log_print(ANDROID_LOG_DEBUG, "MAME4droid.so", "set analog %d %f %f",i,v1,v2);
 }
 

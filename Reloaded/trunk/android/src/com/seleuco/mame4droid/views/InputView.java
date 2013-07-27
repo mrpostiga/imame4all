@@ -324,7 +324,7 @@ public class InputView extends ImageView {
         boolean hideStick = (mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE || 
         		mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_PORTRAIT && Emulator.isPortraitFull())
         		&& 
-        		(mm.getPrefsHelper().isHideStick() || mm.getInputHandler().isControllerDevice()) 
+        		(mm.getPrefsHelper().isHideStick() || mm.getInputHandler().isControllerDevice() || (mm.getPrefsHelper().isLightgun() && Emulator.isInMAME()  && !Emulator.isInMenu())) 
         		&& !ControlCustomizer.isEnabled();
         
         for(int i=0; i<data.size();i++)
@@ -350,7 +350,8 @@ public class InputView extends ImageView {
         		 (mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_PORTRAIT && Emulator.isPortraitFull()))
         	   {  
         		      int n;
-        		      if(mm.getInputHandler().isControllerDevice())
+        		      if(mm.getInputHandler().isControllerDevice() || 
+        		        (mm.getPrefsHelper().isLightgun() && Emulator.isInMAME() && !Emulator.isInMenu()))
                           n = 0;
         		      else if(!Emulator.isInMAME())
         		    	  n = 2;

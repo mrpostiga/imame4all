@@ -279,19 +279,27 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		for(int i=0; i<NUM_BUTTONS; i++)
 			btnStates[i] = old_btnStates[i] = BTN_NO_PRESS_STATE;
 		
-    	for(int i=0;i<4;i++)
-    	{	
-	    	pad_data[i] = 0;
-	    	try
-	    	{
-	    	  Emulator.setPadData(i,pad_data[i]);
-	    	}
-	    	catch(Error e){}
-    	}
-		
+        resetInput();
+    	
 		stick.setMAME4droid(mm);
 		tiltSensor.setMAME4droid(mm);
 		controlCustomizer.setMAME4droid(mm);
+	}
+	
+	public void resetInput(){
+    	for(int i=0;i<8;i++)
+    	{		    	
+	    	try
+	    	{
+	    	  if(i<4)
+	    	  {
+	    		  pad_data[i] = 0;
+	    		  Emulator.setPadData(i,pad_data[i]);
+	    	  }
+	    	  Emulator.setAnalogData(i, 0, 0);
+	    	}
+	    	catch(Error e){}
+    	}	
 	}
 	
 	public int setInputHandlerState(int value){
@@ -334,7 +342,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	    if(v==L2_VALUE)
 	    { 
 	    	if( event.getAction()==KeyEvent.ACTION_UP) {
-		    	if(Emulator.getValue(Emulator.IN_MENU)!=0)
+		    	if(Emulator.isInMenu())
 			    {
 			        Emulator.setValue(Emulator.EXIT_GAME_KEY, 1);		    	
 			    	try {Thread.sleep(100);} catch (InterruptedException e) {}
@@ -528,6 +536,84 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		}		
 	}
 	
+	int lightgun_pid = -1;
+	
+	protected boolean handleLightgun(View v, MotionEvent event) {
+		int pid = 0;
+		int action = event.getAction();
+		int actionEvent = action & MotionEvent.ACTION_MASK;
+		
+        try
+        {
+		   int pointerIndex = (action & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
+           pid = event.getPointerId(pointerIndex);
+        }
+        catch(Error e)
+        {
+           pid = (action & MotionEvent.ACTION_POINTER_ID_SHIFT) >> MotionEvent.ACTION_POINTER_ID_SHIFT;
+        } 
+        
+		if( actionEvent == MotionEvent.ACTION_UP ||
+		    actionEvent == MotionEvent.ACTION_POINTER_UP  || 
+		    actionEvent == MotionEvent.ACTION_CANCEL)
+		{
+			if(pid == lightgun_pid)
+			{
+			    lightgun_pid = -1;
+		        //Emulator.setAnalogData(4, 0, 0);
+		        pad_data[0] &= ~B_VALUE;
+		        pad_data[0] &= ~X_VALUE;
+			}
+			else
+			{
+				pad_data[0] &= ~X_VALUE;				
+			}
+			Emulator.setPadData(0,pad_data[0]);
+		}	
+		else
+		{
+			for (int i = 0; i < event.getPointerCount(); i++) {
+	
+				int  pointerId = event.getPointerId(i);
+															
+				final int location[] = { 0, 0 };
+				v.getLocationOnScreen(location);
+			    int x = (int) event.getX(i) + location[0];
+				int y = (int) event.getY(i) + location[1];
+				
+				//System.out.println("x:"+event.getX(i)+" y:"+event.getY(i)+" nx:"+x+" ny:"+y+" l0:"+location[0]+" l1:"+location[1]);
+				
+				mm.getEmuView().getLocationOnScreen(location);
+				x -= location[0];
+				y -= location[1];
+
+				float xf = (float)(x - mm.getEmuView().getWidth()/2) / (float) (mm.getEmuView().getWidth() / 2);  
+				float yf = (float)(y - mm.getEmuView().getHeight()/2) / (float) (mm.getEmuView().getHeight() / 2);
+				
+				//System.out.println("nx2:"+x+" ny2:"+y+" l0:"+location[0]+" l1:"+location[1]+" xf:"+xf+" yf:"+yf);
+				
+				if(lightgun_pid==-1)
+					lightgun_pid = pointerId;		
+						
+				if(lightgun_pid == pointerId)
+				{					
+			    	 if(!TiltSensor.isEnabled())
+					    Emulator.setAnalogData(4, xf, -yf);
+					 
+			    	 if((pad_data[0] & X_VALUE) == 0)
+			    	    pad_data[0] |= B_VALUE;					 
+				}
+				else
+				{
+					pad_data[0] &= ~B_VALUE;
+					pad_data[0] |= X_VALUE;
+				}							
+			}
+			Emulator.setPadData(0,pad_data[0]);	
+		}
+		return true;
+	}
+	
 	protected boolean handleTouchController(MotionEvent event) {
 
 		int action = event.getAction();
@@ -588,13 +674,16 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 							case MotionEvent.ACTION_DOWN:
 							case MotionEvent.ACTION_POINTER_DOWN:
 							case MotionEvent.ACTION_MOVE:
-															
-								if(iv.getType() == TYPE_BUTTON_RECT)
-								{	
-								     newtouches[id] |= getButtonValue(iv.getValue(),true);
+									
+							     boolean b = !mm.getPrefsHelper().isLightgun() || Emulator.isInMenu() || !Emulator.isInMAME() ||
+					    		 iv.getValue()==BTN_L2 || iv.getValue()==BTN_R2 || iv.getValue()==BTN_SELECT || iv.getValue()==BTN_START; 
+							     
+								if(iv.getType() == TYPE_BUTTON_RECT && b)
+								{									    		 
+									 newtouches[id] |= getButtonValue(iv.getValue(),true);
 									 if(iv.getValue()==BTN_L2 && actionEvent!=MotionEvent.ACTION_MOVE)
 									 { 
-									    if(Emulator.getValue(Emulator.IN_MENU)!=0)
+									    if(Emulator.isInMenu())
 									    {
 						    		        Emulator.setValue(Emulator.EXIT_GAME_KEY, 1);		    	
 					    			    	try {Thread.sleep(100);} catch (InterruptedException e) {}
@@ -611,7 +700,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 									 }
 								}
 								else if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL_DPAD
-										&& !(TiltSensor.isEnabled() && Emulator.isInMAME() && Emulator.getValue(Emulator.IN_MENU)==0))
+										&& !((TiltSensor.isEnabled() || mm.getPrefsHelper().isLightgun()) && Emulator.isInMAME() && !Emulator.isInMenu()))
 								{
 									 newtouches[id] = getStickValue(iv.getValue());
 								}
@@ -674,22 +763,30 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	public boolean onTouch(View v, MotionEvent event) {
 		
 		//Log.d("touch",event.getRawX()+" "+event.getX()+" "+event.getRawY()+" "+event.getY());
-		
-        if(v == mm.getInputView())
+		 
+		if(v == mm.getEmuView() && mm.getPrefsHelper().isLightgun() && state != STATE_SHOWING_NONE)
+		{		     		    						
+			handleLightgun(v, event);			
+			return true;
+		     
+		}
+		else if(v == mm.getInputView())
 		{
 		    if(ControlCustomizer.isEnabled())
 		    {	
 		    	controlCustomizer.handleMotion(event);
 		    	return true;
 		    }
-        	/*if(state == STATE_SHOWING_CONTROLLER)
-		    {*/	
-		    	if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL_DPAD && !(TiltSensor.isEnabled() && Emulator.isInMAME()  && Emulator.getValue(Emulator.IN_MENU)==0))
-		    		pad_data[0] = stick.handleMotion(event, pad_data[0]); 	 		    	
-		    	handleTouchController(event);
-		    	return true;
-		    /*}*/
-		    //return false;
+
+		    if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL_DPAD && !(TiltSensor.isEnabled()  && Emulator.isInMAME()  && !Emulator.isInMenu()))
+		       pad_data[0] = stick.handleMotion(event, pad_data[0]); 	 		    	
+		    		   		    		    
+		    if(mm.getPrefsHelper().isLightgun() && Emulator.isInMAME() && !Emulator.isInMenu())
+		       handleLightgun(v, event);
+		    
+		    handleTouchController(event);
+		    
+		    return true;
 		}
         else
         {
@@ -780,7 +877,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	
 	protected void setButtonsSizes(ArrayList<InputValue> values) {
 		
-		if(mm.getMainHelper().getscrOrientation() != Configuration.ORIENTATION_LANDSCAPE)
+		if(mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_PORTRAIT && !Emulator.isPortraitFull())
 			return;
 		
 	    int sz = 0;
@@ -911,10 +1008,8 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	int getStickValue(int i){
 		int ways = mm.getPrefsHelper().getStickWays();
 		if(ways==-1)ways = Emulator.getValue(Emulator.NUMWAYS);
-		boolean b = Emulator.isInMAME() && Emulator.getValue(Emulator.IN_MENU)==0;
-		
-		//System.out.println("in MAME "+Emulator.isInMAME()+" b:" +b+" ways:"+ways+" IN_MENU "+Emulator.getValue(Emulator.IN_MENU));
-		
+		boolean b = Emulator.isInMAME() && !Emulator.isInMenu();
+				
 		if(ways==2 && b)
 		{
 			switch(i){
@@ -1029,7 +1124,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	    
 		int ways = mm.getPrefsHelper().getStickWays() ;
 		if(ways==-1)ways = Emulator.getValue(Emulator.NUMWAYS);
-		boolean b = Emulator.isInMAME() && Emulator.getValue(Emulator.IN_MENU)==0;
+		boolean b = Emulator.isInMAME() && Emulator.isInMenu();
 			    
 	    int keyCode = event.getKeyCode();
 	    

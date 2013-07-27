@@ -1,5 +1,5 @@
 =================================================================
-MAME4droid Reloaded (0.139) 1.3.5 (July 19, 2013) 
+MAME4droid Reloaded (0.139) 1.4 (July 27, 2013) 
 by David Valdeita (Seleuco)
 =================================================================
 
@@ -53,7 +53,8 @@ Animated touch stick or DPAD.
 In-App button Layout customizable control. 
 iON's iCade and iCP (as iCade mode) external controllers supported. 
 Plug and play detection of many USB / Bluetooth gamepads.
-Tilt Sensor as left/right.
+Tilt Sensor as left/right/up/down.
+Touch lightgun.
 1 to 6 buttons optionally shown.
 Options for video aspect ratio, scaling, rotate.
 
@@ -138,7 +139,9 @@ GLOBAL OPTIONS
    * Original iCade. Select this value to use iON's iCade controller. You should be bluetooth paired before.
    * iCP, Gametel or iCade compatible. Select this value to use an iCade compatible layout. Controller should be configured on iCade mode.
 
-GamePad automap options: Let you define the Thumbs or L1,L2 buttons behaviour when a GamePad is autodetected. 
+- GamePad automap options: Let you define the Thumbs or L1,L2 buttons behaviour when a GamePad is autodetected. 
+
+- Touch lightgun: Enable to tap on touchscreen as a lightgun. First finger is main fire. Second finger when first finger is pressed is alternate fire.
 
 -Animated. Animates ON/OFF DPad/Stick. Disable to for better performance.
 
@@ -172,6 +175,8 @@ GamePad automap options: Let you define the Thumbs or L1,L2 buttons behaviour wh
 -Tilt sensor neutral vertical position: Set tilt rest position on z axis.
 
 -Tilt as analog: Enable to use tilt sensor as analog device, disable to use as digital.  
+
+-Touch anywhere: Enable to tap anywhere on screen to fire. First finger is main fire. Second finger when first finger is pressed is alternate fire
 
 -Scaling Mode:  
      
@@ -270,6 +275,7 @@ PORT CREDITS
 - Port to Android by David Valdeita (Seleuco)
 
 DEVELOPMENT
+- 2013-08-27 Version 1.4. Added tap on touchscreen as a lightgun device. Added Tilt sensor option to tap anywhere on screen to fire. Some bug fixes. 
 - 2013-08-19 Version 1.3.5 Some bug fixes.
 - 2013-08-18 Version 1.3.4 Improved tilt sensor accuracy, now with up/down. Some bug fixes.
 - 2013-08-14 Version 1.3.3 Added new portrait full screen mode. Some bug fixes. 

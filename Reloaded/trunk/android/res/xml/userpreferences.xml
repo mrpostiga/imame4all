@@ -147,7 +147,11 @@
 			android:title='GamePad automap options'			
 			android:key="PREF_AUTOMAP_OPTIONS"
 			android:entryValues="@array/pref_automap_values"
-			android:defaultValue="2" />					
+			android:defaultValue="2" />		
+			
+		<CheckBoxPreference android:key="PREF_LIGHTGUN"
+			android:title="Touch lightgun" android:summary="Enable to tap on touchscreen as a lightgun. First finger is main fire. Second finger when first finger is pressed is alternate fire"
+			android:defaultValue="false" />					
 																
 		<CheckBoxPreference android:key="PREF_ANIMATED_INPUT"
 			android:title="Animated" android:summary="Animated touch control. Disable for huge performance boost"
@@ -191,7 +195,7 @@
 	    
 	     <ListPreference
 			android:entries="@array/pref_dz_options"
-			android:title='Analog gamepad dead zone'			
+			android:title='Analog GamePad dead zone'			
 			android:key="PREF_GAMEPAD_DZ"
 			android:entryValues="@array/pref_dz_values"
 			android:defaultValue="3" />
@@ -244,7 +248,11 @@
 		
 		<CheckBoxPreference android:key="PREF_TILT_ANALOG"
 			android:title="Tilt as analog" android:summary="Enable to use tilt sensor as analog device, disable to use as digital"
-			android:defaultValue="true" />					
+			android:defaultValue="true" />		
+			
+		<CheckBoxPreference android:key="PREF_TILT_TOUCH"
+			android:title="Touch anywhere" android:summary="Enable to tap anywhere on screen to fire. First finger is main fire. Second finger when first finger is pressed is alternate fire"
+			android:defaultValue="false" />					
 		
     </PreferenceCategory>			
 

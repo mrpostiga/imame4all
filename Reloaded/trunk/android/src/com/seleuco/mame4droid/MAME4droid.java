@@ -161,21 +161,7 @@ public class MAME4droid extends Activity {
         super.onCreate(savedInstanceState);
         
 		Log.d("EMULATOR", "onCreate");
-        
-       // getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-        
-       /*
-        this.getWindow().setFlags(
-                WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
-                WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
-        */
-        
-        	
-       // getWindow().requestFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
-        
-        //para saber at runtime si es llarge
-        //Configuration config = getResources().getConfiguration();
-                
+                        
 		prefsHelper = new PrefsHelper(this);
 
         dialogHelper  = new DialogHelper(this);
@@ -186,7 +172,6 @@ public class MAME4droid extends Activity {
                 
         menuHelper = new MenuHelper(this);
                 
-        //inputHandler = new InputHandler(this);
         inputHandler = InputHandlerFactory.createInputHandler(this);
         
         Emulator.setPortraitFull(getPrefsHelper().isPortraitFullscreen());
@@ -287,6 +272,12 @@ public class MAME4droid extends Activity {
 	            filterView.setBackgroundDrawable(bitmapDrawable);
 	
 	            //filterView.setAlpha(type> 3 ? 0.16f : 0.35f);
+	            
+	            if(full && prefsHelper.isPortraitTouchController())
+	            {
+	            	FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams )filterView.getLayoutParams();
+	            	lp.gravity =  Gravity.TOP;
+	            }
 	            
 	            filterView.setMAME4droid(this);
             }

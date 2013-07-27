@@ -98,6 +98,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String  PREF_TRACKBALL_SENSITIVITY = "PREF_TRACKBALL_SENSITIVITY";
 	final static public String  PREF_TRACKBALL_NOMOVE = "PREF_TRACKBALL_NOMOVE";
 	final static public String  PREF_ANIMATED_INPUT = "PREF_ANIMATED_INPUT";
+	final static public String  PREF_LIGHTGUN = "PREF_LIGHTGUN";
 	final static public String  PREF_TOUCH_DZ = "PREF_TOUCH_DZ";
 	final static public String  PREF_CONTROLLER_TYPE = "PREF_CONTROLLER_TYPE_2";
 	final static public String  PREF_STICK_TYPE = "PREF_STICK_TYPE_2";
@@ -114,6 +115,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String  PREF_TILT_SENSITIVITY = "PREF_TILT_SENSITIVITY";
 	final static public String  PREF_TILT_NEUTRAL = "PREF_TILT_NEUTRAL";
 	final static public String  PREF_TILT_ANALOG = "PREF_TILT_ANALOG";	
+	final static public String  PREF_TILT_TOUCH = "PREF_TILT_TOUCH";	
 	
 	final static public String  PREF_HIDE_STICK = "PREF_HIDE_STICK";
 	final static public String  PREF_BUTTONS_SIZE = "PREF_BUTTONS_SIZE";
@@ -351,6 +353,14 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 		return Integer.valueOf(getSharedPreferences().getString(PREF_CONTROLLER_TYPE,"3")).intValue();	
 	}
 
+	public boolean isLightgun(){
+		
+		if(getSharedPreferences().getBoolean(PREF_LIGHTGUN,false))
+		   return true;
+		
+		return getSharedPreferences().getBoolean(PREF_TILT_TOUCH,false) && this.isTiltSensor();
+	}
+	
 	public int getStickWays(){
 		return Integer.valueOf(getSharedPreferences().getString(PREF_STICK_TYPE,"-1")).intValue();	
 	}
@@ -439,6 +449,10 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	public boolean isTiltAnalog(){
 		return getSharedPreferences().getBoolean(PREF_TILT_ANALOG,true);
 	}	
+	
+	public boolean isTiltTouch(){
+		return getSharedPreferences().getBoolean(PREF_TILT_TOUCH,false);
+	}
 	
 	public int getButtonsSize(){
 		return Integer.valueOf(getSharedPreferences().getString(PREF_BUTTONS_SIZE,"3")).intValue();	
