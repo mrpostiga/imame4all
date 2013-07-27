@@ -84,7 +84,7 @@ public class MenuHelper {
 		case (R.id.menu_quit_game_option):
 			if(Emulator.isInMAME())
 			{
-		       if(Emulator.getValue(Emulator.IN_MENU)==0)
+		       if(!Emulator.isInMenu())
 				  mm.showDialog(DialogHelper.DIALOG_EXIT_GAME);
 		       else
 		       {

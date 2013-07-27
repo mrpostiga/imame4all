@@ -152,9 +152,14 @@ public class Emulator
 	private static boolean isDebug = false;
 	private static int videoRenderMode  =  PrefsHelper.PREF_RENDER_SW;
 	private static boolean inMAME = false;
+	private static boolean inMenu = false;
+	private static boolean oldInMenu = false;
 	public static boolean isInMAME() {
 		return inMAME;
 	}
+	public static boolean isInMenu() {
+		return inMenu;
+	}	
 	private static int overlayFilterType  =  PrefsHelper.PREF_FILTER_NONE;
 	
 	public static int getOverlayFilterType() {
@@ -352,7 +357,7 @@ public class Emulator
 			emuPaint = null;
 		}
 	}
-	
+		
 	//synchronized 
 	static void bitblt(ByteBuffer sScreenBuff, boolean inMAME) {
 
@@ -362,6 +367,21 @@ public class Emulator
 			//Log.d("Thread Video", "dentro lock");					
 			screenBuff = sScreenBuff;
 			Emulator.inMAME = inMAME;
+			Emulator.inMenu = Emulator.getValue(Emulator.IN_MENU)==1;
+			
+			if(inMenu != oldInMenu)
+			{
+				final View v = mm.getInputView();
+				if(v!=null)
+				{
+					mm.runOnUiThread(new Runnable() {
+		                public void run() {
+                            v.invalidate();
+		                }
+		            });
+				}		
+			}
+			oldInMenu = inMenu;
 			   
 			if(videoRenderMode == PrefsHelper.PREF_RENDER_GL){
 				//if(mm.getEmuView() instanceof EmulatorViewGL)
@@ -403,11 +423,10 @@ public class Emulator
 			
 		//Log.d("Thread Video", "changeVideo");
 		synchronized(lock1){
+				
+		mm.getInputHandler().resetInput();
 		
-		for(int i=0;i<4;i++)
-			Emulator.setPadData(i,0);
-		
-		 warnResChanged = emu_width!=newWidth || emu_height!=newHeight || emu_vis_width != newVisWidth || emu_vis_height != newVisHeight;
+		warnResChanged = emu_width!=newWidth || emu_height!=newHeight || emu_vis_width != newVisWidth || emu_vis_height != newVisHeight;
 		
 		//if(emu_width!=newWidth || emu_height!=newHeight)
 		//{

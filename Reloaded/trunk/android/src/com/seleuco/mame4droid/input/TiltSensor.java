@@ -188,7 +188,7 @@ public class TiltSensor {
         	
         	float deadZone = getDZ();
         	
-        	boolean run = Emulator.isInMAME()  && Emulator.getValue(Emulator.IN_MENU)==0 && !Emulator.isPaused(); 
+        	boolean run = Emulator.isInMAME()  && !Emulator.isInMenu() && !Emulator.isPaused(); 
         	             
         	if(run)
         	{        		

@@ -94,6 +94,9 @@ char myosd_selected_game[MAX_GAME_NAME] = {'\0'};
 /*extern */float joy_analog_x[4];
 /*extern */float joy_analog_y[4];
 
+float lightgun_x[4];
+float lightgun_y[4];
+
 static int lib_inited = 0;
 static int soundInit = 0;
 static int isPause = 0;

@@ -187,8 +187,8 @@ int main(int argc, char **argv)
 		//args[n]= (char *)"-nosleep"; n++;
         //args[n]= (char *)"-autosave"; n++;
 		//args[n]= (char *)"-sleep"; n++;
-		//args[n]= (char *)"-jdz"; n++;args[n]= (char *)"0.0"; n++;
-		//args[n]= (char *)"-jsat"; n++;args[n]= (char *)"1.0"; n++;
+		args[n]= (char *)"-jdz"; n++;args[n]= (char *)"0.0"; n++;
+		args[n]= (char *)"-jsat"; n++;args[n]= (char *)"1.0"; n++;
 		//args[n]= (char *)"-joystick_deadzone"; n++;args[n]= (char *)"0.0"; n++;
 		args[n]= (char *)"-nocoinlock"; n++;
         

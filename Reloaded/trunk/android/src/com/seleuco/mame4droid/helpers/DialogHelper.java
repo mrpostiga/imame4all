@@ -247,7 +247,7 @@ public class DialogHelper {
 	
     	          if(item == 0 && a==0)
     	          {
-					if(Emulator.getValue(Emulator.IN_MENU)!=0)
+					if(Emulator.isInMenu())
 					{
 		    		    Emulator.setValue(Emulator.EXIT_GAME_KEY, 1);
 		    		    Emulator.resume();
