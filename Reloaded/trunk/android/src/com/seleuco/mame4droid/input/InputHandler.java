@@ -65,6 +65,7 @@ import android.view.View.OnTouchListener;
 
 import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.MAME4droid;
+import com.seleuco.mame4droid.R;
 import com.seleuco.mame4droid.helpers.DialogHelper;
 import com.seleuco.mame4droid.helpers.PrefsHelper;
 
@@ -202,6 +203,8 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	
 	protected  int trackballSensitivity = 30;
 	protected  boolean trackballEnabled = true;
+	
+	protected int lightgun_pid = -1;
 		
 	/////////////////
 	
@@ -535,9 +538,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 			Emulator.setAnalogData(0, 0, 0);
 		}		
 	}
-	
-	int lightgun_pid = -1;
-	
+		
 	protected boolean handleLightgun(View v, MotionEvent event) {
 		int pid = 0;
 		int action = event.getAction();
@@ -675,7 +676,10 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 							case MotionEvent.ACTION_POINTER_DOWN:
 							case MotionEvent.ACTION_MOVE:
 									
-							     boolean b = !mm.getPrefsHelper().isLightgun() || Emulator.isInMenu() || !Emulator.isInMAME() ||
+							     boolean b = 
+							     !mm.getPrefsHelper().isLightgun() 
+							     || (mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_PORTRAIT && !mm.getPrefsHelper().isPortraitFullscreen()) 
+							     || Emulator.isInMenu() || !Emulator.isInMAME() ||
 					    		 iv.getValue()==BTN_L2 || iv.getValue()==BTN_R2 || iv.getValue()==BTN_SELECT || iv.getValue()==BTN_START; 
 							     
 								if(iv.getType() == TYPE_BUTTON_RECT && b)
@@ -700,7 +704,8 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 									 }
 								}
 								else if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL_DPAD
-										&& !((TiltSensor.isEnabled() || mm.getPrefsHelper().isLightgun()) && Emulator.isInMAME() && !Emulator.isInMenu()))
+										&& !((TiltSensor.isEnabled() || (mm.getPrefsHelper().isLightgun() && !(mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_PORTRAIT &&  !mm.getPrefsHelper().isPortraitFullscreen()) )) 
+												&& Emulator.isInMAME() && !Emulator.isInMenu()))
 								{
 									 newtouches[id] = getStickValue(iv.getValue());
 								}
@@ -764,7 +769,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		
 		//Log.d("touch",event.getRawX()+" "+event.getX()+" "+event.getRawY()+" "+event.getY());
 		 
-		if(v == mm.getEmuView() && mm.getPrefsHelper().isLightgun() && state != STATE_SHOWING_NONE)
+		if(v == mm.getEmuView() && mm.getPrefsHelper().isLightgun() && state != STATE_SHOWING_NONE && Emulator.isInMAME() && !Emulator.isInMenu())
 		{		     		    						
 			handleLightgun(v, event);			
 			return true;
@@ -781,7 +786,9 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		    if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL_DPAD && !(TiltSensor.isEnabled()  && Emulator.isInMAME()  && !Emulator.isInMenu()))
 		       pad_data[0] = stick.handleMotion(event, pad_data[0]); 	 		    	
 		    		   		    		    
-		    if(mm.getPrefsHelper().isLightgun() && Emulator.isInMAME() && !Emulator.isInMenu())
+		    if(mm.getPrefsHelper().isLightgun() && Emulator.isInMAME() && !Emulator.isInMenu() && 
+		    		!(mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_PORTRAIT && !mm.getPrefsHelper().isPortraitFullscreen())
+		    		)
 		       handleLightgun(v, event);
 		    
 		    handleTouchController(event);
@@ -790,10 +797,17 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		}
         else
         {
-			if(mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_PORTRAIT && state != STATE_SHOWING_NONE)
-				return false;
-			if(mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE && state != STATE_SHOWING_NONE)
-				return false;
+			if((mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_PORTRAIT && state != STATE_SHOWING_NONE)
+				||
+			   (mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE && state != STATE_SHOWING_NONE))
+			   {
+				   if(mm.getPrefsHelper().isLightgun() && Emulator.isInMAME() && !Emulator.isInMenu())
+				   {
+				       handleLightgun(v, event);			
+				       return true;
+				   }
+				   return false;
+			   }
 			
 	    	mm.showDialog(DialogHelper.DIALOG_FULLSCREEN);
 			return true;
@@ -1316,6 +1330,8 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	                     
 	   mm.getInputView().setOnTouchListener(this);
 	   mm.getInputView().setOnKeyListener(this);
+	   
+	   //mm.findViewById(R.id.EmulatorFrame).setOnTouchListener(this);;
 	}
 	
 	public boolean isControllerDevice(){

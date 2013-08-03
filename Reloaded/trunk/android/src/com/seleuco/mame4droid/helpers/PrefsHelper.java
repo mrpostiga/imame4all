@@ -53,6 +53,7 @@ import android.view.WindowManager;
 
 import com.seleuco.mame4droid.MAME4droid;
 import com.seleuco.mame4droid.input.InputHandler;
+import com.seleuco.mame4droid.prefs.GameFilterPrefs;
 
 public class PrefsHelper implements OnSharedPreferenceChangeListener
 {
@@ -66,7 +67,6 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String PREF_GLOBAL_THROTTLE = "PREF_GLOBAL_THROTTLE";
 	final static public String PREF_GLOBAL_VSYNC = "PREF_GLOBAL_VSYNC";
 	final static public String PREF_GLOBAL_SOUND = "PREF_GLOBAL_SOUND";
-	final static public String PREF_GLOBAL_FAVORITES = "PREF_GLOBAL_FAVORITES";
 	final static public String PREF_GLOBAL_SHOW_FPS = "PREF_GLOBAL_SHOW_FPS";
 	final static public String PREF_GLOBAL_SHOW_INFOWARNINGS = "PREF_GLOBAL_SHOW_INFOWARNINGS";	
 	final static public String PREF_GLOBAL_CHEAT = "PREF_GLOBAL_CHEAT";
@@ -133,6 +133,16 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String  PREF_ANTIALIAS = "PREF_ANTIALIAS";
 	final static public String  PREF_FLICKER = "PREF_FLICKER";
 	
+	final static public String  PREF_FILTER_FAVORITES = "PREF_FILTER_FAVORITES";
+	final static public String  PREF_FILTER_CLONES = "PREF_FILTER_CLONES";
+	final static public String  PREF_FILTER_NOTWORKING = "PREF_FILTER_NOTWORKING";	
+	final static public String  PREF_FILTER_YGTE = "PREF_FILTER_YGTE";
+	final static public String  PREF_FILTER_YLTE = "PREF_FILTER_YLTE";	
+	final static public String  PREF_FILTER_MANUF = "PREF_FILTER_MANUF";	
+	final static public String  PREF_FILTER_DRVSRC = "PREF_FILTER_DRVSRC";	
+	final static public String  PREF_FILTER_CATEGORY = "PREF_FILTER_CATEGORY";
+	final static public String  PREF_FILTER_KEYWORD = "PREF_FILTER_KEYWORD";	
+	
 	final static public int  LOW = 1;
 	final static public int  NORMAL = 2;
 	final static public int  HIGHT = 2;
@@ -169,10 +179,17 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final public static int PREF_AUTOMAP_L1L2_AS_L2R2 = 4;	
 	final public static int PREF_AUTOMAP_L1L2_AS_SELECTSTART = 5;		
 	
+	protected GameFilterPrefs gameFilterPrefs = null;
+	
+	public GameFilterPrefs getGameFilterPrefs() {
+		return gameFilterPrefs;
+	}
+
 	protected MAME4droid mm = null;
 	
 	public PrefsHelper(MAME4droid value){
 		mm = value;
+		gameFilterPrefs = new GameFilterPrefs(mm);
 	}
 
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
@@ -354,11 +371,14 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	}
 
 	public boolean isLightgun(){
+				
+		if(getSharedPreferences().getBoolean(PREF_TILT_TOUCH,false) && this.isTiltSensor())
+			return true;
 		
-		if(getSharedPreferences().getBoolean(PREF_LIGHTGUN,false))
-		   return true;
+		if(getSharedPreferences().getBoolean(PREF_LIGHTGUN,false) && !this.isTiltSensor())
+			return true;		
 		
-		return getSharedPreferences().getBoolean(PREF_TILT_TOUCH,false) && this.isTiltSensor();
+		return false;
 	}
 	
 	public int getStickWays(){
@@ -485,11 +505,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	public boolean isPlayerXasPlayer1(){
 		return getSharedPreferences().getBoolean(PREF_PXASP1,false);
 	}
-	
-	public boolean isFavorites(){
-		return getSharedPreferences().getBoolean(PREF_GLOBAL_FAVORITES,false);
-	}
-	
+		
 	public boolean isVectorBeam2x(){
 		return getSharedPreferences().getBoolean(PREF_BEAM2X,true);
 	}	

@@ -52,6 +52,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
+import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -93,13 +94,18 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
     protected ListPreference mPrefSoundLantency;
     protected ListPreference mPrefAutofire;
     protected ListPreference mPrefVSync;
-
+    protected ListPreference mPrefFilterCat;
+    protected ListPreference mPrefFilterDrvSrc;
+    protected ListPreference mPrefFilterManuf;
+    protected ListPreference mPrefFilterYGTE;
+    protected ListPreference mPrefFilterYLTE;  
+    protected EditTextPreference mPrefFilterkeyword;
+    
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 
 		super.onCreate(savedInstanceState);
-		
-		
+				
 		addPreferencesFromResource(R.xml.userpreferences);
 		
 		settings = PreferenceManager.getDefaultSharedPreferences(this);
@@ -128,6 +134,43 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
         mPrefSoundLantency = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_SOUND_LATENCY);
         mPrefAutofire = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_AUTOFIRE);
         mPrefVSync = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GLOBAL_VSYNC);
+        		
+		mPrefFilterCat = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_FILTER_CATEGORY);	
+		populateList(Emulator.FILTER_NUM_CATEGORIES,Emulator.FILTER_CATEGORIES_ARRAY,mPrefFilterCat);
+		
+		mPrefFilterDrvSrc = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_FILTER_DRVSRC);
+		populateList(Emulator.FILTER_NUM_DRIVERS_SRC,Emulator.FILTER_DRIVERS_SRC_ARRAY,mPrefFilterDrvSrc);
+        
+		mPrefFilterManuf = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_FILTER_MANUF);
+		populateList(Emulator.FILTER_NUM_MANUFACTURERS,Emulator.FILTER_MANUFACTURERS_ARRAY,mPrefFilterManuf);
+		
+		mPrefFilterYGTE = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_FILTER_YGTE);
+		populateList(Emulator.FILTER_NUM_YEARS,Emulator.FILTER_YEARS_ARRAY,mPrefFilterYGTE);
+		mPrefFilterYLTE = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_FILTER_YLTE);
+		populateList(Emulator.FILTER_NUM_YEARS,Emulator.FILTER_YEARS_ARRAY,mPrefFilterYLTE);
+		
+		mPrefFilterkeyword = (EditTextPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_FILTER_KEYWORD);
+	}
+	
+	protected void populateList(int key1, int key2, ListPreference lp){
+        int i = 0;
+		int n = 0; 
+		CharSequence[] cs = null;
+		CharSequence[] csv = null;
+		
+		n = Emulator.getValue(key1);
+		cs = new String[n+1];
+		csv = new String[n+1];
+		cs[0] = "All";
+		csv[0] = "-1";
+		while(i<n)
+		{			
+			i++;
+			cs[i] =Emulator.getValueStr(key2,i);
+			csv[i] = i+"";		
+		}
+		lp.setEntries(cs);
+		lp.setEntryValues(csv);	
 	}
 	
 	  @Override
@@ -160,7 +203,12 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	        mPrefSoundLantency.setSummary("Current value is '" + mPrefSoundLantency.getEntry()+"'");
 	        mPrefAutofire.setSummary("Current value is '" + mPrefAutofire.getEntry()+"'");
 	        mPrefVSync.setSummary("Current value is '" + mPrefVSync.getEntry()+"'");
-	        
+	        mPrefFilterCat.setSummary("Current value is '" + mPrefFilterCat.getEntry()+"'");
+	        mPrefFilterDrvSrc.setSummary("Current value is '" + mPrefFilterDrvSrc.getEntry()+"'");
+	        mPrefFilterManuf.setSummary("Current value is '" + mPrefFilterManuf.getEntry()+"'");
+	        mPrefFilterYGTE.setSummary("Current value is '" + mPrefFilterYGTE.getEntry()+"'");
+	        mPrefFilterYLTE.setSummary("Current value is '" + mPrefFilterYLTE.getEntry()+"'");   
+	        mPrefFilterkeyword.setSummary("Current value is '" + mPrefFilterkeyword.getText()+"'"); 
 	        // Set up a listener whenever a key changes            
 	        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
 	    }
@@ -277,6 +325,30 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 		    else if(key.equals(PrefsHelper.PREF_GLOBAL_VSYNC))
 		    {
 		    	mPrefVSync.setSummary("Current value is '" + mPrefVSync.getEntry()+"'");
+		    } 	  
+		    else if(key.equals(PrefsHelper.PREF_FILTER_CATEGORY))
+		    {
+		    	mPrefFilterCat.setSummary("Current value is '" + mPrefFilterCat.getEntry()+"'");
+		    }
+		    else if(key.equals(PrefsHelper.PREF_FILTER_DRVSRC))
+		    {
+		    	mPrefFilterDrvSrc.setSummary("Current value is '" + mPrefFilterDrvSrc.getEntry()+"'");
+		    } 
+		    else if(key.equals(PrefsHelper.PREF_FILTER_MANUF))
+		    {
+		    	mPrefFilterManuf.setSummary("Current value is '" + mPrefFilterManuf.getEntry()+"'");
+		    } 	 
+		    else if(key.equals(PrefsHelper.PREF_FILTER_YGTE))
+		    {
+		    	mPrefFilterYGTE.setSummary("Current value is '" + mPrefFilterYGTE.getEntry()+"'");
+		    } 
+		    else if(key.equals(PrefsHelper.PREF_FILTER_YLTE))
+		    {
+		    	mPrefFilterYLTE.setSummary("Current value is '" + mPrefFilterYLTE.getEntry()+"'");
+		    } 
+		    else if(key.equals(PrefsHelper.PREF_FILTER_KEYWORD))
+		    {
+		    	mPrefFilterkeyword.setSummary("Current value is '" + mPrefFilterkeyword.getText()+"'");
 		    } 	        
 	    }
 
@@ -363,6 +435,36 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 			    	Dialog dialog = builder.create();
 			    	dialog.show();
 			}	
+			else if (pref.getKey().equals("restoreFilters")) {
+
+				 AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			    	builder.setMessage("Are you sure to restore?")
+		    	       .setCancelable(false)
+		    	       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+		    	           public void onClick(DialogInterface dialog, int id) {
+		    	        	SharedPreferences.Editor editor =  settings.edit();
+		    	       		editor.putBoolean(PrefsHelper.PREF_FILTER_FAVORITES, false);
+		    	    		editor.putBoolean(PrefsHelper.PREF_FILTER_CLONES, false);		
+		    	    		editor.putBoolean(PrefsHelper.PREF_FILTER_NOTWORKING, false);
+		    	    		editor.putString(PrefsHelper.PREF_FILTER_YGTE, "-1");
+		    	    		editor.putString(PrefsHelper.PREF_FILTER_YLTE, "-1");
+		    	    		editor.putString(PrefsHelper.PREF_FILTER_MANUF, "-1");
+		    	    		editor.putString(PrefsHelper.PREF_FILTER_CATEGORY,"-1");
+		    	    		editor.putString(PrefsHelper.PREF_FILTER_DRVSRC, "-1");	
+		    	    		editor.putString(PrefsHelper.PREF_FILTER_KEYWORD, "");			
+		    	    		editor.commit();
+		    	    		finish();
+		    	    		startActivity(getIntent());
+		    	           }
+		    	       })
+		    	       .setNegativeButton("No", new DialogInterface.OnClickListener() {
+		    	           public void onClick(DialogInterface dialog, int id) {
+		    	                dialog.cancel();
+		    	           }
+		    	       });
+			    	Dialog dialog = builder.create();
+			    	dialog.show();
+			}				
 			
 			return super.onPreferenceTreeClick(preferenceScreen, pref);
 		}

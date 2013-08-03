@@ -58,8 +58,11 @@ import android.media.AudioTrack;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.View;
+import android.widget.Toast;
 
 import com.seleuco.mame4droid.helpers.PrefsHelper;
+import com.seleuco.mame4droid.input.InputHandler;
+import com.seleuco.mame4droid.input.TiltSensor;
 import com.seleuco.mame4droid.views.EmulatorViewGL;
 
 public class Emulator 
@@ -91,7 +94,7 @@ public class Emulator
 	final static public int PXASP1 = 24;
 	final static public int NUMBTNS = 25;
 	final static public int NUMWAYS = 26;
-	final static public int FAVORITES = 27;
+	final static public int FILTER_FAVORITES = 27;
 	final static public int RESET_FILTER = 28;	
 	final static public int LAST_GAME_SELECTED = 29;	
 	final static public int EMU_SPEED = 30;	
@@ -101,6 +104,23 @@ public class Emulator
 	final static public int VBEAN2X = 34;
 	final static public int VANTIALIAS = 35;
 	final static public int VFLICKER = 36;
+	final static public int FILTER_NUM_YEARS = 37;
+	final static public int FILTER_NUM_MANUFACTURERS = 38;
+	final static public int FILTER_NUM_DRIVERS_SRC = 39;
+	final static public int FILTER_NUM_CATEGORIES = 40;	
+	final static public int FILTER_CLONES = 41;	
+	final static public int FILTER_NOTWORKING = 42;	
+	final static public int FILTER_MANUFACTURER = 43;	
+	final static public int FILTER_GTE_YEAR = 44;	
+	final static public int FILTER_LTE_YEAR = 45;	
+	final static public int FILTER_DRVSRC = 46;		
+	final static public int FILTER_CATEGORY = 47;	
+	
+	final static public int FILTER_YEARS_ARRAY = 0;
+	final static public int FILTER_MANUFACTURERS_ARRAY = 1;
+	final static public int FILTER_DRIVERS_SRC_ARRAY = 2;
+	final static public int FILTER_CATEGORIES_ARRAY = 3;
+	final static public int FILTER_KEYWORD = 4;
 	
     private static MAME4droid mm = null;
     
@@ -178,16 +198,6 @@ public class Emulator
 	
 	public static boolean isRestartNeeded(){
 		return needsRestart;
-	}
-	
-	private static boolean isFavOnly = false;
-
-	public static boolean isFavOnly() {
-		return isFavOnly;
-	}
-
-	public static void setFavOnly(boolean isFavOnly) {
-		Emulator.isFavOnly = isFavOnly;
 	}
 	
 	private static boolean warnResChanged = false;
@@ -376,6 +386,15 @@ public class Emulator
 				{
 					mm.runOnUiThread(new Runnable() {
 		                public void run() {
+		                    
+		                	if(!inMenu && Emulator.inMAME && 
+		                	   ( (mm.getPrefsHelper().isLightgun() && mm.getInputHandler().getInputHandlerState() != InputHandler.STATE_SHOWING_NONE) || mm.getPrefsHelper().isTiltSensor()))
+		                	{
+			        		    CharSequence text = mm.getPrefsHelper().isTiltSensor() ? "Tilt sensor is enabled!" : "Touch lightgun is enabled!";
+			        		    int duration = Toast.LENGTH_SHORT;
+			        		    Toast toast = Toast.makeText(mm, text, duration);
+			        		    toast.show();
+		                	}
                             v.invalidate();
 		                }
 		            });
@@ -421,6 +440,7 @@ public class Emulator
 	//synchronized 
 	static public void changeVideo(int newWidth, int newHeight, int newVisWidth, int newVisHeight){	
 			
+				
 		//Log.d("Thread Video", "changeVideo");
 		synchronized(lock1){
 				
@@ -584,7 +604,7 @@ public class Emulator
 	public static void emulate(final String libPath,final String resPath){
 
 		//Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
-		
+				
 		if (isEmulating)return;
 				
 		Thread t = new Thread(new Runnable(){
@@ -609,6 +629,22 @@ public class Emulator
 		t.start();		
 	}
 	
+	public static int getValue(int key){
+		return getValue(key,0);
+	}
+	
+	public static String getValueStr(int key){
+		return getValueStr(key,0);
+	}
+	
+	public static void setValue(int key, int value){
+		setValue(key,0,value);
+	}
+	
+	public static void setValueStr(int key, String value){
+		setValueStr(key,0,value);
+	}
+	
 	//native
 	protected static native void init(String libPath,String resPath);
 	
@@ -618,8 +654,12 @@ public class Emulator
 	
 	synchronized public static native void setAnalogData(int i, float v1, float v2);
 	
-	public static native int getValue(int key);
+	public static native int getValue(int key, int i);
+
+	public static native String getValueStr(int key, int i);
 	
-	public static native void setValue(int key, int value);
+	public static native void setValue(int key, int i, int value);
+        
+    public static native void setValueStr(int key, int i, String value);
 		
 }

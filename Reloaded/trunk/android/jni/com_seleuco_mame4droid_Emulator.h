@@ -11,22 +11,64 @@ extern "C" {
 #define com_seleuco_mame4droid_Emulator_FPS_SHOWED_KEY 1L
 #undef com_seleuco_mame4droid_Emulator_EXIT_GAME_KEY
 #define com_seleuco_mame4droid_Emulator_EXIT_GAME_KEY 2L
-#undef com_seleuco_mame4droid_Emulator_LAND_BUTTONS_KEY
-#define com_seleuco_mame4droid_Emulator_LAND_BUTTONS_KEY 3L
-#undef com_seleuco_mame4droid_Emulator_HIDE_LR__KEY
-#define com_seleuco_mame4droid_Emulator_HIDE_LR__KEY 4L
-#undef com_seleuco_mame4droid_Emulator_BPLUSX_KEY
-#define com_seleuco_mame4droid_Emulator_BPLUSX_KEY 5L
-#undef com_seleuco_mame4droid_Emulator_WAYS_STICK_KEY
-#define com_seleuco_mame4droid_Emulator_WAYS_STICK_KEY 6L
-#undef com_seleuco_mame4droid_Emulator_ASMCORES_KEY
-#define com_seleuco_mame4droid_Emulator_ASMCORES_KEY 7L
 #undef com_seleuco_mame4droid_Emulator_INFOWARN_KEY
 #define com_seleuco_mame4droid_Emulator_INFOWARN_KEY 8L
 #undef com_seleuco_mame4droid_Emulator_EXIT_PAUSE
 #define com_seleuco_mame4droid_Emulator_EXIT_PAUSE 9L
 #undef com_seleuco_mame4droid_Emulator_IDLE_WAIT
 #define com_seleuco_mame4droid_Emulator_IDLE_WAIT 10L
+#undef com_seleuco_mame4droid_Emulator_PAUSE
+#define com_seleuco_mame4droid_Emulator_PAUSE 11L
+#undef com_seleuco_mame4droid_Emulator_FRAME_SKIP_VALUE
+#define com_seleuco_mame4droid_Emulator_FRAME_SKIP_VALUE 12L
+#undef com_seleuco_mame4droid_Emulator_SOUND_VALUE
+#define com_seleuco_mame4droid_Emulator_SOUND_VALUE 13L
+#undef com_seleuco_mame4droid_Emulator_THROTTLE
+#define com_seleuco_mame4droid_Emulator_THROTTLE 14L
+#undef com_seleuco_mame4droid_Emulator_CHEAT
+#define com_seleuco_mame4droid_Emulator_CHEAT 15L
+#undef com_seleuco_mame4droid_Emulator_AUTOSAVE
+#define com_seleuco_mame4droid_Emulator_AUTOSAVE 16L
+#undef com_seleuco_mame4droid_Emulator_SAVESTATE
+#define com_seleuco_mame4droid_Emulator_SAVESTATE 17L
+#undef com_seleuco_mame4droid_Emulator_LOADSTATE
+#define com_seleuco_mame4droid_Emulator_LOADSTATE 18L
+#undef com_seleuco_mame4droid_Emulator_IN_MENU
+#define com_seleuco_mame4droid_Emulator_IN_MENU 19L
+#undef com_seleuco_mame4droid_Emulator_EMU_RESOLUTION
+#define com_seleuco_mame4droid_Emulator_EMU_RESOLUTION 20L
+#undef com_seleuco_mame4droid_Emulator_FORCE_PXASPECT
+#define com_seleuco_mame4droid_Emulator_FORCE_PXASPECT 21L
+#undef com_seleuco_mame4droid_Emulator_THREADED_VIDEO
+#define com_seleuco_mame4droid_Emulator_THREADED_VIDEO 22L
+#undef com_seleuco_mame4droid_Emulator_DOUBLE_BUFFER
+#define com_seleuco_mame4droid_Emulator_DOUBLE_BUFFER 23L
+#undef com_seleuco_mame4droid_Emulator_PXASP1
+#define com_seleuco_mame4droid_Emulator_PXASP1 24L
+#undef com_seleuco_mame4droid_Emulator_NUMBTNS
+#define com_seleuco_mame4droid_Emulator_NUMBTNS 25L
+#undef com_seleuco_mame4droid_Emulator_NUMWAYS
+#define com_seleuco_mame4droid_Emulator_NUMWAYS 26L
+#undef com_seleuco_mame4droid_Emulator_FAVORITES
+#define com_seleuco_mame4droid_Emulator_FAVORITES 27L
+#undef com_seleuco_mame4droid_Emulator_RESET_FILTER
+#define com_seleuco_mame4droid_Emulator_RESET_FILTER 28L
+#undef com_seleuco_mame4droid_Emulator_LAST_GAME_SELECTED
+#define com_seleuco_mame4droid_Emulator_LAST_GAME_SELECTED 29L
+#undef com_seleuco_mame4droid_Emulator_EMU_SPEED
+#define com_seleuco_mame4droid_Emulator_EMU_SPEED 30L
+#undef com_seleuco_mame4droid_Emulator_AUTOFIRE
+#define com_seleuco_mame4droid_Emulator_AUTOFIRE 31L
+#undef com_seleuco_mame4droid_Emulator_VSYNC
+#define com_seleuco_mame4droid_Emulator_VSYNC 32L
+#undef com_seleuco_mame4droid_Emulator_HISCORE
+#define com_seleuco_mame4droid_Emulator_HISCORE 33L
+#undef com_seleuco_mame4droid_Emulator_VBEAN2X
+#define com_seleuco_mame4droid_Emulator_VBEAN2X 34L
+#undef com_seleuco_mame4droid_Emulator_VANTIALIAS
+#define com_seleuco_mame4droid_Emulator_VANTIALIAS 35L
+#undef com_seleuco_mame4droid_Emulator_VFLICKER
+#define com_seleuco_mame4droid_Emulator_VFLICKER 36L
 /*
  * Class:     com_seleuco_mame4droid_Emulator
  * Method:    init
@@ -62,18 +104,34 @@ JNIEXPORT void JNICALL Java_com_seleuco_mame4droid_Emulator_setAnalogData
 /*
  * Class:     com_seleuco_mame4droid_Emulator
  * Method:    getValue
- * Signature: (I)I
+ * Signature: (II)I
  */
 JNIEXPORT jint JNICALL Java_com_seleuco_mame4droid_Emulator_getValue
-  (JNIEnv *, jclass, jint);
+  (JNIEnv *, jclass, jint, jint);
+
+/*
+ * Class:     com_seleuco_mame4droid_Emulator
+ * Method:    getValueStr
+ * Signature: (II)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_com_seleuco_mame4droid_Emulator_getValueStr
+  (JNIEnv *, jclass, jint, jint);
 
 /*
  * Class:     com_seleuco_mame4droid_Emulator
  * Method:    setValue
- * Signature: (II)V
+ * Signature: (III)V
  */
 JNIEXPORT void JNICALL Java_com_seleuco_mame4droid_Emulator_setValue
-  (JNIEnv *, jclass, jint, jint);
+  (JNIEnv *, jclass, jint, jint, jint);
+
+/*
+ * Class:     com_seleuco_mame4droid_Emulator
+ * Method:    setValueStr
+ * Signature: (IILjava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_com_seleuco_mame4droid_Emulator_setValueStr
+  (JNIEnv *, jclass, jint, jint, jstring);
 
 #ifdef __cplusplus
 }
