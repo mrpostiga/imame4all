@@ -191,6 +191,8 @@ int main(int argc, char **argv)
 		args[n]= (char *)"-jsat"; n++;args[n]= (char *)"1.0"; n++;
 		//args[n]= (char *)"-joystick_deadzone"; n++;args[n]= (char *)"0.0"; n++;
 		args[n]= (char *)"-nocoinlock"; n++;
+
+                //args[n]= (char *)"-reload"; n++;
         
         if(isGridlee){
             args[n]= (char *)"gridlee"; n++;

@@ -48,8 +48,10 @@ void (*setVideoCallbacks)(void *func1,void *func2,void *func3) = NULL;
 void (*setPadStatus)(int i, unsigned long pad_status) = NULL;
 void (*setGlobalPath)(const char *path) = NULL;
 
-void  (*setMyValue)(int key, int value)=NULL;
-int  (*getMyValue)(int key)=NULL;
+void  (*setMyValue)(int key,int i, int value)=NULL;
+int  (*getMyValue)(int key, int i)=NULL;
+void  (*setMyValueStr)(int key, int i,const char *value)=NULL;
+char *(*getMyValueStr)(int key,int i)=NULL;
 
 void  (*setMyAnalogData)(int i, float v1,float v2)=NULL;
 
@@ -118,6 +120,12 @@ static void load_lib(const char *str)
 
     getMyValue = dlsym(libdl, "getMyValue"); 
      __android_log_print(ANDROID_LOG_DEBUG, "mame4droid-jni","getMyValue %d\n", getMyValue!=NULL);
+
+    setMyValueStr = dlsym(libdl, "setMyValueStr"); 
+     __android_log_print(ANDROID_LOG_DEBUG, "mame4droid-jni","setMyValueStr %d\n",setMyValueStr!=NULL);
+
+    getMyValueStr = dlsym(libdl, "getMyValueStr"); 
+     __android_log_print(ANDROID_LOG_DEBUG, "mame4droid-jni","getMyValueStr %d\n", getMyValueStr!=NULL);
 
     setMyAnalogData = dlsym(libdl, "setMyAnalogData"); 
      __android_log_print(ANDROID_LOG_DEBUG, "mame4droid-jni","setMyAnalogData %d\n", setMyAnalogData!=NULL);
@@ -382,13 +390,13 @@ JNIEXPORT void JNICALL Java_com_seleuco_mame4droid_Emulator_setAnalogData
 }
 
 JNIEXPORT jint JNICALL Java_com_seleuco_mame4droid_Emulator_getValue
-  (JNIEnv *env, jclass c, jint key)
+  (JNIEnv *env, jclass c, jint key, jint i)
 {
 #ifdef DEBUG
    // __android_log_print(ANDROID_LOG_DEBUG, "mame4droid-jni", "getValue %d",key);
 #endif
       if(getMyValue!=NULL)
-         return getMyValue(key);
+         return getMyValue(key,i);
       else 
       {
          __android_log_print(ANDROID_LOG_WARN, "mame4droid-jni", "error no getMyValue!");
@@ -397,15 +405,49 @@ JNIEXPORT jint JNICALL Java_com_seleuco_mame4droid_Emulator_getValue
 }
 
 JNIEXPORT void JNICALL Java_com_seleuco_mame4droid_Emulator_setValue
-  (JNIEnv *env, jclass c, jint key, jint value)
+  (JNIEnv *env, jclass c, jint key, jint i, jint value)
 {
 #ifdef DEBUG
-    __android_log_print(ANDROID_LOG_DEBUG, "mame4droid-jni", "setValue %d=%d",key,value);
+    __android_log_print(ANDROID_LOG_DEBUG, "mame4droid-jni", "setValue %d,%d=%d",key,i,value);
 #endif
     if(setMyValue!=NULL)
-      setMyValue(key,value);
+      setMyValue(key,i,value);
     else
       __android_log_print(ANDROID_LOG_WARN, "mame4droid-jni", "error no setMyValue!");
+}
+
+JNIEXPORT jstring JNICALL Java_com_seleuco_mame4droid_Emulator_getValueStr
+  (JNIEnv *env, jclass c, jint key, jint i)
+{
+#ifdef DEBUG
+   // __android_log_print(ANDROID_LOG_DEBUG, "mame4droid-jni", "getValueStr %d",key);
+#endif
+      if(getMyValueStr!=NULL)
+      {
+         const char * r =  getMyValueStr(key,i);
+         return (*env)->NewStringUTF(env,r);
+      }
+      else 
+      {
+         __android_log_print(ANDROID_LOG_WARN, "mame4droid-jni", "error no getMyValueStr!");
+         return NULL;
+      }
+}
+
+JNIEXPORT void JNICALL Java_com_seleuco_mame4droid_Emulator_setValueStr
+  (JNIEnv *env, jclass c, jint key, jint i, jstring s1)
+{
+    if(setMyValueStr!=NULL)
+    {
+       const char *value = (*env)->GetStringUTFChars(env, s1, 0);
+#ifdef DEBUG
+    __android_log_print(ANDROID_LOG_DEBUG, "mame4droid-jni", "setValueStr %d,%d=%s",key,i,value);
+#endif
+       setMyValueStr(key,i,value);
+       (*env)->ReleaseStringUTFChars(env, s1, value);
+    }
+    else
+      __android_log_print(ANDROID_LOG_WARN, "mame4droid-jni", "error no setMyValueStr!");
 }
 
 JNIEXPORT void JNICALL Java_com_seleuco_mame4droid_Emulator_runVideoT

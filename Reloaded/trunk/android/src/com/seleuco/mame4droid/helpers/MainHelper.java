@@ -71,6 +71,7 @@ import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.View;
 import android.view.View.MeasureSpec;
+import android.widget.Toast;
 import android.widget.FrameLayout.LayoutParams;
 
 import com.seleuco.mame4droid.Emulator;
@@ -80,6 +81,7 @@ import com.seleuco.mame4droid.R;
 import com.seleuco.mame4droid.input.ControlCustomizer;
 import com.seleuco.mame4droid.input.InputHandler;
 import com.seleuco.mame4droid.input.InputHandlerExt;
+import com.seleuco.mame4droid.prefs.GameFilterPrefs;
 import com.seleuco.mame4droid.prefs.UserPreferences;
 import com.seleuco.mame4droid.views.FilterView;
 import com.seleuco.mame4droid.views.IEmuView;
@@ -355,8 +357,6 @@ public class MainHelper {
 		Emulator.setValue(Emulator.DOUBLE_BUFFER,mm.getPrefsHelper().isDoubleBuffer() ? 1 : 0);
 		Emulator.setValue(Emulator.PXASP1,mm.getPrefsHelper().isPlayerXasPlayer1() ? 1 : 0);
 				
-		Emulator.setValue(Emulator.FAVORITES,mm.getPrefsHelper().isFavorites() ? 1 : 0);
-		
 		Emulator.setValue(Emulator.AUTOFIRE,mm.getPrefsHelper().getAutofireValue());
 		
 		Emulator.setValue(Emulator.HISCORE,mm.getPrefsHelper().isHiscore() ? 1 : 0);
@@ -365,12 +365,15 @@ public class MainHelper {
 		Emulator.setValue(Emulator.VANTIALIAS,mm.getPrefsHelper().isVectorAntialias() ? 1 : 0);
 		Emulator.setValue(Emulator.VFLICKER,mm.getPrefsHelper().isVectorFlicker() ? 1 : 0);
 		
-		if(Emulator.isFavOnly()!=mm.getPrefsHelper().isFavorites())
+		
+		GameFilterPrefs gfp = mm.getPrefsHelper().getGameFilterPrefs();
+		boolean dirty = gfp.readValues();
+		gfp.sendValues();
+		if(dirty)
 		{
 			if(!Emulator.isInMAME())
 				Emulator.setValue(Emulator.RESET_FILTER, 1);
 			Emulator.setValue(Emulator.LAST_GAME_SELECTED, 0);
-			Emulator.setFavOnly(mm.getPrefsHelper().isFavorites());
 		}
 					
 		Emulator.setValue(Emulator.EMU_SPEED,mm.getPrefsHelper().getEmulatedSpeed());
@@ -422,7 +425,7 @@ public class MainHelper {
 	    	inputHandler.getTiltSensor().enable();
 	    else
 	    	inputHandler.getTiltSensor().disable();
-					
+	           	    
 		inputHandler.setTrackballSensitivity( prefsHelper.getTrackballSensitivity());
 		inputHandler.setTrackballEnabled(!prefsHelper.isTrackballNoMove());
 				
@@ -545,6 +548,15 @@ public class MainHelper {
 			   	}
 			}		
 		}
+		
+    	if(Emulator.isInMAME() && Emulator.getValue(Emulator.IN_MENU)==0 &&	
+    	    	   ((mm.getPrefsHelper().isLightgun() &&  mm.getInputHandler().getInputHandlerState() != InputHandler.STATE_SHOWING_NONE) || mm.getPrefsHelper().isTiltSensor()))
+    	{
+    			    CharSequence text = mm.getPrefsHelper().isTiltSensor() ? "Tilt sensor is enabled!" : "Touch lightgun is enabled!";
+    			    int duration = Toast.LENGTH_SHORT;
+    			    Toast toast = Toast.makeText(mm, text, duration);
+    			    toast.show();
+    	}
 		
 		if(state != InputHandler.STATE_SHOWING_CONTROLLER && ControlCustomizer.isEnabled())
 		{

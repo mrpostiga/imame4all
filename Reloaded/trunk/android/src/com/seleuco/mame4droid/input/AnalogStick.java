@@ -369,7 +369,9 @@ public class AnalogStick implements IController{
 		if( actionEvent == MotionEvent.ACTION_UP ||
 		    (actionEvent == MotionEvent.ACTION_POINTER_UP && pid == motion_pid) || 
 		    actionEvent == MotionEvent.ACTION_CANCEL || 
-		    (mm.getPrefsHelper().isLightgun() && Emulator.isInMAME() && !Emulator.isInMenu()))
+		    (mm.getPrefsHelper().isLightgun() && 
+		     !(mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_PORTRAIT &&  !mm.getPrefsHelper().isPortraitFullscreen()) 
+		     && Emulator.isInMAME() && !Emulator.isInMenu()))
 		{
 		       ptCur.x = ptCenter.x;
 		       ptCur.y = ptCenter.y;

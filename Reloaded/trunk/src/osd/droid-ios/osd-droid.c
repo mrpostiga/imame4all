@@ -101,6 +101,11 @@ unsigned short prev_screenbuffer[1024 * 1024];
 unsigned short screenbuffer[1024 * 1024];
 char globalpath[247]="/sdcard/ROMs/MAME4droid/";
 
+int array_year_count = 0;
+int array_main_manufacturers_count = 0;
+int array_main_driver_source_count = 0;
+int array_categories_count = 0;
+
 static pthread_mutex_t cond_mutex     = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t  condition_var   = PTHREAD_COND_INITIALIZER;
 
@@ -170,10 +175,9 @@ extern "C" void setGlobalPath(const char *path){
 }
 
 extern "C"
-void setMyValue(int key,int value){
+void setMyValue(int key,int i, int value){
 
-
-	//__android_log_print(ANDROID_LOG_DEBUG, "libMAME4droid.so", "setMyValue  %d %d",key,value);
+	//__android_log_print(ANDROID_LOG_DEBUG, "libMAME4droid.so", "setMyValue  %d,%d:%d",key,i,value);
 
 	switch(key)
 	{
@@ -233,13 +237,29 @@ void setMyValue(int key,int value){
                 myosd_vector_antialias = value;break;
             case 36:
                 myosd_vector_flicker = value;break;
-	}
+            case 41:
+                myosd_filter_clones = value;break;
+            case 42:
+                myosd_filter_not_working = value;break;
+            case 43:
+                myosd_filter_manufacturer = value;break;
+            case 44:
+                myosd_filter_gte_year = value;break;
+            case 45:
+                myosd_filter_lte_year = value;break;
+            case 46:
+                myosd_filter_driver_source = value;break;
+            case 47:
+                myosd_filter_category= value;break;
+         }
 }
 
 extern "C"
-int getMyValue(int key){
-	//__android_log_print(ANDROID_LOG_DEBUG, "libMAME4droid.so", "getMyValue  %d",key);
+int getMyValue(int key,int i){
+     //__android_log_print(ANDROID_LOG_DEBUG, "libMAME4droid.so", "getMyValue  %d,%d",key,i);
 
+     if(i==0) 
+     {
 	switch(key)
 	{
 	    case 1:
@@ -258,10 +278,64 @@ int getMyValue(int key){
 	    	 return myosd_num_buttons;
 	    case 26:
 	    	 return myosd_num_ways;
+            case 37:
+            {
+                 if(!array_year_count)
+                    while(myosd_array_years[array_year_count][0]!='\0')array_year_count++;
+                 return array_year_count;
+            }
+            case 38:
+            {
+                if(!array_main_manufacturers_count)
+                    while(myosd_array_main_manufacturers[array_main_manufacturers_count][0]!='\0')array_main_manufacturers_count++;
+                return array_main_manufacturers_count;
+            }
+            case 39:
+            {
+                if(!array_main_driver_source_count)
+                    while(myosd_array_main_driver_source[array_main_driver_source_count][0]!='\0')array_main_driver_source_count++;
+                return array_main_driver_source_count;
+            }
+            case 40:
+            {
+                if(!array_categories_count)
+                    while(myosd_array_categories[array_categories_count][0]!='\0')array_categories_count++;
+                return array_categories_count;
+            }
 	    default :
 	         return -1;
 	}
+     }
+     return -1;
+}
 
+extern "C"
+void setMyValueStr(int key,int i, const char *value){
+     //__android_log_print(ANDROID_LOG_DEBUG, "libMAME4droid.so", "setMyValueStr  %d,%d:%s",key,i,value);
+     switch(key)
+     {
+        case 4:
+        {
+            if(strlen(value)<MAX_FILTER_KEYWORD)
+              strcpy(myosd_filter_keyword,value);
+        }
+        default:;
+     }          
+}
+
+extern "C"
+char *getMyValueStr(int key,int i){
+   __android_log_print(ANDROID_LOG_DEBUG, "libMAME4droid.so", "getMyValueStr  %d,%d",key,i);
+     switch(key)
+     {
+        case 0: return (char *)myosd_array_years[i];
+        case 1: return (char *)myosd_array_main_manufacturers[i];
+        case 2: return (char *)myosd_array_main_driver_source[i];
+        case 3: return (char *)myosd_array_categories[i];
+        default: return NULL;  
+     }
+     
+   return NULL;
 }
 
 extern "C"

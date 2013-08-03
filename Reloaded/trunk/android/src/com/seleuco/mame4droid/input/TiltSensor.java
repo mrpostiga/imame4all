@@ -58,6 +58,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.view.Surface;
+import android.widget.Toast;
 
 import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.MAME4droid;
@@ -196,6 +197,11 @@ public class TiltSensor {
         		{
         			reset();
         			init = true;
+        		    /*
+        			CharSequence text = "Tilt sensor is enabled";
+        		    int duration = Toast.LENGTH_SHORT;
+        		    Toast toast = Toast.makeText(mm, text, duration);
+        		    toast.show();*/
         		}
         		
         		boolean skip = (mm.getInputHandler().pad_data[0]  & IController.SELECT_VALUE) != 0 ||
