@@ -161,6 +161,7 @@ public class TiltSensor {
         	//final float alpha = 0.3f;       	
         	float value_x = - e.values[0]; 
         	float value_z = e.values[2];
+        	//float value_z = e.values[1];
         		
         	try{
                int r = mm.getWindowManager().getDefaultDisplay().getRotation();

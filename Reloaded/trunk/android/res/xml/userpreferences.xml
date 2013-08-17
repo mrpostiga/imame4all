@@ -7,9 +7,9 @@
    <com.seleuco.mame4droid.prefs.ListPrefWithWarn
 			android:entries="@array/pref_global_video_render_options"
 			android:title='Video render mode'			
-			android:key="PREF_GLOBAL_VIDEO_RENDER_MODE"
+			android:key="PREF_GLOBAL_VIDEO_RENDER_MODE_2"
 			android:entryValues="@array/pref_global_video_render_values"
-			android:defaultValue="1" />
+			android:defaultValue="2" />
 	    <PreferenceScreen
             android:key="PREFSCR_GAME_FILTER"
             android:title="Game filter"
@@ -18,7 +18,14 @@
 	        
 	        <CheckBoxPreference android:key="PREF_FILTER_FAVORITES"
 			   android:title="Show only favorites" android:summary="Enable it to show only favorites games in ROM manager"
-			   android:defaultValue="false" />	   
+			   android:defaultValue="false" />
+	        
+            <EditTextPreference
+                android:dialogTitle="Filter Keyword"
+                android:key="PREF_FILTER_KEYWORD"
+                android:title="Keyword"
+                android:defaultValue="" 
+                />	        	   
 	        
 	        <CheckBoxPreference android:key="PREF_FILTER_CLONES"
 			   android:title="Hide clones" android:summary="Enable it to hide clones in ROM manager"
@@ -27,14 +34,7 @@
 	        <CheckBoxPreference android:key="PREF_FILTER_NOTWORKING"
 			   android:title="Hide not working" android:summary="Enable it to hide not working games in ROM manager"
 			   android:defaultValue="false" />
-	        
-            <EditTextPreference
-                android:dialogTitle="Filter Keyword"
-                android:key="PREF_FILTER_KEYWORD"
-                android:title="Keyword"
-                android:defaultValue="" 
-                />	        
-	        
+	        	        	        
 	        <ListPreference			   
 			   android:title='Year &gt;='			
 			   android:key="PREF_FILTER_YGTE"			
@@ -125,10 +125,13 @@
 		<CheckBoxPreference android:key="PREF_GLOBAL_IDLE_WAIT"
 			android:title="Save Battery" android:summary="Try to save battery at the expense of jitter on some devices"
 			android:defaultValue="true" />	
-			
-	    <CheckBoxPreference android:key="PREF_GLOBAL_FORCE_PXASPECT"
-			android:title="Forced Pixel Aspect" android:summary="Enable it to force pixel aspect ratio bypassing MAME video selection"
-			android:defaultValue="false" />
+				    
+	    <ListPreference
+			android:entries="@array/pref_px_options"
+			android:title='Aspect'			
+			android:key="PREF_GLOBAL_FORCE_PXASPECT_2"
+			android:entryValues="@array/pref_px_values"
+			android:defaultValue="0" />	    
 	    
 	    <com.seleuco.mame4droid.prefs.ListPrefWithWarn
 			android:entries="@array/pref_vsync_options"
@@ -224,6 +227,10 @@
 			android:key="PREF_AUTOMAP_OPTIONS"
 			android:entryValues="@array/pref_automap_values"
 			android:defaultValue="2" />		
+			
+		<CheckBoxPreference android:key="PREF_DISABLE_RIGHT_STICK"
+			android:title="GamePad disable right stick" android:summary="Disable right stick when is autodectected"
+			android:defaultValue="false" />		
 																						
 		<CheckBoxPreference android:key="PREF_ANIMATED_INPUT"
 			android:title="Animated" android:summary="Animated touch control. Disable for huge performance boost"
@@ -290,6 +297,13 @@
 			android:key="PREF_BUTTONS_SIZE"
 			android:entryValues="@array/pref_buttons_size_values"
 			android:defaultValue="3" />	
+			
+		<ListPreference
+			android:entries="@array/pref_buttons_size_options"
+			android:title='Stick and DPAD size (fullscreen)'			
+			android:key="PREF_STICK_SIZE"
+			android:entryValues="@array/pref_buttons_size_values"
+			android:defaultValue="3" />			
 		
 		<ListPreference
 			android:entries="@array/pref_numbuttons_options"
@@ -305,6 +319,13 @@
 		<PreferenceScreen android:key="changeRomPath"
 			android:title="Change installation path" android:summary="Change MAME4droid/roms location. You have to move ROM files manually" />		
 	    
+		<ListPreference
+			android:entries="@array/pref_overlay_intensity_options"
+			android:title='Effect overlay intensity'			
+			android:key="PREF_OVERLAY_INTENSITY"
+			android:entryValues="@array/pref_overlay_intensity_values"
+			android:defaultValue="2" />		
+		
 	    <CheckBoxPreference android:key="PREF_GLOBAL_WARN_ON_EXIT"
 			android:title="Warn on exit" android:summary="Enable it to warn when you press the exit button in the external controller (GamePad) when gaming"
 			android:defaultValue="true" />	
@@ -335,9 +356,9 @@
 			android:defaultValue="2" />
 
 		<com.seleuco.mame4droid.prefs.ListPrefWithWarn android:entries="@array/pref_low_norm_or_hight_options"
-			android:title='Sound Latency' android:key="PREF_SOUND_LATENCY"
+			android:title='Sound Latency' android:key="PREF_SOUND_LATENCY_2"
 			android:entryValues="@array/pref_low_norm_or_hight_values"
-			android:defaultValue="2" />
+			android:defaultValue="1" />
 		
         <com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_FORCE_GLES10"
 			android:title="Force OpenGL ES 1.0" android:summary="Forces OpenGL ES 1.0 render path"
@@ -351,18 +372,16 @@
 			    
 	</PreferenceCategory>    
 	    
-   
 	<PreferenceCategory android:title="Portrait Display Settings">
 
 		<ListPreference android:entries="@array/pref_scaleMode_options"
-			android:title='Scaling mode' android:key="PREF_PORTRAIT_SCALING_MODE_2"
+			android:title='Scaling mode' android:key="PREF_PORTRAIT_SCALING_MODE_3"
 			android:entryValues="@array/pref_scaleMode_values"
-			android:defaultValue="5" />
+			android:defaultValue="1" />
 			
-		<ListPreference android:entries="@array/pref_filter_options"
-			android:title='Effect overlay' android:key="PREF_PORTRAIT_FILTER_2"
-			android:entryValues="@array/pref_filter_values"
-			android:defaultValue="1" />	
+		<ListPreference 
+			android:title='Effect overlay' android:key="PREF_PORTRAIT_OVERLAY"
+			android:defaultValue="none" />	
 
 		<CheckBoxPreference android:key="PREF_PORTRAIT_TOUCH_CONTROLLER"
 			android:title="Touch controller visible" android:summary="Disable to hide the touch controller. Useful when you are using a GamePad"
@@ -381,14 +400,13 @@
 	<PreferenceCategory android:title="Lansdscape Display Settings">
 			
 		<ListPreference android:entries="@array/pref_scaleMode_options"
-			android:title='Scaling mode' android:key="PREF_LANDSCAPE_SCALING_MODE_2"
+			android:title='Scaling mode' android:key="PREF_LANDSCAPE_SCALING_MODE_3"
 			android:entryValues="@array/pref_scaleMode_values"
-			android:defaultValue="5" />
-		
-		<ListPreference android:entries="@array/pref_filter_options"
-			android:title='Effect overlay' android:key="PREF_LANDSCAPE_FILTER_2"
-			android:entryValues="@array/pref_filter_values"
 			android:defaultValue="1" />
+		
+		<ListPreference 
+			android:title='Effect overlay' android:key="PREF_LANDSCAPE_OVERLAY"
+			android:defaultValue="none" />
 			
 		<CheckBoxPreference android:key="PREF_LANDSCAPE_TOUCH_CONTROLLER"
 			android:title="Touch controller visible" android:summary="Disable to hide the touch controller. Useful when you are using a GamePad"

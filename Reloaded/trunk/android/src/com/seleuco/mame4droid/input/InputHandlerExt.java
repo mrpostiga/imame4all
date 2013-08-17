@@ -303,7 +303,7 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 	    
 		mag =  getMagnitude(x,y);	
 		
-		if(mag>=deadZone)
+		if(mag>=deadZone && !mm.getPrefsHelper().isDisabledRightStick())
 		{
 	 		float v =  getAngle(x,y);
 	 		
@@ -546,6 +546,8 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 			mapDPAD();
 			mapL1R1();mapTHUMBS();mapSelectStart();
 			
+			deviceMappings[KeyEvent.KEYCODE_BACK][numDevs] = SELECT_VALUE;
+			
 			desc = "Sixaxis";
 			
 			detected = true;
@@ -562,7 +564,7 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 			
 			detected = true;
 		}
-		else if(name.indexOf("nvidia_joypad")!=-1 ) {
+		else if(name.indexOf("nvidia_joypad")!=-1 || name.indexOf("NVIDIA Controller")!=-1) {
 								
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][numDevs] = X_VALUE;
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][numDevs] = B_VALUE;

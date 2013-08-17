@@ -67,7 +67,6 @@ import com.seleuco.mame4droid.views.EmulatorViewGL;
 
 public class Emulator 
 {
-	
 	final static public int FPS_SHOWED_KEY = 1;
 	final static public int EXIT_GAME_KEY = 2;	
 	//final static public int LAND_BUTTONS_KEY = 3;
@@ -180,14 +179,14 @@ public class Emulator
 	public static boolean isInMenu() {
 		return inMenu;
 	}	
-	private static int overlayFilterType  =  PrefsHelper.PREF_FILTER_NONE;
+	private static String overlayFilterValue  =  PrefsHelper.PREF_OVERLAY_NONE;
 	
-	public static int getOverlayFilterType() {
-		return overlayFilterType;
+	public static String getOverlayFilterValue() {
+		return overlayFilterValue;
 	}
 
-	public static void setOverlayFilterType(int overlayFilterType) {
-		Emulator.overlayFilterType = overlayFilterType;
+	public static void setOverlayFilterValue(String value) {
+		Emulator.overlayFilterValue = value;
 	}
 	
 	private static boolean needsRestart = false;
@@ -396,6 +395,11 @@ public class Emulator
 			        		    toast.show();
 		                	}
                             v.invalidate();
+                            
+                            if(mm.getFilterView()!=null)
+                            {
+                            	mm.getFilterView().setVisibility(Emulator.isInMAME() ? View.VISIBLE : View.INVISIBLE);
+                            }                            
 		                }
 		            });
 				}		

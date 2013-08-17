@@ -1,5 +1,5 @@
 =================================================================
-MAME4droid Reloaded (0.139) 1.4.1 (August 3, 2013) 
+MAME4droid Reloaded (0.139) 1.4.3 (August 17, 2013) 
 by David Valdeita (Seleuco)
 =================================================================
 
@@ -103,11 +103,11 @@ GLOBAL OPTIONS
 
 -Cheats: Enables the reading of the cheat database, if present, and the Cheat menu in the user interface.
 
--Change installation path: Change current ROMs path. You need to restart app. You must move roms from older folder to the new one also.
+-Change installation path: Change current ROMs path. You need to restart app. You must move ROMs from older folder to the new one also.
 
 -Save battery: Allows MAME to give time back to the system (sleep) when running with -throttle. This allows other programs to have some CPU time, assuming that the game isn't taxing 100% of your CPU resources. This option can potentially cause hiccups in performance if other demanding programs are running.
 
--Forced Pixel Aspect: Enable it to force pixel aspect ratio bypassing MAME video selection.
+-Aspect: Forced Pixel Aspect, enable it to force pixel aspect ratio bypassing MAME video selection. Forced Pixel Aspect Smart uses 4/3 or pixel aspect to maximize space.
 
 -Forced Refresh Rate: If enabled, forces refresh video emulation for smoother gameplay in some games (use with caution since it could broke other games like cave ones).
 
@@ -125,6 +125,8 @@ GLOBAL OPTIONS
 
 -Buttons size. Select the buttons size when you are on fullscreen (landscape)
 
+-Stick and DPAD size. Select the stick o DPAD size when you are on fullscreen (landscape)
+
 -Number of buttons (landscape) 1-4). Show 1-4 Buttons: Hide/show Y/A/X buttons if needed. Select A=B+X to use A button as B and X simultaneous press.
 
 -Hide stick: Enable to hide stick on full screen mode.
@@ -140,7 +142,9 @@ GLOBAL OPTIONS
    * Original iCade. Select this value to use iON's iCade controller. You should be bluetooth paired before.
    * iCP, Gametel or iCade compatible. Select this value to use an iCade compatible layout. Controller should be configured on iCade mode.
 
--GamePad automap options: Let you define the Thumbs or L1,L2 buttons behaviour when a GamePad is autodetected. 
+-GamePad automap options: Let you define the Thumbs or L1,L2 buttons behaviour when a GamePad is autodetected.
+
+-GamePad disable right stick: Disable right stick when it is autodetected.  
 
 -Touch lightgun: Enable to tap on touchscreen as a lightgun. First finger is main fire. Second finger when first finger is pressed is alternate fire.
 
@@ -180,15 +184,16 @@ GLOBAL OPTIONS
 -Touch anywhere: Enable to tap anywhere on screen to fire. First finger is main fire. Second finger when first finger is pressed is alternate fire
 
 -Scaling Mode:  
-     
+
+     * Keep Aspect: keeps the aspect ratio
+     * Stretch to fit screen, will use all available screen.     
      * Original.
      * 1.5X: 1.5 original size. 
      * 2X: Double original size.
      * 2.5X: 2.5 original size. 
-     * Keep Aspect: keeps the aspect ratio
-     * Stretch to fit screen, will use all available screen.
-     
--Effect overlay. Applies an image filter (scanlines or CRT) at the expense of performance.      
+     * (... and so on)
+          
+-Effect overlay. Applies an image filter (scanlines, CRT) at the expense of performance.      
 
 -Touch controller visible: Hide/Show the touch controller. Disable if you want to use an external controller like a keyboard or Wiimote.
 
@@ -276,6 +281,8 @@ PORT CREDITS
 - Port to Android by David Valdeita (Seleuco)
 
 DEVELOPMENT
+- 2013-08-17 version 1.4.3 Added new overlays effects (with overlay intensity selector). Added jelly bean lights out mode (or hide navigation bar when touch controller is hide). New pixel aspect smart option to maximize emulation space. Added stick/DPAD touch size option. Added more scaling modes. Added option to disable right stick on GamePads. Some bug fixes on PS3 gamepad auto-detection.
+- 2013-08-12 Version 1.4.2 NVidia Shield autoconfig fix. 
 - 2013-08-03 Version 1.4.1 Added game filters (clones, year, category, manufacturer, driver source...). Some bug fixes. 
 - 2013-07-27 Version 1.4. Added tap on touchscreen as a lightgun device. Added Tilt sensor option to tap anywhere on screen to fire. Some bug fixes. 
 - 2013-07-19 Version 1.3.5 Some bug fixes.

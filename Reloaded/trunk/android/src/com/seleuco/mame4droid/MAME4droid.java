@@ -44,6 +44,8 @@
 
 package com.seleuco.mame4droid;
 
+import java.io.File;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
@@ -52,7 +54,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -154,14 +158,14 @@ public class MAME4droid extends Activity {
     public InputHandler getInputHandler() {
 		return inputHandler;
 	}
-
+    
 	/** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
 		Log.d("EMULATOR", "onCreate");
-                        
+		                        
 		prefsHelper = new PrefsHelper(this);
 
         dialogHelper  = new DialogHelper(this);
@@ -198,14 +202,18 @@ public class MAME4droid extends Activity {
         }
         else
         {
-        	this.getLayoutInflater().inflate(R.layout.emuview_gl, fl);
+        	if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
+        	    this.getLayoutInflater().inflate(R.layout.emuview_gl_ext, fl);
+        	else
+        		this.getLayoutInflater().inflate(R.layout.emuview_gl, fl);
+    		
         	emuView = this.findViewById(R.id.EmulatorViewGL);
         }
         
         if(full && prefsHelper.isPortraitTouchController())
         {
         	FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams )emuView.getLayoutParams();
-        	lp.gravity =  Gravity.TOP;
+        	lp.gravity =  Gravity.TOP | Gravity.CENTER;
         }
                        
         inputView = (InputView) this.findViewById(R.id.InputView);
@@ -215,81 +223,56 @@ public class MAME4droid extends Activity {
         inputView.setMAME4droid(this);
         
         Emulator.setMAME4droid(this);        
-         
-        /*
-        if(mainHelper.getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE)
-        {*/        
-        	View frame = this.findViewById(R.id.EmulatorFrame);
-	        frame.setOnTouchListener(inputHandler);        	
-        //}
-        
-        if((prefsHelper.getPortraitOverlayFilterType()!=PrefsHelper.PREF_FILTER_NONE && mainHelper.getscrOrientation() == Configuration.ORIENTATION_PORTRAIT)
+            
+        View frame = this.findViewById(R.id.EmulatorFrame);
+	    frame.setOnTouchListener(inputHandler);        	
+        	    
+        if((prefsHelper.getPortraitOverlayFilterValue()!=PrefsHelper.PREF_OVERLAY_NONE && mainHelper.getscrOrientation() == Configuration.ORIENTATION_PORTRAIT)
         		||
-           (prefsHelper.getLandscapeOverlayFilterType()!=PrefsHelper.PREF_FILTER_NONE && mainHelper.getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE))
+           (prefsHelper.getLandscapeOverlayFilterValue()!=PrefsHelper.PREF_OVERLAY_NONE && mainHelper.getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE))
         {	
-            int type;
+        	String value;
             
             if(mainHelper.getscrOrientation() == Configuration.ORIENTATION_PORTRAIT)
-            	type = prefsHelper.getPortraitOverlayFilterType();
+            	value = prefsHelper.getPortraitOverlayFilterValue();
             else
-            	type = prefsHelper.getLandscapeOverlayFilterType();
+            	value = prefsHelper.getLandscapeOverlayFilterValue();
            
-            int dwb_id = -1;
-            
-            switch(type){
-	            case 2: case 3: dwb_id = R.drawable.scanline_1;break;
-	            case 4: case 5: dwb_id = R.drawable.scanline_2;break;
-	            case 6: case 7: dwb_id = R.drawable.crt_1;break;
-	            case 8: case 9: dwb_id = R.drawable.crt_2;break;
-            }	
-            
-            if(dwb_id!=-1)
+            if(value != PrefsHelper.PREF_OVERLAY_NONE)
             {
 	        	getLayoutInflater().inflate(R.layout.filterview, fl);
 	            filterView = (FilterView)this.findViewById(R.id.FilterView);
-	            Bitmap bmp = BitmapFactory.decodeResource(getResources(),dwb_id);
+	            
+	            String fileName = getPrefsHelper().getROMsDIR()+File.separator+"overlays"+File.separator+value;
+	            
+	            Bitmap bmp = BitmapFactory.decodeFile(fileName);
 	            BitmapDrawable bitmapDrawable = new BitmapDrawable(bmp);
 	            bitmapDrawable.setTileModeXY(Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
-	            //bitmapDrawable.setAlpha((int)((type> 3 ? 0.16f : 0.35f) *255));
-	            int alpha = 0;
-	            if(type==2)
-	            	alpha = 130;
-	            else if(type==3)
-	            	alpha = 180;	            
-	            else if(type==4)
-	            	alpha = 100;
-	            else if(type==5)
-	            	alpha = 150;	            
-	            else if(type==6)	            	
-	            	alpha = 50;
-	            else if(type==7)	            	
-	            	alpha = 130;	            
-	            else if(type==8)
-	            	alpha = 50;
-	            else if(type==9)
-	            	alpha = 120;	            
+	            
+	            int alpha = 0;	            
+		   		switch(getPrefsHelper().getEffectOverlayIntensity())
+			    {
+			       case 1: alpha = 25;break;
+			       case 2: alpha = 50;break;
+			       case 3: alpha = 75;break;
+			       case 4: alpha = 100;break;
+			       case 5: alpha = 150;break;
+                }
+            
 	            bitmapDrawable.setAlpha(alpha);
 	            filterView.setBackgroundDrawable(bitmapDrawable);
-	
-	            //filterView.setAlpha(type> 3 ? 0.16f : 0.35f);
-	            
+		            
 	            if(full && prefsHelper.isPortraitTouchController())
 	            {
 	            	FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams )filterView.getLayoutParams();
-	            	lp.gravity =  Gravity.TOP;
+	            	lp.gravity =  Gravity.TOP | Gravity.CENTER;
 	            }
 	            
 	            filterView.setMAME4droid(this);
             }
+      
         }
                 
-        /*
-        emuView.setOnKeyListener(inputHandler);
-        emuView.setOnTouchListener(inputHandler);
-                     
-        inputView.setOnTouchListener(inputHandler);
-        inputView.setOnKeyListener(inputHandler);
-        */
         inputHandler.setInputListeners();
         
         mainHelper.updateMAME4droid();

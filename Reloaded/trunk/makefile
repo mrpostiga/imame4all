@@ -22,9 +22,9 @@ NOWERROR = 1
 
 ANDROID = 1
 
-#AMIPS=1
+AMIPS=1
 
-AX86=1
+#AX86=1
 
 #AARMV7=1
 
@@ -75,9 +75,9 @@ BASE_DEV=/home/david/Projects/android/my-android-toolchain-r8/sysroot
 endif
 
 ifdef AARMV7
-MYPREFIX=/home/david/Projects/android/my-android-toolchain-r8e-14/bin/arm-linux-androideabi-
-#MYPREFIX=/home/david/Projects/android/my-android-toolchain-r8e-14/bin/
-BASE_DEV=/home/david/Projects/android/my-android-toolchain-r8e-14/sysroot
+MYPREFIX=/home/david/Projects/android/my-android-toolchain-r9-18/bin/arm-linux-androideabi-
+#MYPREFIX=/home/david/Projects/android/my-android-toolchain-r9-18/bin/
+BASE_DEV=/home/david/Projects/android/my-android-toolchain-r9-18/sysroot
 endif
 
 #MYPREFIX=/home/david/Projects/android/my-android-toolchain-14-crystax/bin/arm-linux-androideabi-
@@ -408,7 +408,11 @@ LD = @$(MYPREFIX)g++
 else
 
 AR = @$(MYPREFIX)ar
+ifdef AARMV7
+CC = @$(MYPREFIX)gcc-4.8
+else
 CC = @$(MYPREFIX)gcc
+endif
 LD = @$(MYPREFIX)g++
 
 #AR = @$(MYPREFIX)clang
@@ -750,10 +754,9 @@ CCOMFLAGS += --sysroot $(BASE_DEV)
 CCOMFLAGS += -DANDROID
 CCOMFLAGS += -fpic
 
-#CCOMFLAGS += -fno-strict-aliasing
-#CCOMFLAGS += -mno-unaligned-access
-
 ifdef AARMV7
+#CCOMFLAGS += -fno-strict-aliasing
+CCOMFLAGS += -mno-unaligned-access
 CCOMFLAGS += -mthumb 
 CCOMFLAGS += -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 -DARMV7
 #CCOMFLAGS += -mfpu=neon

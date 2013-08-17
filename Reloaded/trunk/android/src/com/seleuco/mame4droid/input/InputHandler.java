@@ -110,7 +110,6 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	- = SELECT	 
 	*/
 	
-
 	
 	public static int[] defaultKeyMapping = {
 		KeyEvent.KEYCODE_DPAD_UP,    //WP_Up
@@ -903,8 +902,16 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	       case 4:sz=20;break;
 	       case 5:sz=30;break;
 	    }
-	    
-	    if(values == null || sz == 0)
+	    int sz2 = 0;
+	    switch(mm.getPrefsHelper().getStickSize())
+	    {
+	       case 1:sz2=-30;break;
+	       case 2:sz2=-20;break;
+	       case 3:sz2=0;break;
+	       case 4:sz2=20;break;
+	       case 5:sz2=30;break;
+	    }	    
+	    if(values == null || (sz == 0 && sz2==0))
 	    	return;
 	    
 	    for (int j = 0; j < values.size(); j++) 
@@ -912,32 +919,34 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	    		    	    
 	    	InputValue iv = values.get(j);
 	    	if(iv.getType() == InputHandler.TYPE_BUTTON_IMG 
-	    		|| iv.getType() == InputHandler.TYPE_BUTTON_RECT
-	    		|| iv.getType() == InputHandler.TYPE_STICK_IMG)
+	    		|| iv.getType() == InputHandler.TYPE_BUTTON_RECT)
 	    	{
 	    	    if(iv.getValue()!=BTN_L2 && iv.getValue()!=BTN_R2 && iv.getValue()!=BTN_START && iv.getValue()!=BTN_SELECT)
 	    		    iv.setSize(0, 0, sz, sz);
 	    	}
-	    	if(iv.getType() == InputHandler.TYPE_STICK_RECT)
+	    	else if(iv.getType() == InputHandler.TYPE_STICK_IMG)
+	    	{
+	    		 iv.setSize(0, 0, sz2, sz2);
+	    	}
+	    	else if(iv.getType() == InputHandler.TYPE_STICK_RECT)
 	    	{
 	    		switch(iv.getValue())
 	    		{
 	    		   case 1: iv.setSize(0, 0, 0, 0); break;//upleft
-	    		   case 2: iv.setSize(0, 0, sz,0); break;//up
-	    		   case 3: iv.setSize(sz, 0, sz,0); break;//upright
-	    		   case 4: iv.setSize(0, 0, sz/2,sz); break;//left	    		   
-	    		   case 5: iv.setSize(sz/2, 0, sz,sz); break;//right
-	    		   case 6: iv.setSize(0, sz, 0,sz); break;//downleft
-	    		   case 7: iv.setSize(0, sz,sz,sz); break;	 //down
-	    		   case 8: iv.setSize(sz, sz, sz,sz); break;//downright
+	    		   case 2: iv.setSize(0, 0, sz2,0); break;//up
+	    		   case 3: iv.setSize(sz2, 0, sz2,0); break;//upright
+	    		   case 4: iv.setSize(0, 0, sz2/2,sz2); break;//left	    		   
+	    		   case 5: iv.setSize(sz2/2, 0, sz2,sz2); break;//right
+	    		   case 6: iv.setSize(0, sz2, 0,sz2); break;//downleft
+	    		   case 7: iv.setSize(0, sz2,sz2,sz2); break;	 //down
+	    		   case 8: iv.setSize(sz, sz2, sz2,sz2); break;//downright
 	    		   default:
-	    			 iv.setSize(0, 0,sz,sz);
+	    			 iv.setSize(0, 0,sz2,sz2);
 	    		}
-	    	}
-	    		    	
-			if(iv.getType() == InputHandler.TYPE_ANALOG_RECT)
+	    	}	    		    	
+	    	else if(iv.getType() == InputHandler.TYPE_ANALOG_RECT)
 			{   
-				iv.setSize(0, 0,sz,sz);
+				iv.setSize(0, 0,sz2,sz2);
 			    mm.getInputHandler().getAnalogStick().setStickArea(iv.getRect());
 			} 
 	    }
@@ -1135,10 +1144,10 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		int action = event.getAction();
 		if(action != KeyEvent.ACTION_DOWN)
 			return;
-	    
-		int ways = mm.getPrefsHelper().getStickWays() ;
+	    		
+		int ways = mm.getPrefsHelper().getStickWays();
 		if(ways==-1)ways = Emulator.getValue(Emulator.NUMWAYS);
-		boolean b = Emulator.isInMAME() && Emulator.isInMenu();
+		boolean b = Emulator.isInMAME() && !Emulator.isInMenu();
 			    
 	    int keyCode = event.getKeyCode();
 	    
