@@ -44,6 +44,9 @@
 
 package com.seleuco.mame4droid.prefs;
 
+import java.io.File;
+import java.io.FilenameFilter;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -75,8 +78,8 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	protected ListPreference mPrefSpeed;	
 	protected ListPreference mPrefPortraitMode;
     protected ListPreference mPrefLandsMode;
-	protected ListPreference mPrefPortraitFilterType;
-    protected ListPreference mPrefLandsFilterType;
+	protected ListPreference mPrefPortraitOverlay;
+    protected ListPreference mPrefLandsOverlay;
     protected ListPreference mPrefControllerType;
     protected ListPreference mPrefExtInput;
     protected ListPreference mPrefAutomap;
@@ -89,6 +92,7 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
     protected ListPreference mPrefStickType;
     protected ListPreference mPrefNumButtons;
     protected ListPreference mPrefSizeButtons;
+    protected ListPreference mPrefSizeStick;    
     protected ListPreference mPrefVideoThPr;
     protected ListPreference mPrefMainThPr;
     protected ListPreference mPrefSoundLantency;
@@ -100,6 +104,8 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
     protected ListPreference mPrefFilterYGTE;
     protected ListPreference mPrefFilterYLTE;  
     protected EditTextPreference mPrefFilterkeyword;
+    protected ListPreference mPrefOverlayInt; 
+    protected ListPreference mPrefForcPX;
     
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -115,8 +121,13 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 		mPrefSpeed = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GLOBAL_SPEED);
         mPrefPortraitMode = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_PORTRAIT_SCALING_MODE);
         mPrefLandsMode = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_LANDSCAPE_SCALING_MODE);
-        mPrefPortraitFilterType = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_PORTRAIT_FILTER_TYPE);
-        mPrefLandsFilterType = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_LANDSCAPE_FILTER_TYPE);        
+        
+        mPrefPortraitOverlay = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_PORTRAIT_OVERLAY);
+        populateOverlayList(mPrefPortraitOverlay);
+        
+        mPrefLandsOverlay = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_LANDSCAPE_OVERLAY);  
+        populateOverlayList(mPrefLandsOverlay);
+        
         mPrefControllerType = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_CONTROLLER_TYPE);
         mPrefExtInput = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_INPUT_EXTERNAL);
         mPrefAutomap = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_AUTOMAP_OPTIONS);
@@ -128,7 +139,8 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
         mPrefSound = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GLOBAL_SOUND);
         mPrefStickType = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_STICK_TYPE);
         mPrefNumButtons = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_NUMBUTTONS);
-        mPrefSizeButtons = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_BUTTONS_SIZE);        
+        mPrefSizeButtons = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_BUTTONS_SIZE);    
+        mPrefSizeStick = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_STICK_SIZE);    
         mPrefVideoThPr = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_VIDEO_THREAD_PRIORITY);
         mPrefMainThPr = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_MAIN_THREAD_PRIORITY);
         mPrefSoundLantency = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_SOUND_LATENCY);
@@ -136,23 +148,26 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
         mPrefVSync = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GLOBAL_VSYNC);
         		
 		mPrefFilterCat = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_FILTER_CATEGORY);	
-		populateList(Emulator.FILTER_NUM_CATEGORIES,Emulator.FILTER_CATEGORIES_ARRAY,mPrefFilterCat);
+		populateFilterList(Emulator.FILTER_NUM_CATEGORIES,Emulator.FILTER_CATEGORIES_ARRAY,mPrefFilterCat);
 		
 		mPrefFilterDrvSrc = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_FILTER_DRVSRC);
-		populateList(Emulator.FILTER_NUM_DRIVERS_SRC,Emulator.FILTER_DRIVERS_SRC_ARRAY,mPrefFilterDrvSrc);
+		populateFilterList(Emulator.FILTER_NUM_DRIVERS_SRC,Emulator.FILTER_DRIVERS_SRC_ARRAY,mPrefFilterDrvSrc);
         
 		mPrefFilterManuf = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_FILTER_MANUF);
-		populateList(Emulator.FILTER_NUM_MANUFACTURERS,Emulator.FILTER_MANUFACTURERS_ARRAY,mPrefFilterManuf);
+		populateFilterList(Emulator.FILTER_NUM_MANUFACTURERS,Emulator.FILTER_MANUFACTURERS_ARRAY,mPrefFilterManuf);
 		
 		mPrefFilterYGTE = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_FILTER_YGTE);
-		populateList(Emulator.FILTER_NUM_YEARS,Emulator.FILTER_YEARS_ARRAY,mPrefFilterYGTE);
+		populateFilterList(Emulator.FILTER_NUM_YEARS,Emulator.FILTER_YEARS_ARRAY,mPrefFilterYGTE);
 		mPrefFilterYLTE = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_FILTER_YLTE);
-		populateList(Emulator.FILTER_NUM_YEARS,Emulator.FILTER_YEARS_ARRAY,mPrefFilterYLTE);
+		populateFilterList(Emulator.FILTER_NUM_YEARS,Emulator.FILTER_YEARS_ARRAY,mPrefFilterYLTE);
 		
 		mPrefFilterkeyword = (EditTextPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_FILTER_KEYWORD);
+		
+		mPrefOverlayInt = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_OVERLAY_INTENSITY);
+		mPrefForcPX = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GLOBAL_FORCE_PXASPECT);
 	}
 	
-	protected void populateList(int key1, int key2, ListPreference lp){
+	protected void populateFilterList(int key1, int key2, ListPreference lp){
         int i = 0;
 		int n = 0; 
 		CharSequence[] cs = null;
@@ -173,6 +188,53 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 		lp.setEntryValues(csv);	
 	}
 	
+	protected void populateOverlayList(ListPreference lp){
+		
+		CharSequence[] cs = null;
+		CharSequence[] csv = null;
+
+		String romDir = getPreferenceScreen().getSharedPreferences().getString(
+				PrefsHelper.PREF_ROMsDIR, "");
+		romDir += File.separator + "overlays";
+
+		File path = new File(romDir);
+
+		FilenameFilter filter = new FilenameFilter() {
+			@Override
+			public boolean accept(File dir, String filename) {
+				File sel = new File(dir, filename);
+				return sel.isFile() && !sel.isHidden()
+						&& filename.toLowerCase().endsWith(".png");
+			}
+		};
+
+		String[] fList = null;
+		
+		if(path.exists())
+		    fList = path.list(filter);
+		
+		if (fList == null)
+			fList = new String[0];
+
+		int n = fList.length;
+
+		cs = new String[n + 1];
+		csv = new String[n + 1];
+
+		cs[0] = "None";
+		csv[0] = PrefsHelper.PREF_OVERLAY_NONE;
+
+		int i = 0;
+		while (i < n) {
+			File f = new File(fList[i]);
+			i++;
+			csv[i] = f.getName();
+			cs[i] = f.getName().toLowerCase().replace(".png", "");
+		}
+		lp.setEntries(cs);
+		lp.setEntryValues(csv);
+	}
+	
 	  @Override
 	    protected void onResume() {
 	        super.onResume();
@@ -184,8 +246,8 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	        mPrefSpeed.setSummary("Current value is '" + mPrefSpeed.getEntry()+"'");
 	        mPrefPortraitMode.setSummary("Current value is '" + mPrefPortraitMode.getEntry()+"'"); 
 	        mPrefLandsMode.setSummary("Current value is '" + mPrefLandsMode.getEntry()+"'"); 
-	        mPrefPortraitFilterType.setSummary("Current value is '" + mPrefPortraitFilterType.getEntry()+"'"); 
-	        mPrefLandsFilterType.setSummary("Current value is '" + mPrefLandsFilterType.getEntry()+"'"); 	        
+	        mPrefPortraitOverlay.setSummary("Current value is '" + mPrefPortraitOverlay.getEntry()+"'"); 
+	        mPrefLandsOverlay.setSummary("Current value is '" + mPrefLandsOverlay.getEntry()+"'"); 	        
 	        mPrefControllerType.setSummary("Current value is '" + mPrefControllerType.getEntry()+"'");
 	        mPrefExtInput.setSummary("Current value is '" + mPrefExtInput.getEntry()+"'");
 	        mPrefAutomap.setSummary("Current value is '" + mPrefAutomap.getEntry()+"'");
@@ -198,6 +260,7 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	        mPrefStickType.setSummary("Current value is '" + mPrefStickType.getEntry()+"'");
 	        mPrefNumButtons.setSummary("Current value is '" + mPrefNumButtons.getEntry()+"'");
 	        mPrefSizeButtons.setSummary("Current value is '" + mPrefSizeButtons.getEntry()+"'");
+	        mPrefSizeStick.setSummary("Current value is '" + mPrefSizeStick.getEntry()+"'");
 	        mPrefVideoThPr.setSummary("Current value is '" + mPrefVideoThPr.getEntry()+"'");
 	        mPrefMainThPr.setSummary("Current value is '" + mPrefMainThPr.getEntry()+"'");
 	        mPrefSoundLantency.setSummary("Current value is '" + mPrefSoundLantency.getEntry()+"'");
@@ -209,6 +272,8 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	        mPrefFilterYGTE.setSummary("Current value is '" + mPrefFilterYGTE.getEntry()+"'");
 	        mPrefFilterYLTE.setSummary("Current value is '" + mPrefFilterYLTE.getEntry()+"'");   
 	        mPrefFilterkeyword.setSummary("Current value is '" + mPrefFilterkeyword.getText()+"'"); 
+	        mPrefOverlayInt.setSummary("Current value is '" + mPrefOverlayInt.getEntry()+"'"); 
+	        mPrefForcPX.setSummary("Current value is '" + mPrefForcPX.getEntry()+"'"); 
 	        // Set up a listener whenever a key changes            
 	        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
 	    }
@@ -236,13 +301,13 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	        {
 	        	mPrefLandsMode.setSummary("Current value is '" + mPrefLandsMode.getEntry()+"'");	
 	        }
-	        if (key.equals(PrefsHelper.PREF_PORTRAIT_FILTER_TYPE)) 
+	        if (key.equals(PrefsHelper.PREF_PORTRAIT_OVERLAY)) 
 	        {
-	        	mPrefPortraitFilterType.setSummary("Current value is '" + mPrefPortraitFilterType.getEntry()+"'"); 
+	        	mPrefPortraitOverlay.setSummary("Current value is '" + mPrefPortraitOverlay.getEntry()+"'"); 
 	        }
-	        else if(key.equals(PrefsHelper.PREF_LANDSCAPE_FILTER_TYPE))
+	        else if(key.equals(PrefsHelper.PREF_LANDSCAPE_OVERLAY))
 	        {
-	        	mPrefLandsFilterType.setSummary("Current value is '" + mPrefLandsFilterType.getEntry()+"'");	
+	        	mPrefLandsOverlay.setSummary("Current value is '" + mPrefLandsOverlay.getEntry()+"'");	
 	        }	        
 	        else if(key.equals(PrefsHelper.PREF_CONTROLLER_TYPE))
 	        {	
@@ -305,7 +370,11 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 		    else if(key.equals(PrefsHelper.PREF_BUTTONS_SIZE))
 		    {	
 		    	mPrefSizeButtons.setSummary("Current value is '" + mPrefSizeButtons.getEntry()+"'"); 
-		    }	 
+		    }
+		    else if(key.equals(PrefsHelper.PREF_STICK_SIZE))
+		    {	
+		    	mPrefSizeStick.setSummary("Current value is '" + mPrefSizeStick.getEntry()+"'"); 
+		    }	        
 		    else if(key.equals(PrefsHelper.PREF_VIDEO_THREAD_PRIORITY))
 		    {	        
 	            mPrefVideoThPr.setSummary("Current value is '" + mPrefVideoThPr.getEntry()+"'");
@@ -349,6 +418,15 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 		    else if(key.equals(PrefsHelper.PREF_FILTER_KEYWORD))
 		    {
 		    	mPrefFilterkeyword.setSummary("Current value is '" + mPrefFilterkeyword.getText()+"'");
+		    } 	
+		    else if(key.equals(PrefsHelper.PREF_OVERLAY_INTENSITY))
+		    {
+		    	mPrefOverlayInt.setSummary("Current value is '" + mPrefOverlayInt.getEntry()+"'");
+		    	Emulator.setOverlayFilterValue(PrefsHelper.PREF_OVERLAY_NONE);//forces reload
+		    } 	  
+		    else if(key.equals(PrefsHelper.PREF_GLOBAL_FORCE_PXASPECT))
+		    {
+		    	mPrefForcPX.setSummary("Current value is '" + mPrefForcPX.getEntry()+"'");
 		    } 	        
 	    }
 

@@ -1,18 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 		
-	<string-array name="pref_filter_options">
-	    <item>None</item>
-		<item>Scanline 1 Low</item>
-	    <item>Scanline 1 High</item>
-		<item>Scanline 2 Low</item>	
-		<item>Scanline 2 High</item>
-		<item>CRT 1 Low</item>
-		<item>CRT 1 High</item>
-		<item>CRT 2 Low</item>
-		<item>CRT 2 High</item>		
+	<string-array name="pref_overlay_intensity_options">
+		<item>Lower</item>
+		<item>Low</item>	    
+		<item>Normal</item>
+		<item>High</item>		
+		<item>Higher</item>								
 	</string-array>
-	<string-array name="pref_filter_values">
+	<string-array name="pref_overlay_intensity_values">
+		<item>1</item>
+		<item>2</item>
+		<item>3</item>
+		<item>4</item>
+		<item>5</item>									
+	</string-array>    
+
+	<string-array name="pref_scaleMode_options">
+		<item>Scale (keep aspect ratio)</item>
+		<item>Stretch to fit screen</item>	    
+		<item>Original Size</item>
+		<item>1.5X</item>		
+		<item>2X</item>
+		<item>2.5X</item>
+		<item>3X</item>
+		<item>3.5X</item>
+		<item>4X</item>
+		<item>4.5X</item>
+        <item>5X</item>								
+	</string-array>
+	<string-array name="pref_scaleMode_values">
 		<item>1</item>
 		<item>2</item>
 		<item>3</item>
@@ -21,24 +38,9 @@
 		<item>6</item>
 		<item>7</item>
 		<item>8</item>
-		<item>9</item>														
-	</string-array>
-
-	<string-array name="pref_scaleMode_options">
-		<item>Original Size</item>
-		<item>1.5X</item>		
-		<item>2X</item>
-		<item>2.5X</item>		
-		<item>Scale (keep aspect ratio)</item>
-		<item>Stretch to fit screen</item>
-	</string-array>
-	<string-array name="pref_scaleMode_values">
-		<item>1</item>
-		<item>2</item>
-		<item>3</item>
-		<item>4</item>
-		<item>5</item>
-		<item>6</item>					
+		<item>9</item>
+		<item>10</item>
+		<item>11</item>									
 	</string-array>
 	
 	<string-array name="pref_global_video_render_options">
@@ -339,5 +341,17 @@
 		<item>8</item>
 		<item>9</item>																									
 	</string-array>	
+	
+    <string-array name="pref_px_options">
+	    <item>MAME (original arcade 4/3)</item>
+		<item>Forced pixel aspect</item>
+		<item>Forced pixel aspect (Smart)</item>																		
+	</string-array>
+	
+	<string-array name="pref_px_values">
+		<item>0</item>
+		<item>1</item>
+		<item>2</item>																											
+	</string-array>		
 							
 </resources>

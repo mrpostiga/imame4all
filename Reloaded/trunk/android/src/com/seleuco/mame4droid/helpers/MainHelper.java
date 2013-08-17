@@ -93,7 +93,7 @@ public class MainHelper {
 	final static public  int SUBACTIVITY_HELP = 2;
 	final static public  int BUFFER_SIZE = 1024*48;
 	
-	final static public  String MAGIC_FILE = "dont-delete-00003.bin";
+	final static public  String MAGIC_FILE = "dont-delete-00004.bin";
 	
 	protected MAME4droid mm = null;
 	
@@ -269,22 +269,22 @@ public class MainHelper {
 	
 	public boolean updateOverlayFilter(){
 		
-        int type = -1;        
+        String value = PrefsHelper.PREF_OVERLAY_NONE;        
         
         if(getscrOrientation() == Configuration.ORIENTATION_PORTRAIT)
-        	type = mm.getPrefsHelper().getPortraitOverlayFilterType();
+        	value = mm.getPrefsHelper().getPortraitOverlayFilterValue();
         else
-        	type = mm.getPrefsHelper().getLandscapeOverlayFilterType();
+        	value = mm.getPrefsHelper().getLandscapeOverlayFilterValue();
 					
-		if(Emulator.getOverlayFilterType() != type)
+		if(Emulator.getOverlayFilterValue() != value)
 		{
-			Emulator.setOverlayFilterType(type);
+			Emulator.setOverlayFilterValue(value);
 			reload();				
 			return true;
 		}
 		else
 		{
-			Emulator.setOverlayFilterType(type);
+			Emulator.setOverlayFilterValue(value);
 		    return false;
 		}    					
 	}
@@ -352,7 +352,7 @@ public class MainHelper {
 		Emulator.setValue(Emulator.FRAME_SKIP_VALUE,prefsHelper.getFrameSkipValue());
 
 		Emulator.setValue(Emulator.EMU_RESOLUTION,prefsHelper.getEmulatedResolution());
-		Emulator.setValue(Emulator.FORCE_PXASPECT,prefsHelper.isForcedPixelAspect() ? 1 : 0);
+		Emulator.setValue(Emulator.FORCE_PXASPECT,prefsHelper.getForcedPixelAspect());
 		
 		Emulator.setValue(Emulator.DOUBLE_BUFFER,mm.getPrefsHelper().isDoubleBuffer() ? 1 : 0);
 		Emulator.setValue(Emulator.PXASP1,mm.getPrefsHelper().isPlayerXasPlayer1() ? 1 : 0);
@@ -585,6 +585,9 @@ public class MainHelper {
 		emuView.invalidate();
 		if(filterView!=null)
 		   filterView.invalidate();
+		
+		//if(filterView!=null)
+			//filterView.setVisibility(Emulator.isInMAME() ? View.VISIBLE : View.INVISIBLE);
 	}
 	
 	public void showWeb(){		
@@ -636,19 +639,49 @@ public class MainHelper {
 		    {
 		    	emu_w = (int)(emu_w * 1.5f);
 		    	emu_h = (int)(emu_h * 1.5f);
-		    }
+		    } else
 		    
 		    if(scaleType == PrefsHelper.PREF_20X)
 		    {
 		    	emu_w = emu_w * 2;
 		    	emu_h = emu_h * 2;
-		    }
+		    } else
 		    
 		    if(scaleType == PrefsHelper.PREF_25X)
 		    {
 		    	emu_w = (int)(emu_w * 2.5f);
 		    	emu_h = (int)(emu_h * 2.5f);
-		    }
+		    } else
+		    
+		    if(scaleType == PrefsHelper.PREF_3X)
+		    {
+		    	emu_w = (int)(emu_w * 3.0f);
+		    	emu_h = (int)(emu_h * 3.0f);
+		    } else
+		    
+		    if(scaleType == PrefsHelper.PREF_35X)
+		    {
+		    	emu_w = (int)(emu_w * 3.5f);
+		    	emu_h = (int)(emu_h * 3.5f);
+		    } else
+		    
+		    if(scaleType == PrefsHelper.PREF_4X)
+		    {
+		    	emu_w = (int)(emu_w * 4.0f);
+		    	emu_h = (int)(emu_h * 4.0f);
+		    } else
+
+		    if(scaleType == PrefsHelper.PREF_45X)
+		    {
+		    	emu_w = (int)(emu_w * 4.5f);
+		    	emu_h = (int)(emu_h * 4.5f);
+		    } else	    
+
+		    if(scaleType == PrefsHelper.PREF_5X)
+		    {
+		    	emu_w = (int)(emu_w * 5.0f);
+		    	emu_h = (int)(emu_h * 5.0f);
+		    } 
 		    
 			int w = emu_w;
 			int h = emu_h;

@@ -56,15 +56,14 @@ import com.seleuco.mame4droid.GLRenderer;
 import com.seleuco.mame4droid.MAME4droid;
 import com.seleuco.mame4droid.helpers.PrefsHelper;
 
-
-public class EmulatorViewGL extends GLSurfaceView implements IEmuView{
+public  class EmulatorViewGL extends GLSurfaceView implements IEmuView{
 	
 	protected int scaleType = PrefsHelper.PREF_ORIGINAL;
 		
 	protected MAME4droid mm = null;
 	
 	protected GLRenderer render = null;
-
+    
 	public Renderer getRender() {
 		return render;
 	}
@@ -101,7 +100,7 @@ public class EmulatorViewGL extends GLSurfaceView implements IEmuView{
 		//setDebugFlags(DEBUG_CHECK_GL_ERROR | DEBUG_LOG_GL_CALLS);
 		setRenderer(render);
         setRenderMode(RENDERMODE_WHEN_DIRTY);
-        //setRenderMode(RENDERMODE_CONTINUOUSLY);
+        //setRenderMode(RENDERMODE_CONTINUOUSLY);        
 	}
 		
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {

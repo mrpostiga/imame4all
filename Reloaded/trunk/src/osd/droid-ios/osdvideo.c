@@ -165,6 +165,40 @@ void droid_ios_video_render(render_target *our_target)
 		   render_target_get_minimum_size(our_target, &minwidth, &minheight);
 		   viswidth = minwidth;
 		   visheight = minheight;
+
+ 		   if(myosd_force_pxaspect==2)
+		   {
+			   int w,h;
+			   render_target_compute_visible_area(our_target,minwidth,minheight,4/3,render_target_get_orientation(our_target),&w, &h);
+
+		           if(visheight > h &&  abs((float)w/(float)h - 4.0f/3.0f) < 0.001)// 4/3 minimum
+		           {
+			       viswidth = w;
+	  		       visheight = h;
+		           }
+
+		           if(viswidth > h * 16.0f/9.0f &&  abs((float)w/(float)h - 4.0f/3.0f) < 0.001)// 16/9 maximun
+		           {
+			       viswidth = h * 16.0f/9.0f;
+	  		       visheight = h;
+		           }
+
+		           if(viswidth < w &&  abs((float)w/(float)h - 3.0f/4.0f) < 0.001)// 3/4 minimum
+		           {
+			       viswidth = w;
+	  		       visheight = h;
+		           }
+		           
+		           if(visheight > h && abs((float)w/(float)h - 3.0f/4.0f) < 0.001)// 3/4 maximun
+		           {
+			       viswidth = w ;
+	  		       visheight = h;
+		           }
+                   }
+#ifdef ANDROID
+//	__android_log_print(ANDROID_LOG_DEBUG, "VIS","FIN %d, %d",viswidth,visheight);
+#endif
+
 		}
 		else if(myosd_res==1)
 		{
@@ -175,22 +209,6 @@ void droid_ios_video_render(render_target *our_target)
 
 		   viswidth = w;
 		   visheight = h;
-
-		   /*
-		   float ratio = (float)w / (float)h;
-
-		   int new_w = minheight *  ratio;
-		   int new_h = minwidth * (1/ratio);
-
-		   if(new_w > minwidth && new_w<=1024)
-		   {
-			   minwidth = new_w;
-		   }
-		   else
-		   {
-			   minheight = new_h;
-		   }
-		   */
 		}
 		else
 		{

@@ -47,6 +47,7 @@ package com.seleuco.mame4droid.helpers;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.view.Display;
 import android.view.WindowManager;
@@ -59,7 +60,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 {
 	final static public String PREF_ROMsDIR = "PREF_ROMsDIR";
 	
-	final static public String PREF_GLOBAL_VIDEO_RENDER_MODE = "PREF_GLOBAL_VIDEO_RENDER_MODE";
+	final static public String PREF_GLOBAL_VIDEO_RENDER_MODE = "PREF_GLOBAL_VIDEO_RENDER_MODE_2";
 	final static public String PREF_GLOBAL_RESOLUTION = "PREF_GLOBAL_RESOLUTION";
 	final static public String PREF_GLOBAL_SPEED = "PREF_GLOBAL_SPEED";	
 	final static public String PREF_GLOBAL_SOUND_SYNC = "PREF_GLOBAL_SOUND_SYNC";
@@ -73,19 +74,19 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String PREF_GLOBAL_AUTOSAVE = "PREF_GLOBAL_AUTOSAVE";
 	final static public String PREF_GLOBAL_DEBUG = "PREF_GLOBAL_DEBUG";
 	final static public String PREF_GLOBAL_IDLE_WAIT = "PREF_GLOBAL_IDLE_WAIT"; 
-	final static public String PREF_GLOBAL_FORCE_PXASPECT = "PREF_GLOBAL_FORCE_PXASPECT";
+	final static public String PREF_GLOBAL_FORCE_PXASPECT = "PREF_GLOBAL_FORCE_PXASPECT_2";
 	final static public String PREF_GLOBAL_HISCORE = "PREF_GLOBAL_HISCORE";
 	final static public String PREF_GLOBAL_WARN_ON_EXIT = "PREF_GLOBAL_WARN_ON_EXIT";
 	final static public String PREF_GLOBAL_SUSPEND_NOTIFICATION = "PREF_GLOBAL_SUSPEND_NOTIFICATION";
 	
-	final static public String PREF_PORTRAIT_SCALING_MODE = "PREF_PORTRAIT_SCALING_MODE_2";
-	final static public String PREF_PORTRAIT_FILTER_TYPE = "PREF_PORTRAIT_FILTER_2";
+	final static public String PREF_PORTRAIT_SCALING_MODE = "PREF_PORTRAIT_SCALING_MODE_3";
+	final static public String PREF_PORTRAIT_OVERLAY = "PREF_PORTRAIT_OVERLAY";
 	final static public String PREF_PORTRAIT_TOUCH_CONTROLLER = "PREF_PORTRAIT_TOUCH_CONTROLLER";
 	final static public String PREF_PORTRAIT_BITMAP_FILTERING = "PREF_PORTRAIT_BITMAP_FILTERING";
 	final static public String PREF_PORTRAIT_FULLSCREEN = "PREF_PORTRAIT_FULLSCREEN";
 	
-	final static public String PREF_LANDSCAPE_SCALING_MODE = "PREF_LANDSCAPE_SCALING_MODE_2";
-	final static public String PREF_LANDSCAPE_FILTER_TYPE = "PREF_LANDSCAPE_FILTER_2";
+	final static public String PREF_LANDSCAPE_SCALING_MODE = "PREF_LANDSCAPE_SCALING_MODE_3";
+	final static public String PREF_LANDSCAPE_OVERLAY = "PREF_LANDSCAPE_OVERLAY";
 	final static public String PREF_LANDSCAPE_TOUCH_CONTROLLER = "PREF_LANDSCAPE_TOUCH_CONTROLLER";
 	final static public String PREF_LANDSCAPE_BITMAP_FILTERING = "PREF_LANDSCAPE_BITMAP_FILTERING";
 	final static public String PREF_LANDSCAPE_CONTROLLER_TYPE = "PREF_LANDSCAPE_CONTROLLER_TYPE";
@@ -97,6 +98,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	
 	final static public String  PREF_TRACKBALL_SENSITIVITY = "PREF_TRACKBALL_SENSITIVITY";
 	final static public String  PREF_TRACKBALL_NOMOVE = "PREF_TRACKBALL_NOMOVE";
+	final static public String  PREF_DISABLE_RIGHT_STICK = "PREF_DISABLE_RIGHT_STICK";
 	final static public String  PREF_ANIMATED_INPUT = "PREF_ANIMATED_INPUT";
 	final static public String  PREF_LIGHTGUN = "PREF_LIGHTGUN";
 	final static public String  PREF_TOUCH_DZ = "PREF_TOUCH_DZ";
@@ -119,9 +121,10 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	
 	final static public String  PREF_HIDE_STICK = "PREF_HIDE_STICK";
 	final static public String  PREF_BUTTONS_SIZE = "PREF_BUTTONS_SIZE";
+	final static public String  PREF_STICK_SIZE = "PREF_STICK_SIZE";
 	final static public String  PREF_VIDEO_THREAD_PRIORITY="PREF_VIDEO_THREAD_PRIORITY";
 	final static public String  PREF_MAIN_THREAD_PRIORITY="PREF_MAIN_THREAD_PRIORITY";
-	final static public String  PREF_SOUND_LATENCY="PREF_SOUND_LATENCY";
+	final static public String  PREF_SOUND_LATENCY="PREF_SOUND_LATENCY_2";
 	
 	final static public String PREF_THREADED_VIDEO ="PREF_THREADED_VIDEO";
 	final static public String PREF_DOUBLE_BUFFER ="PREF_DOUBLE_BUFFER";
@@ -143,6 +146,8 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String  PREF_FILTER_CATEGORY = "PREF_FILTER_CATEGORY";
 	final static public String  PREF_FILTER_KEYWORD = "PREF_FILTER_KEYWORD";	
 	
+	final static public String  PREF_OVERLAY_INTENSITY = "PREF_OVERLAY_INTENSITY";
+	
 	final static public int  LOW = 1;
 	final static public int  NORMAL = 2;
 	final static public int  HIGHT = 2;
@@ -160,18 +165,19 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public int  PREF_INPUT_ICADE = 3;
 	final static public int  PREF_INPUT_ICP = 4;
 	
-	final public static int PREF_ORIGINAL = 1;
-	final public static int PREF_15X = 2;	
-	final public static int PREF_20X = 3;
-	final public static int PREF_25X = 4;	
-	final public static int PREF_SCALE = 5;
-	final public static int PREF_STRETCH = 6;
+	final public static int PREF_ORIGINAL = 3;
+	final public static int PREF_15X = 4;	
+	final public static int PREF_20X = 5;
+	final public static int PREF_25X = 6;
+	final public static int PREF_3X = 7;
+	final public static int PREF_35X = 8;
+	final public static int PREF_4X = 9;
+	final public static int PREF_45X = 10;
+	final public static int PREF_5X = 11;		
+	final public static int PREF_SCALE = 1;
+	final public static int PREF_STRETCH = 2;
 
-	final public static int PREF_FILTER_NONE = 1;
-	final public static int PREF_FILTER_SCANLINE_1 = 2;	
-	final public static int PREF_FILTER_SCANLINE_2 = 3;
-	final public static int PREF_CRT_1 = 4;	
-	final public static int PREF_CRT_2 = 5;
+	final public static String PREF_OVERLAY_NONE = "none";
 	
 	final public static int PREF_AUTOMAP_DEFAULT = 1;
 	final public static int PREF_AUTOMAP_THUMBS_AS_L2R2 = 2;	
@@ -217,19 +223,19 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	}
 
 	public int getPortraitScaleMode(){
-		return Integer.valueOf(getSharedPreferences().getString(PREF_PORTRAIT_SCALING_MODE,"5")).intValue();	
+		return Integer.valueOf(getSharedPreferences().getString(PREF_PORTRAIT_SCALING_MODE,"1")).intValue();	
 	}
 	
 	public int getLandscapeScaleMode(){
-		return Integer.valueOf(getSharedPreferences().getString(PREF_LANDSCAPE_SCALING_MODE,"5")).intValue();	
+		return Integer.valueOf(getSharedPreferences().getString(PREF_LANDSCAPE_SCALING_MODE,"1")).intValue();	
 	}
 
-	public int getPortraitOverlayFilterType(){
-		return Integer.valueOf(getSharedPreferences().getString(PREF_PORTRAIT_FILTER_TYPE,"1")).intValue();	
+	public String getPortraitOverlayFilterValue(){
+		return getSharedPreferences().getString(PREF_PORTRAIT_OVERLAY,PrefsHelper.PREF_OVERLAY_NONE);	
 	}
 	
-	public int getLandscapeOverlayFilterType(){
-		return Integer.valueOf(getSharedPreferences().getString(PREF_LANDSCAPE_FILTER_TYPE,"1")).intValue();	
+	public String getLandscapeOverlayFilterValue(){
+		return getSharedPreferences().getString(PREF_LANDSCAPE_OVERLAY,PrefsHelper.PREF_OVERLAY_NONE);	
 	}	
 	
 	public boolean isPortraitTouchController(){
@@ -275,7 +281,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	}
 
 	public int getVideoRenderMode(){
-		return Integer.valueOf(getSharedPreferences().getString(PREF_GLOBAL_VIDEO_RENDER_MODE,"1")).intValue();	
+		return Integer.valueOf(getSharedPreferences().getString(PREF_GLOBAL_VIDEO_RENDER_MODE,"2")).intValue();	
 	}
 
 	public int getEmulatedResolution(){
@@ -290,8 +296,8 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 		return getSharedPreferences().getBoolean(PREF_GLOBAL_SOUND_SYNC,false);
 	}
 	
-	public boolean isForcedPixelAspect(){
-		return getSharedPreferences().getBoolean(PREF_GLOBAL_FORCE_PXASPECT,false);
+	public int getForcedPixelAspect(){
+		return Integer.valueOf(getSharedPreferences().getString(PREF_GLOBAL_FORCE_PXASPECT,"0")).intValue();	
 	}
 	
 	public boolean isHiscore(){
@@ -352,6 +358,10 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	public boolean isHideStick(){
 		return getSharedPreferences().getBoolean(PREF_HIDE_STICK,false);
 	}
+	
+	public boolean isDisabledRightStick(){
+		return getSharedPreferences().getBoolean(PREF_DISABLE_RIGHT_STICK,false);
+	}	
 	
 	public boolean isAnimatedInput(){
 		return getSharedPreferences().getBoolean(PREF_ANIMATED_INPUT,true);
@@ -477,7 +487,11 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	public int getButtonsSize(){
 		return Integer.valueOf(getSharedPreferences().getString(PREF_BUTTONS_SIZE,"3")).intValue();	
 	}
-	
+
+	public int getStickSize(){
+		return Integer.valueOf(getSharedPreferences().getString(PREF_STICK_SIZE,"3")).intValue();	
+	}
+		
 	public int getVideoThreadPriority(){
 		return Integer.valueOf(getSharedPreferences().getString(PREF_VIDEO_THREAD_PRIORITY,"2")).intValue();	
 	}
@@ -487,7 +501,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	}
 	
 	public int getSoundLatency(){
-		return Integer.valueOf(getSharedPreferences().getString(PREF_SOUND_LATENCY,"2")).intValue();	
+		return Integer.valueOf(getSharedPreferences().getString(PREF_SOUND_LATENCY,"1")).intValue();
 	}
 	
 	public boolean isThreadedVideo(){
@@ -516,5 +530,9 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	
 	public boolean isVectorFlicker(){
 		return getSharedPreferences().getBoolean(PREF_FLICKER,false);
+	}	
+	
+	public int getEffectOverlayIntensity(){
+		return Integer.valueOf(getSharedPreferences().getString(PREF_OVERLAY_INTENSITY,"3")).intValue();
 	}	
 }
