@@ -2,18 +2,28 @@
 <resources>
 		
 	<string-array name="pref_overlay_intensity_options">
-		<item>Lower</item>
-		<item>Low</item>	    
-		<item>Normal</item>
-		<item>High</item>		
-		<item>Higher</item>								
+		<item>1</item>
+		<item>2</item>
+		<item>3</item>
+		<item>4</item>
+		<item>5</item>	
+		<item>6</item>
+		<item>7</item>
+		<item>8</item>
+		<item>9</item>
+		<item>10</item>								
 	</string-array>
 	<string-array name="pref_overlay_intensity_values">
 		<item>1</item>
 		<item>2</item>
 		<item>3</item>
 		<item>4</item>
-		<item>5</item>									
+		<item>5</item>	
+		<item>6</item>
+		<item>7</item>
+		<item>8</item>
+		<item>9</item>
+		<item>10</item>										
 	</string-array>    
 
 	<string-array name="pref_scaleMode_options">
@@ -223,6 +233,19 @@
 		<item>2</item>
 		<item>3</item>																
 	</string-array>
+	
+	<string-array name="pref_sound_engine_options">
+	    <item>AudioTrack</item>
+		<item>AudioTrack high latency (safe)</item>
+	    <item>OpenSL</item>
+        <item>OpenSL very low latency  (best)</item>	    					
+	</string-array>
+	<string-array name="pref_sound_engine_values">
+		<item>1</item>
+		<item>2</item>
+		<item>3</item>
+        <item>4</item>																							
+	</string-array>	
 		
 	<string-array name="pref_speed_options">
 	    <item>Default</item>

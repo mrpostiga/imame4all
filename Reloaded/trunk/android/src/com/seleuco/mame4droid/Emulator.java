@@ -80,6 +80,7 @@ public class Emulator
 	final static public int PAUSE = 11;
 	final static public int FRAME_SKIP_VALUE = 12;
 	final static public int SOUND_VALUE = 13;
+	
 	final static public int THROTTLE = 14;
 	final static public int CHEAT = 15;
 	final static public int AUTOSAVE = 16;
@@ -114,6 +115,9 @@ public class Emulator
 	final static public int FILTER_LTE_YEAR = 45;	
 	final static public int FILTER_DRVSRC = 46;		
 	final static public int FILTER_CATEGORY = 47;	
+	final static public int SOUND_DEVICE_FRAMES = 48;		
+	final static public int SOUND_DEVICE_SR = 49;
+	final static public int SOUND_ENGINE = 50;		
 	
 	final static public int FILTER_YEARS_ARRAY = 0;
 	final static public int FILTER_MANUFACTURERS_ARRAY = 1;
@@ -521,12 +525,8 @@ public class Emulator
 
 		int bufferSize = AudioTrack.getMinBufferSize(sampleFreq, channelConfig, audioFormat);
 
-		if(mm.getPrefsHelper().getSoundLatency()==PrefsHelper.LOW)
-			bufferSize *= 1;
-		else if (mm.getPrefsHelper().getSoundLatency()==PrefsHelper.NORMAL)
+        if (mm.getPrefsHelper().getSoundEngine()==PrefsHelper.PREF_SNDENG_AUDIOTRACK_HIGH)
 			bufferSize *= 2;
-		else
-			bufferSize *= 4;
 				
 		//System.out.println("Buffer Size "+bufferSize);
 		

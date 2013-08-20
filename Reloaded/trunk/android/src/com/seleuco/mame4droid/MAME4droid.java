@@ -54,6 +54,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -165,7 +166,7 @@ public class MAME4droid extends Activity {
         super.onCreate(savedInstanceState);
         
 		Log.d("EMULATOR", "onCreate");
-		                        
+				
 		prefsHelper = new PrefsHelper(this);
 
         dialogHelper  = new DialogHelper(this);
@@ -254,13 +255,20 @@ public class MAME4droid extends Activity {
 			    {
 			       case 1: alpha = 25;break;
 			       case 2: alpha = 50;break;
-			       case 3: alpha = 75;break;
-			       case 4: alpha = 100;break;
-			       case 5: alpha = 150;break;
+			       case 3: alpha = 55;break;
+			       case 4: alpha = 60;break;
+			       case 5: alpha = 65;break;
+			       case 6: alpha = 70;break;
+			       case 7: alpha = 75;break;
+			       case 8: alpha = 80;break;
+			       case 9: alpha = 100;break;
+			       case 10: alpha = 125;break;			       
                 }
             
 	            bitmapDrawable.setAlpha(alpha);
 	            filterView.setBackgroundDrawable(bitmapDrawable);
+	            
+	            //this.getEmuView().setAlpha(250);
 		            
 	            if(full && prefsHelper.isPortraitTouchController())
 	            {

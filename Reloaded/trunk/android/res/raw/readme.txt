@@ -1,5 +1,5 @@
 =================================================================
-MAME4droid Reloaded (0.139) 1.4.3 (August 17, 2013) 
+MAME4droid Reloaded (0.139) 1.4.4 (August 20, 2013) 
 by David Valdeita (Seleuco)
 =================================================================
 
@@ -77,11 +77,6 @@ NOTE: To type OK when MAME requires it, press LEFT and then RIGHT.
 
 GLOBAL OPTIONS
 ----------------
-
--Video render Mode: 
-
-    * SW: SW render, more accurate. Higher device compatibility.
-    * GL. Open GL ES 1.0 or upper. This should be your choice if it works fine for you. Faster rendering even with image filtering.
 
 -Emulated Resolution: Force MAME internal drawing resolution, use hires resolution to improve artwork rendering at the expense of performance or to minimize 4:3 scaling artifacts. 
 
@@ -207,9 +202,14 @@ GLOBAL OPTIONS
 
 -Flicker: Simulates a vector "flicker" effect, similar to a vector monitor that needs adjustment.
 
--Threaded Video render. Enable it to use a dedicate thread to do the video rendering (performance gain on double core devices). Disable if you have stuttering.
+-Video render Mode: 
 
--Video thread priority. Set to default value unless you have problems. You need to restart.
+    * SW: SW render, more accurate. Higher device compatibility.
+    * GL. Open GL ES 1.0 or upper. This should be your choice if it works fine for you. Faster rendering even with image filtering.
+
+-Sound Engine. Set the audio Engine. AudioTrack for safety. OpenSL for performance and low latency on capable devices.
+
+-Threaded Video render. Enable it to use a dedicate thread to do the video rendering (performance gain on double core devices). Disable if you have stuttering.
 
 -Double buffer. Avoids flickering at the expenses of performance.
 
@@ -281,6 +281,7 @@ PORT CREDITS
 - Port to Android by David Valdeita (Seleuco)
 
 DEVELOPMENT
+- 2013-08-20 version 1.4.4 Added OpenSL low-latency audio on capable devices. 
 - 2013-08-17 version 1.4.3 Added new overlays effects (with overlay intensity selector). Added jelly bean lights out mode (or hide navigation bar when touch controller is hide). New pixel aspect smart option to maximize emulation space. Added stick/DPAD touch size option. Added more scaling modes. Added option to disable right stick on GamePads. Some bug fixes on PS3 gamepad auto-detection.
 - 2013-08-12 Version 1.4.2 NVidia Shield autoconfig fix. 
 - 2013-08-03 Version 1.4.1 Added game filters (clones, year, category, manufacturer, driver source...). Some bug fixes. 
