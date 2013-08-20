@@ -10,6 +10,7 @@
 //============================================================
 
 #include "myosd.h"
+#include "opensl_snd.h"
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -108,6 +109,11 @@ int array_categories_count = 0;
 
 static pthread_mutex_t cond_mutex     = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t  condition_var   = PTHREAD_COND_INITIALIZER;
+
+static OPENSL_SND  *p = NULL;
+static int sound_engine = 1;
+static int sound_frames = 1024;
+//static int sound_fixed_sr = 44100;
 
 void change_pause(int value);
 void setDblBuffer(void);
@@ -251,6 +257,15 @@ void setMyValue(int key,int i, int value){
                 myosd_filter_driver_source = value;break;
             case 47:
                 myosd_filter_category= value;break;
+            case 48:
+                sound_frames = value;break;
+            case 49:
+                {  
+                    if(myosd_sound_value!=-1 && sound_engine == 2)
+                        myosd_sound_value = value;break;
+                }
+            case 50:
+                sound_engine = value;break;
          }
 }
 
@@ -482,28 +497,56 @@ void myosd_closeSound(void) {
 #ifdef ANDROID
 		__android_log_print(ANDROID_LOG_DEBUG, "MAME4droid.so", "closeSound");
 #endif
-	   	if(closeSound_callback!=NULL)
-		  closeSound_callback();
+                if(sound_engine==1)
+                {
+	   	   if(closeSound_callback!=NULL)
+		     closeSound_callback();
+                }
+                else 
+                {
+                   if(p!=NULL)
+                     opensl_close(p);
+                }
+
 	   	soundInit = 0;
 	}
 }
 
 void myosd_openSound(int rate,int stereo) {
-	if( soundInit == 0)
+	if( soundInit == 0 &&  myosd_sound_value!=-1)
 	{
 #ifdef ANDROID
 		__android_log_print(ANDROID_LOG_DEBUG, "MAME4droid.so", "openSound rate:%d stereo:%d",rate,stereo);
 #endif
-		if(openSound_callback!=NULL)
-		  openSound_callback(rate,stereo);
+	        if(sound_engine==1)
+                {
+ 	           __android_log_print(ANDROID_LOG_DEBUG, "SOUND", "Open audioTrack");
+                   if(openSound_callback!=NULL)
+		     openSound_callback(rate,stereo);
+                }
+                else
+                {
+ 	           __android_log_print(ANDROID_LOG_DEBUG, "SOUND", "Open openSL %d %d",myosd_sound_value,sound_frames);
+                   p = opensl_open(myosd_sound_value,2,sound_frames);
+                }
+
 		soundInit = 1;
 	}
 }
 
 void myosd_sound_play(void *buff, int len)
 {
-	if(dumpSound_callback!=NULL)
-	   dumpSound_callback(buff,len);
+       //__android_log_print(ANDROID_LOG_DEBUG, "PIS", "BUF %d",len);
+       if(sound_engine==1)
+       {
+          if(dumpSound_callback!=NULL)
+	    dumpSound_callback(buff,len);
+       }
+       else
+       {
+          if(p!=NULL)       
+            opensl_write(p,(short *)buff, len / 2);
+       }
 }
 
 void change_pause(int value){
@@ -511,10 +554,9 @@ void change_pause(int value){
 
 	isPause = value;
 
-    if(!isPause)
-    {
-		pthread_cond_signal( &condition_var );
-    }
+        if(!isPause)
+           pthread_cond_signal( &condition_var );
+
 
 	pthread_mutex_unlock( &cond_mutex );
 }

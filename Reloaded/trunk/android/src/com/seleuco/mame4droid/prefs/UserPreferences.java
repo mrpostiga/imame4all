@@ -95,7 +95,7 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
     protected ListPreference mPrefSizeStick;    
     protected ListPreference mPrefVideoThPr;
     protected ListPreference mPrefMainThPr;
-    protected ListPreference mPrefSoundLantency;
+    protected ListPreference mPrefSoundEngine;
     protected ListPreference mPrefAutofire;
     protected ListPreference mPrefVSync;
     protected ListPreference mPrefFilterCat;
@@ -143,7 +143,7 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
         mPrefSizeStick = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_STICK_SIZE);    
         mPrefVideoThPr = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_VIDEO_THREAD_PRIORITY);
         mPrefMainThPr = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_MAIN_THREAD_PRIORITY);
-        mPrefSoundLantency = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_SOUND_LATENCY);
+        mPrefSoundEngine = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_SOUND_ENGINE);
         mPrefAutofire = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_AUTOFIRE);
         mPrefVSync = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GLOBAL_VSYNC);
         		
@@ -238,7 +238,7 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	  @Override
 	    protected void onResume() {
 	        super.onResume();
-	        
+	        boolean enable;
 	        // Setup the initial values
 	        //mCheckBoxPreference.setSummary(sharedPreferences.getBoolean(key, false) ? "Disable this setting" : "Enable this setting");
 	        mPrefGlobalVideoRenderMode.setSummary("Current value is '" + mPrefGlobalVideoRenderMode.getEntry()+"'");
@@ -250,6 +250,11 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	        mPrefLandsOverlay.setSummary("Current value is '" + mPrefLandsOverlay.getEntry()+"'"); 	        
 	        mPrefControllerType.setSummary("Current value is '" + mPrefControllerType.getEntry()+"'");
 	        mPrefExtInput.setSummary("Current value is '" + mPrefExtInput.getEntry()+"'");
+	        
+	        enable = Integer.valueOf(mPrefExtInput.getValue()).intValue() == PrefsHelper.PREF_INPUT_USB_AUTO;
+	        getPreferenceScreen().findPreference(PrefsHelper.PREF_AUTOMAP_OPTIONS).setEnabled(enable);
+	        getPreferenceScreen().findPreference(PrefsHelper.PREF_DISABLE_RIGHT_STICK).setEnabled(enable);
+	        
 	        mPrefAutomap.setSummary("Current value is '" + mPrefAutomap.getEntry()+"'");
 	        mPrefAnalogDZ.setSummary("Current value is '" + mPrefAnalogDZ.getEntry()+"'");
 	        mPrefGamepadDZ.setSummary("Current value is '" + mPrefGamepadDZ.getEntry()+"'");
@@ -263,7 +268,7 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	        mPrefSizeStick.setSummary("Current value is '" + mPrefSizeStick.getEntry()+"'");
 	        mPrefVideoThPr.setSummary("Current value is '" + mPrefVideoThPr.getEntry()+"'");
 	        mPrefMainThPr.setSummary("Current value is '" + mPrefMainThPr.getEntry()+"'");
-	        mPrefSoundLantency.setSummary("Current value is '" + mPrefSoundLantency.getEntry()+"'");
+	        mPrefSoundEngine.setSummary("Current value is '" + mPrefSoundEngine.getEntry()+"'");
 	        mPrefAutofire.setSummary("Current value is '" + mPrefAutofire.getEntry()+"'");
 	        mPrefVSync.setSummary("Current value is '" + mPrefVSync.getEntry()+"'");
 	        mPrefFilterCat.setSummary("Current value is '" + mPrefFilterCat.getEntry()+"'");
@@ -329,6 +334,9 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	        {	
 	        	try{InputHandlerExt.resetAutodetected();}catch(Error e){};
 	        	mPrefExtInput.setSummary("Current value is '" + mPrefExtInput.getEntry()+"'"); 
+		        boolean enable = Integer.valueOf(mPrefExtInput.getValue()).intValue() ==PrefsHelper.PREF_INPUT_USB_AUTO;
+		        getPreferenceScreen().findPreference(PrefsHelper.PREF_AUTOMAP_OPTIONS).setEnabled(enable);
+		        getPreferenceScreen().findPreference(PrefsHelper.PREF_DISABLE_RIGHT_STICK).setEnabled(enable);
 	        }
 	        else if(key.equals(PrefsHelper.PREF_AUTOMAP_OPTIONS))
 	        {	
@@ -383,9 +391,9 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 			{    
 	            mPrefMainThPr.setSummary("Current value is '" + mPrefMainThPr.getEntry()+"'");
 			}
-		    else if(key.equals(PrefsHelper.PREF_SOUND_LATENCY))
+		    else if(key.equals(PrefsHelper.PREF_SOUND_ENGINE))
 		    {
-	            mPrefSoundLantency.setSummary("Current value is '" + mPrefSoundLantency.getEntry()+"'");
+	            mPrefSoundEngine.setSummary("Current value is '" + mPrefSoundEngine.getEntry()+"'");
 		    }    
 		    else if(key.equals(PrefsHelper.PREF_AUTOFIRE))
 		    {

@@ -18,11 +18,8 @@ public class EmulatorViewGLExt extends EmulatorViewGL implements  android.view.V
 		
 		super.setMAME4droid(mm);
 		
-		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1)
-		{
-          setNavVisibility(true);
-          setOnSystemUiVisibilityChangeListener(this);
-		}
+        setNavVisibility(true);
+        setOnSystemUiVisibilityChangeListener(this);		
 	}
 
 	public EmulatorViewGLExt(Context context, AttributeSet attrs) {

@@ -124,7 +124,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String  PREF_STICK_SIZE = "PREF_STICK_SIZE";
 	final static public String  PREF_VIDEO_THREAD_PRIORITY="PREF_VIDEO_THREAD_PRIORITY";
 	final static public String  PREF_MAIN_THREAD_PRIORITY="PREF_MAIN_THREAD_PRIORITY";
-	final static public String  PREF_SOUND_LATENCY="PREF_SOUND_LATENCY_2";
+	final static public String  PREF_SOUND_ENGINE="PREF_SOUND_ENGINE";
 	
 	final static public String PREF_THREADED_VIDEO ="PREF_THREADED_VIDEO";
 	final static public String PREF_DOUBLE_BUFFER ="PREF_DOUBLE_BUFFER";
@@ -184,6 +184,11 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final public static int PREF_AUTOMAP_THUMBS_AS_SELECTSTART = 3;	
 	final public static int PREF_AUTOMAP_L1L2_AS_L2R2 = 4;	
 	final public static int PREF_AUTOMAP_L1L2_AS_SELECTSTART = 5;		
+	
+	final public static int PREF_SNDENG_AUDIOTRACK = 1;
+	final public static int PREF_SNDENG_AUDIOTRACK_HIGH = 2;
+	final public static int PREF_SNDENG_OPENSL = 3;
+	final public static int PREF_SNDENG_OPENSL_LOW = 4;
 	
 	protected GameFilterPrefs gameFilterPrefs = null;
 	
@@ -400,13 +405,13 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 		if(n==33)n=3;
 		return n;
 	}
-	
+		
 	public boolean isBplusX(){
 		return Integer.valueOf(getSharedPreferences().getString(PREF_NUMBUTTONS,"-1")).intValue()==33;	
 	}
 	
 	public int getInputExternal(){
-		return Integer.valueOf(getSharedPreferences().getString(PREF_INPUT_EXTERNAL,"2")).intValue();	
+		return Integer.valueOf(getSharedPreferences().getString(PREF_INPUT_EXTERNAL,"2")).intValue();	 
 	}
 	
 	public int getAutomapOptions(){
@@ -500,8 +505,8 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 		return Integer.valueOf(getSharedPreferences().getString(PREF_MAIN_THREAD_PRIORITY,"2")).intValue();	
 	}
 	
-	public int getSoundLatency(){
-		return Integer.valueOf(getSharedPreferences().getString(PREF_SOUND_LATENCY,"1")).intValue();
+	public int getSoundEngine(){
+		return Integer.valueOf(getSharedPreferences().getString(PREF_SOUND_ENGINE,"1")).intValue();
 	}
 	
 	public boolean isThreadedVideo(){

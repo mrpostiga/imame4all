@@ -64,6 +64,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Point;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -378,9 +379,26 @@ public class MainHelper {
 					
 		Emulator.setValue(Emulator.EMU_SPEED,mm.getPrefsHelper().getEmulatedSpeed());
 		Emulator.setValue(Emulator.VSYNC,mm.getPrefsHelper().getVSync());	
+				
+		Emulator.setValue(Emulator.SOUND_ENGINE,mm.getPrefsHelper().getSoundEngine() > 2 ? 2 : 1);
 		
-		//System.out.println("VSYNC ES:"+mm.getPrefsHelper().getVSync());
+		AudioManager am = (AudioManager) mm.getSystemService(Context.AUDIO_SERVICE);
+		int sfr = 2048;		
+		try{
+			sfr = Integer.valueOf(am.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER)).intValue();
+			System.out.println("PROPERTY_OUTPUT_FRAMES_PER_BUFFER:"+sfr);
+		}catch(Error e){}
 		
+		if (mm.getPrefsHelper().getSoundEngine()==PrefsHelper.PREF_SNDENG_OPENSL)
+			sfr *= 2;
+		Emulator.setValue(Emulator.SOUND_DEVICE_FRAMES,sfr);
+		
+		int sr = 44100;
+		try{
+			sr = Integer.valueOf(am.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE)).intValue();
+			System.out.println("PROPERTY_OUTPUT_SAMPLE_RATE:"+sr);
+		}catch(Error e){}		
+		Emulator.setValue(Emulator.SOUND_DEVICE_SR,sr);				
 	}
 	
 
@@ -586,8 +604,8 @@ public class MainHelper {
 		if(filterView!=null)
 		   filterView.invalidate();
 		
-		//if(filterView!=null)
-			//filterView.setVisibility(Emulator.isInMAME() ? View.VISIBLE : View.INVISIBLE);
+		if(filterView!=null)
+			filterView.setVisibility(Emulator.isInMAME() ? View.VISIBLE : View.INVISIBLE);
 	}
 	
 	public void showWeb(){		

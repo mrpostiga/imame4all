@@ -24,7 +24,8 @@ OSDOBJS =  $(MYOSDOBJ)/osdmain.o \
 ifdef ANDROID
 
 OSDOBJS += \
-	$(MYOSDOBJ)/osd-droid.o
+	$(MYOSDOBJ)/osd-droid.o \
+	$(MYOSDOBJ)/opensl_snd.o
 	
 DEFS += -D_BSD_SETJMP_H	  
 endif
