@@ -4,7 +4,6 @@
    
    <PreferenceCategory android:title="Configuration">
    	    
-
 	    <PreferenceScreen
             android:key="PREFSCR_GAME_FILTER"
             android:title="Game filter"
@@ -115,8 +114,7 @@
 			android:title="Autosave" android:summary="When enabled, automatically creates a save state file when exiting a game."
 			android:defaultValue="false" />
 	-->   			
-			
-			
+						
 		<CheckBoxPreference android:key="PREF_GLOBAL_IDLE_WAIT"
 			android:title="Save Battery" android:summary="Try to save battery at the expense of jitter on some devices"
 			android:defaultValue="true" />	
@@ -195,7 +193,11 @@
 			
 		<CheckBoxPreference android:key="PREF_TILT_TOUCH"
 			android:title="Touch anywhere" android:summary="Enable to tap anywhere on screen to fire. First finger is main fire. Second finger when first finger is pressed is alternate fire"
-			android:defaultValue="false"  android:dependency="PREF_TILT_SENSOR"/>					
+			android:defaultValue="false"  android:dependency="PREF_TILT_SENSOR"/>	
+			
+		<CheckBoxPreference android:key="PREF_TILT_SWAP_YZ"
+			android:title="Swap Z,Y axes" android:summary="Enable to swap Z,Y axes. This fixes vertical tilt on some devices like NVidia Shield."
+			android:defaultValue="false"  android:dependency="PREF_TILT_SENSOR"/>							
 		
     </PreferenceScreen>	
     
@@ -339,7 +341,7 @@
 	    
        <com.seleuco.mame4droid.prefs.ListPrefWithWarn
 			android:entries="@array/pref_global_video_render_options"
-			android:title='Video render mode'			
+			android:title='Video Engine'			
 			android:key="PREF_GLOBAL_VIDEO_RENDER_MODE_2"
 			android:entryValues="@array/pref_global_video_render_values"
 			android:defaultValue="2" />

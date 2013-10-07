@@ -102,6 +102,11 @@ public class EmulatorViewSW extends SurfaceView implements Callback, IEmuView{
 	}
 		
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+		if(mm==null)
+		{
+			super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+			return;
+		}
 		ArrayList<Integer> l = mm.getMainHelper().measureWindow(widthMeasureSpec, heightMeasureSpec, scaleType);
 		setMeasuredDimension(l.get(0).intValue(),l.get(1).intValue());
 	}

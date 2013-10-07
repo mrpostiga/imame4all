@@ -1,35 +1,35 @@
 =================================================================
-MAME4droid Reloaded (0.139) 1.4.4 (August 20, 2013) 
+MAME4droid (0.139u1) 1.5 (October 6, 2013) 
 by David Valdeita (Seleuco)
 =================================================================
 
 INTRODUCTION
 ---------------
 
-MAME4droid Reloaded is developed by David Valdeita (Seleuco), port of MAME 0.139 emulator by Nicola Salmoria and TEAM. 
+MAME4droid (0.139u1) is developed by David Valdeita (Seleuco), port of MAME 0.139 emulator by Nicola Salmoria and TEAM. 
 
-MAME4droid Reloaded emulates arcade games supported by original MAME 0.139.
+MAME4droid (0.139u1) emulates arcade games supported by original MAME 0.139.
 
-This MAME4droid version is targeted to Dual-Core devices (1GHz and 512MB RAM minimum), because it is based on a high specs 2010 PC MAME build.
+This MAME4droid version is targeted to Dual-Core devices, because it is based on a high specs 2010 PC MAME build.
 Anyway don't expect arcade games of the 90 to work at full speed. With some games that are really bad optimized (like outrun or mk series) you will 
 need at least a 1.5 ghz dual-core device (Cortex A15). This is related to MAME build used, since it is  targeted to high specs PC's as i said before. 
 This version doesn't have an UML back-end ARM dynamic recompiler, which means drivers based on high specs arcade CPUs won't be playable 
 (it has not sense since this games will be slow in any case).
 
-Said that, with a low end device, use at your own risk. I suggest you use MAME4droid (0.37b5) instead.
-Remember that games that can be emulated on both MAME4droid versions will run much faster on MAME4droid (0.37b5) than on MAME4droid Reloaded (0.139),
+Said that, with a low end device, use at your own risk. I suggest you use MAME4all (0.37b5) instead.
+Remember that games that can be emulated on both MAME4droid versions will run much faster on MAME4all (0.37b5) than on MAME4droid (0.139u1),
 and will drain less battery.
 
 This version emulates over 8000 different romsets. 
 
-Please, try to understand that that with that amount of games, some will run better than others and some might not even run with MAME4droid Reloaded. 
+Please, try to understand that that with that amount of games, some will run better than others and some might not even run with MAME4droid (0.139u1). 
 Please, don't email me asking for a specific game to run.
 
 Tips to help performance: Activate GL mode, use lower quality sound or switch it off. Disable stick and buttons animations and disable smooth scaling also.
 
 After installing, place your MAME-titled zipped roms in /sdcard/ROMs/MAME4droid/roms folder.
 
-MAME4droid Reloaded uses only '0.139' romset.
+MAME4droid (0.139u1) uses only '0.139' romset.
 
 Official web page for news, source code & additional information:
 
@@ -178,6 +178,8 @@ GLOBAL OPTIONS
 
 -Touch anywhere: Enable to tap anywhere on screen to fire. First finger is main fire. Second finger when first finger is pressed is alternate fire
 
+-Swap Z,Y axes: Enable to swap Z,Y axes. This fix vertical tilt on some devices. 
+
 -Scaling Mode:  
 
      * Keep Aspect: keeps the aspect ratio
@@ -246,7 +248,7 @@ sta/        -> Save states directory
 SUPPORTED GAMES
 ------------------
 
-MAME4droid Reloaded uses only '0.139' romset.
+MAME4droid (0.139u1) uses only '0.139' romset.
 
 Games have to be copied into the roms/ folder.
 
@@ -281,6 +283,7 @@ PORT CREDITS
 - Port to Android by David Valdeita (Seleuco)
 
 DEVELOPMENT
+- 2013-10-06 version 1.5 Added Ouya support. Added option to fix vertical tilt on NVidia Shield. Added more scaling options, now scales beyond screen boundaries. Changed select button to 'X' button to be coherent with Android default buttons. Some bug fixes. 
 - 2013-08-20 version 1.4.4 Added OpenSL low-latency audio on capable devices. 
 - 2013-08-17 version 1.4.3 Added new overlays effects (with overlay intensity selector). Added jelly bean lights out mode (or hide navigation bar when touch controller is hide). New pixel aspect smart option to maximize emulation space. Added stick/DPAD touch size option. Added more scaling modes. Added option to disable right stick on GamePads. Some bug fixes on PS3 gamepad auto-detection.
 - 2013-08-12 Version 1.4.2 NVidia Shield autoconfig fix. 

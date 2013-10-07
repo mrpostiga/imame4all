@@ -63,7 +63,7 @@ import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 
 import com.seleuco.mame4droid.Emulator;
-import com.seleuco.mame4droid.R;
+import com.seleuco.mame4droid_0139u1.R;
 import com.seleuco.mame4droid.helpers.PrefsHelper;
 import com.seleuco.mame4droid.input.ControlCustomizer;
 import com.seleuco.mame4droid.input.InputHandler;
@@ -113,9 +113,9 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 		super.onCreate(savedInstanceState);
 				
 		addPreferencesFromResource(R.xml.userpreferences);
-		
+						
 		settings = PreferenceManager.getDefaultSharedPreferences(this);
-		
+				
 		mPrefGlobalVideoRenderMode = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GLOBAL_VIDEO_RENDER_MODE);
 		mPrefResolution = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GLOBAL_RESOLUTION);
 		mPrefSpeed = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GLOBAL_SPEED);
@@ -242,6 +242,9 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	        // Setup the initial values
 	        //mCheckBoxPreference.setSummary(sharedPreferences.getBoolean(key, false) ? "Disable this setting" : "Enable this setting");
 	        mPrefGlobalVideoRenderMode.setSummary("Current value is '" + mPrefGlobalVideoRenderMode.getEntry()+"'");
+			enable = Integer.valueOf(mPrefGlobalVideoRenderMode.getValue()).intValue() ==PrefsHelper.PREF_RENDER_GL;
+			getPreferenceScreen().findPreference(PrefsHelper.PREF_FORCE_GLES10).setEnabled(enable);        
+	        
 	        mPrefResolution.setSummary("Current value is '" + mPrefResolution.getEntry()+"'");
 	        mPrefSpeed.setSummary("Current value is '" + mPrefSpeed.getEntry()+"'");
 	        mPrefPortraitMode.setSummary("Current value is '" + mPrefPortraitMode.getEntry()+"'"); 
@@ -281,6 +284,7 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	        mPrefForcPX.setSummary("Current value is '" + mPrefForcPX.getEntry()+"'"); 
 	        // Set up a listener whenever a key changes            
 	        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+	        
 	    }
 
 	    @Override
@@ -321,6 +325,8 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	        else if(key.equals(PrefsHelper.PREF_GLOBAL_VIDEO_RENDER_MODE))
 	        {		        	
 				mPrefGlobalVideoRenderMode.setSummary("Current value is '" + mPrefGlobalVideoRenderMode.getEntry()+"'"); 
+				boolean enable = Integer.valueOf(mPrefGlobalVideoRenderMode.getValue()).intValue() ==PrefsHelper.PREF_RENDER_GL;
+				getPreferenceScreen().findPreference(PrefsHelper.PREF_FORCE_GLES10).setEnabled(enable);
 	        }
 	        else if(key.equals(PrefsHelper.PREF_GLOBAL_RESOLUTION))
 	        {	

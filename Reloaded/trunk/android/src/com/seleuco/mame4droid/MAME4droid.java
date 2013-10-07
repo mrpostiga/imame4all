@@ -75,6 +75,7 @@ import com.seleuco.mame4droid.input.InputHandlerFactory;
 import com.seleuco.mame4droid.views.FilterView;
 import com.seleuco.mame4droid.views.IEmuView;
 import com.seleuco.mame4droid.views.InputView;
+import com.seleuco.mame4droid_0139u1.R;
 
 import android.app.*;
 import android.content.*;
@@ -165,8 +166,11 @@ public class MAME4droid extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-		Log.d("EMULATOR", "onCreate");
-				
+		Log.d("EMULATOR", "onCreate "+this);
+		
+		overridePendingTransition(0, 0);
+		getWindow().setWindowAnimations(0);
+		
 		prefsHelper = new PrefsHelper(this);
 
         dialogHelper  = new DialogHelper(this);
@@ -178,6 +182,8 @@ public class MAME4droid extends Activity {
         menuHelper = new MenuHelper(this);
                 
         inputHandler = InputHandlerFactory.createInputHandler(this);
+        
+        mainHelper.detectOUYA();
         
         Emulator.setPortraitFull(getPrefsHelper().isPortraitFullscreen());
         boolean full = false;
@@ -194,7 +200,7 @@ public class MAME4droid extends Activity {
         FrameLayout fl = (FrameLayout)this.findViewById(R.id.EmulatorFrame);
         
         //Coment to avoid BUG on 2.3.4 (reload instead)
-        //Emulator.setVideoRenderMode(getPrefsHelper().getVideoRenderMode());
+        Emulator.setVideoRenderMode(getPrefsHelper().getVideoRenderMode());
                
         if(prefsHelper.getVideoRenderMode()==PrefsHelper.PREF_RENDER_SW)
         {
@@ -239,7 +245,7 @@ public class MAME4droid extends Activity {
             else
             	value = prefsHelper.getLandscapeOverlayFilterValue();
            
-            if(value != PrefsHelper.PREF_OVERLAY_NONE)
+            if(!value.equals(PrefsHelper.PREF_OVERLAY_NONE))
             {
 	        	getLayoutInflater().inflate(R.layout.filterview, fl);
 	            filterView = (FilterView)this.findViewById(R.id.FilterView);
@@ -299,12 +305,21 @@ public class MAME4droid extends Activity {
 			}
         }
     }
-    
+        
     public void runMAME4droid(){  	
 	    getMainHelper().copyFiles();
     	Emulator.emulate(mainHelper.getLibDir(),prefsHelper.getROMsDIR());	
     }
-    
+     
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+		overridePendingTransition(0 , 0);
+		this.getMainHelper().updateMAME4droid();
+		//this.getMainHelper().reload();
+		overridePendingTransition(0 , 0);
+	}
+
 	//MENU STUFF
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {		
@@ -405,6 +420,59 @@ public class MAME4droid extends Activity {
 		super.onStop();
 		//System.out.println("OnStop");
 	}
+	
+	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		Log.d("EMULATOR", "onNewIntent");
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		Log.d("EMULATOR", "onDestroy "+this);
+				
+        View frame = this.findViewById(R.id.EmulatorFrame);
+	    if(frame!=null)
+           frame.setOnTouchListener(null); 
+	    
+		if(inputHandler!= null)
+		{
+		   inputHandler.unsetInputListeners();
+		   
+			if(inputHandler.getTiltSensor()!=null)
+				   inputHandler.getTiltSensor().disable();
+		}
+			
+        if(emuView!=null)
+		   ((IEmuView)emuView).setMAME4droid(null);
+
+        /*
+        if(inputView!=null)
+           inputView.setMAME4droid(null);
+        
+        if(filterView!=null)
+           filterView.setMAME4droid(null);
+                       
+        prefsHelper = null;
+        
+        dialogHelper = null;
+        
+        mainHelper = null;
+        
+        fileExplore = null;
+        
+        menuHelper = null;
+        
+        inputHandler = null;
+        
+        inputView = null;
+        
+        emuView = null;
+        
+        filterView = null; */     	    
+	}	
+		
 
 	//Dialog Stuff
 	@Override

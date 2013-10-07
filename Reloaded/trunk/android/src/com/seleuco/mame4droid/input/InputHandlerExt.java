@@ -182,6 +182,11 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		return (float) Math.sqrt((x * x) + (y * y));
 	}
 	
+    boolean right[] = new boolean[4];
+    boolean left[] = new boolean[4];
+    boolean down[] = new boolean[4];
+    boolean up[] = new boolean[4];
+	
 	protected void processJoystickInput(MotionEvent event, int historyPos){
 	 		
 		int ways = mm.getPrefsHelper().getStickWays();
@@ -209,10 +214,10 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 	    float x = 0.0f;
 	    float y = 0.0f;
 	    float mag = 0.0f;
-		
+	    	    
 	    for(int i= 0; i < 2; i++)
 	    {
-	    	if(i==0 && TiltSensor.isEnabled() && Emulator.isInMAME() && !Emulator.isInMenu())
+	    	if(i==0 && tiltSensor.isEnabled() && Emulator.isInMAME() && !Emulator.isInMenu())
 	    		continue;
 	    	
 	    	if(i==0)
@@ -231,8 +236,12 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 	    	if(mag>=deadZone)
 			{
 				if(i==0)
+				{
 	    		   Emulator.setAnalogData(joy,x,y * -1.0f);
-							
+	    		   if(Emulator.isInMAME())
+	    		     continue;
+				}
+				
 		 		float v =  getAngle(x,y);
 		 		
 		 		if(ways==2 && b)
@@ -244,7 +253,7 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		 				newinput[joy] |= LEFT_VALUE;
 		 			}
 		 		}
-		 		else if(ways==4 || !b)
+		 		/*else if(ways==4 || !b)
 		 		{
 		 			if( v >= 315 || v < 45){
 		 				newinput[joy] |= DOWN_VALUE;	
@@ -259,42 +268,109 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		 				newinput[joy] |= LEFT_VALUE;
 		 			}						
 		 		}
-		        else
+		        else*/
 		        {
 		 			if( v >= 330 || v < 30){
-		 				newinput[joy] |= DOWN_VALUE;						
+		 				newinput[joy] |= DOWN_VALUE;
+						left[joy]=false;
+						right[joy]=false;
+						up[joy]=false;
+						down[joy]=true;
 		 			}
 		 			else if ( v >= 30 && v <60  )  {
-		 				newinput[joy] |= DOWN_VALUE;
-		 				newinput[joy] |= RIGHT_VALUE;						
+
+		 				if(ways==4 || !b)
+		 				{
+		 					if(right[joy])
+		 					   newinput[joy] |= RIGHT_VALUE;
+		 					else		 				
+		 				       newinput[joy] |= DOWN_VALUE;
+		 				}
+		 				else
+		 				{
+			 				newinput[joy] |= DOWN_VALUE;
+			 				newinput[joy] |= RIGHT_VALUE;		 					
+		 				}		 				
 		 			}
 		 			else if ( v >= 60 && v < 120  ){
-		 				newinput[joy] |= RIGHT_VALUE;						
+		 				newinput[joy] |= RIGHT_VALUE;
+						left[joy]=false;
+						right[joy]=true;
+						up[joy]=false;
+						down[joy]=false;
 		 			}
 		 			else if ( v >= 120 && v < 150  ){
-		 				newinput[joy] |= RIGHT_VALUE;
-		 				newinput[joy] |= UP_VALUE;
+		 				if(ways==4 || !b)		 				
+		 				{
+		 					if(right[joy])
+		 						newinput[joy] |= RIGHT_VALUE;
+		 					else
+		 						newinput[joy] |= UP_VALUE;
+		 				}
+		 				else
+		 				{
+		 				    newinput[joy] |= RIGHT_VALUE;
+		 				    newinput[joy] |= UP_VALUE;
+		 				}
 		 			}
 		 			else if ( v >= 150 && v < 210  ){
 		 				newinput[joy] |= UP_VALUE;
+						left[joy]=false;
+						right[joy]=false;
+						up[joy]=true;
+						down[joy]=false;
 		 			}
 		 			else if ( v >= 210 && v < 240  ){
-		 				newinput[joy] |= UP_VALUE;
-		 				newinput[joy] |= LEFT_VALUE;						
+		 				if(ways==4 || !b)
+		 				{
+		 					if(left[joy])
+		 					   newinput[joy] |= LEFT_VALUE;
+		 					else		 				
+		 				       newinput[joy] |= UP_VALUE;
+		 				}
+		 				else
+		 				{		 				
+		 				    newinput[joy] |= UP_VALUE;
+		 				    newinput[joy] |= LEFT_VALUE;
+		 				}
 		 			}
 		 			else if ( v >= 240 && v < 300  ){
 		 				newinput[joy] |= LEFT_VALUE;
+						left[joy]=true;
+						right[joy]=false;
+						up[joy]=false;
+						down[joy]=false;
 		 			}
 		 			else if ( v >= 300 && v < 330  ){
-		 				newinput[joy] |= LEFT_VALUE;
-		 				newinput[joy] |= DOWN_VALUE;
+		 				if(ways==4 || !b)
+		 				{
+		 					if(left[joy])
+		 					   newinput[joy] |= LEFT_VALUE;
+		 					else		 				
+		 				       newinput[joy] |= DOWN_VALUE;
+		 				}
+		 				else
+		 				{
+		 				    newinput[joy] |= LEFT_VALUE;
+		 				    newinput[joy] |= DOWN_VALUE;
+		 				}
 		 			}
 		        }
 			}
 			else
 			{
 				if(i==0)
+				{
 				   Emulator.setAnalogData(joy,0,0);
+				}
+				else
+				{
+					left[joy]=false;
+					right[joy]=false;
+					up[joy]=false;
+					down[joy]=false;
+				}
+					
 			}
 	    }
 	    
@@ -346,6 +422,8 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 	    	newinput[joy] |= R1_VALUE;
 	    }    
 		
+	    //newinput[joy] = handle_4way(oldinput[joy], newinput[joy] );
+	    
 		pad_data[joy] &= ~ (oldinput[joy] & ~newinput[joy]);
 		pad_data[joy] |= newinput[joy];
 		
@@ -428,7 +506,9 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 			{			
 				int action = event.getAction();
 				if(action == KeyEvent.ACTION_DOWN)
+				{					
 					pad_data[dev] |= v;
+				}
 				else if(action == KeyEvent.ACTION_UP)
 					pad_data[dev] &= ~ v;
 				
@@ -449,6 +529,14 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		mm.getEmuView().setOnGenericMotionListener(this);
 		mm.getInputView().setOnGenericMotionListener(this);
 	}
+	
+	public void unsetInputListeners(){ 
+		
+		super.setInputListeners();
+		                
+		mm.getEmuView().setOnGenericMotionListener(null);
+		mm.getInputView().setOnGenericMotionListener(null);
+	}	
 	
 	protected int getDevice(InputDevice device){
 		
@@ -905,10 +993,10 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 			
 			mapDPAD();
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][numDevs] = A_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][numDevs] = Y_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][numDevs] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][numDevs] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][numDevs] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][numDevs] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][numDevs] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][numDevs] = X_VALUE;
 						
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_L2][numDevs] = SELECT_VALUE;
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_R2][numDevs] = START_VALUE;

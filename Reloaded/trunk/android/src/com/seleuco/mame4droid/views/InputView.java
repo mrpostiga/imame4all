@@ -60,7 +60,7 @@ import android.widget.ImageView;
 
 import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.MAME4droid;
-import com.seleuco.mame4droid.R;
+import com.seleuco.mame4droid_0139u1.R;
 import com.seleuco.mame4droid.helpers.PrefsHelper;
 import com.seleuco.mame4droid.input.ControlCustomizer;
 import com.seleuco.mame4droid.input.InputHandler;
@@ -85,7 +85,8 @@ public class InputView extends ImageView {
 		  		 
 	public void setMAME4droid(MAME4droid mm) {
 		this.mm = mm;
-		
+		if(mm==null) return;
+				
 		if(stick_images==null)
 		{
 			stick_images = new BitmapDrawable[9];
@@ -313,7 +314,7 @@ public class InputView extends ImageView {
 
 	@Override
 	protected void onDraw(Canvas canvas) {
-		
+				
 		if(bmp != null)
 		   super.onDraw(canvas);
 		
@@ -335,8 +336,8 @@ public class InputView extends ImageView {
         	if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL_DPAD 
         			&& v.getType()==InputHandler.TYPE_STICK_IMG && rclip.intersect(v.getRect()))
         	{
-        	   if(!hideStick)
-        	       d = stick_images[mm.getInputHandler().getStick_state()];
+        	   if(!hideStick)        	   
+        		   d = stick_images[mm.getInputHandler().getStick_state()];        	   
         	}
         	else if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL_DPAD && 
         			v.getType()==InputHandler.TYPE_ANALOG_RECT && rclip.intersect(v.getRect()) )
@@ -416,7 +417,7 @@ public class InputView extends ImageView {
 			}
 			
             p2.setTextSize(30);
-            if(TiltSensor.isEnabled() && TiltSensor.str != null)
+            if(mm.getInputHandler().getTiltSensor().isEnabled() && TiltSensor.str != null)
 			   canvas.drawText(TiltSensor.str, 100, 150, p2);
         }	
 	}	
