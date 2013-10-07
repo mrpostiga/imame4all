@@ -16,8 +16,12 @@ public class EmulatorViewGLExt extends EmulatorViewGL implements  android.view.V
 	
 	public void setMAME4droid(MAME4droid mm) {
 		
-		super.setMAME4droid(mm);
-		
+		if(mm==null)
+		{
+			setOnSystemUiVisibilityChangeListener(null);
+			return;
+		}
+		super.setMAME4droid(mm);		
         setNavVisibility(true);
         setOnSystemUiVisibilityChangeListener(this);		
 	}
@@ -63,6 +67,7 @@ public class EmulatorViewGLExt extends EmulatorViewGL implements  android.view.V
 	}
 	
     void setNavVisibility(boolean visible) {
+    	if(mm==null)return;
         int newVis = 0;
         boolean full = mm.getInputHandler().getInputHandlerState() == InputHandler.STATE_SHOWING_NONE;
         

@@ -62,12 +62,14 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Point;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.View;
@@ -78,7 +80,7 @@ import android.widget.FrameLayout.LayoutParams;
 import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.HelpActivity;
 import com.seleuco.mame4droid.MAME4droid;
-import com.seleuco.mame4droid.R;
+import com.seleuco.mame4droid_0139u1.R;
 import com.seleuco.mame4droid.input.ControlCustomizer;
 import com.seleuco.mame4droid.input.InputHandler;
 import com.seleuco.mame4droid.input.InputHandlerExt;
@@ -166,7 +168,7 @@ public class MainHelper {
 		
 		if(created )
 		{			
-			mm.getDialogHelper().setInfoMsg("Created: \n'"+roms_dir+"'\nCopy or move your zipped ROMs under './MAME4droid/roms' directory!.\n\nMAME4droid Reloaded uses only 0.139 MAME romset.");
+			mm.getDialogHelper().setInfoMsg("Created: \n'"+roms_dir+"'\nCopy or move your zipped ROMs under './MAME4droid/roms' directory!.\n\nMAME4droid Reloaded uses only 0.139 MAME romset.\n\nYou may have to completely turn off your device to see new folders. You might need to unplug.");
 			mm.showDialog(DialogHelper.DIALOG_INFO);
 		}
 						
@@ -258,14 +260,17 @@ public class MainHelper {
 	
 	public void reload() {
 
-	    Intent intent = mm.getIntent();
+	    System.out.println("RELOAD!!!!!");	    
+		
+		Intent intent = mm.getIntent();
 
-	    mm.overridePendingTransition(0, 0);
+	    mm.overridePendingTransition(0 , 0);
 	    intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
 	    mm.finish();
 
 	    mm.overridePendingTransition(0, 0);
 	    mm.startActivity(intent);
+	    mm.overridePendingTransition(0, 0);
 	}
 	
 	public boolean updateOverlayFilter(){
@@ -459,10 +464,12 @@ public class MainHelper {
 			Emulator.setFrameFiltering(prefsHelper.isPortraitBitmapFiltering());
 			
 			if(state == InputHandler.STATE_SHOWING_CONTROLLER && !prefsHelper.isPortraitTouchController())
-				{reload();return;}//;inputHandler.changeState();
+				//{reload();return;}
+			    inputHandler.changeState();
 				
 			if(state == InputHandler.STATE_SHOWING_NONE && prefsHelper.isPortraitTouchController())
-			    {reload();return;}//;inputHandler.changeState();	
+			    //{reload();return;}
+			    inputHandler.changeState();	
 			
 			state = mm.getInputHandler().getInputHandlerState();
 			
@@ -476,8 +483,7 @@ public class MainHelper {
 			}   
 
 			if(state == InputHandler.STATE_SHOWING_CONTROLLER)
-			{			    	
-			   	
+			{			    				   	
 				if(Emulator.isPortraitFull())
 				{
 				   inputView.bringToFront();
@@ -638,8 +644,7 @@ public class MainHelper {
 		   
 		int widthSize = 1;
 		int heightSize = 1;
-		
-	
+						
 		if (scaleType == PrefsHelper.PREF_STRETCH)// FILL ALL
 		{
 			widthSize = MeasureSpec.getSize(widthMeasureSpec);
@@ -700,12 +705,36 @@ public class MainHelper {
 		    	emu_w = (int)(emu_w * 5.0f);
 		    	emu_h = (int)(emu_h * 5.0f);
 		    } 
+
+		    if(scaleType == PrefsHelper.PREF_55X)
+		    {
+		    	emu_w = (int)(emu_w * 5.5f);
+		    	emu_h = (int)(emu_h * 5.5f);
+		    }
+		    
+		    if(scaleType == PrefsHelper.PREF_6X)
+		    {
+		    	emu_w = (int)(emu_w * 6.0f);
+		    	emu_h = (int)(emu_h * 6.0f);
+		    }
+		    
 		    
 			int w = emu_w;
 			int h = emu_h;
 
-			widthSize = MeasureSpec.getSize(widthMeasureSpec);
-			heightSize = MeasureSpec.getSize(heightMeasureSpec);
+			if(scaleType == PrefsHelper.PREF_SCALE || scaleType == PrefsHelper.PREF_STRETCH || !Emulator.isInMAME())
+			{
+			    widthSize = MeasureSpec.getSize(widthMeasureSpec);
+			    heightSize = MeasureSpec.getSize(heightMeasureSpec);
+			}
+			else
+			{
+				widthSize = emu_w;
+				heightSize = emu_h;
+			}
+			
+			//widthSize *= 1.1;
+			//heightSize *= 1.1;
 						
 			if(heightSize==0)heightSize=1;
 			if(widthSize==0)widthSize=1;
@@ -754,7 +783,26 @@ public class MainHelper {
 		ArrayList<Integer> l = new ArrayList<Integer>();
 		l.add(Integer.valueOf(widthSize));
 		l.add(Integer.valueOf(heightSize));
-		return l;
-		
+		return l;		
 	}		
+	
+	public void detectOUYA(){
+		
+		 boolean ouya = android.os.Build.MODEL.equals("OUYA Console");
+		 
+		 if(ouya)
+		 {
+				Context context = mm.getApplicationContext();
+				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+				if(!prefs.getBoolean("ouya", false))
+				{
+				   SharedPreferences.Editor edit = prefs.edit();
+				   edit.putBoolean("ouya", true);
+				   edit.putBoolean(PrefsHelper.PREF_LANDSCAPE_TOUCH_CONTROLLER, false);
+				   edit.putBoolean(PrefsHelper.PREF_LANDSCAPE_BITMAP_FILTERING,true);
+				   //edit.putString("", "");
+				   edit.commit();
+				}
+		 }				
+	}
 }

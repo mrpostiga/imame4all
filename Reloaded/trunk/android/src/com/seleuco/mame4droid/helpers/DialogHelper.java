@@ -230,10 +230,10 @@ public class DialogHelper {
 	        break;
 	    case DIALOG_OPTIONS:
 	    case DIALOG_FULLSCREEN:	
-	    	final CharSequence[] items1 = {"Load State", "Save State","Help","Settings", "Support",};	    	
-	    	final CharSequence[] items2 = {"Help","Settings", "Support"};	
-	    	final CharSequence[] items3 = {"Exit","Load State", "Save State","Help","Settings", "Support",};	    	
-	    	final CharSequence[] items4 = {"Exit","Help","Settings", "Support"};	
+	    	final CharSequence[] items1 = {"Load State", "Save State","Help","Settings", /*"Support",*/};	    	
+	    	final CharSequence[] items2 = {"Help","Settings", /*"Support"*/};	
+	    	final CharSequence[] items3 = {"Exit","Load State", "Save State","Help","Settings", /*"Support",*/};	    	
+	    	final CharSequence[] items4 = {"Exit","Help","Settings"/*, "Support"*/};	
 	    	
 	    	final int a = id == DIALOG_FULLSCREEN ? 0 : 1;
 	    	final int b = Emulator.isInMAME() ? 0 : 2;

@@ -28,10 +28,11 @@ typedef struct opensl_snd {
   SLPlayItf bqPlayerPlay;
   SLAndroidSimpleBufferQueueItf bqPlayerBufferQueue;
   short *outputBuffer;
-  short *playBuffer;
+  short *playBuffer[2];
   int outBufSamples;
   int outchannels;
   int   sr;
+  short currPlayBuffer;
 } OPENSL_SND;
 
 OPENSL_SND* opensl_open(int sr, int outchannels, int bufferframes);

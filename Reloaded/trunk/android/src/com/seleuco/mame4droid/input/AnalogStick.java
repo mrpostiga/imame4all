@@ -53,7 +53,7 @@ import android.view.MotionEvent;
 
 import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.MAME4droid;
-import com.seleuco.mame4droid.R;
+import com.seleuco.mame4droid_0139u1.R;
 import com.seleuco.mame4droid.helpers.PrefsHelper;
 
 public class AnalogStick implements IController{
@@ -94,6 +94,7 @@ public class AnalogStick implements IController{
 	
 	public void setMAME4droid(MAME4droid value) {
 		mm = value;
+		if(mm==null)return;
 		
 		if(inner_img==null)inner_img=(BitmapDrawable)mm.getResources().getDrawable(R.drawable.stick_inner);
 		if(outer_img==null)outer_img=(BitmapDrawable)mm.getResources().getDrawable(R.drawable.stick_outer);
@@ -145,7 +146,9 @@ public class AnalogStick implements IController{
 			boolean b = Emulator.isInMAME() && !Emulator.isInMenu();
 				
 			if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL_STICK)
+			{
 			   Emulator.setAnalogData(0,rx,ry * -1.0f);
+			}
 			
 	 		float v = ang;
 	 		
@@ -432,7 +435,9 @@ public class AnalogStick implements IController{
 	
 	public void draw(Canvas canvas) {
 		
-		if( mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_ANALOG_PRETTY && !TiltSensor.isEnabled())
+		TiltSensor tiltSensor = mm.getInputHandler().getTiltSensor();
+		
+		if( mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_ANALOG_PRETTY && !tiltSensor.isEnabled())
 		{
 			if(mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE ||
 			  mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_PORTRAIT && Emulator.isPortraitFull()
@@ -447,7 +452,7 @@ public class AnalogStick implements IController{
 			inner_img.draw(canvas);
 		}
 		else if( mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_ANALOG_FAST || mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL_STICK ||
-				 (mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_ANALOG_PRETTY && TiltSensor.isEnabled())
+				 (mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_ANALOG_PRETTY && tiltSensor.isEnabled())
 				)
 		{
 			stick_images[mm.getInputHandler().getStick_state()].setBounds(rStickArea);

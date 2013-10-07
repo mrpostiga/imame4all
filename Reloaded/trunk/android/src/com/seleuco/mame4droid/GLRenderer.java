@@ -80,10 +80,11 @@ public class GLRenderer implements Renderer {
     
 	public void setMAME4droid(MAME4droid mm) {
 		this.mm = mm;
-		
+		if(mm==null)return;
+
 		force10 = mm.getPrefsHelper().isForcedGLES10();
 	}
-    
+	
     public GLRenderer()
     {
         mTextureName = new int[1];

@@ -619,8 +619,11 @@ void osd_customize_input_type_list(input_type_desc *typelist)
 			case IPT_UI_SAVE_STATE:
 				input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD], KEYCODE_F8);
 				break;
+			/*case IPT_UI_CANCEL:
+				input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON2, 0));
+				break;*/
 			case IPT_UI_SELECT:
-				input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON1, 0));
+				input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(/*JOYCODE_BUTTON1*/JOYCODE_BUTTON2, 0));
 				break;
 			case IPT_UI_UP:
 				input_seq_set_3(&typedesc->seq[SEQ_TYPE_STANDARD],STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT1UP), SEQCODE_OR, INPUT_CODE_SET_DEVINDEX(JOYCODE_Y_UP_SWITCH, 0));
@@ -635,7 +638,7 @@ void osd_customize_input_type_list(input_type_desc *typelist)
 				input_seq_set_3(&typedesc->seq[SEQ_TYPE_STANDARD],STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT1RIGHT), SEQCODE_OR, INPUT_CODE_SET_DEVINDEX(JOYCODE_X_RIGHT_SWITCH, 0));
 				break;
 			case IPT_OSD_1:
-				input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON2, 0));
+				input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(/*JOYCODE_BUTTON2*/JOYCODE_BUTTON1, 0));
 				break;
 			case IPT_JOYSTICK_UP:
 			case IPT_JOYSTICKLEFT_UP:

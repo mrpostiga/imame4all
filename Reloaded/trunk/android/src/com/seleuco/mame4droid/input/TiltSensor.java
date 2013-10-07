@@ -72,7 +72,7 @@ public class TiltSensor {
 	protected MAME4droid mm = null;
 	
 	public void setMAME4droid(MAME4droid value) {
-		mm = value;
+		mm = value;		
 	}
 	
 	public static String str;
@@ -89,9 +89,9 @@ public class TiltSensor {
     
     private boolean init = false;
     
-    static private boolean enabled = false;
+    private boolean enabled = false;
             
-	static public boolean isEnabled() {
+	public boolean isEnabled() {
 		return enabled;
 	}
 
@@ -122,16 +122,16 @@ public class TiltSensor {
     	       acc_sensor = man.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
     	       fallback = true;
     	    }
-    	    enabled = man.registerListener(listen, acc_sensor, delay);  
+    	    enabled = man.registerListener(listen, acc_sensor, delay);      	    
     	}
     	
     }
     
-    public void disable(){
+    synchronized public void disable(){
     	if(enabled){
     		SensorManager man = (SensorManager) mm.getApplicationContext().getSystemService(Context.SENSOR_SERVICE);
     		man.unregisterListener(listen);
-    		enabled = false;
+    		enabled = false;    		
     	}    	
     }
     
@@ -144,7 +144,7 @@ public class TiltSensor {
 		tilt_x = 0;
 		tilt_z = 0;
 		mm.getInputHandler().pad_data[0] = 0;
-		Emulator.setPadData(0, 0);
+		Emulator.setPadData(0, 0);		
 		mm.getInputHandler().handleImageStates(true);
 		rx = 0;
 		ry = 0;        		
@@ -153,17 +153,24 @@ public class TiltSensor {
     
     // Special class used to handle sensor events:
     private final SensorEventListener listen = new SensorEventListener() {
-        public void onSensorChanged(SensorEvent e) {
+    	synchronized public void onSensorChanged(SensorEvent e) {
         	
-        	PrefsHelper pH = mm.getPrefsHelper();
+    		if(mm==null)return;
+        	
+    		PrefsHelper pH = mm.getPrefsHelper();
         	
         	final float alpha = 0.1f;
         	//final float alpha = 0.3f;       	
-        	float value_x = - e.values[0]; 
-        	float value_z = e.values[2];
-        	//float value_z = e.values[1];
-        		
-        	try{
+        	float value_x = - e.values[0];
+        	float value_z;
+        	        	
+        	if(pH.isSwappedYZ())
+        	    value_z = e.values[1];
+        	else
+        	    value_z = e.values[2];
+        	
+        	try
+        	{
                int r = mm.getWindowManager().getDefaultDisplay().getRotation();
                
            	   if(r == Surface.ROTATION_0)

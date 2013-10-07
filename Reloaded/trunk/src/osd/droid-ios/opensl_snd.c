@@ -209,12 +209,18 @@ static SLresult opensl_playOpen(OPENSL_SND *p)
 
     result = (*p->bqPlayerPlay)->SetPlayState(p->bqPlayerPlay, SL_PLAYSTATE_PLAYING);
 
-    if((p->playBuffer = (short *) calloc(p->outBufSamples, sizeof(short))) == NULL) {
+    if((p->playBuffer[0] = (short *) calloc(p->outBufSamples, sizeof(short))) == NULL) {
       return -1;
     }
 
+    if((p->playBuffer[1] = (short *) calloc(p->outBufSamples, sizeof(short))) == NULL) {
+      return -1;
+    }
+
+    p->currPlayBuffer = 0;
+
     (*p->bqPlayerBufferQueue)->Enqueue(p->bqPlayerBufferQueue, 
-				       p->playBuffer,p->outBufSamples*sizeof(short));
+				       p->playBuffer[p->currPlayBuffer],p->outBufSamples*sizeof(short));
   }
   return SL_RESULT_SUCCESS;
 }
@@ -284,9 +290,14 @@ void opensl_close(OPENSL_SND *p){
     p->outputBuffer= NULL;
   }
 
-  if (p->playBuffer != NULL) {
-    free(p->playBuffer);
-    p->playBuffer = NULL;
+  if (p->playBuffer[0] != NULL) {
+    free(p->playBuffer[0]);
+    p->playBuffer[0] = NULL;
+  }
+
+  if (p->playBuffer[1] != NULL) {
+    free(p->playBuffer[1]);
+    p->playBuffer[1] = NULL;
   }
 
   free(p);
@@ -297,8 +308,9 @@ void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
   OPENSL_SND *p = (OPENSL_SND *) context;
   int bytes = p->outBufSamples*sizeof(short);
 
-  dequeue((unsigned char *)p->playBuffer,bytes);
- (*p->bqPlayerBufferQueue)->Enqueue(p->bqPlayerBufferQueue,p->playBuffer,bytes);
+  dequeue((unsigned char *)p->playBuffer[p->currPlayBuffer],bytes);
+ (*p->bqPlayerBufferQueue)->Enqueue(p->bqPlayerBufferQueue,p->playBuffer[p->currPlayBuffer],bytes);
+  p->currPlayBuffer = (p->currPlayBuffer + 1) % 2;
 }
 
 int opensl_write(OPENSL_SND *p, short *buffer,int size){

@@ -4111,7 +4111,7 @@ static void menu_select_game_custom_render(running_machine *machine, ui_menu *me
 	#ifdef IOS
 			sprintf(&tempbuf[0][0], "MAME4iOS Reloaded 1.6 by David Valdeita (Seleuco). Game: %d/%d",MIN(myosd_last_game_selected+1,nroms), nroms);
 	#else
-			sprintf(&tempbuf[0][0], "MAME4droid Reloaded 1.4 by David Valdeita (Seleuco). Game: %d/%d",MIN(myosd_last_game_selected+1,nroms), nroms);
+			sprintf(&tempbuf[0][0], "MAME4droid Reloaded 1.5 by David Valdeita (Seleuco). Game: %d/%d",MIN(myosd_last_game_selected+1,nroms), nroms);
 	#endif
     }
     

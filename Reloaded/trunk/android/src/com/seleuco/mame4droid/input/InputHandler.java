@@ -65,7 +65,7 @@ import android.view.View.OnTouchListener;
 
 import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.MAME4droid;
-import com.seleuco.mame4droid.R;
+import com.seleuco.mame4droid_0139u1.R;
 import com.seleuco.mame4droid.helpers.DialogHelper;
 import com.seleuco.mame4droid.helpers.PrefsHelper;
 
@@ -267,6 +267,12 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	public InputHandler(MAME4droid value){
 		
 		mm = value;
+		
+		stick.setMAME4droid(mm);
+		tiltSensor.setMAME4droid(mm);
+		controlCustomizer.setMAME4droid(mm);
+		
+		if(mm==null)return;
 				
 		if(mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE)
 		{
@@ -282,10 +288,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 			btnStates[i] = old_btnStates[i] = BTN_NO_PRESS_STATE;
 		
         resetInput();
-    	
-		stick.setMAME4droid(mm);
-		tiltSensor.setMAME4droid(mm);
-		controlCustomizer.setMAME4droid(mm);
+    
 	}
 	
 	public void resetInput(){
@@ -311,6 +314,19 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	public int getInputHandlerState(){
 		return state;
 	}
+	
+	public void changeState()		
+	{		
+	    if(state == STATE_SHOWING_CONTROLLER)		
+	    {		
+	    	resetInput();				
+		    state = STATE_SHOWING_NONE;		
+		}		
+		else		
+		{		
+		    state = STATE_SHOWING_CONTROLLER;		
+		}
+	}	
 	
 	public void setTrackballSensitivity(int trackballSensitivity) {
 		this.trackballSensitivity = trackballSensitivity;
@@ -477,7 +493,10 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 				if(stick_state != old_stick_state)
 				{
 					if(pH.isAnimatedInput())
-					   mm.getInputView().invalidate(iv.getRect());					
+					{
+					    //System.out.println("CAMBIA STICK! "+stick_state+" != "+old_stick_state+" "+iv.getRect()+ " "+iv.getOrigRect()+" "+values.size()+"  POS:"+j+ " "+onlyStick+ " "+this);
+						mm.getInputView().invalidate(iv.getRect());
+					}
 					if(pH.isVibrate())
 					{
 						Vibrator v = (Vibrator) mm.getSystemService(Context.VIBRATOR_SERVICE);
@@ -491,7 +510,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 				if(stick_state != old_stick_state)
 				{
 					if(pH.isAnimatedInput() && (pH.getControllerType()==PrefsHelper.PREF_ANALOG_FAST || pH.getControllerType()==PrefsHelper.PREF_DIGITAL_STICK ||
-							 (mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_ANALOG_PRETTY && TiltSensor.isEnabled())))
+							 (mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_ANALOG_PRETTY && tiltSensor.isEnabled())))
 					{
 					    if(pH.isDebugEnabled())
 					      mm.getInputView().invalidate();
@@ -528,7 +547,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	}
 
 	protected void fixTiltCoin(){
-		if(TiltSensor.isEnabled() && ((pad_data[0]  & IController.SELECT_VALUE) != 0 || (pad_data[0]  &  IController.START_VALUE) != 0))
+		if(tiltSensor.isEnabled() && ((pad_data[0]  & IController.SELECT_VALUE) != 0 || (pad_data[0]  &  IController.START_VALUE) != 0))
 		{
 			pad_data[0] &= ~InputHandler.LEFT_VALUE;
 			pad_data[0] &= ~InputHandler.RIGHT_VALUE;
@@ -597,7 +616,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 						
 				if(lightgun_pid == pointerId)
 				{					
-			    	 if(!TiltSensor.isEnabled())
+			    	 if(!tiltSensor.isEnabled())
 					    Emulator.setAnalogData(4, xf, -yf);
 					 
 			    	 if((pad_data[0] & X_VALUE) == 0)
@@ -703,7 +722,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 									 }
 								}
 								else if(mm.getPrefsHelper().getControllerType() == PrefsHelper.PREF_DIGITAL_DPAD
-										&& !((TiltSensor.isEnabled() || (mm.getPrefsHelper().isLightgun() && !(mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_PORTRAIT &&  !mm.getPrefsHelper().isPortraitFullscreen()) )) 
+										&& !((tiltSensor.isEnabled() || (mm.getPrefsHelper().isLightgun() && !(mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_PORTRAIT &&  !mm.getPrefsHelper().isPortraitFullscreen()) )) 
 												&& Emulator.isInMAME() && !Emulator.isInMenu()))
 								{
 									 newtouches[id] = getStickValue(iv.getValue());
@@ -767,7 +786,8 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	public boolean onTouch(View v, MotionEvent event) {
 		
 		//Log.d("touch",event.getRawX()+" "+event.getX()+" "+event.getRawY()+" "+event.getY());
-		 
+		if(mm==null /*|| mm.getMainHelper()==null*/)return false;
+		
 		if(v == mm.getEmuView() && mm.getPrefsHelper().isLightgun() && state != STATE_SHOWING_NONE && Emulator.isInMAME() && !Emulator.isInMenu())
 		{		     		    						
 			handleLightgun(v, event);			
@@ -782,7 +802,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		    	return true;
 		    }
 
-		    if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL_DPAD && !(TiltSensor.isEnabled()  && Emulator.isInMAME()  && !Emulator.isInMenu()))
+		    if(mm.getPrefsHelper().getControllerType() != PrefsHelper.PREF_DIGITAL_DPAD && !(tiltSensor.isEnabled()  && Emulator.isInMAME()  && !Emulator.isInMenu()))
 		       pad_data[0] = stick.handleMotion(event, pad_data[0]); 	 		    	
 		    		   		    		    
 		    if(mm.getPrefsHelper().isLightgun() && Emulator.isInMAME() && !Emulator.isInMenu() && 
@@ -876,7 +896,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	}
 		
 	protected void fixControllerCoords(ArrayList<InputValue> values) {
-
+		
 		if (values != null) {
 			for (int i = 0; i < values.size(); i++) {
 				
@@ -982,7 +1002,8 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	
 	protected void readInputValues(int id, ArrayList<InputValue> values)
 	{
-	     InputStream is = mm.getResources().openRawResource(id);
+	     System.out.println("readInputValues");
+		 InputStream is = mm.getResources().openRawResource(id);
 	     
 	     InputStreamReader isr = new InputStreamReader(is);
 	     BufferedReader br = new BufferedReader(isr);
@@ -996,6 +1017,11 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		     while(s!=null)
 		     {
 		    	 int [] data = new int[10]; 
+		    	 if(s.trim().startsWith("//"))
+		    	 {
+		    		 s = br.readLine();
+		    		 continue;
+		    	 }
 		    	 StringTokenizer st = new StringTokenizer(s,",");
 		    	    int j = 0;
 		    		while(st.hasMoreTokens()){
@@ -1342,6 +1368,16 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	   
 	   //mm.findViewById(R.id.EmulatorFrame).setOnTouchListener(this);;
 	}
+	
+	public void unsetInputListeners(){ 
+	   mm.getEmuView().setOnKeyListener(null);
+	   mm.getEmuView().setOnTouchListener(null);
+		                     
+	   mm.getInputView().setOnTouchListener(null);
+	   mm.getInputView().setOnKeyListener(null);
+		   
+	   //mm.findViewById(R.id.EmulatorFrame).setOnTouchListener(this);;
+	}	
 	
 	public boolean isControllerDevice(){
 	   return iCade;

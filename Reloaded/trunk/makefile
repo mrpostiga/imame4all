@@ -780,7 +780,7 @@ endif
 #CCOMFLAGS += -Wno-psabi 
 CCOMFLAGS += -Wno-sign-compare 
 
-LDFLAGS += -llog -lgcc
+LDFLAGS += -llog -lgcc -lOpenSLES
 LDFLAGS += -Wl,-soname,libMAME4droid.so -shared
 LDFLAGS += -lc -lm 
 

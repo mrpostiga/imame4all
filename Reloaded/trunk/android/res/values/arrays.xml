@@ -37,7 +37,9 @@
 		<item>3.5X</item>
 		<item>4X</item>
 		<item>4.5X</item>
-        <item>5X</item>								
+        <item>5X</item>	
+		<item>5.5X</item>
+        <item>6X</item>	        							
 	</string-array>
 	<string-array name="pref_scaleMode_values">
 		<item>1</item>
@@ -50,7 +52,9 @@
 		<item>8</item>
 		<item>9</item>
 		<item>10</item>
-		<item>11</item>									
+		<item>11</item>	
+		<item>12</item>	
+		<item>13</item>													
 	</string-array>
 	
 	<string-array name="pref_global_video_render_options">

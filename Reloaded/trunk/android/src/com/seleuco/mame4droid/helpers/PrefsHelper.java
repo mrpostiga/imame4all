@@ -117,7 +117,8 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String  PREF_TILT_SENSITIVITY = "PREF_TILT_SENSITIVITY";
 	final static public String  PREF_TILT_NEUTRAL = "PREF_TILT_NEUTRAL";
 	final static public String  PREF_TILT_ANALOG = "PREF_TILT_ANALOG";	
-	final static public String  PREF_TILT_TOUCH = "PREF_TILT_TOUCH";	
+	final static public String  PREF_TILT_TOUCH = "PREF_TILT_TOUCH";
+	final static public String  PREF_TILT_SWAP_YZ = "PREF_TILT_SWAP_YZ";
 	
 	final static public String  PREF_HIDE_STICK = "PREF_HIDE_STICK";
 	final static public String  PREF_BUTTONS_SIZE = "PREF_BUTTONS_SIZE";
@@ -173,7 +174,9 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final public static int PREF_35X = 8;
 	final public static int PREF_4X = 9;
 	final public static int PREF_45X = 10;
-	final public static int PREF_5X = 11;		
+	final public static int PREF_5X = 11;	
+	final public static int PREF_55X = 12;
+	final public static int PREF_6X = 13;	
 	final public static int PREF_SCALE = 1;
 	final public static int PREF_STRETCH = 2;
 
@@ -489,6 +492,10 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 		return getSharedPreferences().getBoolean(PREF_TILT_TOUCH,false);
 	}
 	
+	public boolean isSwappedYZ(){
+		return getSharedPreferences().getBoolean(PREF_TILT_SWAP_YZ,false);
+	}
+	
 	public int getButtonsSize(){
 		return Integer.valueOf(getSharedPreferences().getString(PREF_BUTTONS_SIZE,"3")).intValue();	
 	}
@@ -540,4 +547,5 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	public int getEffectOverlayIntensity(){
 		return Integer.valueOf(getSharedPreferences().getString(PREF_OVERLAY_INTENSITY,"3")).intValue();
 	}	
+			
 }
