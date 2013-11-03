@@ -55,6 +55,7 @@ import android.graphics.Paint.Style;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
+import android.os.Build;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.View;
@@ -118,6 +119,8 @@ public class Emulator
 	final static public int SOUND_DEVICE_FRAMES = 48;		
 	final static public int SOUND_DEVICE_SR = 49;
 	final static public int SOUND_ENGINE = 50;		
+	final static public int EMU_AUTO_RESOLUTION = 51;
+	final static public int IN_MAME = 52;
 	
 	final static public int FILTER_YEARS_ARRAY = 0;
 	final static public int FILTER_MANUFACTURERS_ARRAY = 1;
@@ -174,9 +177,11 @@ public class Emulator
 	private static boolean isThreadedSound  = false;
 	private static boolean isDebug = false;
 	private static int videoRenderMode  =  PrefsHelper.PREF_RENDER_SW;
+
 	private static boolean inMAME = false;
 	private static boolean inMenu = false;
 	private static boolean oldInMenu = false;
+
 	public static boolean isInMAME() {
 		return inMAME;
 	}
@@ -372,44 +377,30 @@ public class Emulator
 	}
 		
 	//synchronized 
-	static void bitblt(ByteBuffer sScreenBuff, boolean inMAME) {
+	static void bitblt(ByteBuffer sScreenBuff) {
 
 		//Log.d("Thread Video", "fuera lock");
 		synchronized(lock1){
 		//try {
 			//Log.d("Thread Video", "dentro lock");					
 			screenBuff = sScreenBuff;
-			Emulator.inMAME = inMAME;
+			Emulator.inMAME = Emulator.getValue(Emulator.IN_MAME)==1;
 			Emulator.inMenu = Emulator.getValue(Emulator.IN_MENU)==1;
-			
-			if(inMenu != oldInMenu)
-			{
-				final View v = mm.getInputView();
-				if(v!=null)
-				{
-					mm.runOnUiThread(new Runnable() {
-		                public void run() {
-		                    
-		                	if(!inMenu && Emulator.inMAME && 
-		                	   ( (mm.getPrefsHelper().isLightgun() && mm.getInputHandler().getInputHandlerState() != InputHandler.STATE_SHOWING_NONE) || mm.getPrefsHelper().isTiltSensor()))
-		                	{
-			        		    CharSequence text = mm.getPrefsHelper().isTiltSensor() ? "Tilt sensor is enabled!" : "Touch lightgun is enabled!";
-			        		    int duration = Toast.LENGTH_SHORT;
-			        		    Toast toast = Toast.makeText(mm, text, duration);
-			        		    toast.show();
-		                	}
-                            v.invalidate();
-                            
-                            if(mm.getFilterView()!=null)
-                            {
-                            	mm.getFilterView().setVisibility(Emulator.isInMAME() ? View.VISIBLE : View.INVISIBLE);
-                            }                            
-		                }
-		            });
-				}		
-			}
-			oldInMenu = inMenu;
-			   
+						
+            if(inMenu != oldInMenu)
+            {
+                final View v = mm.getInputView();
+                if(v!=null)
+                {
+                	mm.runOnUiThread(new Runnable() {
+                        public void run() {
+                	      v.invalidate();
+                        }
+                	});
+                }
+            }
+            oldInMenu = inMenu;
+            
 			if(videoRenderMode == PrefsHelper.PREF_RENDER_GL){
 				//if(mm.getEmuView() instanceof EmulatorViewGL)
 				((EmulatorViewGL)mm.getEmuView()).requestRender();
@@ -462,29 +453,36 @@ public class Emulator
 			emu_height = newHeight;
 			emu_vis_width = newVisWidth;
 			emu_vis_height = newVisHeight;
-			
-			emuBitmap = Bitmap.createBitmap(newWidth, newHeight, Bitmap.Config.RGB_565);
-			mtx.setScale((float)(window_width / (float)emu_width), (float)(window_height / (float)emu_height));				
+						
+			mtx.setScale((float)(window_width / (float)emu_width), (float)(window_height / (float)emu_height));	
 			
 			if(videoRenderMode == PrefsHelper.PREF_RENDER_GL)
 			{
 				GLRenderer r = (GLRenderer)((EmulatorViewGL)mm.getEmuView()).getRender();				
 				if(r!=null)r.changedEmulatedSize();	
 			}
+			else
+			{
+				emuBitmap = Bitmap.createBitmap(newWidth, newHeight, Bitmap.Config.RGB_565);
+			}
 		    
 			mm.getMainHelper().updateEmuValues();
 			
 			mm.runOnUiThread(new Runnable() {
                 public void run() {
-                	if(warnResChanged && videoRenderMode == PrefsHelper.PREF_RENDER_GL)
+            		mm.overridePendingTransition(0, 0);
+                	if(warnResChanged && videoRenderMode == PrefsHelper.PREF_RENDER_GL && Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR1)
                 	    mm.getEmuView().setVisibility(View.INVISIBLE);
                 	mm.getMainHelper().updateMAME4droid();
                 	if(mm.getEmuView().getVisibility()!=View.VISIBLE)
                 	    mm.getEmuView().setVisibility(View.VISIBLE);
                 }
-            });
+            });            
 		//}		  
 		  }
+		
+		if(videoRenderMode != PrefsHelper.PREF_RENDER_GL)
+			try { Thread.sleep(100);} catch (InterruptedException e) {}
 								
 		if(nativeVideoT==null)
 		{
@@ -615,6 +613,8 @@ public class Emulator
 			public void run() {
 				isEmulating = true;
 				init(libPath,resPath);
+				mm.getMainHelper().updateEmuValues();
+				runT();
 			}			
 		},"emulatorNativeMain-Thread");
 		
@@ -651,6 +651,8 @@ public class Emulator
 	
 	//native
 	protected static native void init(String libPath,String resPath);
+	
+	protected static native void runT();
 	
 	protected static native void runVideoT();
 			

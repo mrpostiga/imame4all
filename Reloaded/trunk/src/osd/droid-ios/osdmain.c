@@ -178,14 +178,14 @@ int main(int argc, char **argv)
 		//args[n]= (char *)"starforc"; n++;
 		//args[n]= (char *)"1944"; n++;
 		//args[n]= (char *)"mslug3"; n++;
-        //args[n]= (char *)"dino"; n++;
+                //args[n]= (char *)"dino"; n++;
 		//args[n]= (char *)"outrun"; n++;
 		//args[n]= (char *)"-autoframeskip"; n++;
 		//args[n]= (char *)"-noautoframeskip"; n++;
 		//args[n]= (char *)"-nosound"; n++;
 		//args[n]= (char *)"-novideo"; n++;
 		//args[n]= (char *)"-nosleep"; n++;
-        //args[n]= (char *)"-autosave"; n++;
+                //args[n]= (char *)"-autosave"; n++;
 		//args[n]= (char *)"-sleep"; n++;
 		args[n]= (char *)"-jdz"; n++;args[n]= (char *)"0.0"; n++;
 		args[n]= (char *)"-jsat"; n++;args[n]= (char *)"1.0"; n++;
@@ -256,7 +256,6 @@ int main(int argc, char **argv)
 
 void osd_init(running_machine *machine)
 {
-
 	//add_exit_callback(machine, osd_exit);
 	machine->add_notifier(MACHINE_NOTIFY_EXIT, osd_exit);
 
@@ -267,25 +266,25 @@ void osd_init(running_machine *machine)
 	myosd_inGame = !(machine->gamedrv == &GAME_NAME(empty));
     
 	options_set_bool(mame_options(), OPTION_CHEAT,myosd_cheat,OPTION_PRIORITY_CMDLINE);
-    options_set_bool(mame_options(), OPTION_AUTOSAVE,myosd_autosave,OPTION_PRIORITY_CMDLINE);
-    options_set_bool(mame_options(), OPTION_SOUND,myosd_sound_value != -1,OPTION_PRIORITY_CMDLINE);
-    if(myosd_sound_value!=-1)
-       options_set_int(mame_options(), OPTION_SAMPLERATE,myosd_sound_value,OPTION_PRIORITY_CMDLINE);
+        options_set_bool(mame_options(), OPTION_AUTOSAVE,myosd_autosave,OPTION_PRIORITY_CMDLINE);
+        options_set_bool(mame_options(), OPTION_SOUND,myosd_sound_value != -1,OPTION_PRIORITY_CMDLINE);
+        if(myosd_sound_value!=-1)
+          options_set_int(mame_options(), OPTION_SAMPLERATE,myosd_sound_value,OPTION_PRIORITY_CMDLINE);
     
-    options_set_float(mame_options(), OPTION_BEAM,myosd_vector_bean2x ? 2.5 : 1.0, OPTION_PRIORITY_CMDLINE);
-    options_set_float(mame_options(), OPTION_FLICKER,myosd_vector_flicker ? 0.4 : 0.0, OPTION_PRIORITY_CMDLINE);
-    options_set_bool(mame_options(), OPTION_ANTIALIAS,myosd_vector_antialias,OPTION_PRIORITY_CMDLINE);
+        options_set_float(mame_options(), OPTION_BEAM,myosd_vector_bean2x ? 2.5 : 1.0, OPTION_PRIORITY_CMDLINE);
+        options_set_float(mame_options(), OPTION_FLICKER,myosd_vector_flicker ? 0.4 : 0.0, OPTION_PRIORITY_CMDLINE);
+        options_set_bool(mame_options(), OPTION_ANTIALIAS,myosd_vector_antialias,OPTION_PRIORITY_CMDLINE);
     
 	droid_ios_init_input(machine);
 	droid_ios_init_sound(machine);
 	droid_ios_init_video(machine);
     
-    netplay_t *handle = netplay_get_handle();
+        netplay_t *handle = netplay_get_handle();
         
-    if(handle->has_connection)
-    {
-        handle->has_begun_game = 1;
-    }
+        if(handle->has_connection)
+        {
+            handle->has_begun_game = 1;
+        }
 }
 
 //void osd_exit(running_machine *machine)
@@ -300,9 +299,9 @@ void osd_update(running_machine *machine, int skip_redraw)
 {
     
     if (!skip_redraw && our_target!=NULL)
-	{
-		droid_ios_video_render(our_target);
-	}
+    {
+        droid_ios_video_render(our_target);
+    }
     
     netplay_t *handle = netplay_get_handle();
     
@@ -314,7 +313,7 @@ void osd_update(running_machine *machine, int skip_redraw)
             
     netplay_pre_frame_net(handle);
 
-	droid_ios_poll_input(machine);
+    droid_ios_poll_input(machine);
     
     netplay_post_frame_net(handle);
     
@@ -325,7 +324,7 @@ void osd_update(running_machine *machine, int skip_redraw)
         handle->target_frame = 0;
     }
 
-	myosd_check_pause();
+    myosd_check_pause();
 }
 
 //============================================================

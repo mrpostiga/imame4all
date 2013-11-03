@@ -37,11 +37,14 @@ int  myosd_cheat = 0;
 int  myosd_autosave = 0;
 int  myosd_savestate = 0;
 int  myosd_loadstate = 0;
-int  myosd_video_width = 0;
-int  myosd_video_height = 0;
-int  myosd_vis_video_width = 0;
-int  myosd_vis_video_height = 0;
+int  myosd_video_width = 1;
+int  myosd_video_height = 1;
+int  myosd_vis_video_width = 1;
+int  myosd_vis_video_height = 1;
+int  myosd_res_width = 1;
+int  myosd_res_height = 1;
 int  myosd_in_menu = 0;
+int  myosd_auto_res = 1;
 int  myosd_res = 1;
 int  myosd_force_pxaspect = 0;
 int  myosd_waysStick;
@@ -98,8 +101,9 @@ unsigned short 	*myosd_screen15 = NULL;
 
 //////////////////////// android
 
-unsigned short prev_screenbuffer[1024 * 1024];
-unsigned short screenbuffer[1024 * 1024];
+static unsigned short *screenbuffer1 = NULL;
+static unsigned short *screenbuffer2 = NULL;
+
 char globalpath[247]="/sdcard/ROMs/MAME4droid/";
 
 int array_year_count = 0;
@@ -116,18 +120,16 @@ static int sound_frames = 1024;
 //static int sound_fixed_sr = 44100;
 
 void change_pause(int value);
-void setDblBuffer(void);
 
-
-void (*dumpVideo_callback)(int emulating) = NULL;
-void (*initVideo_callback)(void *buffer) = NULL;
+void (*dumpVideo_callback)(void) = NULL;
+void (*initVideo_callback)(void *buffer,int width, int height) = NULL;
 void (*changeVideo_callback)(int newWidth,int newHeight,int newVisWidth,int newVisHeight) = NULL;
 
 void (*openSound_callback)(int rate,int stereo) = NULL;
 void (*dumpSound_callback)(void *buffer,int size) = NULL;
 void (*closeSound_callback)(void) = NULL;
 
-extern "C" void setVideoCallbacks(void (*init_video_java)(void *),void (*dump_video_java)(int), void (*change_video_java)(int,int,int,int))
+extern "C" void setVideoCallbacks(void (*init_video_java)(void *, int, int),void (*dump_video_java)(void), void (*change_video_java)(int,int,int,int))
 {
 #ifdef ANDROID
 	__android_log_print(ANDROID_LOG_DEBUG, "libMAME4droid.so", "setVideoCallbacks");
@@ -182,9 +184,7 @@ extern "C" void setGlobalPath(const char *path){
 
 extern "C"
 void setMyValue(int key,int i, int value){
-
 	//__android_log_print(ANDROID_LOG_DEBUG, "libMAME4droid.so", "setMyValue  %d,%d:%d",key,i,value);
-
 	switch(key)
 	{
 	    case 1:
@@ -220,7 +220,7 @@ void setMyValue(int key,int i, int value){
 	    case 22:
 	    	myosd_video_threaded = value;break;
 	    case 23:
-	    	myosd_dbl_buffer = value;setDblBuffer();break;
+	    	myosd_dbl_buffer = value;break;
 	    case 24:
 	    	myosd_pxasp1 = value;break;
 	    case 27:
@@ -266,6 +266,8 @@ void setMyValue(int key,int i, int value){
                 }
             case 50:
                 sound_engine = value;break;
+            case 51:
+                myosd_auto_res = value;break;
          }
 }
 
@@ -317,6 +319,8 @@ int getMyValue(int key,int i){
                     while(myosd_array_categories[array_categories_count][0]!='\0')array_categories_count++;
                 return array_categories_count;
             }
+            case 52:
+                return myosd_inGame;
 	    default :
 	         return -1;
 	}
@@ -340,7 +344,7 @@ void setMyValueStr(int key,int i, const char *value){
 
 extern "C"
 char *getMyValueStr(int key,int i){
-   __android_log_print(ANDROID_LOG_DEBUG, "libMAME4droid.so", "getMyValueStr  %d,%d",key,i);
+     //__android_log_print(ANDROID_LOG_DEBUG, "libMAME4droid.so", "getMyValueStr  %d,%d",key,i);
      switch(key)
      {
         case 0: return (char *)myosd_array_years[i];
@@ -371,13 +375,15 @@ void setMyAnalogData(int i, float v1, float v2){
 static void dump_video(void)
 {
 #ifdef ANDROID
-    // __android_log_print(ANDROID_LOG_DEBUG, "MAME4droid.so", "dump_video");
+     //__android_log_print(ANDROID_LOG_DEBUG, "MAME4droid.so", "dump_video");
 #endif
-	if(myosd_dbl_buffer)
-	   memcpy(screenbuffer,prev_screenbuffer, myosd_video_width * myosd_video_height * 2);
+
+        if(myosd_dbl_buffer)
+           memcpy(screenbuffer1,screenbuffer2,myosd_video_width * myosd_video_height * 2);
 
 	if(dumpVideo_callback!=NULL)
-	   dumpVideo_callback(myosd_inGame);
+	   dumpVideo_callback();
+
 }
 
 /////////////
@@ -435,48 +441,75 @@ float myosd_joystick_read_analog(int n, char axis)
     return res;
 }
 
+
 void myosd_set_video_mode(int width,int height,int vis_width, int vis_height)
 {
 #ifdef ANDROID
      __android_log_print(ANDROID_LOG_DEBUG, "MAME4droid.so", "set_video_mode: %d %d ",width,height);
 #endif
-    myosd_video_width = width;
-    myosd_video_height = height;
+
     myosd_vis_video_width = vis_width;
     myosd_vis_video_height = vis_height;
-    if(screenbuffer!=NULL)
-	   memset(screenbuffer, 0, 1024*1024*2);
-    if(prev_screenbuffer!=NULL)
-	   memset(prev_screenbuffer, 0, 1024*1024*2);
+
+    myosd_video_width = width;
+    myosd_video_height = height;
+
     if(changeVideo_callback!=NULL)
-	     changeVideo_callback(width, height,vis_width,vis_height);
+       changeVideo_callback(width, height,vis_width,vis_height);
 
-
-  	myosd_video_flip();
+    myosd_video_flip();
 }
 
-void setDblBuffer(){
-	if(myosd_dbl_buffer)
-	   myosd_screen15=prev_screenbuffer;
-	else
-       myosd_screen15=screenbuffer;
-}
 
 void myosd_init(void)
 {
     if (!lib_inited )
     {
 #ifdef ANDROID
-		__android_log_print(ANDROID_LOG_DEBUG, "MAME4droid.so", "init");
+	   __android_log_print(ANDROID_LOG_DEBUG, "MAME4droid.so", "init");
 #endif
-		setDblBuffer();
+      int reswidth = 640,resheight=480; 	   
 
-	   if(initVideo_callback!=NULL)
-          initVideo_callback((void *)&screenbuffer);
+      switch (myosd_res)
+      {
+            case 1:{reswidth = 320;resheight = 200;break;}//320x200 (16/10)
+            case 2:{reswidth = 320;resheight = 240;break;}//320x240 (4/3)
+            case 3:{reswidth = 401;resheight = 301;break;}//400x300 (4/3)
+            case 4:{reswidth = 480;resheight = 300;break;}//480x300 (16/10)
+            case 5:{reswidth = 512;resheight = 384;break;}//512x384 (4/3)
+            case 6:{reswidth = 640;resheight = 360;break;}//640x360 (16/9)  
+            case 7:{reswidth = 640;resheight = 400;break;}//640x400 (16/10)
+            case 8:{reswidth = 640;resheight = 480;break;}//640x480 (4/3)
+            case 9:{reswidth = 800;resheight = 600;break;}//800x600 (4/3)    
+            case 10:{reswidth = 848-(16*2);resheight = 477-(9*2);break;}//854x480 (16/9)  
+            case 11:{reswidth = 1024;resheight = 576;break;}//1024×576 (16/9) 
+            case 12:{reswidth = 1024;resheight = 768;break;}//1024x768 (4/3)   
+            case 13:{reswidth = 960;resheight = 720;break;}//960x720 (4/3)  
+	    case 14:{reswidth = 1280;resheight = 720;break;}//1280x720 (16/9) 
+	    case 15:{reswidth = 1440;resheight = 1080;break;}//1440x1080 (4/3) 
+	    case 16:{reswidth = 1920;resheight = 1080;break;}//1920x1080 (16/9) 
+       } 
+       
+       myosd_res_width = reswidth;
+       myosd_res_height = resheight;
 
-	   myosd_set_video_mode(320,240,320,240);
+       if(reswidth<640)reswidth=640;
+       if(resheight<480)resheight=480;
+	                       
+       if(screenbuffer1 == NULL)
+          screenbuffer1 = (unsigned short *)malloc(reswidth * resheight * 2);
+      
+       if(myosd_dbl_buffer && screenbuffer2==NULL)
+          screenbuffer2 = (unsigned short *)malloc(reswidth * resheight * 2);       
+       
+       myosd_screen15 = myosd_dbl_buffer ? screenbuffer2 : screenbuffer1;
+               
+       if(initVideo_callback!=NULL)    
+          initVideo_callback((void *)screenbuffer1,reswidth,resheight);
 
-   	   lib_inited = 1;
+       myosd_set_video_mode(myosd_res_width,myosd_res_height,myosd_res_width,myosd_res_height);
+
+       lib_inited = 1;
     }
 }
 
@@ -485,8 +518,12 @@ void myosd_deinit(void)
     if (lib_inited )
     {
 #ifdef ANDROID
-		__android_log_print(ANDROID_LOG_DEBUG, "MAME4droid.so", "deinit");
+	__android_log_print(ANDROID_LOG_DEBUG, "MAME4droid.so", "deinit");
 #endif
+        if(screenbuffer1!=NULL)
+           free(screenbuffer1);
+        if(screenbuffer2!=NULL)
+           free(screenbuffer2);
     	lib_inited = 0;
     }
 }

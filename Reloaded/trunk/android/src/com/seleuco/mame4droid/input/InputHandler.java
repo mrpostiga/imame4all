@@ -65,7 +65,7 @@ import android.view.View.OnTouchListener;
 
 import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.MAME4droid;
-import com.seleuco.mame4droid_0139u1.R;
+import com.seleuco.mame4droid.R;
 import com.seleuco.mame4droid.helpers.DialogHelper;
 import com.seleuco.mame4droid.helpers.PrefsHelper;
 
@@ -100,76 +100,66 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		R2_VALUE
 		///
 	};
-		
-	/*
-	2 = B
-	1 = X
-	B = Y
-	A = A
-	+ = START
-	- = SELECT	 
-	*/
-	
-	
+				
 	public static int[] defaultKeyMapping = {
-		KeyEvent.KEYCODE_DPAD_UP,    //WP_Up
-		KeyEvent.KEYCODE_DPAD_DOWN,  //WM_DOWN
-		KeyEvent.KEYCODE_DPAD_LEFT,  //WM_LEFT
-		KeyEvent.KEYCODE_DPAD_RIGHT, //WM_RIGHT
-		KeyEvent.KEYCODE_DPAD_CENTER,//WM_A
-		KeyEvent.KEYCODE_BACK,       //WM_B
-		KeyEvent.KEYCODE_1,          //WM_1
-		KeyEvent.KEYCODE_C,          //WM_2 suele ser 2
-		KeyEvent.KEYCODE_Z,
-		-1,
-		KeyEvent.KEYCODE_P,          //WM+
-		KeyEvent.KEYCODE_M,          //WM-
-		KeyEvent.KEYCODE_H,          //WM HOME
-		-1,
+		KeyEvent.KEYCODE_DPAD_UP,    
+		KeyEvent.KEYCODE_DPAD_DOWN,  
+		KeyEvent.KEYCODE_DPAD_LEFT,  
+		KeyEvent.KEYCODE_DPAD_RIGHT, 
+		KeyEvent.KEYCODE_BUTTON_B,
+		KeyEvent.KEYCODE_BUTTON_A,       
+		KeyEvent.KEYCODE_BUTTON_X,          
+		KeyEvent.KEYCODE_BUTTON_Y,          
+		KeyEvent.KEYCODE_BUTTON_L1,
+		KeyEvent.KEYCODE_BUTTON_R1,
+		KeyEvent.KEYCODE_BUTTON_SELECT,          
+		KeyEvent.KEYCODE_BUTTON_START,          
+		KeyEvent.KEYCODE_BACK,
+		KeyEvent.KEYCODE_MENU,
 		//////		
-		KeyEvent.KEYCODE_I,
-		KeyEvent.KEYCODE_K,
-		KeyEvent.KEYCODE_J,
-		KeyEvent.KEYCODE_O,
-		KeyEvent.KEYCODE_STAR,
-		KeyEvent.KEYCODE_SLASH,
-		KeyEvent.KEYCODE_COMMA,
-		KeyEvent.KEYCODE_PERIOD,
 		-1,
 		-1,
-		KeyEvent.KEYCODE_PLUS,
-		KeyEvent.KEYCODE_MINUS,
-		KeyEvent.KEYCODE_BACKSLASH,
+		-1,
+		-1,
+		-1,
+		-1,
+		-1,
+		-1,
+		-1,
+		-1,
+		-1,
+		-1,
+		-1,
 		-1,
 		//////
-		KeyEvent.KEYCODE_PAGE_UP,
-		KeyEvent.KEYCODE_PAGE_DOWN,
-		KeyEvent.KEYCODE_MEDIA_REWIND,
-		KeyEvent.KEYCODE_MEDIA_FAST_FORWARD,
-		KeyEvent.KEYCODE_ENTER,
-		KeyEvent.KEYCODE_DEL,
-		KeyEvent.KEYCODE_SOFT_LEFT,
-		KeyEvent.KEYCODE_SOFT_RIGHT,
 		-1,
 		-1,
-		KeyEvent.KEYCODE_BUTTON_THUMBR,
-		KeyEvent.KEYCODE_BUTTON_THUMBL,
-		KeyEvent.KEYCODE_BUTTON_MODE,
+		-1,
+		-1,
+		-1,
+		-1,
+		-1,
+		-1,
+		-1,
+		-1,
+		-1,
+		-1,
+		-1,
 		-1,		
 		//////
-		KeyEvent.KEYCODE_N,
-		KeyEvent.KEYCODE_Q,
-		KeyEvent.KEYCODE_T,
-		KeyEvent.KEYCODE_APOSTROPHE,
-		KeyEvent.KEYCODE_PICTSYMBOLS,
-		KeyEvent.KEYCODE_SWITCH_CHARSET,
-		KeyEvent.KEYCODE_NOTIFICATION,
-		KeyEvent.KEYCODE_MUTE,
 		-1,
 		-1,
-		KeyEvent.KEYCODE_BUTTON_START,
-		KeyEvent.KEYCODE_BUTTON_SELECT,
-		KeyEvent.KEYCODE_CLEAR,		
+		-1,
+		-1,
+		-1,
+		-1,
+		-1,
+		-1,
+		-1,
+		-1,
+		-1,
+		-1,
+		-1,		
 		-1
 	};
 			

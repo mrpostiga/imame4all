@@ -71,11 +71,12 @@ import com.seleuco.mame4droid.helpers.MenuHelper;
 import com.seleuco.mame4droid.helpers.PrefsHelper;
 import com.seleuco.mame4droid.input.ControlCustomizer;
 import com.seleuco.mame4droid.input.InputHandler;
+import com.seleuco.mame4droid.input.InputHandlerExt;
 import com.seleuco.mame4droid.input.InputHandlerFactory;
 import com.seleuco.mame4droid.views.FilterView;
 import com.seleuco.mame4droid.views.IEmuView;
 import com.seleuco.mame4droid.views.InputView;
-import com.seleuco.mame4droid_0139u1.R;
+import com.seleuco.mame4droid.R;
 
 import android.app.*;
 import android.content.*;
@@ -183,7 +184,7 @@ public class MAME4droid extends Activity {
                 
         inputHandler = InputHandlerFactory.createInputHandler(this);
         
-        mainHelper.detectOUYA();
+        mainHelper.detectDevice();
         
         Emulator.setPortraitFull(getPrefsHelper().isPortraitFullscreen());
         boolean full = false;
@@ -192,7 +193,7 @@ public class MAME4droid extends Activity {
 			setContentView(R.layout.main_fullscreen);
 			full = true;
 		}
-		else
+		else 
 		{
             setContentView(R.layout.main);
 		}        
@@ -207,9 +208,9 @@ public class MAME4droid extends Activity {
         	this.getLayoutInflater().inflate(R.layout.emuview_sw, fl);
         	emuView = this.findViewById(R.id.EmulatorViewSW);        
         }
-        else
+        else 
         {
-        	if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
+        	if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN && prefsHelper.getHideOrDimmNavBar())
         	    this.getLayoutInflater().inflate(R.layout.emuview_gl_ext, fl);
         	else
         		this.getLayoutInflater().inflate(R.layout.emuview_gl, fl);
@@ -401,7 +402,7 @@ public class MAME4droid extends Activity {
 			dialogHelper.removeDialogs();
 		}
 		
-		if(prefsHelper.isNotifyWhenSuspend())
+		if(prefsHelper.isNotifyWhenSuspend()) 
 		  NotificationHelper.addNotification(getApplicationContext(), "MAME4droid was suspended!", "MAME4droid was suspended", "Press to return to MAME4droid");
 		
 		//System.out.println("OnPause");
@@ -411,6 +412,7 @@ public class MAME4droid extends Activity {
 	protected void onStart() {
 		Log.d("EMULATOR", "onStart");		
 		super.onStart();
+		try{InputHandlerExt.resetAutodetected();}catch(Error e){};		
 		//System.out.println("OnStart");
 	}
 

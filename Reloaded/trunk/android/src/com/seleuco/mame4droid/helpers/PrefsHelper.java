@@ -61,7 +61,8 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String PREF_ROMsDIR = "PREF_ROMsDIR";
 	
 	final static public String PREF_GLOBAL_VIDEO_RENDER_MODE = "PREF_GLOBAL_VIDEO_RENDER_MODE_2";
-	final static public String PREF_GLOBAL_RESOLUTION = "PREF_GLOBAL_RESOLUTION";
+	final static public String PREF_GLOBAL_AUTORES = "PREF_GLOBAL_AUTORES";
+	final static public String PREF_GLOBAL_RESOLUTION = "PREF_GLOBAL_RESOLUTION_2";
 	final static public String PREF_GLOBAL_SPEED = "PREF_GLOBAL_SPEED";	
 	final static public String PREF_GLOBAL_SOUND_SYNC = "PREF_GLOBAL_SOUND_SYNC";
 	final static public String PREF_GLOBAL_FRAMESKIP = "PREF_GLOBAL_FRAMESKIP";
@@ -106,7 +107,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String  PREF_STICK_TYPE = "PREF_STICK_TYPE_2";
 	final static public String  PREF_NUMBUTTONS = "PREF_NUMBUTTONS_2";
 	final static public String  PREF_INPUT_EXTERNAL = "PREF_INPUT_EXTERNAL_2";
-	final static public String  PREF_AUTOMAP_OPTIONS = "PREF_AUTOMAP_OPTIONS";
+	final static public String  PREF_AUTOMAP_OPTIONS = "PREF_AUTOMAP_OPTIONS_2";
 	final static public String  PREF_ANALOG_DZ = "PREF_ANALOG_DZ";
 	final static public String  PREF_GAMEPAD_DZ = "PREF_GAMEPAD_DZ";
 	final static public String  PREF_VIBRATE = "PREF_VIBRATE";
@@ -149,6 +150,9 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	
 	final static public String  PREF_OVERLAY_INTENSITY = "PREF_OVERLAY_INTENSITY";
 	
+	final static public String  PREF_GLOBAL_HIDE_DIMM_NAVBAR = "PREF_GLOBAL_HIDE_DIMM_NAVBAR";
+	final static public String  PREF_GLOBAL_SCALE_BEYOND = "PREF_GLOBAL_SCALE_BEYOND";
+	
 	final static public int  LOW = 1;
 	final static public int  NORMAL = 2;
 	final static public int  HIGHT = 2;
@@ -182,11 +186,9 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 
 	final public static String PREF_OVERLAY_NONE = "none";
 	
-	final public static int PREF_AUTOMAP_DEFAULT = 1;
-	final public static int PREF_AUTOMAP_THUMBS_AS_L2R2 = 2;	
-	final public static int PREF_AUTOMAP_THUMBS_AS_SELECTSTART = 3;	
-	final public static int PREF_AUTOMAP_L1L2_AS_L2R2 = 4;	
-	final public static int PREF_AUTOMAP_L1L2_AS_SELECTSTART = 5;		
+	final public static int PREF_AUTOMAP_THUMBS_DISABLED_L2R2_AS_L1R2 = 1;
+	final public static int PREF_AUTOMAP_THUMBS_AS_COINSTART_L2R2_AS_L1R2 = 2;	
+	final public static int PREF_AUTOMAP_THUMBS_DISABLED_L2R2_AS_COINSTART = 3;	
 	
 	final public static int PREF_SNDENG_AUDIOTRACK = 1;
 	final public static int PREF_SNDENG_AUDIOTRACK_HIGH = 2;
@@ -292,8 +294,12 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 		return Integer.valueOf(getSharedPreferences().getString(PREF_GLOBAL_VIDEO_RENDER_MODE,"2")).intValue();	
 	}
 
+	public boolean isAutoSwitchRes(){
+		return getSharedPreferences().getBoolean(PREF_GLOBAL_AUTORES,true);
+	}	
+	
 	public int getEmulatedResolution(){
-		return Integer.valueOf(getSharedPreferences().getString(PREF_GLOBAL_RESOLUTION,"1")).intValue();	
+		return Integer.valueOf(getSharedPreferences().getString(PREF_GLOBAL_RESOLUTION,"3")).intValue();	
 	}
 	
 	public int getEmulatedSpeed(){
@@ -547,5 +553,12 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	public int getEffectOverlayIntensity(){
 		return Integer.valueOf(getSharedPreferences().getString(PREF_OVERLAY_INTENSITY,"3")).intValue();
 	}	
-			
+
+	public boolean getHideOrDimmNavBar(){
+		return getSharedPreferences().getBoolean(PREF_GLOBAL_HIDE_DIMM_NAVBAR,true);
+	}
+	
+	public boolean isScaleBeyondBoundaries(){
+		return getSharedPreferences().getBoolean(PREF_GLOBAL_SCALE_BEYOND,true);
+	}		
 }
