@@ -60,7 +60,7 @@ import android.widget.ImageView;
 
 import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.MAME4droid;
-import com.seleuco.mame4droid_0139u1.R;
+import com.seleuco.mame4droid.R;
 import com.seleuco.mame4droid.helpers.PrefsHelper;
 import com.seleuco.mame4droid.input.ControlCustomizer;
 import com.seleuco.mame4droid.input.InputHandler;

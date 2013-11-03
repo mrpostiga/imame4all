@@ -57,7 +57,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.seleuco.mame4droid_0139u1.R;
+import com.seleuco.mame4droid.R;
 import com.seleuco.mame4droid.input.InputHandler;
 
 public class ListKeys extends ListActivity {

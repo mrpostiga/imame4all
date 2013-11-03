@@ -49,8 +49,8 @@ extern "C" {
 #define com_seleuco_mame4droid_Emulator_NUMBTNS 25L
 #undef com_seleuco_mame4droid_Emulator_NUMWAYS
 #define com_seleuco_mame4droid_Emulator_NUMWAYS 26L
-#undef com_seleuco_mame4droid_Emulator_FAVORITES
-#define com_seleuco_mame4droid_Emulator_FAVORITES 27L
+#undef com_seleuco_mame4droid_Emulator_FILTER_FAVORITES
+#define com_seleuco_mame4droid_Emulator_FILTER_FAVORITES 27L
 #undef com_seleuco_mame4droid_Emulator_RESET_FILTER
 #define com_seleuco_mame4droid_Emulator_RESET_FILTER 28L
 #undef com_seleuco_mame4droid_Emulator_LAST_GAME_SELECTED
@@ -69,6 +69,46 @@ extern "C" {
 #define com_seleuco_mame4droid_Emulator_VANTIALIAS 35L
 #undef com_seleuco_mame4droid_Emulator_VFLICKER
 #define com_seleuco_mame4droid_Emulator_VFLICKER 36L
+#undef com_seleuco_mame4droid_Emulator_FILTER_NUM_YEARS
+#define com_seleuco_mame4droid_Emulator_FILTER_NUM_YEARS 37L
+#undef com_seleuco_mame4droid_Emulator_FILTER_NUM_MANUFACTURERS
+#define com_seleuco_mame4droid_Emulator_FILTER_NUM_MANUFACTURERS 38L
+#undef com_seleuco_mame4droid_Emulator_FILTER_NUM_DRIVERS_SRC
+#define com_seleuco_mame4droid_Emulator_FILTER_NUM_DRIVERS_SRC 39L
+#undef com_seleuco_mame4droid_Emulator_FILTER_NUM_CATEGORIES
+#define com_seleuco_mame4droid_Emulator_FILTER_NUM_CATEGORIES 40L
+#undef com_seleuco_mame4droid_Emulator_FILTER_CLONES
+#define com_seleuco_mame4droid_Emulator_FILTER_CLONES 41L
+#undef com_seleuco_mame4droid_Emulator_FILTER_NOTWORKING
+#define com_seleuco_mame4droid_Emulator_FILTER_NOTWORKING 42L
+#undef com_seleuco_mame4droid_Emulator_FILTER_MANUFACTURER
+#define com_seleuco_mame4droid_Emulator_FILTER_MANUFACTURER 43L
+#undef com_seleuco_mame4droid_Emulator_FILTER_GTE_YEAR
+#define com_seleuco_mame4droid_Emulator_FILTER_GTE_YEAR 44L
+#undef com_seleuco_mame4droid_Emulator_FILTER_LTE_YEAR
+#define com_seleuco_mame4droid_Emulator_FILTER_LTE_YEAR 45L
+#undef com_seleuco_mame4droid_Emulator_FILTER_DRVSRC
+#define com_seleuco_mame4droid_Emulator_FILTER_DRVSRC 46L
+#undef com_seleuco_mame4droid_Emulator_FILTER_CATEGORY
+#define com_seleuco_mame4droid_Emulator_FILTER_CATEGORY 47L
+#undef com_seleuco_mame4droid_Emulator_SOUND_DEVICE_FRAMES
+#define com_seleuco_mame4droid_Emulator_SOUND_DEVICE_FRAMES 48L
+#undef com_seleuco_mame4droid_Emulator_SOUND_DEVICE_SR
+#define com_seleuco_mame4droid_Emulator_SOUND_DEVICE_SR 49L
+#undef com_seleuco_mame4droid_Emulator_SOUND_ENGINE
+#define com_seleuco_mame4droid_Emulator_SOUND_ENGINE 50L
+#undef com_seleuco_mame4droid_Emulator_EMU_AUTO_RESOLUTION
+#define com_seleuco_mame4droid_Emulator_EMU_AUTO_RESOLUTION 51L
+#undef com_seleuco_mame4droid_Emulator_FILTER_YEARS_ARRAY
+#define com_seleuco_mame4droid_Emulator_FILTER_YEARS_ARRAY 0L
+#undef com_seleuco_mame4droid_Emulator_FILTER_MANUFACTURERS_ARRAY
+#define com_seleuco_mame4droid_Emulator_FILTER_MANUFACTURERS_ARRAY 1L
+#undef com_seleuco_mame4droid_Emulator_FILTER_DRIVERS_SRC_ARRAY
+#define com_seleuco_mame4droid_Emulator_FILTER_DRIVERS_SRC_ARRAY 2L
+#undef com_seleuco_mame4droid_Emulator_FILTER_CATEGORIES_ARRAY
+#define com_seleuco_mame4droid_Emulator_FILTER_CATEGORIES_ARRAY 3L
+#undef com_seleuco_mame4droid_Emulator_FILTER_KEYWORD
+#define com_seleuco_mame4droid_Emulator_FILTER_KEYWORD 4L
 /*
  * Class:     com_seleuco_mame4droid_Emulator
  * Method:    init
@@ -76,6 +116,14 @@ extern "C" {
  */
 JNIEXPORT void JNICALL Java_com_seleuco_mame4droid_Emulator_init
   (JNIEnv *, jclass, jstring, jstring);
+
+/*
+ * Class:     com_seleuco_mame4droid_Emulator
+ * Method:    runT
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_com_seleuco_mame4droid_Emulator_runT
+  (JNIEnv *, jclass);
 
 /*
  * Class:     com_seleuco_mame4droid_Emulator

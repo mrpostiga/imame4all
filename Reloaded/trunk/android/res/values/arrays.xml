@@ -186,18 +186,24 @@
 		<item>4</item>
 		<item>5</item>
 	</string-array>
-   
+			   
 	<string-array name="pref_resolution_options">
-	    <item>Auto (Recommended)</item>
-		<item>320x200</item>
-	    <item>320x240</item>
-		<item>400x300</item>	
-		<item>480x300</item>
-		<item>512x384</item>
-		<item>640x400</item>
-		<item>640x480</item>
-		<item>800x600</item>
-		<item>1024x768</item>					
+		<item>320x200 (16/10)</item>
+	    <item>320x240 (4/3)</item>
+		<item>400x300 (4/3)</item>	
+		<item>480x300 (16/10)</item>
+		<item>512x384 (4/3)</item>
+		<item>640x360 (16/9)</item>		
+		<item>640x400 (16/10)</item>
+		<item>640x480 (4/3)</item>	
+		<item>800x600 (4/3)</item>
+		<item>854x480 (16/9)</item>	
+		<item>1024×576 (16/9)</item>					
+		<item>1024x768 (4/3)</item>
+		<item>960x720 (4/3)</item>
+		<item>1280x720 (16/9)</item>
+        <item>1440x1080 (4/3)</item>		
+		<item>1920x1080 (16/9)</item>					
 	</string-array>
 	<string-array name="pref_resolution_values">
 		<item>1</item>
@@ -209,7 +215,13 @@
 		<item>7</item>
 		<item>8</item>
 		<item>9</item>
-		<item>10</item>																
+		<item>10</item>		
+		<item>11</item>
+		<item>12</item>
+		<item>13</item>
+		<item>14</item>		
+        <item>15</item>
+        <item>16</item>	        
 	</string-array>
 
     <string-array name="pref_buttons_size_options">
@@ -242,7 +254,7 @@
 	    <item>AudioTrack</item>
 		<item>AudioTrack high latency (safe)</item>
 	    <item>OpenSL</item>
-        <item>OpenSL very low latency  (best)</item>	    					
+        <item>OpenSL low latency (best)</item>	    					
 	</string-array>
 	<string-array name="pref_sound_engine_values">
 		<item>1</item>
@@ -328,19 +340,15 @@
 	</string-array>	
 	
    <string-array name="pref_automap_options">
-	    <item>Thumbs disabled</item>
-		<item>Thumbs as Options and Exit</item>
-		<item>Thumbs as Coin and Start</item>
-		<item>L1,R1 as Options and Exit</item>
-		<item>L1,R1 as Coin and Start</item>																	
+	    <item>Thumbs disabled and L2,R2 as L1,R1</item>
+		<item>Thumbs as Coin,Start and L2,R2 as L1,R1</item>
+		<item>Thumbs disabled and L2,R2 as Coin,Start</item>															
 	</string-array>
 	
 	<string-array name="pref_automap_values">
 		<item>1</item>
 		<item>2</item>
-		<item>3</item>		
-		<item>4</item>
-		<item>5</item>																							
+		<item>3</item>																									
 	</string-array>	
 	
     <string-array name="pref_tilt_neutralz_options">
@@ -370,9 +378,9 @@
 	</string-array>	
 	
     <string-array name="pref_px_options">
-	    <item>MAME (original arcade 4/3)</item>
-		<item>Forced pixel aspect</item>
-		<item>Forced pixel aspect (Smart)</item>																		
+	    <item>MAME (original arcade)</item>
+		<item>Forced pixel aspect(and resolution)</item>
+		<item>Forced pixel aspect (smart, fixed resolution)</item>																		
 	</string-array>
 	
 	<string-array name="pref_px_values">

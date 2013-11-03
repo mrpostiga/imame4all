@@ -61,7 +61,7 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import com.seleuco.mame4droid.helpers.DialogHelper;
-import com.seleuco.mame4droid_0139u1.R;
+import com.seleuco.mame4droid.R;
 
 public class FileExplorer {
 

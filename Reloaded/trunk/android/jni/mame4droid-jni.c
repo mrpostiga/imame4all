@@ -7,7 +7,6 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -134,7 +133,7 @@ static void load_lib(const char *str)
     __android_log_print(ANDROID_LOG_DEBUG, "mame4droid-jni","droid_ios_video_thread%d\n", droid_video_thread!=NULL);
 }
 
-void myJNI_initVideo(void *buffer)
+void myJNI_initVideo(void *buffer, int width, int height)
 {
     JNIEnv *env;
     jobject tmp;
@@ -142,23 +141,24 @@ void myJNI_initVideo(void *buffer)
 #ifdef DEBUG
     __android_log_print(ANDROID_LOG_DEBUG, "mame4droid-jni", "initVideo");
 #endif
-    tmp = (*env)->NewDirectByteBuffer(env, buffer, 1024 * 1024 * 2);//640,480 power 2
+    tmp = (*env)->NewDirectByteBuffer(env, buffer, width * height * 2);
+
     videoBuffer = (jobject)(*env)->NewGlobalRef(env, tmp);
 
     if(!videoBuffer) __android_log_print(ANDROID_LOG_ERROR, "mame4droid-jni", "yikes, unable to initialize video buffer");
+
 }
 
-void myJNI_dumpVideo(int emulating)
+void myJNI_dumpVideo()
 {
-
-JNIEnv *env;
+    JNIEnv *env;
     (*jVM)->GetEnv(jVM, (void**) &env, JNI_VERSION_1_4);
 
 #ifdef DEBUG
-   // __android_log_print(ANDROID_LOG_DEBUG, "mame4droid-jni", "dumpVideo emulating:%d",emulating);
+    //__android_log_print(ANDROID_LOG_DEBUG, "mame4droid-jni", "dumpVideo");
 #endif
 
-    (*env)->CallStaticVoidMethod(env, cEmulator, android_dumpVideo, videoBuffer,(jboolean)emulating);
+   (*env)->CallStaticVoidMethod(env, cEmulator,  android_dumpVideo, videoBuffer);
 }
 
 void myJNI_changeVideo(int newWidth, int newHeight,int newVisWidth, int newVisHeight)
@@ -169,7 +169,6 @@ void myJNI_changeVideo(int newWidth, int newHeight,int newVisWidth, int newVisHe
 #ifdef DEBUG
     __android_log_print(ANDROID_LOG_DEBUG, "mame4droid-jni", "changeVideo");
 #endif
-
 
     (*env)->CallStaticVoidMethod(env, cEmulator, android_changeVideo, (jint)newWidth,(jint)newHeight,(jint)newVisWidth,(jint)newVisHeight);
 }
@@ -270,7 +269,7 @@ int JNI_OnLoad(JavaVM* vm, void* reserved)
 
     cEmulator = (jclass) (*env)->NewGlobalRef(env,cEmulator );
 
-    android_dumpVideo = (*env)->GetStaticMethodID(env,cEmulator,"bitblt","(Ljava/nio/ByteBuffer;Z)V");
+    android_dumpVideo = (*env)->GetStaticMethodID(env,cEmulator,"bitblt","(Ljava/nio/ByteBuffer;)V");
     
     if(android_dumpVideo==NULL)
     {
@@ -361,9 +360,7 @@ JNIEXPORT void JNICALL Java_com_seleuco_mame4droid_Emulator_init
         __android_log_print(ANDROID_LOG_ERROR, "mame4droid-jni", "Error setting pthread priority");
         return;
     }
-    */
-    
-    android_main(0, NULL);    
+    */  
 }
 
 JNIEXPORT void JNICALL Java_com_seleuco_mame4droid_Emulator_setPadData
@@ -448,6 +445,17 @@ JNIEXPORT void JNICALL Java_com_seleuco_mame4droid_Emulator_setValueStr
     }
     else
       __android_log_print(ANDROID_LOG_WARN, "mame4droid-jni", "error no setMyValueStr!");
+}
+
+JNIEXPORT void JNICALL Java_com_seleuco_mame4droid_Emulator_runT
+  (JNIEnv *env, jclass c){
+#ifdef DEBUG
+    __android_log_print(ANDROID_LOG_DEBUG, "mame4droid-jni", "runThread");
+#endif
+    if(android_main!=NULL)
+       android_main(0, NULL);  
+    else
+       __android_log_print(ANDROID_LOG_WARN, "mame4droid-jni", "error no android main!");
 }
 
 JNIEXPORT void JNICALL Java_com_seleuco_mame4droid_Emulator_runVideoT

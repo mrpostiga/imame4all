@@ -92,19 +92,25 @@ public class GLRenderer implements Renderer {
     }
 
 	public void changedEmulatedSize(){
-        Log.v("mm","changedEmulatedSize "+shortBuffer+" "+Emulator.getScreenBuffer());
+        //Log.v("mm","changedEmulatedSize "+shortBuffer+" "+Emulator.getScreenBuffer());
         if(Emulator.getScreenBuffer()==null)return;
         shortBuffer = Emulator.getScreenBuffer().asShortBuffer(); 
         textureInit = false;
 	}
 	
-	private int getP2Size(int size){
+	private int getP2Size(GL10 gl,int size){
+		//String exts = gl.glGetString(GL10.GL_EXTENSIONS);		
+		//if(exts.indexOf("GL_ARB_texture_non_power_of_two")!=-1 )
+		  //return size;
+		
 		if(size<=256)
 			return 256;
 		else if(size<=512)
 			return 512;
-		else
+		else if(size<=1024)
 			return 1024;
+		else
+			return 2048;
 	}
 	
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -219,8 +225,8 @@ public class GLRenderer implements Renderer {
 				0, 0, 0, 
 				0,(int) ((float) height * scaleY), 0 };
 	    
-        int width_p2  =  getP2Size(Emulator.getEmulatedWidth());
-        int height_p2 =  getP2Size(Emulator.getEmulatedHeight());
+        int width_p2  =  getP2Size(gl,Emulator.getEmulatedWidth());
+        int height_p2 =  getP2Size(gl,Emulator.getEmulatedHeight());
         	
 		// Texture coords
 		float[] texturCoords = new float[] {
@@ -276,8 +282,10 @@ public class GLRenderer implements Renderer {
     		mTex = loadTexture(gl);  
     	
         gl.glActiveTexture(mTex);
-        gl.glClientActiveTexture(mTex);
-
+        
+        if(force10 || !(gl instanceof GL11Ext))
+           gl.glClientActiveTexture(mTex);
+ 
         shortBuffer.rewind();
 
         gl.glBindTexture(GL10.GL_TEXTURE_2D, mTex);
@@ -286,13 +294,13 @@ public class GLRenderer implements Renderer {
         {
         	initVertexes(gl);
         	
-        	ShortBuffer tmp = ShortBuffer.allocate(getP2Size(Emulator.getEmulatedWidth()) * getP2Size(Emulator.getEmulatedHeight()));        	
+        	ShortBuffer tmp = ShortBuffer.allocate(getP2Size(gl,Emulator.getEmulatedWidth()) * getP2Size(gl,Emulator.getEmulatedHeight()));        	
         	short a[] = tmp.array();
         	Arrays.fill(a, (short)0);
         	        	
         	gl.glTexImage2D(GL10.GL_TEXTURE_2D, 0,  GL10.GL_RGB,
-        			getP2Size(Emulator.getEmulatedWidth()), 
-        			getP2Size(Emulator.getEmulatedHeight()), 
+        			getP2Size(gl,Emulator.getEmulatedWidth()), 
+        			getP2Size(gl,Emulator.getEmulatedHeight()), 
                 0,  GL10.GL_RGB,
                 GL10.GL_UNSIGNED_SHORT_5_6_5 , tmp);
             textureInit = true;

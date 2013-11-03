@@ -47,6 +47,7 @@ int  myosd_video_height = 240;
 int  myosd_vis_video_width = 320;
 int  myosd_vis_video_height = 240;
 int  myosd_in_menu = 0;
+int  myosd_auto_res = 1;
 int  myosd_res = 1;
 int  myosd_force_pxaspect = 0;
 

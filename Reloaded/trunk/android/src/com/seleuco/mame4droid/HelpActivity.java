@@ -56,7 +56,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import com.seleuco.mame4droid_0139u1.R;
+import com.seleuco.mame4droid.R;
 
 public class HelpActivity extends Activity {
 

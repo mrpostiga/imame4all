@@ -80,7 +80,7 @@ import android.widget.FrameLayout.LayoutParams;
 import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.HelpActivity;
 import com.seleuco.mame4droid.MAME4droid;
-import com.seleuco.mame4droid_0139u1.R;
+import com.seleuco.mame4droid.R;
 import com.seleuco.mame4droid.input.ControlCustomizer;
 import com.seleuco.mame4droid.input.InputHandler;
 import com.seleuco.mame4droid.input.InputHandlerExt;
@@ -98,6 +98,18 @@ public class MainHelper {
 	
 	final static public  String MAGIC_FILE = "dont-delete-00004.bin";
 	
+	final public static int DEVICE_GENEREIC = 1;
+	final public static int DEVICE_OUYA = 2;
+	final public static int DEVICE_SHIELD = 3;
+	
+	protected int deviceDetected = DEVICE_GENEREIC;
+	
+	protected int oldInMAME = 0;
+	
+	public int getDeviceDetected() {
+		return deviceDetected;
+	}
+
 	protected MAME4droid mm = null;
 	
 	public MainHelper(MAME4droid value){
@@ -357,6 +369,7 @@ public class MainHelper {
 		Emulator.setValue(Emulator.SOUND_VALUE,prefsHelper.getSoundValue());
 		Emulator.setValue(Emulator.FRAME_SKIP_VALUE,prefsHelper.getFrameSkipValue());
 
+		Emulator.setValue(Emulator.EMU_AUTO_RESOLUTION,prefsHelper.isAutoSwitchRes() ? 1 : 0);
 		Emulator.setValue(Emulator.EMU_RESOLUTION,prefsHelper.getEmulatedResolution());
 		Emulator.setValue(Emulator.FORCE_PXASPECT,prefsHelper.getForcedPixelAspect());
 		
@@ -464,12 +477,12 @@ public class MainHelper {
 			Emulator.setFrameFiltering(prefsHelper.isPortraitBitmapFiltering());
 			
 			if(state == InputHandler.STATE_SHOWING_CONTROLLER && !prefsHelper.isPortraitTouchController())
-				//{reload();return;}
-			    inputHandler.changeState();
+				{reload();return;}
+			    //inputHandler.changeState();
 				
 			if(state == InputHandler.STATE_SHOWING_NONE && prefsHelper.isPortraitTouchController())
-			    //{reload();return;}
-			    inputHandler.changeState();	
+			    {reload();return;}
+			    //inputHandler.changeState();	
 			
 			state = mm.getInputHandler().getInputHandlerState();
 			
@@ -572,8 +585,8 @@ public class MainHelper {
 			   	}
 			}		
 		}
-		
-    	if(Emulator.isInMAME() && Emulator.getValue(Emulator.IN_MENU)==0 &&	
+				
+    	if(Emulator.getValue(Emulator.IN_MAME)==1 && (Emulator.getValue(Emulator.IN_MENU)==0 || oldInMAME==0) &&	
     	    	   ((mm.getPrefsHelper().isLightgun() &&  mm.getInputHandler().getInputHandlerState() != InputHandler.STATE_SHOWING_NONE) || mm.getPrefsHelper().isTiltSensor()))
     	{
     			    CharSequence text = mm.getPrefsHelper().isTiltSensor() ? "Tilt sensor is enabled!" : "Touch lightgun is enabled!";
@@ -581,6 +594,8 @@ public class MainHelper {
     			    Toast toast = Toast.makeText(mm, text, duration);
     			    toast.show();
     	}
+    	
+    	oldInMAME = Emulator.getValue(Emulator.IN_MAME);
 		
 		if(state != InputHandler.STATE_SHOWING_CONTROLLER && ControlCustomizer.isEnabled())
 		{
@@ -611,7 +626,7 @@ public class MainHelper {
 		   filterView.invalidate();
 		
 		if(filterView!=null)
-			filterView.setVisibility(Emulator.isInMAME() ? View.VISIBLE : View.INVISIBLE);
+			filterView.setVisibility(Emulator.getValue(Emulator.IN_MAME)==1 ? View.VISIBLE : View.INVISIBLE);
 	}
 	
 	public void showWeb(){		
@@ -662,6 +677,9 @@ public class MainHelper {
 		    {
 		    	emu_w = (int)(emu_w * 1.5f);
 		    	emu_h = (int)(emu_h * 1.5f);
+		    	
+		    	//emu_h =  MeasureSpec.getSize(widthMeasureSpec) *  (emu_w / emu_h); 
+		    	//emu_w = MeasureSpec.getSize(widthMeasureSpec);		    			    	
 		    } else
 		    
 		    if(scaleType == PrefsHelper.PREF_20X)
@@ -722,7 +740,7 @@ public class MainHelper {
 			int w = emu_w;
 			int h = emu_h;
 
-			if(scaleType == PrefsHelper.PREF_SCALE || scaleType == PrefsHelper.PREF_STRETCH || !Emulator.isInMAME())
+			if(scaleType == PrefsHelper.PREF_SCALE || scaleType == PrefsHelper.PREF_STRETCH || !Emulator.isInMAME() || !mm.getPrefsHelper().isScaleBeyondBoundaries())
 			{
 			    widthSize = MeasureSpec.getSize(widthMeasureSpec);
 			    heightSize = MeasureSpec.getSize(heightMeasureSpec);
@@ -786,23 +804,50 @@ public class MainHelper {
 		return l;		
 	}		
 	
-	public void detectOUYA(){
-		
-		 boolean ouya = android.os.Build.MODEL.equals("OUYA Console");
-		 
-		 if(ouya)
-		 {
-				Context context = mm.getApplicationContext();
-				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-				if(!prefs.getBoolean("ouya", false))
-				{
-				   SharedPreferences.Editor edit = prefs.edit();
-				   edit.putBoolean("ouya", true);
-				   edit.putBoolean(PrefsHelper.PREF_LANDSCAPE_TOUCH_CONTROLLER, false);
-				   edit.putBoolean(PrefsHelper.PREF_LANDSCAPE_BITMAP_FILTERING,true);
-				   //edit.putString("", "");
-				   edit.commit();
-				}
-		 }				
+	public void detectDevice() {
+
+		boolean ouya = android.os.Build.MODEL.equals("OUYA Console");
+		boolean shield = android.os.Build.MODEL.equals("SHIELD");
+
+		if (ouya) {
+			Context context = mm.getApplicationContext();
+			SharedPreferences prefs = PreferenceManager
+					.getDefaultSharedPreferences(context);
+			if (!prefs.getBoolean("ouya", false)) {
+				SharedPreferences.Editor edit = prefs.edit();
+				edit.putBoolean("ouya", true);
+				edit.putBoolean(PrefsHelper.PREF_LANDSCAPE_TOUCH_CONTROLLER,
+						false);
+				edit.putBoolean(PrefsHelper.PREF_LANDSCAPE_BITMAP_FILTERING,
+						true);
+				edit.putBoolean(PrefsHelper.PREF_GLOBAL_HIDE_DIMM_NAVBAR, false);
+				edit.putString(PrefsHelper.PREF_GLOBAL_RESOLUTION,
+						"11");	
+				edit.putString(PrefsHelper.PREF_AUTOMAP_OPTIONS,PrefsHelper.PREF_AUTOMAP_THUMBS_DISABLED_L2R2_AS_COINSTART+"");
+										
+				// edit.putString("", "");
+				edit.commit();
+			}
+			deviceDetected = DEVICE_OUYA;
+		}
+
+		if (shield) {
+			Context context = mm.getApplicationContext();
+			SharedPreferences prefs = PreferenceManager
+					.getDefaultSharedPreferences(context);
+			if (!prefs.getBoolean("shield", false)) {
+				SharedPreferences.Editor edit = prefs.edit();
+				edit.putBoolean("shield", true);
+				edit.putBoolean(PrefsHelper.PREF_LANDSCAPE_TOUCH_CONTROLLER,
+						false);
+				edit.putBoolean(PrefsHelper.PREF_GLOBAL_HIDE_DIMM_NAVBAR, false);
+				edit.putBoolean(PrefsHelper.PREF_LANDSCAPE_BITMAP_FILTERING,
+						true);
+				edit.putString(PrefsHelper.PREF_GLOBAL_RESOLUTION,
+						"11");					
+				edit.commit();
+			}
+			deviceDetected = DEVICE_SHIELD;
+		}
 	}
 }

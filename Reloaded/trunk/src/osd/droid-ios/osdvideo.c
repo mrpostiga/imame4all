@@ -49,8 +49,6 @@ static void droid_ios_video_draw(void);
 extern "C"
 void droid_ios_video_thread(void);
 
-//int video_threaded = 1;
-
 void droid_ios_setup_video()
 {
 
@@ -89,11 +87,10 @@ void droid_ios_video_draw()
 
 	if(myosd_video_threaded)
 	{
-		pthread_mutex_lock( &cond_mutex );
-
+                pthread_mutex_lock( &cond_mutex );
 		while(currlist == NULL)
 		{
-			pthread_cond_wait( &condition_var, &cond_mutex );
+      	  	     pthread_cond_wait( &condition_var, &cond_mutex );
 		}
 	}
 
@@ -145,105 +142,114 @@ extern "C"
 void droid_ios_video_thread()
 {
     while (!thread_stopping && myosd_video_threaded)
-	{
-		droid_ios_video_draw();
-	}
+    {
+	droid_ios_video_draw();
+    }
 }
 
 void droid_ios_video_render(render_target *our_target)
 {
-	int minwidth, minheight;
+	int width, height;
+        int minwidth, minheight;
 	int viswidth, visheight;
+        int aspect;
 
 	if(myosd_video_threaded)
 	   pthread_mutex_lock( &cond_mutex );
 
-    if(currlist==NULL)
-    {
-		if(myosd_force_pxaspect)
+        if(currlist==NULL)
+        {		                                 
+                if(!myosd_inGame) 
+                {
+                    width  = viswidth = myosd_res_width;
+                    height = visheight = myosd_res_height;
+                    aspect = 0;
+                }
+		else if(myosd_force_pxaspect == 1)
+		{                   
+		    render_target_get_minimum_size(our_target, &minwidth, &minheight);   
+                   
+                    width = minwidth;
+                    height = minheight;
+		    viswidth = minwidth;
+		    visheight = minheight;
+
+                    aspect = 0;
+ 	        }
+                else if(myosd_force_pxaspect==2)
 		{
 		   render_target_get_minimum_size(our_target, &minwidth, &minheight);
+
 		   viswidth = minwidth;
 		   visheight = minheight;
+			   
+                   int w,h;
+		   render_target_compute_visible_area(our_target,minwidth,minheight,1,render_target_get_orientation(our_target),&w, &h);
 
- 		   if(myosd_force_pxaspect==2)
+		   if(visheight > h &&  abs((float)w/(float)h - 4.0f/3.0f) < 0.001)// 4/3 minimum
 		   {
-			   int w,h;
-			   render_target_compute_visible_area(our_target,minwidth,minheight,4/3,render_target_get_orientation(our_target),&w, &h);
+		       viswidth = w;
+	  	       visheight = h;
+		   }
 
-		           if(visheight > h &&  abs((float)w/(float)h - 4.0f/3.0f) < 0.001)// 4/3 minimum
-		           {
-			       viswidth = w;
-	  		       visheight = h;
-		           }
+		   if(viswidth > h * 16.0f/9.0f &&  abs((float)w/(float)h - 4.0f/3.0f) < 0.001)// 16/9 maximun
+		   {
+		       viswidth = h * 16.0f/9.0f;
+	  	       visheight = h;
+		   }
 
-		           if(viswidth > h * 16.0f/9.0f &&  abs((float)w/(float)h - 4.0f/3.0f) < 0.001)// 16/9 maximun
-		           {
-			       viswidth = h * 16.0f/9.0f;
-	  		       visheight = h;
-		           }
-
-		           if(viswidth < w &&  abs((float)w/(float)h - 3.0f/4.0f) < 0.001)// 3/4 minimum
-		           {
-			       viswidth = w;
-	  		       visheight = h;
-		           }
-		           
-		           if(visheight > h && abs((float)w/(float)h - 3.0f/4.0f) < 0.001)// 3/4 maximun
-		           {
-			       viswidth = w ;
-	  		       visheight = h;
-		           }
-                   }
+		   if(viswidth < w &&  abs((float)w/(float)h - 3.0f/4.0f) < 0.001)// 3/4 minimum
+		   {
+		       viswidth = w;
+	  	       visheight = h;
+		   }
+		        
+		   if(visheight > h && abs((float)w/(float)h - 3.0f/4.0f) < 0.001)// 3/4 maximun
+		   {
+		       viswidth = w ;
+	  	       visheight = h;
+		   }  
+                  
+                   aspect = 0;              
 #ifdef ANDROID
 //	__android_log_print(ANDROID_LOG_DEBUG, "VIS","FIN %d, %d",viswidth,visheight);
 #endif
-
 		}
-		else if(myosd_res==1)
-		{
-		   render_target_get_minimum_size(our_target, &minwidth, &minheight);
+		else //MAME standard
+                {
+                   if(myosd_auto_res==1)
+                   {
+		      render_target_get_minimum_size(our_target, &width, &height);
+                      //calculate vis area to pass to GPU scaler instead MAME scaler. Performace and accurate!
+		      render_target_compute_visible_area(our_target,width,height,1,render_target_get_orientation(our_target),&viswidth, &visheight);
+                      aspect = 0;
+		   }
+		   else
+		   {
+                      width = myosd_res_width;
+                      height = myosd_res_height; 			
+                      viswidth = width ;
+	              visheight = height;
+                      aspect = width  / height;
+		   }
+                }
 
-		   int w,h;
-		   render_target_compute_visible_area(our_target,minwidth,minheight,4/3,render_target_get_orientation(our_target),&w, &h);
-
-		   viswidth = w;
-		   visheight = h;
-		}
-		else
-		{
-			minwidth = 320;minheight = 200;
-			switch (myosd_res){
-			   case 3:{minwidth = 320;minheight = 240;break;}
-			   case 4:{minwidth = 400;minheight = 300;break;}
-			   case 5:{minwidth = 480;minheight = 300;break;}
-			   case 6:{minwidth = 512;minheight = 384;break;}
-			   case 7:{minwidth = 640;minheight = 400;break;}
-			   case 8:{minwidth = 640;minheight = 480;break;}
-			   case 9:{minwidth = 800;minheight = 600;break;}
-			   case 10:{minwidth = 1024;minheight = 768;break;}
-			}
-			render_target_compute_visible_area(our_target,minwidth,minheight,4/3,render_target_get_orientation(our_target),&minwidth,&minheight);
-			viswidth = minwidth;
-			visheight = minheight;
-		}
-
-		if(minwidth%2!=0)minwidth++;
+		if(width%2!=0)width++;
 
 		// make that the size of our target
-		render_target_set_bounds(our_target, minwidth, minheight, 0);
+		render_target_set_bounds(our_target, width, height, aspect);
 
 		currlist = render_target_get_primitives(our_target);
 
-		curr_screen_width = minwidth;
-		curr_screen_height = minheight;
+		curr_screen_width = width;
+		curr_screen_height = height;
 		curr_vis_area_screen_width = viswidth;
 		curr_vis_area_screen_height = visheight;
 
 		if(myosd_video_threaded)
 		    pthread_cond_signal( &condition_var );
 		else
-			droid_ios_video_draw();
+	            droid_ios_video_draw();
     }
 
 

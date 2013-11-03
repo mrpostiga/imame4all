@@ -58,7 +58,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.seleuco.mame4droid.Emulator;
-import com.seleuco.mame4droid_0139u1.R;
+import com.seleuco.mame4droid.R;
 import com.seleuco.mame4droid.helpers.DialogHelper;
 import com.seleuco.mame4droid.input.InputHandlerExt;
 
@@ -105,10 +105,10 @@ public class DefineKeys extends ListActivity {
 	public void onListItemClick(ListView parent, View v, int position, long id) {
 		playerIndex = position;
 		
-		int n = 0;
-		try{n = InputHandlerExt.numDevs;}catch(Error e){}
+		boolean auto_detected = false;
+		try{auto_detected = InputHandlerExt.deviceIDs[position]!=-1;}catch(Error e){}
 		
-		if(position + 1 <= n)
+		if(auto_detected)
 		{
 			AlertDialog.Builder alertDialog =new AlertDialog.Builder(this);
 			

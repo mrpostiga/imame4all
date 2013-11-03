@@ -58,7 +58,8 @@ public class EmulatorViewGLExt extends EmulatorViewGL implements  android.view.V
         if ((diff&SYSTEM_UI_FLAG_HIDE_NAVIGATION) != 0
                 && (visibility&SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0) {
             setNavVisibility(true);
-            mm.showDialog(DialogHelper.DIALOG_FULLSCREEN);
+            //if(DialogHelper.savedDialog == DialogHelper.DIALOG_NONE)
+               //mm.showDialog(DialogHelper.DIALOG_FULLSCREEN);
         }
         else  if ((diff&SYSTEM_UI_FLAG_LOW_PROFILE) != 0
                 && (visibility&SYSTEM_UI_FLAG_LOW_PROFILE) == 0) {

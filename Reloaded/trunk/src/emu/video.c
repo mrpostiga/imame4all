@@ -1799,6 +1799,18 @@ void screen_device_config::device_config_complete()
 	m_yoffset = static_cast<double>(static_cast<INT32>(m_inline_data[INLINE_YOFFSET])) / (double)(1 << 24);
 	m_xscale = (m_inline_data[INLINE_XSCALE] == 0) ? 1.0 : (static_cast<double>(static_cast<INT32>(m_inline_data[INLINE_XSCALE])) / (double)(1 << 24));
 	m_yscale = (m_inline_data[INLINE_YSCALE] == 0) ? 1.0 : (static_cast<double>(static_cast<INT32>(m_inline_data[INLINE_YSCALE])) / (double)(1 << 24));
+
+       //DAV HACK
+       //if(&driver /*machine->gamedrv*/ == &GAME_NAME(empty))
+       //{
+/*
+            m_width = 640; m_height = 480;
+            m_visarea.min_x = m_visarea.min_y = 0;
+            m_visarea.max_x = m_width -1;
+            m_visarea.max_y = m_height - 1;
+*/
+       //}
+
 }
 
 
@@ -1810,6 +1822,8 @@ void screen_device_config::device_config_complete()
 bool screen_device_config::device_validity_check(const game_driver &driver) const
 {
 	bool error = false;
+
+
 
 	// sanity check dimensions
 	if (m_width <= 0 || m_height <= 0)
@@ -1939,9 +1953,8 @@ void screen_device::device_start()
 	if ((machine->config->m_video_attributes & VIDEO_UPDATE_SCANLINE) != 0)
 		m_scanline_timer = timer_alloc(machine, static_scanline_update_callback, (void *)this);
 
-    
-    //DAV HACK
-    vsync_hack = (myosd_vsync != -1) && (ATTOSECONDS_TO_HZ(m_config.m_refresh) >= 50.00f) && !(netplay_get_handle()->has_connection);
+        //DAV HACK
+        vsync_hack = (myosd_vsync != -1) && (ATTOSECONDS_TO_HZ(m_config.m_refresh) >= 50.00f) && !(netplay_get_handle()->has_connection);
    
     
 	// configure the screen with the default parameters
@@ -2014,9 +2027,9 @@ void screen_device::configure(int width, int height, const rectangle &visarea, a
 	assert(m_config.m_type == SCREEN_TYPE_VECTOR || visarea.min_y < height);
 	assert(frame_period > 0);
     
-    //DAV HACK
-    if(vsync_hack)
-        frame_period = HZ_TO_ATTOSECONDS(myosd_vsync / 100.00f);
+        //DAV HACK
+        if(vsync_hack)
+          frame_period = HZ_TO_ATTOSECONDS(myosd_vsync / 100.00f);
     
 	// fill in the new parameters
 	m_width = width;
@@ -2032,7 +2045,7 @@ void screen_device::configure(int width, int height, const rectangle &visarea, a
 	m_pixeltime = frame_period / (height * width);
 
 	// if there has been no VBLANK time specified in the MACHINE_DRIVER, compute it now
-    // from the visible area, otherwise just used the supplied value
+        // from the visible area, otherwise just used the supplied value
 	if (m_config.m_vblank == 0 && !m_config.m_oldstyle_vblank_supplied)
 		m_vblank_period = m_scantime * (height - (visarea.max_y + 1 - visarea.min_y));
 	else

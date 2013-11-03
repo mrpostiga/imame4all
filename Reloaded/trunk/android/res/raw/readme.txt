@@ -1,5 +1,5 @@
 =================================================================
-MAME4droid (0.139u1) 1.5 (October 6, 2013) 
+MAME4droid (0.139u1) 1.5.1 (November 3, 2013) 
 by David Valdeita (Seleuco)
 =================================================================
 
@@ -67,8 +67,8 @@ The emulator controls are the following ones:
 - Buttons B,X,A,Y,L,R: Buttons A,B,C,D,E,F.
 - Button SELECT (Coin): Insert credits (UP+SELECT = 2P credits, RIGHT+SELECT = 3P credits, DOWN+SELECT = 4P credits).
 - Button START: start (UP+START = 2P start, RIGHT+START = 3P start, DOWN+START = 4P start).
-- Buttons A+COIN: Load State.
-- Buttons A+START: Save State.
+- Buttons R1+START: Load State.
+- Buttons L1+START: Save State.
 - Buttons L2: Exit to selection menu to select another game.
 - Buttons START+SELECT simultaneously: Access to the MAME menu.
 - Button R2: Open help, global settings.
@@ -77,6 +77,8 @@ NOTE: To type OK when MAME requires it, press LEFT and then RIGHT.
 
 GLOBAL OPTIONS
 ----------------
+
+-Auto Switch Resolution: Auto switch resolution to original arcade resolution instead emulated resolution. This option improves performance and fits arcade aspect ratios to screen boundaries.  
 
 -Emulated Resolution: Force MAME internal drawing resolution, use hires resolution to improve artwork rendering at the expense of performance or to minimize 4:3 scaling artifacts. 
 
@@ -190,7 +192,11 @@ GLOBAL OPTIONS
      * 2.5X: 2.5 original size. 
      * (... and so on)
           
--Effect overlay. Applies an image filter (scanlines, CRT) at the expense of performance.      
+-Effect overlay. Applies an image filter (scanlines, CRT) at the expense of performance.     
+
+-Hide or dimm navigation bar: Enable to hide or dimm navigation bar on android >=  4.2. Disable  if you have problems on full screen modes.
+
+-Scale beyond boundaries. Enable it to scale beyond screen boundaries if a fixed scale mode is selected. 
 
 -Touch controller visible: Hide/Show the touch controller. Disable if you want to use an external controller like a keyboard or Wiimote.
 
@@ -283,6 +289,7 @@ PORT CREDITS
 - Port to Android by David Valdeita (Seleuco)
 
 DEVELOPMENT
+- 2013-11-03 version 1.5.1 NVidia Shield and Ouya improvements and bug fixes. Added new hires modes (now rom manager can be rendered at hires resolution). Fixed controller goes to sleep bug. 
 - 2013-10-06 version 1.5 Added Ouya support. Added option to fix vertical tilt on NVidia Shield. Added more scaling options, now scales beyond screen boundaries. Changed select button to 'X' button to be coherent with Android default buttons. Some bug fixes. 
 - 2013-08-20 version 1.4.4 Added OpenSL low-latency audio on capable devices. 
 - 2013-08-17 version 1.4.3 Added new overlays effects (with overlay intensity selector). Added jelly bean lights out mode (or hide navigation bar when touch controller is hide). New pixel aspect smart option to maximize emulation space. Added stick/DPAD touch size option. Added more scaling modes. Added option to disable right stick on GamePads. Some bug fixes on PS3 gamepad auto-detection.
