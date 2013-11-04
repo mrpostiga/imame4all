@@ -62,7 +62,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	
 	final static public String PREF_GLOBAL_VIDEO_RENDER_MODE = "PREF_GLOBAL_VIDEO_RENDER_MODE_2";
 	final static public String PREF_GLOBAL_AUTORES = "PREF_GLOBAL_AUTORES";
-	final static public String PREF_GLOBAL_RESOLUTION = "PREF_GLOBAL_RESOLUTION_2";
+	final static public String PREF_GLOBAL_RESOLUTION = "PREF_GLOBAL_RESOLUTION_3";
 	final static public String PREF_GLOBAL_SPEED = "PREF_GLOBAL_SPEED";	
 	final static public String PREF_GLOBAL_SOUND_SYNC = "PREF_GLOBAL_SOUND_SYNC";
 	final static public String PREF_GLOBAL_FRAMESKIP = "PREF_GLOBAL_FRAMESKIP";

@@ -835,16 +835,16 @@ public class MainHelper {
 			Context context = mm.getApplicationContext();
 			SharedPreferences prefs = PreferenceManager
 					.getDefaultSharedPreferences(context);
-			if (!prefs.getBoolean("shield", false)) {
+			if (!prefs.getBoolean("shield_2", false)) {
 				SharedPreferences.Editor edit = prefs.edit();
-				edit.putBoolean("shield", true);
+				edit.putBoolean("shield_2", true);
 				edit.putBoolean(PrefsHelper.PREF_LANDSCAPE_TOUCH_CONTROLLER,
 						false);
 				edit.putBoolean(PrefsHelper.PREF_GLOBAL_HIDE_DIMM_NAVBAR, false);
 				edit.putBoolean(PrefsHelper.PREF_LANDSCAPE_BITMAP_FILTERING,
 						true);
 				edit.putString(PrefsHelper.PREF_GLOBAL_RESOLUTION,
-						"11");					
+						"14");					
 				edit.commit();
 			}
 			deviceDetected = DEVICE_SHIELD;
