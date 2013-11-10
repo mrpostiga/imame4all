@@ -1,5 +1,5 @@
 =================================================================
-MAME4droid (0.139u1) 1.5.1 (November 3, 2013) 
+MAME4droid (0.139u1) 1.5.2 (November 10, 2013) 
 by David Valdeita (Seleuco)
 =================================================================
 
@@ -198,6 +198,8 @@ GLOBAL OPTIONS
 
 -Scale beyond boundaries. Enable it to scale beyond screen boundaries if a fixed scale mode is selected. 
 
+-TV overscan. Enable it to apply a 10 pct safe area to correct overscan issues on some TV sets.
+
 -Touch controller visible: Hide/Show the touch controller. Disable if you want to use an external controller like a keyboard or Wiimote.
 
 -Smooth scaling: Turn on bitmap filtering at the expense of performance.
@@ -289,6 +291,7 @@ PORT CREDITS
 - Port to Android by David Valdeita (Seleuco)
 
 DEVELOPMENT
+- 2013-11-10 version 1.5.2 Up to 30% speed improvement on some 3d games like tekken on capable devices. Fixed some games like brapboys. Added overscan option. Fixed artwork bug on games like Popeye. 
 - 2013-11-03 version 1.5.1 NVidia Shield and Ouya improvements and bug fixes. Added new hires modes (now rom manager can be rendered at hires resolution). Fixed controller goes to sleep bug. 
 - 2013-10-06 version 1.5 Added Ouya support. Added option to fix vertical tilt on NVidia Shield. Added more scaling options, now scales beyond screen boundaries. Changed select button to 'X' button to be coherent with Android default buttons. Some bug fixes. 
 - 2013-08-20 version 1.4.4 Added OpenSL low-latency audio on capable devices. 

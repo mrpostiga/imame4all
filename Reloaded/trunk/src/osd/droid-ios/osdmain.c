@@ -124,8 +124,11 @@ const char *myosd_array_categories[] = {
     ""
 };
 
+static int first = 0;
+
 // a single rendering target
 static render_target *our_target;
+
 
 
 static const options_entry droid_mame_options[] =
@@ -285,6 +288,8 @@ void osd_init(running_machine *machine)
         {
             handle->has_begun_game = 1;
         }
+
+        first = 1;
 }
 
 //void osd_exit(running_machine *machine)
@@ -297,7 +302,12 @@ static void osd_exit(running_machine &machine)
 
 void osd_update(running_machine *machine, int skip_redraw)
 {
-    
+    if(first && our_target!=NULL)
+    {
+       skip_redraw  = 0;
+       first = 0;
+    }
+
     if (!skip_redraw && our_target!=NULL)
     {
         droid_ios_video_render(our_target);

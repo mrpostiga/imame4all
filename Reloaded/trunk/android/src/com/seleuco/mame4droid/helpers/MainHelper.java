@@ -744,6 +744,12 @@ public class MainHelper {
 			{
 			    widthSize = MeasureSpec.getSize(widthMeasureSpec);
 			    heightSize = MeasureSpec.getSize(heightMeasureSpec);
+			    
+			    if(mm.getPrefsHelper().isOverscan())
+			    {
+			       widthSize *= 0.90;
+			       heightSize *= 0.90;
+			    }
 			}
 			else
 			{

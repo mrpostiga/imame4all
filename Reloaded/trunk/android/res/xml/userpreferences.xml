@@ -345,8 +345,12 @@
 			android:defaultValue="true" />
 	    
 	    <CheckBoxPreference android:key="PREF_GLOBAL_SCALE_BEYOND"
-			android:title="Scale beyond boundaries" android:summary="Enable it to scale beyond screen boundaries when a fixed scale is selected."
-			android:defaultValue="true" />		    	
+			android:title="Scale beyond boundaries" android:summary="Enable it to scale beyond screen boundaries when a fixed scale is selected"
+			android:defaultValue="true" />		
+			
+	    <CheckBoxPreference android:key="PREF_GLOBAL_OVERSCAN"
+			android:title="TV overscan" android:summary="Enable it to apply a 10 pct safe area to correct overscan issues on some TV sets"
+			android:defaultValue="false" />		    	
 			
 	</PreferenceScreen>				
 	

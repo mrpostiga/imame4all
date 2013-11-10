@@ -22,11 +22,11 @@ NOWERROR = 1
 
 ANDROID = 1
 
-AMIPS=1
+#AMIPS=1
 
 #AX86=1
 
-#AARMV7=1
+AARMV7=1
 
 #AARMV6=1
 
@@ -307,7 +307,7 @@ endif
 BUILD_EXPAT = 1
 
 # uncomment next line to build zlib as part of MAME build
-BUILD_ZLIB = 1
+#BUILD_ZLIB = 1
 
 # uncomment next line to include the symbols
 # SYMBOLS = 1
@@ -409,7 +409,8 @@ else
 
 AR = @$(MYPREFIX)ar
 ifdef AARMV7
-CC = @$(MYPREFIX)gcc-4.8
+#CC = @$(MYPREFIX)gcc-4.8
+CC = @$(MYPREFIX)g++
 else
 CC = @$(MYPREFIX)gcc
 endif
@@ -559,7 +560,8 @@ CFLAGS = $(CCOMFLAGS) $(CPPONLYFLAGS)
 
 # we compile C-only to C89 standard with GNU extensions
 # we compile C++ code to C++98 standard with GNU extensions
-CONLYFLAGS += -std=gnu89
+#CONLYFLAGS += -std=gnu89
+CONLYFLAGS += -std=gnu99
 CPPONLYFLAGS += -x c++ -std=gnu++98
 #COBJFLAGS += -x objective-c++
 COBJFLAGS += -x objective-c
@@ -756,9 +758,17 @@ CCOMFLAGS += -fpic
 
 ifdef AARMV7
 #CCOMFLAGS += -fno-strict-aliasing
-CCOMFLAGS += -mno-unaligned-access
+##CCOMFLAGS += -mno-unaligned-access
 CCOMFLAGS += -mthumb 
+CCOMFLAGS += -fPIC  -mthumb-interwork -fsigned-char -finline  
+CCOMFLAGS += -fno-common -fno-builtin 
+CCOMFLAGS += -fweb -frename-registers -fsingle-precision-constant
+CCOMFLAGS += -mstructure-size-boundary=32 -falign-functions=16
+CCOMFLAGS += -DALIGN_INTS -DALIGN_SHORTS 
+CCOMFLAGS += -DLSB_FIRST -fno-merge-constants
 CCOMFLAGS += -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 -DARMV7
+CCOMFLAGS += -DENABLE_SPEEDUP_HACKS
+#CCOMFLAGS += -std=gnu99
 #CCOMFLAGS += -mfpu=neon
 #CCOMFLAGS += -pipe  -mtune=cortex-a9
 LDFLAGS += -march=armv7-a -Wl,--fix-cortex-a8
@@ -1016,16 +1026,16 @@ ifndef EXECUTABLE_DEFINED
 # always recompile the version string
 #$(VERSIONOBJ): $(DRVLIBS) $(LIBOSD) $(LIBCPU) $(LIBEMU) $(LIBSOUND) $(LIBUTIL) $(EXPAT) $(ZLIB) $(SOFTFLOAT) $(LIBOCORE) $(RESFILE)
 
-$(VERSIONOBJ): $(DRVLIBS) $(OSDOBJS) $(CPUOBJS) $(LIBEMUOBJS) $(SOUNDOBJS) $(UTILOBJS) $(EXPATOBJS) $(ZLIBOBJS) $(SOFTFLOATOBJS) $(OSDCOREOBJS) $(RESFILE)
+$(VERSIONOBJ): $(DRVLIBS) $(OSDOBJS) $(CPUOBJS) $(LIBEMUOBJS) $(SOUNDOBJS) $(UTILOBJS) $(EXPATOBJS) $(SOFTFLOATOBJS) $(OSDCOREOBJS) $(RESFILE)
 
-#$(EMULATOR): $(VERSIONOBJ) $(DRVLIBS) $(LIBOSD) $(LIBCPU) $(LIBEMU) $(LIBDASM) $(LIBSOUND) $(LIBUTIL) $(EXPAT) $(SOFTFLOAT) $(ZLIBOBJS) $(LIBOCORE) $(RESFILE)
+#$(EMULATOR): $(VERSIONOBJ) $(DRVLIBS) $(LIBOSD) $(LIBCPU) $(LIBEMU) $(LIBDASM) $(LIBSOUND) $(LIBUTIL) $(EXPAT) $(SOFTFLOAT) $(LIBOCORE) $(RESFILE)
 
 ifdef iOSNOJAILBREAK
-$(EMULATOR): $(VERSIONOBJ) $(DRVLIBS) $(OSDOBJS) $(CPUOBJS) $(LIBEMUOBJS) $(DASMOBJS) $(SOUNDOBJS) $(UTILOBJS) $(EXPATOBJS) $(SOFTFLOATOBJS) $(ZLIBOBJS) $(OSDCOREOBJS) $(RESFILE)
+$(EMULATOR): $(VERSIONOBJ) $(DRVLIBS) $(OSDOBJS) $(CPUOBJS) $(LIBEMUOBJS) $(DASMOBJS) $(SOUNDOBJS) $(UTILOBJS) $(EXPATOBJS) $(SOFTFLOATOBJS) $(OSDCOREOBJS) $(RESFILE)
 	@echo Archiving $@...
 	$(AR) -v $(ARFLAGS) $@ $^
 else
-$(EMULATOR): $(VERSIONOBJ) $(DRVLIBS) $(OSDOBJS) $(CPUOBJS) $(LIBEMUOBJS) $(DASMOBJS) $(SOUNDOBJS) $(UTILOBJS) $(EXPATOBJS) $(SOFTFLOATOBJS) $(ZLIBOBJS) $(OSDCOREOBJS) $(RESFILE)
+$(EMULATOR): $(VERSIONOBJ) $(DRVLIBS) $(OSDOBJS) $(CPUOBJS) $(LIBEMUOBJS) $(DASMOBJS) $(SOUNDOBJS) $(UTILOBJS) $(EXPATOBJS) $(SOFTFLOATOBJS) $(OSDCOREOBJS) $(RESFILE)
 	@echo Linking $@...
 	$(LD) $(LDFLAGS) $(LDFLAGSEMULATOR) $^ $(LIBS) -o $@
 endif 
