@@ -11,10 +11,12 @@
 #ifndef __SH4COMN_H__
 #define __SH4COMN_H__
 
+//DAV HACK
 //#define USE_SH4DRC
 
 /* speed up delay loops, bail out of tight loops */
-#define BUSY_LOOP_HACKS 	0
+//#define BUSY_LOOP_HACKS 	0
+#define BUSY_LOOP_HACKS 	1
 
 #define VERBOSE 0
 

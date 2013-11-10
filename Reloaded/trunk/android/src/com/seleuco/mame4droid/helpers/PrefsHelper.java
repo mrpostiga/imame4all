@@ -152,6 +152,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	
 	final static public String  PREF_GLOBAL_HIDE_DIMM_NAVBAR = "PREF_GLOBAL_HIDE_DIMM_NAVBAR";
 	final static public String  PREF_GLOBAL_SCALE_BEYOND = "PREF_GLOBAL_SCALE_BEYOND";
+	final static public String  PREF_GLOBAL_OVERSCAN = "PREF_GLOBAL_OVERSCAN";
 	
 	final static public int  LOW = 1;
 	final static public int  NORMAL = 2;
@@ -560,5 +561,9 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	
 	public boolean isScaleBeyondBoundaries(){
 		return getSharedPreferences().getBoolean(PREF_GLOBAL_SCALE_BEYOND,true);
+	}		
+	
+	public boolean isOverscan(){
+		return getSharedPreferences().getBoolean("PREF_GLOBAL_OVERSCAN",false);
 	}		
 }

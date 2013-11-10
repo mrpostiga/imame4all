@@ -322,6 +322,8 @@ public class InputView extends ImageView {
 		
         ArrayList<InputValue> data = mm.getInputHandler().getAllInputData();
         
+        if(data==null)return;
+        
         boolean hideStick = (mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE || 
         		mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_PORTRAIT && Emulator.isPortraitFull())
         		&& 

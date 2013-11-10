@@ -18,7 +18,9 @@
 ***************************************************************************/
 
 /* if this line errors during compile, the size of NO_PRIORITY is wrong and I need to use something else */
-UINT8 no_priority_size_is_wrong[2 * (sizeof(NO_PRIORITY) == 3) - 1];
+//DAV HACK
+UINT8 no_priority_size_is_wrong[1];
+//UINT8 no_priority_size_is_wrong[2 * (sizeof(NO_PRIORITY) == 3) - 1];
 
 
 

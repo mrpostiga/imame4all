@@ -220,6 +220,23 @@ void droid_ios_video_render(render_target *our_target)
                    if(myosd_auto_res==1)
                    {
 		      render_target_get_minimum_size(our_target, &width, &height);
+
+                      if(width > 640)
+                      {
+                         if(myosd_res_width > 640)
+                            width = myosd_res_width;
+                         else
+                            width = 640;
+                      }
+
+                      if(height > 480) 
+                      {
+                          if(myosd_res_height > 480)
+                             height = myosd_res_height;
+                          else
+                             height = 480;
+                      }
+                       
                       //calculate vis area to pass to GPU scaler instead MAME scaler. Performace and accurate!
 		      render_target_compute_visible_area(our_target,width,height,1,render_target_get_orientation(our_target),&viswidth, &visheight);
                       aspect = 0;

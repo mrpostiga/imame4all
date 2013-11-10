@@ -68,7 +68,7 @@ import com.seleuco.mame4droid.views.EmulatorViewGL;
 
 public class Emulator 
 {
-	final static public int FPS_SHOWED_KEY = 1;
+	final static public int FPS_SHOWED_KEY = 1; 
 	final static public int EXIT_GAME_KEY = 2;	
 	//final static public int LAND_BUTTONS_KEY = 3;
 	//final static public int HIDE_LR__KEY = 4;
@@ -575,7 +575,9 @@ public class Emulator
 		}   
 		
 		if(audioTrack!=null)
-		    audioTrack.pause();
+		{		    
+			try{audioTrack.pause();}catch(Error e){};
+		}
 		
 		try {
 			Thread.sleep(60);//ensure threads stop
