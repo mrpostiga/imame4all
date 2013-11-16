@@ -763,14 +763,14 @@ CCOMFLAGS += -mthumb
 CCOMFLAGS += -fPIC  -mthumb-interwork -fsigned-char -finline  
 CCOMFLAGS += -fno-common -fno-builtin 
 CCOMFLAGS += -fweb -frename-registers -fsingle-precision-constant
-CCOMFLAGS += -mstructure-size-boundary=32 -falign-functions=16
-CCOMFLAGS += -DALIGN_INTS -DALIGN_SHORTS 
+#CCOMFLAGS += -mstructure-size-boundary=32 -falign-functions=16
+#CCOMFLAGS += -DALIGN_INTS -DALIGN_SHORTS 
 CCOMFLAGS += -DLSB_FIRST -fno-merge-constants
 CCOMFLAGS += -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 -DARMV7
-CCOMFLAGS += -DENABLE_SPEEDUP_HACKS
 #CCOMFLAGS += -std=gnu99
 #CCOMFLAGS += -mfpu=neon
 #CCOMFLAGS += -pipe  -mtune=cortex-a9
+CCOMFLAGS += -Wno-unused-but-set-variable -Wno-narrowing
 LDFLAGS += -march=armv7-a -Wl,--fix-cortex-a8
 endif
 
