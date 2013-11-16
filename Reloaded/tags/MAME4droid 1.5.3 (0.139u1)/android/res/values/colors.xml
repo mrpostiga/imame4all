@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- 
+<color name="emu_back_color">#303030</color>
+ -->
+ <color name="emu_back_color">#000000</color>
+ 
+ <color name="white">#ffffffff</color>
+
+  
+</resources>
