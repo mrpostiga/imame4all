@@ -2,4 +2,5 @@
 
 <com.seleuco.mame4droid.views.EmulatorViewSW
 		android:id="@+id/EmulatorViewSW" xmlns:android="http://schemas.android.com/apk/res/android" 		
-		android:layout_height="wrap_content" android:layout_width="wrap_content" android:layout_gravity="center"/>
+		android:layout_height="wrap_content" android:layout_width="wrap_content" android:layout_gravity="center"
+		/>

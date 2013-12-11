@@ -104,8 +104,15 @@ public  class EmulatorViewGL extends GLSurfaceView implements IEmuView{
 	}
 		
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-		ArrayList<Integer> l = mm.getMainHelper().measureWindow(widthMeasureSpec, heightMeasureSpec, scaleType);
-		setMeasuredDimension(l.get(0).intValue(),l.get(1).intValue());
+		if(mm==null)
+		{
+			setMeasuredDimension(widthMeasureSpec,heightMeasureSpec);
+		}
+		else
+		{
+		   ArrayList<Integer> l = mm.getMainHelper().measureWindow(widthMeasureSpec, heightMeasureSpec, scaleType);
+		   setMeasuredDimension(l.get(0).intValue(),l.get(1).intValue());
+		}
 		//System.out.println("onMeasure"+l.get(0).intValue()+" "+l.get(1).intValue()); 
 	}
 		

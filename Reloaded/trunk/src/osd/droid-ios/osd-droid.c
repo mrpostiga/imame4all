@@ -12,6 +12,9 @@
 #include "myosd.h"
 #include "opensl_snd.h"
 
+#include "netplay.h"
+#include "skt_netplay.h"
+
 #include <unistd.h>
 #include <fcntl.h>
 #ifdef ANDROID
@@ -118,6 +121,8 @@ static OPENSL_SND  *p = NULL;
 static int sound_engine = 1;
 static int sound_frames = 1024;
 //static int sound_fixed_sr = 44100;
+static int frame_delay = 0;
+
 
 void change_pause(int value);
 
@@ -128,6 +133,49 @@ void (*changeVideo_callback)(int newWidth,int newHeight,int newVisWidth,int newV
 void (*openSound_callback)(int rate,int stereo) = NULL;
 void (*dumpSound_callback)(void *buffer,int size) = NULL;
 void (*closeSound_callback)(void) = NULL;
+
+void (*netplayWarn_callback)(char *) = NULL;
+
+
+static void netplay_warn_callback(char *msg)
+{
+    if(netplay_warn_callback!=NULL)
+       netplayWarn_callback(msg);
+}
+
+extern "C"
+int netplayInit(const char *srv_addr, int port, int join){
+
+   netplay_t *handle = netplay_get_handle();
+    
+   if(!join)
+   {
+
+      if(!skt_netplay_init(handle,srv_addr,port,netplay_warn_callback))
+         return -1;
+
+      if(frame_delay == 0)
+      {
+          handle->is_auto_frameskip = 1;
+          handle->frame_skip = 2;
+      }
+      else
+      {
+          handle->is_auto_frameskip = 0;            
+          handle->frame_skip = frame_delay;
+      }
+
+      if(srv_addr==NULL)
+         strcpy(handle->game_name,myosd_selected_game);
+   }
+   else
+   {
+       if(!netplay_send_join(handle))
+          return -1;
+   }
+
+   return 0;
+}
 
 extern "C" void setVideoCallbacks(void (*init_video_java)(void *, int, int),void (*dump_video_java)(void), void (*change_video_java)(int,int,int,int))
 {
@@ -147,6 +195,14 @@ extern "C" void setAudioCallbacks(void (*open_sound_java)(int,int), void (*dump_
     openSound_callback = open_sound_java;
     dumpSound_callback = dump_sound_java;
     closeSound_callback = close_sound_java;
+}
+
+extern "C" void setNetplayCallbacks(void (*netplay_warn_java)(char *))
+{
+#ifdef ANDROID
+	__android_log_print(ANDROID_LOG_DEBUG, "libMAME4droid.so", "setNetplayCallbacks");
+#endif
+    netplayWarn_callback = netplay_warn_java;
 }
 
 extern "C"
@@ -268,6 +324,35 @@ void setMyValue(int key,int i, int value){
                 sound_engine = value;break;
             case 51:
                 myosd_auto_res = value;break;
+            case 53:
+                 { 
+                     netplay_t *handle = netplay_get_handle();
+                     handle->has_connection = value;
+                     break;
+                 }
+            case 55:
+                 { 
+                     
+                     netplay_t *handle = netplay_get_handle();
+            
+                     if(handle->has_joined && value!=frame_delay)
+                     {
+                         if(value==0)
+                         {
+                             handle->is_auto_frameskip = 1;
+                         }
+                         else
+                         {
+                             handle->is_auto_frameskip = 0;
+                             if(handle->frame_skip!=value)
+                                handle->new_frameskip_set = value;
+                         }
+                     }
+
+                     frame_delay = value;
+
+                     break;
+                 }
          }
 }
 
@@ -321,6 +406,16 @@ int getMyValue(int key,int i){
             }
             case 52:
                 return myosd_inGame;
+            case 53:
+            {
+                 netplay_t *handle = netplay_get_handle();
+                 return handle->has_connection;
+            }
+            case 54:
+            {
+                 netplay_t *handle = netplay_get_handle();
+                 return handle->has_joined;            
+            }
 	    default :
 	         return -1;
 	}
@@ -337,6 +432,7 @@ void setMyValueStr(int key,int i, const char *value){
         {
             if(strlen(value)<MAX_FILTER_KEYWORD)
               strcpy(myosd_filter_keyword,value);
+            break;
         }
         default:;
      }          
@@ -351,6 +447,7 @@ char *getMyValueStr(int key,int i){
         case 1: return (char *)myosd_array_main_manufacturers[i];
         case 2: return (char *)myosd_array_main_driver_source[i];
         case 3: return (char *)myosd_array_categories[i];
+        case 5: return (char *)myosd_selected_game;
         default: return NULL;  
      }
      
@@ -604,8 +701,9 @@ void myosd_check_pause(void){
 
 	while(isPause)
 	{
-		pthread_cond_wait( &condition_var, &cond_mutex );
+	     myosd_pause = 1;
+             pthread_cond_wait( &condition_var, &cond_mutex );
 	}
-
+        myosd_pause = 0;
 	pthread_mutex_unlock( &cond_mutex );
 }

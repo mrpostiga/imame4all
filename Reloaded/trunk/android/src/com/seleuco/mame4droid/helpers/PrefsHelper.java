@@ -107,7 +107,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String  PREF_STICK_TYPE = "PREF_STICK_TYPE_2";
 	final static public String  PREF_NUMBUTTONS = "PREF_NUMBUTTONS_2";
 	final static public String  PREF_INPUT_EXTERNAL = "PREF_INPUT_EXTERNAL_2";
-	final static public String  PREF_AUTOMAP_OPTIONS = "PREF_AUTOMAP_OPTIONS_2";
+	final static public String  PREF_AUTOMAP_OPTIONS = "PREF_AUTOMAP_OPTIONS_3";
 	final static public String  PREF_ANALOG_DZ = "PREF_ANALOG_DZ";
 	final static public String  PREF_GAMEPAD_DZ = "PREF_GAMEPAD_DZ";
 	final static public String  PREF_VIBRATE = "PREF_VIBRATE";
@@ -150,9 +150,13 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	
 	final static public String  PREF_OVERLAY_INTENSITY = "PREF_OVERLAY_INTENSITY";
 	
-	final static public String  PREF_GLOBAL_HIDE_DIMM_NAVBAR = "PREF_GLOBAL_HIDE_DIMM_NAVBAR";
+	final static public String  PREF_GLOBAL_NAVBAR_MODE = "PREF_GLOBAL_NAVBAR_MODE";
 	final static public String  PREF_GLOBAL_SCALE_BEYOND = "PREF_GLOBAL_SCALE_BEYOND";
 	final static public String  PREF_GLOBAL_OVERSCAN = "PREF_GLOBAL_OVERSCAN";
+	
+	final static public String  PREF_NETPLAY_PORT = "PREF_NETPLAY_PORT";
+	final static public String  PREF_NETPLAY_DELAY = "PREF_NETPLAY_DELAY";
+	final static public String  PREF_NETPLAY_PEERADDR = "PREF_NETPLAY_PEERADR";	
 	
 	final static public int  LOW = 1;
 	final static public int  NORMAL = 2;
@@ -188,13 +192,20 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final public static String PREF_OVERLAY_NONE = "none";
 	
 	final public static int PREF_AUTOMAP_THUMBS_DISABLED_L2R2_AS_L1R2 = 1;
-	final public static int PREF_AUTOMAP_THUMBS_AS_COINSTART_L2R2_AS_L1R2 = 2;	
-	final public static int PREF_AUTOMAP_THUMBS_DISABLED_L2R2_AS_COINSTART = 3;	
+	final public static int PREF_AUTOMAP_THUMBS_AS_COINSTART_L2R2_AS_L1R2 = 2;
+	final public static int PREF_AUTOMAP_THUMBS_AS_COINSTART_L2R2_DISABLED = 3;	
+	final public static int PREF_AUTOMAP_THUMBS_DISABLED_L2R2_AS_COINSTART = 4;	
+	final public static int PREF_AUTOMAP_L1R1_AS_COINSTART_L2R2_AS_L1R1 = 5;	
+	final public static int PREF_AUTOMAP_L1R1_AS_EXITMENU_L2R2_AS_L1R1 = 6;	
 	
 	final public static int PREF_SNDENG_AUDIOTRACK = 1;
 	final public static int PREF_SNDENG_AUDIOTRACK_HIGH = 2;
 	final public static int PREF_SNDENG_OPENSL = 3;
 	final public static int PREF_SNDENG_OPENSL_LOW = 4;
+	
+	final public static int PREF_NAVBAR_VISIBLE = 0;
+	final public static int PREF_NAVBAR_DIMM_OR_HIDE = 1;
+	final public static int PREF_NAVBAR_IMMERSIVE = 2;
 	
 	protected GameFilterPrefs gameFilterPrefs = null;
 	
@@ -228,7 +239,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 			prefs.unregisterOnSharedPreferenceChangeListener(this);
 	}
 	
-	protected SharedPreferences getSharedPreferences(){
+	public SharedPreferences getSharedPreferences(){
 		Context context = mm.getApplicationContext();
 		return PreferenceManager.getDefaultSharedPreferences(context);
 	}
@@ -555,8 +566,20 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 		return Integer.valueOf(getSharedPreferences().getString(PREF_OVERLAY_INTENSITY,"3")).intValue();
 	}	
 
-	public boolean getHideOrDimmNavBar(){
-		return getSharedPreferences().getBoolean(PREF_GLOBAL_HIDE_DIMM_NAVBAR,true);
+	public int getNavBarMode(){		
+		
+		if(getSharedPreferences().getString(PREF_GLOBAL_NAVBAR_MODE,"").equals("")){
+			String value = PREF_NAVBAR_VISIBLE+""; 
+			if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+			   value = PREF_NAVBAR_IMMERSIVE+""; 
+			else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)			
+				value =	PREF_NAVBAR_DIMM_OR_HIDE+"";
+			SharedPreferences.Editor edit = getSharedPreferences().edit();
+			edit.putString(PREF_GLOBAL_NAVBAR_MODE, value);
+			edit.commit();
+		}
+				
+		return Integer.valueOf(getSharedPreferences().getString(PREF_GLOBAL_NAVBAR_MODE,"1")).intValue();
 	}
 	
 	public boolean isScaleBeyondBoundaries(){
@@ -565,5 +588,13 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	
 	public boolean isOverscan(){
 		return getSharedPreferences().getBoolean("PREF_GLOBAL_OVERSCAN",false);
-	}		
+	}	
+	
+	public int getNetplayDelay(){
+		return Integer.valueOf(getSharedPreferences().getString(PREF_NETPLAY_DELAY,"0")).intValue();
+	}	
+	
+	public String getNetplayPort(){
+	    return getSharedPreferences().getString(PrefsHelper.PREF_NETPLAY_PORT,"55435");
+	}
 }

@@ -121,12 +121,16 @@ public class Emulator
 	final static public int SOUND_ENGINE = 50;		
 	final static public int EMU_AUTO_RESOLUTION = 51;
 	final static public int IN_MAME = 52;
+	final static public int NETPLAY_HAS_CONNECTION = 53;
+	final static public int NETPLAY_HAS_JOINED = 54;
+	final static public int NETPLAY_DELAY = 55;
 	
 	final static public int FILTER_YEARS_ARRAY = 0;
 	final static public int FILTER_MANUFACTURERS_ARRAY = 1;
 	final static public int FILTER_DRIVERS_SRC_ARRAY = 2;
 	final static public int FILTER_CATEGORIES_ARRAY = 3;
 	final static public int FILTER_KEYWORD = 4;
+	final static public int GAME_NAME = 5;
 	
     private static MAME4droid mm = null;
     
@@ -651,6 +655,14 @@ public class Emulator
 		setValueStr(key,0,value);
 	}
 	
+	static void netplayWarn(final String msg) {
+    	mm.runOnUiThread(new Runnable() {
+            public void run() {
+            	Toast.makeText(mm, msg, Toast.LENGTH_LONG).show();
+            }
+    	});
+	}
+	
 	//native
 	protected static native void init(String libPath,String resPath);
 	
@@ -669,5 +681,7 @@ public class Emulator
 	public static native void setValue(int key, int i, int value);
         
     public static native void setValueStr(int key, int i, String value);
-		
+    
+    public static native int netplayInit(String server, int port, int join);
+        
 }

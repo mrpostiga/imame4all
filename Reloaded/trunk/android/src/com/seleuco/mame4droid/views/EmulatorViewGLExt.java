@@ -4,9 +4,11 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.view.View;
 
 import com.seleuco.mame4droid.MAME4droid;
 import com.seleuco.mame4droid.helpers.DialogHelper;
+import com.seleuco.mame4droid.helpers.PrefsHelper;
 import com.seleuco.mame4droid.input.InputHandler;
 import com.seleuco.mame4droid.views.EmulatorViewGL;
 
@@ -72,7 +74,7 @@ public class EmulatorViewGLExt extends EmulatorViewGL implements  android.view.V
         int newVis = 0;
         boolean full = mm.getInputHandler().getInputHandlerState() == InputHandler.STATE_SHOWING_NONE;
         
-        if(full)
+        if(full || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && mm.getPrefsHelper().getNavBarMode()==PrefsHelper.PREF_NAVBAR_IMMERSIVE))
         {
         	newVis = SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                 | SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -86,7 +88,16 @@ public class EmulatorViewGLExt extends EmulatorViewGL implements  android.view.V
         
         if (!visible) 
         {
-        	if(full)
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT  && mm.getPrefsHelper().getNavBarMode()==PrefsHelper.PREF_NAVBAR_IMMERSIVE)
+            {
+                newVis |= View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE;	
+            }        	
+            else if(full)
         	{
                 newVis |= SYSTEM_UI_FLAG_LOW_PROFILE | SYSTEM_UI_FLAG_FULLSCREEN
                     | SYSTEM_UI_FLAG_HIDE_NAVIGATION;
@@ -96,7 +107,7 @@ public class EmulatorViewGLExt extends EmulatorViewGL implements  android.view.V
         		newVis |= SYSTEM_UI_FLAG_LOW_PROFILE | SYSTEM_UI_FLAG_FULLSCREEN;
         	}        	
         }
-
+        
         // If we are now visible, schedule a timer for us to go invisible.
         if (visible) {
             Handler h = getHandler();

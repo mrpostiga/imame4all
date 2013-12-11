@@ -298,7 +298,7 @@ public class MainHelper {
 		{
 			Emulator.setOverlayFilterValue(value);
 			reload();				
-			return true;
+			return true; 
 		}
 		else
 		{
@@ -339,7 +339,7 @@ public class MainHelper {
                    lp2 = (LayoutParams)mm.getFilterView().getLayoutParams();
 			    if(mm.getPrefsHelper().isPortraitTouchController())
 			    {					
-			       v.setBackgroundDrawable(mm.getResources().getDrawable(R.drawable.border));
+			       v.setBackgroundDrawable(mm.getResources().getDrawable(R.drawable.border_view));
 			       lp.setMargins(15, 15, 15, 15);
 			       if(lp2!=null)
 			    	 lp2.setMargins(15, 15, 15, 15);
@@ -384,6 +384,7 @@ public class MainHelper {
 		Emulator.setValue(Emulator.VANTIALIAS,mm.getPrefsHelper().isVectorAntialias() ? 1 : 0);
 		Emulator.setValue(Emulator.VFLICKER,mm.getPrefsHelper().isVectorFlicker() ? 1 : 0);
 		
+		Emulator.setValue(Emulator.NETPLAY_DELAY,mm.getPrefsHelper().getNetplayDelay());
 		
 		GameFilterPrefs gfp = mm.getPrefsHelper().getGameFilterPrefs();
 		boolean dirty = gfp.readValues();
@@ -606,8 +607,8 @@ public class MainHelper {
 		
 		if(ControlCustomizer.isEnabled())
 		{
-		    mm.getEmuView().setVisibility(View.INVISIBLE);
-		    mm.getInputView().requestFocus();
+			//mm.getEmuView().setVisibility(View.INVISIBLE);
+		    //mm.getInputView().requestFocus();
 		}   
 		
 		int op = inputHandler.getOpacity();
@@ -747,8 +748,8 @@ public class MainHelper {
 			    
 			    if(mm.getPrefsHelper().isOverscan())
 			    {
-			       widthSize *= 0.90;
-			       heightSize *= 0.90;
+			       widthSize *= 0.92;
+			       heightSize *= 0.92;
 			    }
 			}
 			else
@@ -819,17 +820,17 @@ public class MainHelper {
 			Context context = mm.getApplicationContext();
 			SharedPreferences prefs = PreferenceManager
 					.getDefaultSharedPreferences(context);
-			if (!prefs.getBoolean("ouya", false)) {
+			if (!prefs.getBoolean("ouya_2", false)) {
 				SharedPreferences.Editor edit = prefs.edit();
-				edit.putBoolean("ouya", true);
+				edit.putBoolean("ouya_2", true);
 				edit.putBoolean(PrefsHelper.PREF_LANDSCAPE_TOUCH_CONTROLLER,
 						false);
 				edit.putBoolean(PrefsHelper.PREF_LANDSCAPE_BITMAP_FILTERING,
 						true);
-				edit.putBoolean(PrefsHelper.PREF_GLOBAL_HIDE_DIMM_NAVBAR, false);
+				edit.putString(PrefsHelper.PREF_GLOBAL_NAVBAR_MODE, PrefsHelper.PREF_NAVBAR_VISIBLE+"");
 				edit.putString(PrefsHelper.PREF_GLOBAL_RESOLUTION,
 						"11");	
-				edit.putString(PrefsHelper.PREF_AUTOMAP_OPTIONS,PrefsHelper.PREF_AUTOMAP_THUMBS_DISABLED_L2R2_AS_COINSTART+"");
+				edit.putString(PrefsHelper.PREF_AUTOMAP_OPTIONS,PrefsHelper.PREF_AUTOMAP_THUMBS_AS_COINSTART_L2R2_DISABLED+"");
 										
 				// edit.putString("", "");
 				edit.commit();
@@ -841,12 +842,12 @@ public class MainHelper {
 			Context context = mm.getApplicationContext();
 			SharedPreferences prefs = PreferenceManager
 					.getDefaultSharedPreferences(context);
-			if (!prefs.getBoolean("shield_2", false)) {
+			if (!prefs.getBoolean("shield_3", false)) {
 				SharedPreferences.Editor edit = prefs.edit();
-				edit.putBoolean("shield_2", true);
+				edit.putBoolean("shield_3", true);
 				edit.putBoolean(PrefsHelper.PREF_LANDSCAPE_TOUCH_CONTROLLER,
 						false);
-				edit.putBoolean(PrefsHelper.PREF_GLOBAL_HIDE_DIMM_NAVBAR, false);
+				edit.putString(PrefsHelper.PREF_GLOBAL_NAVBAR_MODE, PrefsHelper.PREF_NAVBAR_VISIBLE+"");
 				edit.putBoolean(PrefsHelper.PREF_LANDSCAPE_BITMAP_FILTERING,
 						true);
 				edit.putString(PrefsHelper.PREF_GLOBAL_RESOLUTION,

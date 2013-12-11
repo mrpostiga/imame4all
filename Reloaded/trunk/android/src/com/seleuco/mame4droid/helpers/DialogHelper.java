@@ -55,6 +55,7 @@ import android.view.View;
 
 import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.MAME4droid;
+import com.seleuco.mame4droid.R;
 import com.seleuco.mame4droid.input.ControlCustomizer;
 
 public class DialogHelper {
@@ -230,10 +231,10 @@ public class DialogHelper {
 	        break;
 	    case DIALOG_OPTIONS:
 	    case DIALOG_FULLSCREEN:	
-	    	final CharSequence[] items1 = {"Load State", "Save State","Help","Settings", /*"Support",*/};	    	
-	    	final CharSequence[] items2 = {"Help","Settings", /*"Support"*/};	
-	    	final CharSequence[] items3 = {"Exit","Load State", "Save State","Help","Settings", /*"Support",*/};	    	
-	    	final CharSequence[] items4 = {"Exit","Help","Settings"/*, "Support"*/};	
+	    	final CharSequence[] items1 = {"Load State", "Save State","Help","Settings", "Netplay" /*"Support",*/};	    	
+	    	final CharSequence[] items2 = {"Help","Settings", "Netplay"/*"Support"*/};	
+	    	final CharSequence[] items3 = {"Exit","Load State", "Save State","Help","Settings", "Netplay"/*"Support",*/};	    	
+	    	final CharSequence[] items4 = {"Exit","Help","Settings", "Netplay" /*"Support"*/};	
 	    	
 	    	final int a = id == DIALOG_FULLSCREEN ? 0 : 1;
 	    	final int b = Emulator.isInMAME() ? 0 : 2;
@@ -262,7 +263,12 @@ public class DialogHelper {
     	          } else if (item == 2-a &&  b==0){ Emulator.setValue(Emulator.SAVESTATE, 1);Emulator.resume();		    	        
     	          } else if (item == 3-a-b){ mm.getMainHelper().showHelp();
     	          } else if (item == 4-a-b){ mm.getMainHelper().showSettings();
-    	          } else if (item == 5-a-b){ mm.showDialog(DialogHelper.DIALOG_THANKS);}
+    	          } else if (item == 5-a-b){
+    	        	  //mm.showDialog(DialogHelper.DIALOG_THANKS);
+    	              //mm.getNetPlay().showView();
+    	        	  mm.getNetPlay().createDialog();
+    	              
+    	          }
 		    	    
   	        	  DialogHelper.savedDialog = DIALOG_NONE;
   	        	  mm.removeDialog(DIALOG_OPTIONS);

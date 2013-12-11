@@ -1,5 +1,5 @@
 =================================================================
-MAME4droid (0.139u1) 1.5.3 (November 10, 2013) 
+MAME4droid (0.139u1) 1.6.0 (December 10, 2013) 
 by David Valdeita (Seleuco)
 =================================================================
 
@@ -55,6 +55,7 @@ Plug and play detection of many USB / Bluetooth gamepads.
 Tilt Sensor as left/right/up/down.
 Touch lightgun.
 1 to 6 buttons optionally shown.
+Peer to peer netplay.
 Options for video aspect ratio, scaling, rotate.
 
 ... and more. 
@@ -194,9 +195,13 @@ GLOBAL OPTIONS
           
 -Effect overlay. Applies an image filter (scanlines, CRT) at the expense of performance.     
 
--Hide or dimm navigation bar: Enable to hide or dimm navigation bar on android >=  4.2. Disable  if you have problems on full screen modes.
+-Navigation bar mode : Hide or dimm navigation bar on android >=  4.2. You can select immersive mode on android >= 4.4 also. Disable  if you have problems on full screen modes.
 
 -Scale beyond boundaries. Enable it to scale beyond screen boundaries if a fixed scale mode is selected. 
+
+-Netplay port: Let you change port used on netplay.
+
+-Netplay host delay frame: denotes the maximum number of frames MAME4droid will need to emulate at once to maintain synchonization due to actual network latency.
 
 -TV overscan. Enable it to apply a 10 pct safe area to correct overscan issues on some TV sets.
 
@@ -237,6 +242,17 @@ FAVORITES
 You can mark (or unmark) your ROMs in the MAME4iOS game selection window as favorites by pressing the X button (you can also delete the GAME physical files). A favorite ROM appears in green in the game list. The favorites are saved to the file: Favorites.ini.
 
 This file is compatible with the standard MAME Favorites.ini file format so you can copy this over from your PC version of MAME to the iOS version.
+
+NETPLAY 
+---------------
+    
+MAME4droid supports a simple, but effective netplay implementation over WIFI.
+    
+You must specify whether you will be hosting (server) or joining (client) the game. If joining, you must also enter the host's IP address in the field below. Make sure your firewall is open on port 55435 (default; you can change it if you like) and that the port is forwarded in your router, if applicable.
+    
+Host delay frame option, denotes the maximum number of frames MAME4droid will need to emulate at once to maintain synchonization due to actual network latency. You can figure out an appropriate ballpark for this number by pinging the other player and dividing the time (in milliseconds) by 16 (roughly the number of milliseconds in a frame from a game running at 60 fps). If the gameplay is a bit choppy, try increasing the number of delay frames a bit. You can change this value at real time on the host device.
+    
+TIP: Try a Wi-Fi direct connection to improve netplay performance or to play without an access point. Also use a 5Ghz network to improve netplay.
    
 INSTALLATION
 ---------------
@@ -291,6 +307,7 @@ PORT CREDITS
 - Port to Android by David Valdeita (Seleuco)
 
 DEVELOPMENT
+- 2013-12-10 version 1.6.0 Added Peer to peer netplay multiplayer. Added kit kat immersive mode.
 - 2013-11-10 version 1.5.3 Up to 30% speed improvement on some 3d games like tekken on capable devices. Fixed some games like brapboys. Added overscan option. Fixed artwork bug on games like Popeye. 
 - 2013-11-03 version 1.5.1 NVidia Shield and Ouya improvements and bug fixes. Added new hires modes (now rom manager can be rendered at hires resolution). Fixed controller goes to sleep bug. 
 - 2013-10-06 version 1.5 Added Ouya support. Added option to fix vertical tilt on NVidia Shield. Added more scaling options, now scales beyond screen boundaries. Changed select button to 'X' button to be coherent with Android default buttons. Some bug fixes. 

@@ -106,6 +106,9 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
     protected EditTextPreference mPrefFilterkeyword;
     protected ListPreference mPrefOverlayInt; 
     protected ListPreference mPrefForcPX;
+    protected ListPreference mPrefNetplayDelay;
+    protected EditTextPreference mPrefNetplayPort;
+    protected ListPreference mPrefNavbar;
     
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -165,6 +168,10 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 		
 		mPrefOverlayInt = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_OVERLAY_INTENSITY);
 		mPrefForcPX = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GLOBAL_FORCE_PXASPECT);
+		
+		mPrefNetplayDelay = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_NETPLAY_DELAY);
+		mPrefNetplayPort = (EditTextPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_NETPLAY_PORT);
+		mPrefNavbar = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GLOBAL_NAVBAR_MODE);
 	}
 	
 	protected void populateFilterList(int key1, int key2, ListPreference lp){
@@ -281,7 +288,10 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	        mPrefFilterYLTE.setSummary("Current value is '" + mPrefFilterYLTE.getEntry()+"'");   
 	        mPrefFilterkeyword.setSummary("Current value is '" + mPrefFilterkeyword.getText()+"'"); 
 	        mPrefOverlayInt.setSummary("Current value is '" + mPrefOverlayInt.getEntry()+"'"); 
-	        mPrefForcPX.setSummary("Current value is '" + mPrefForcPX.getEntry()+"'"); 
+	        mPrefForcPX.setSummary("Current value is '" + mPrefForcPX.getEntry()+"'");
+	        mPrefNetplayDelay.setSummary("Current value is '" + mPrefNetplayDelay.getEntry()+"'");
+	        mPrefNetplayPort.setSummary("Current value is '" + mPrefNetplayPort.getText()+"'"); 
+	        mPrefNavbar.setSummary("Current value is '" + mPrefNavbar.getEntry()+"'");
 	        // Set up a listener whenever a key changes            
 	        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
 	        
@@ -441,6 +451,18 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 		    else if(key.equals(PrefsHelper.PREF_GLOBAL_FORCE_PXASPECT))
 		    {
 		    	mPrefForcPX.setSummary("Current value is '" + mPrefForcPX.getEntry()+"'");
+		    }
+		    else if(key.equals(PrefsHelper.PREF_NETPLAY_PORT))
+		    {
+		    	mPrefFilterkeyword.setSummary("Current value is '" + mPrefNetplayPort.getText()+"'");
+		    } 	        
+		    else if(key.equals(PrefsHelper.PREF_NETPLAY_DELAY))
+		    {
+		    	mPrefNetplayDelay.setSummary("Current value is '" + mPrefNetplayDelay.getEntry()+"'");
+		    } 	  
+		    else if(key.equals(PrefsHelper.PREF_GLOBAL_NAVBAR_MODE))
+		    {
+		    	mPrefNavbar.setSummary("Current value is '" + mPrefNavbar.getEntry()+"'");
 		    } 	        
 	    }
 
