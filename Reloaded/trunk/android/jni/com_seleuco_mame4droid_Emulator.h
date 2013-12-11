@@ -99,6 +99,8 @@ extern "C" {
 #define com_seleuco_mame4droid_Emulator_SOUND_ENGINE 50L
 #undef com_seleuco_mame4droid_Emulator_EMU_AUTO_RESOLUTION
 #define com_seleuco_mame4droid_Emulator_EMU_AUTO_RESOLUTION 51L
+#undef com_seleuco_mame4droid_Emulator_IN_MAME
+#define com_seleuco_mame4droid_Emulator_IN_MAME 52L
 #undef com_seleuco_mame4droid_Emulator_FILTER_YEARS_ARRAY
 #define com_seleuco_mame4droid_Emulator_FILTER_YEARS_ARRAY 0L
 #undef com_seleuco_mame4droid_Emulator_FILTER_MANUFACTURERS_ARRAY
@@ -180,6 +182,14 @@ JNIEXPORT void JNICALL Java_com_seleuco_mame4droid_Emulator_setValue
  */
 JNIEXPORT void JNICALL Java_com_seleuco_mame4droid_Emulator_setValueStr
   (JNIEnv *, jclass, jint, jint, jstring);
+
+/*
+ * Class:     com_seleuco_mame4droid_Emulator
+ * Method:    netplayInit
+ * Signature: (Ljava/lang/String;II)I
+ */
+JNIEXPORT jint JNICALL Java_com_seleuco_mame4droid_Emulator_netplayInit
+  (JNIEnv *, jclass, jstring, jint, jint);
 
 #ifdef __cplusplus
 }

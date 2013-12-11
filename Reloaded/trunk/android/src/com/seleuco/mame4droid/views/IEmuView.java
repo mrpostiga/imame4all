@@ -50,6 +50,5 @@ public interface IEmuView {
 	
 	public void setMAME4droid(MAME4droid mm);
 	public void setScaleType(int scaleType);
-	public int getScaleType();
-	
+	public int getScaleType();	
 }

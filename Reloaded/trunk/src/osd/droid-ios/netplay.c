@@ -54,7 +54,7 @@
 
 static netplay_t netplay_player;
 
-static void* threaded_data(void* args);
+//static void* threaded_data(void* args); 
 
 float htonf(float value){
     union v {
@@ -268,13 +268,16 @@ int netplay_send_join_ack(netplay_t *handle){
     return handle->send_pkt_data(handle,&msg);
 }
 
-#define MAX_RETRIES 16
-#define RETRY_MS 500
+//#define MAX_RETRIES 16
+#define MAX_RETRIES 32
+
+//#define RETRY_MS 500
+#define RETRY_MS 250
 
 #define IS_SYNCED(h) ((h->frame < h->target_frame) || \
-                      ((h)->frame ==  h->target_frame && \
+                      (((h)->frame ==  h->target_frame && \
                        (h)->peer_frame == (h)->target_frame) && \
-                       (h)->peer_peer_frame == (h)->target_frame )
+                       (h)->peer_peer_frame == (h)->target_frame) )
 
 void netplay_pre_frame_net(netplay_t *handle)
 {
@@ -306,7 +309,7 @@ void netplay_pre_frame_net(netplay_t *handle)
                 //begin polling!
                 for(int i=0; i<RETRY_MS && !sync;i++) //max 500ms
                 {
-                    if(i % /*(16*3)*/ 250 == 0)
+                    if(i % 8*3 /*16 *3*/ /*250*/ == 0)
                     {
                         if(!netplay_send_data(handle)) //send frame data
                         {

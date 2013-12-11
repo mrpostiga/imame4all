@@ -342,13 +342,19 @@
    <string-array name="pref_automap_options">
 	    <item>Thumbs disabled and L2,R2 as L1,R1</item>
 		<item>Thumbs as Coin,Start and L2,R2 as L1,R1</item>
-		<item>Thumbs disabled and L2,R2 as Coin,Start</item>															
+		<item>Thumbs as Coin,Start and L2,R2 disabled</item>		
+		<item>Thumbs disabled and L2,R2 as Coin,Start</item>
+		<item>L1,R1 as Coin,Start and L2,R2 as L1,R1</item>		
+		<item>L1,R1 as MENU,EXIT and L2,R2 as L1,R1</item>																	
 	</string-array>
 	
 	<string-array name="pref_automap_values">
 		<item>1</item>
 		<item>2</item>
-		<item>3</item>																									
+		<item>3</item>		
+		<item>4</item>
+		<item>5</item>	
+	    <item>6</item>	
 	</string-array>	
 	
     <string-array name="pref_tilt_neutralz_options">
@@ -388,5 +394,48 @@
 		<item>1</item>
 		<item>2</item>																											
 	</string-array>		
-							
+
+	<string-array name="mode_items">
+		<item>Wi-Fi direct</item>
+		<item>Wi-Fi</item>																											
+	</string-array>		
+	
+    <string-array name="pref_netplay_delay_options">
+	    <item>Auto</item>
+		<item>1</item>
+		<item>2</item>
+		<item>3</item>
+		<item>4</item>
+        <item>5</item>		
+        <item>6</item>
+		<item>7</item>
+		<item>8</item>
+		<item>9</item>																		
+	</string-array>
+	
+	<string-array name="pref_netplay_delay_values">
+		<item>0</item>
+		<item>1</item>
+		<item>2</item>		
+		<item>3</item>
+		<item>4</item>
+		<item>5</item>
+		<item>6</item>
+		<item>7</item>
+		<item>8</item>
+		<item>9</item>																									
+	</string-array>		
+	
+    <string-array name="pref_navbar_options">
+	    <item>Visible</item>
+		<item>Dimm or Hide</item>
+		<item>Immersive mode (Kitkat)</item>																
+	</string-array>
+	
+	<string-array name="pref_navbar_values">
+		<item>0</item>
+		<item>1</item>
+		<item>2</item>																							
+	</string-array>		
+								
 </resources>

@@ -56,12 +56,16 @@ void  (*setMyAnalogData)(int i, float v1,float v2)=NULL;
 
 void  (*droid_video_thread)()=NULL;
 
+int (*netplayInit)(const char *value, int i, int j)=NULL;
+void (*setNetplayCallbacks)(void *func1) = NULL;
+
 /* Callbacks to Android */
 jmethodID android_dumpVideo;
 jmethodID android_changeVideo;
 jmethodID android_openAudio;
 jmethodID android_dumpAudio;
 jmethodID android_closeAudio;
+jmethodID android_netplayWarn;
 
 static JavaVM *jVM = NULL;
 static void *libdl = NULL;
@@ -130,7 +134,13 @@ static void load_lib(const char *str)
      __android_log_print(ANDROID_LOG_DEBUG, "mame4droid-jni","setMyAnalogData %d\n", setMyAnalogData!=NULL);
     
     droid_video_thread = dlsym(libdl, "droid_ios_video_thread"); 
-    __android_log_print(ANDROID_LOG_DEBUG, "mame4droid-jni","droid_ios_video_thread%d\n", droid_video_thread!=NULL);
+    __android_log_print(ANDROID_LOG_DEBUG, "mame4droid-jni","droid_ios_video_thread %d\n", droid_video_thread!=NULL);
+
+    netplayInit = dlsym(libdl, "netplayInit"); 
+     __android_log_print(ANDROID_LOG_DEBUG, "mame4droid-jni","netplayInit %d\n", netplayInit!=NULL);
+    
+    setNetplayCallbacks = dlsym(libdl, "setNetplayCallbacks");
+     __android_log_print(ANDROID_LOG_DEBUG, "mame4droid-jni","setNetplayCallbacks %d\n", setNetplayCallbacks!=NULL);
 }
 
 void myJNI_initVideo(void *buffer, int width, int height)
@@ -198,7 +208,6 @@ void myJNI_openAudio(int rate, int stereo)
     (*env)->CallStaticVoidMethod(env, cEmulator, android_openAudio, (jint)rate,(jboolean)stereo);
 }
 
-
 void myJNI_dumpAudio(void *buffer, int size)
 {
     JNIEnv *env;
@@ -242,6 +251,37 @@ void myJNI_dumpAudio2(void *buffer, int size)
 
     (*env)->CallStaticVoidMethod(env, cEmulator, android_dumpAudio, audioBuffer,(jint)size);
 
+}
+/*
+The global/local distinction affects both lifetime and scope. A global is usable from any thread, using that thread’s JNIEnv*, and is valid until an explicit call to DeleteGlobalRef(). A local is only usable from the thread it was originally handed to, and is valid until either an explicit call to DeleteLocalRef() or, more commonly, until you return from your native method. When a native method returns, all local references are automatically deleted.
+*/
+
+void myJNI_netplayWarn(char *msg)
+{
+    JNIEnv *env;
+    (*jVM)->GetEnv(jVM, (void**) &env, JNI_VERSION_1_4);
+    int attached  = 0;
+
+#ifdef DEBUG
+    __android_log_print(ANDROID_LOG_DEBUG, "mame4droid-jni", "netplayWarn");
+#endif
+   if(msg!=NULL)
+   {
+     __android_log_print(ANDROID_LOG_DEBUG, "mame4droid-jni", "netplayWarn %s\n",msg);
+     if(env==NULL)
+     {
+        attached  = 1;
+        (*jVM)->AttachCurrentThread(jVM,(void *) &env, NULL);
+     }
+
+     jstring jstrBuf = (*env)->NewStringUTF(env, msg);
+     (*env)->CallStaticVoidMethod(env, cEmulator, android_netplayWarn, jstrBuf);
+
+     if(attached)
+        (*jVM)->DetachCurrentThread(jVM);
+
+   }
+   //(*env)->DeleteLocalRef(env, jstrBuf);
 }
 
 int JNI_OnLoad(JavaVM* vm, void* reserved)
@@ -309,6 +349,14 @@ int JNI_OnLoad(JavaVM* vm, void* reserved)
         __android_log_print(ANDROID_LOG_ERROR, "mame4droid-jni", "Failed to find method closeAudio");
         return -1;
     }
+
+    android_netplayWarn = (*env)->GetStaticMethodID(env,cEmulator,"netplayWarn","(Ljava/lang/String;)V");
+
+    if(android_netplayWarn==NULL)
+    {
+        __android_log_print(ANDROID_LOG_ERROR, "mame4droid-jni", "Failed to find method netplayWarn");
+        return -1;
+    }
    
     return JNI_VERSION_1_4;
 }
@@ -338,6 +386,10 @@ JNIEXPORT void JNICALL Java_com_seleuco_mame4droid_Emulator_init
     __android_log_print(ANDROID_LOG_INFO, "mame4droid-jni","calling setAudioCallbacks");
     if(setAudioCallbacks!=NULL)
        setAudioCallbacks(&myJNI_openAudio,&myJNI_dumpAudio,&myJNI_closeAudio);
+
+    __android_log_print(ANDROID_LOG_INFO, "mame4droid-jni","calling setNetplayCallbacks");
+    if(setNetplayCallbacks!=NULL)
+       setNetplayCallbacks(&myJNI_netplayWarn);
 
     const char *str2 = (*env)->GetStringUTFChars(env, s2, 0);
 
@@ -468,5 +520,27 @@ JNIEXPORT void JNICALL Java_com_seleuco_mame4droid_Emulator_runVideoT
     else
       __android_log_print(ANDROID_LOG_WARN, "mame4droid-jni", "error no droid_video_thread!");
 }
+
+JNIEXPORT jint JNICALL Java_com_seleuco_mame4droid_Emulator_netplayInit
+  (JNIEnv *env, jclass c, jstring addr, jint port, jint join){
+#ifdef DEBUG
+    __android_log_print(ANDROID_LOG_DEBUG, "mame4droid-jni", "netplayInit");
+#endif
+    if(droid_video_thread!=NULL)    
+    {     
+        const char *str = NULL;
+        if(addr!=NULL)
+           str = (*env)->GetStringUTFChars(env, addr, 0);
+        netplayInit(str,port,join);
+        if(addr!=NULL)
+           (*env)->ReleaseStringUTFChars(env, addr, str);
+    }
+    else
+      __android_log_print(ANDROID_LOG_WARN, "mame4droid-jni", "error no netplayInit!");
+}
+
+
+
+
 
 

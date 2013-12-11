@@ -126,6 +126,12 @@ public class MAME4droid extends Activity {
 	
 	protected FileExplorer fileExplore = null;
 	
+	protected NetPlay netPlay = null;
+	
+	public NetPlay getNetPlay() {
+		return netPlay;
+	}
+
 	public FileExplorer getFileExplore() {
 		return fileExplore;
 	}
@@ -179,6 +185,8 @@ public class MAME4droid extends Activity {
         mainHelper = new MainHelper(this);
                              
         fileExplore = new FileExplorer(this);
+        
+        netPlay = new NetPlay(this);
                 
         menuHelper = new MenuHelper(this);
                 
@@ -200,22 +208,29 @@ public class MAME4droid extends Activity {
                 
         FrameLayout fl = (FrameLayout)this.findViewById(R.id.EmulatorFrame);
         
+        
         //Coment to avoid BUG on 2.3.4 (reload instead)
         Emulator.setVideoRenderMode(getPrefsHelper().getVideoRenderMode());
-               
+        
+        this.getLayoutInflater().inflate(R.layout.netplayview, fl);
+        View v = this.findViewById(R.id.netplay_view);
+        if(v!=null)
+        	v.setVisibility(View.GONE);
+        
         if(prefsHelper.getVideoRenderMode()==PrefsHelper.PREF_RENDER_SW)
         {
         	this.getLayoutInflater().inflate(R.layout.emuview_sw, fl);
         	emuView = this.findViewById(R.id.EmulatorViewSW);        
         }
         else 
-        {
-        	if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN && prefsHelper.getHideOrDimmNavBar())
+        { 
+        	if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN  && prefsHelper.getNavBarMode()!=PrefsHelper.PREF_NAVBAR_VISIBLE)
         	    this.getLayoutInflater().inflate(R.layout.emuview_gl_ext, fl);
         	else
         		this.getLayoutInflater().inflate(R.layout.emuview_gl, fl);
     		
         	emuView = this.findViewById(R.id.EmulatorViewGL);
+        	
         }
         
         if(full && prefsHelper.isPortraitTouchController())

@@ -360,7 +360,7 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 	    {
 	    	if(mm.getPrefsHelper().getAutomapOptions() == PrefsHelper.PREF_AUTOMAP_THUMBS_DISABLED_L2R2_AS_COINSTART)
 	    	   newinput[joy] |= SELECT_VALUE;
-	    	else	    		
+	    	else if(mm.getPrefsHelper().getAutomapOptions() != PrefsHelper.PREF_AUTOMAP_THUMBS_AS_COINSTART_L2R2_DISABLED)	    		
 	    	   newinput[joy] |= L1_VALUE;
 	    }
 	    y = getAxisValue(MotionEvent.AXIS_RTRIGGER, event, historyPos );
@@ -369,7 +369,7 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 	    {
 	    	if(mm.getPrefsHelper().getAutomapOptions() == PrefsHelper.PREF_AUTOMAP_THUMBS_DISABLED_L2R2_AS_COINSTART)
 		       newinput[joy] |= START_VALUE;
-		    else
+		    else if(mm.getPrefsHelper().getAutomapOptions() != PrefsHelper.PREF_AUTOMAP_THUMBS_AS_COINSTART_L2R2_DISABLED)
 	    	   newinput[joy] |= R1_VALUE;
 	    }    
 	    
@@ -486,7 +486,7 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 	
 	public void unsetInputListeners(){ 
 		
-		super.setInputListeners();
+		super.unsetInputListeners();
 		                
 		mm.getEmuView().setOnGenericMotionListener(null);
 		mm.getInputView().setOnGenericMotionListener(null);
@@ -536,8 +536,22 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 	}
 	
 	protected void mapL1R1(int id){
-		deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = L1_VALUE;
-		deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = R1_VALUE;
+		
+        if(mm.getPrefsHelper().getAutomapOptions() == PrefsHelper.PREF_AUTOMAP_L1R1_AS_EXITMENU_L2R2_AS_L1R1)
+        {
+                deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = R2_VALUE;
+                deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = L2_VALUE;                 
+        }
+        else if(mm.getPrefsHelper().getAutomapOptions() == PrefsHelper.PREF_AUTOMAP_L1R1_AS_COINSTART_L2R2_AS_L1R1)
+        {
+                deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = SELECT_VALUE;
+                deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = START_VALUE;                      
+        }
+        else
+        {
+           deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = L1_VALUE;
+           deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = R1_VALUE;
+        }		
 	}
 	
 	protected void mapL2R2(int id){
@@ -547,7 +561,7 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = SELECT_VALUE;		
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = START_VALUE;			
 		}
-		else
+		else if(mm.getPrefsHelper().getAutomapOptions() != PrefsHelper.PREF_AUTOMAP_THUMBS_AS_COINSTART_L2R2_DISABLED)
 		{
 		   deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = L1_VALUE;		
 		   deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = R1_VALUE;
@@ -557,7 +571,9 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 	
 	protected void mapTHUMBS(int id){
 
-		if(mm.getPrefsHelper().getAutomapOptions() == PrefsHelper.PREF_AUTOMAP_THUMBS_AS_COINSTART_L2R2_AS_L1R2){
+		if(mm.getPrefsHelper().getAutomapOptions() == PrefsHelper.PREF_AUTOMAP_THUMBS_AS_COINSTART_L2R2_AS_L1R2 ||
+		   mm.getPrefsHelper().getAutomapOptions() == PrefsHelper.PREF_AUTOMAP_THUMBS_AS_COINSTART_L2R2_DISABLED
+				){
 		   deviceMappings[KeyEvent.KEYCODE_BUTTON_THUMBL][id] = SELECT_VALUE;
 		   deviceMappings[KeyEvent.KEYCODE_BUTTON_THUMBR] [id]= START_VALUE;			
 		}		
