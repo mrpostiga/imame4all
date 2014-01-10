@@ -54,6 +54,8 @@ int  myosd_waysStick;
 int  myosd_pxasp1 = 0;
 int  myosd_service = 0;
 int  myosd_num_buttons = 0;
+int  myosd_fs_counter = 0;
+int  myosd_saveload_combo = 1;
 
 int myosd_num_of_joys=1;
 int myosd_video_threaded=1;
@@ -353,6 +355,9 @@ void setMyValue(int key,int i, int value){
 
                      break;
                  }
+            case 56:
+                 myosd_saveload_combo = value;break;        
+                 
          }
 }
 

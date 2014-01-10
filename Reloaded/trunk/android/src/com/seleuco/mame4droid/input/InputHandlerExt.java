@@ -88,7 +88,7 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		super(value);
 		
 		//vemos dispositivos!
-		/*
+		
 		int ids[] = InputDevice.getDeviceIds();
 		for(int i=0; i< ids.length; i++)
 		{
@@ -97,6 +97,7 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 			System.out.println(id.toString());
 		}
 		
+		/*
 		for(int i=0; i < MAX_DEVICES; i++)
 		{
 			for(int j=0; j < MAX_KEYS; j++)
@@ -643,6 +644,8 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 						
 			mapDPAD(id);mapL1R1(id);mapTHUMBS(id);mapSelectStart(id);
 			
+			desc = "Gamepad";
+			
 			detected = true;
 		}
 		else if(name.indexOf("nvidia_joypad")!=-1 || name.indexOf("NVIDIA Controller")!=-1) {
@@ -1045,7 +1048,46 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 			desc = "Thrustmaster T Mini";
 			
 			detected = true;
-		}			
+		}	
+		else if (name.indexOf("ADC joystick")!=-1){
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = Y_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L2][id] = L1_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R2][id] = R1_VALUE;
+
+			mapDPAD(id);
+			mapL1R1(id);
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_SELECT][id] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_START][id] = START_VALUE;	
+			
+			desc = "JXD S7800";			
+			detected = true;			
+		}		
+		else if (name.indexOf("joy_key")!=-1 && mm.getMainHelper().getDeviceDetected() == MainHelper.DEVICE_AGAMEPAD2){
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = Y_VALUE;
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L2][id] = L1_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R2][id] = R1_VALUE;
+			
+			mapDPAD(id);
+			mapL1R1(id);
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_SELECT][id] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_START][id] = START_VALUE;	
+			
+			desc = "Archos Gamepad 2";
+		    detected = true;
+		}
+		
 		
 		//JOYPAD_B = X_VALUE
 		//JOYPAD_Y = A_VALUE

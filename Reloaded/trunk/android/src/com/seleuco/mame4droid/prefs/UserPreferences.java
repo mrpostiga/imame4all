@@ -578,7 +578,28 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 		    	       });
 			    	Dialog dialog = builder.create();
 			    	dialog.show();
-			}				
+			}	
+			else if (pref.getKey().equals("defaultData")) {
+
+				 AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			    	builder.setMessage("Are you sure to restore? This will remove all your MAME cfg and nvram files. This is useful to restore games to defaults to fixup mame key mappings or netplay problems.")
+		    	       .setCancelable(false)
+		    	       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+		    	           public void onClick(DialogInterface dialog, int id) {
+		    	        	SharedPreferences.Editor editor =  settings.edit();
+		    	       		editor.putBoolean(PrefsHelper.PREF_MAME_DEFAULTS, true);		
+		    	    		editor.commit();
+		    	    		Emulator.setNeedRestart(true);
+		    	           }
+		    	       })
+		    	       .setNegativeButton("No", new DialogInterface.OnClickListener() {
+		    	           public void onClick(DialogInterface dialog, int id) {
+		    	                dialog.cancel();
+		    	           }
+		    	       });
+			    	Dialog dialog = builder.create();
+			    	dialog.show();
+			}
 			
 			return super.onPreferenceTreeClick(preferenceScreen, pref);
 		}

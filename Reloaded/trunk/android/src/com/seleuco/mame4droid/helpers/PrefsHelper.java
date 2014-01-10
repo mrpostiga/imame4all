@@ -133,6 +133,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 
 	final static public String  PREF_FORCE_GLES10 = "PREF_FORCE_GLES10";
 	final static public String  PREF_PXASP1 = "PREF_PXASP1";
+	final static public String  PREF_SAVELOAD_COMBO = "PREF_SAVELOAD_COMBO";
 	
 	final static public String  PREF_BEAM2X = "PREF_BEAM2X";
 	final static public String  PREF_ANTIALIAS = "PREF_ANTIALIAS";
@@ -157,6 +158,8 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String  PREF_NETPLAY_PORT = "PREF_NETPLAY_PORT";
 	final static public String  PREF_NETPLAY_DELAY = "PREF_NETPLAY_DELAY";
 	final static public String  PREF_NETPLAY_PEERADDR = "PREF_NETPLAY_PEERADR";	
+	
+	final static public String  PREF_MAME_DEFAULTS = "PREF_MAME_DEFAULTS";
 	
 	final static public int  LOW = 1;
 	final static public int  NORMAL = 2;
@@ -549,6 +552,10 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	public boolean isPlayerXasPlayer1(){
 		return getSharedPreferences().getBoolean(PREF_PXASP1,false);
 	}
+	
+	public boolean isSaveLoadCombo(){
+		return getSharedPreferences().getBoolean(PREF_SAVELOAD_COMBO,true);
+	}
 		
 	public boolean isVectorBeam2x(){
 		return getSharedPreferences().getBoolean(PREF_BEAM2X,true);
@@ -580,6 +587,20 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 		}
 				
 		return Integer.valueOf(getSharedPreferences().getString(PREF_GLOBAL_NAVBAR_MODE,"1")).intValue();
+	}
+	
+	public boolean isDefaultData(){
+		
+		boolean v = getSharedPreferences().getBoolean(PrefsHelper.PREF_MAME_DEFAULTS, false);
+		
+		if(v)
+		{
+        	SharedPreferences.Editor editor = getSharedPreferences().edit();
+       		editor.putBoolean(PrefsHelper.PREF_MAME_DEFAULTS, false);		
+    		editor.commit();
+		}
+			
+		return v;		
 	}
 	
 	public boolean isScaleBeyondBoundaries(){

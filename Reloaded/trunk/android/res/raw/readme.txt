@@ -1,5 +1,5 @@
 =================================================================
-MAME4droid (0.139u1) 1.6.0 (December 10, 2013) 
+MAME4droid (0.139u1) 1.6.1 (January 10, 2014) 
 by David Valdeita (Seleuco)
 =================================================================
 
@@ -169,6 +169,8 @@ GLOBAL OPTIONS
 
 -P4,P3,P2 as P1. Send Player 1 input data to Player2,3,4 so you can use the 2-4 players at the same time. Funny :). It makes some weird problems with some roms like D&D.
 
+-Save-Load Combo: Enable it to press START+R1 to load a game and START+R2 to save a game.
+
 -Tilt sensor. Enable to use tilt sensor.
 
 -Tilt sensor dead zone.  Select the deadzone amount on tilt sensor.
@@ -202,6 +204,8 @@ GLOBAL OPTIONS
 -Netplay port: Let you change port used on netplay.
 
 -Netplay host delay frame: denotes the maximum number of frames MAME4droid will need to emulate at once to maintain synchonization due to actual network latency.
+
+-Default MAME data: Restore MAME data to default values (cfg and nvram files). Use to fix problems with no input mappings or netplay problems (use on both peers) 
 
 -TV overscan. Enable it to apply a 10 pct safe area to correct overscan issues on some TV sets.
 
@@ -307,6 +311,7 @@ PORT CREDITS
 - Port to Android by David Valdeita (Seleuco)
 
 DEVELOPMENT
+- 2014-12-10 version 1.6.1 JXD S7800b, Archos Gamepad 2 support. Improved immersive mode. Added option to delete nvram and cfg files. Added selectable save-load combo. Some bug fixes.
 - 2013-12-10 version 1.6.0 Added Peer to peer netplay multiplayer. Added kit kat immersive mode.
 - 2013-11-10 version 1.5.3 Up to 30% speed improvement on some 3d games like tekken on capable devices. Fixed some games like brapboys. Added overscan option. Fixed artwork bug on games like Popeye. 
 - 2013-11-03 version 1.5.1 NVidia Shield and Ouya improvements and bug fixes. Added new hires modes (now rom manager can be rendered at hires resolution). Fixed controller goes to sleep bug. 
@@ -371,7 +376,7 @@ MAME LICENSE
 
 http://mamedev.org
 
-Copyright © 1997-2013, Nicola Salmoria and the MAME team. All rights reserved. 
+Copyright © 1997-2014, Nicola Salmoria and the MAME team. All rights reserved. 
 
 Redistribution and use of this code or any derivative works are permitted provided
 that the following conditions are met: 

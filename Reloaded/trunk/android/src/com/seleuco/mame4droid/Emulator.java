@@ -124,6 +124,7 @@ public class Emulator
 	final static public int NETPLAY_HAS_CONNECTION = 53;
 	final static public int NETPLAY_HAS_JOINED = 54;
 	final static public int NETPLAY_DELAY = 55;
+	final static public int SAVELOAD_COMBO = 56;
 	
 	final static public int FILTER_YEARS_ARRAY = 0;
 	final static public int FILTER_MANUFACTURERS_ARRAY = 1;

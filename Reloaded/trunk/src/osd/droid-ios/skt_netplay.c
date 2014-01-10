@@ -338,10 +338,11 @@ static int skt_read_pkt_data(netplay_t *handle,netplay_msg_t *msg)
 {
     skt_netplay_t *impl = (skt_netplay_t *)handle->impl_data;
     socklen_t addrlen = sizeof(impl->client_addr);
+    struct sockaddr_storage client_addr;
 
     //printf("read_pkt_data!\n");
     
-    int l = recvfrom(impl->fd, msg,  sizeof(netplay_msg_t), 0, (struct sockaddr*)&impl->client_addr, &addrlen);
+    int l = recvfrom(impl->fd, msg,  sizeof(netplay_msg_t), 0, (struct sockaddr*)&client_addr, &addrlen);
     
     if (l != sizeof(netplay_msg_t))
     {
@@ -350,7 +351,12 @@ static int skt_read_pkt_data(netplay_t *handle,netplay_msg_t *msg)
         return 0;
     }
     
-    impl->has_client_addr = 1;
+    if(!impl->has_client_addr)
+    {
+       memcpy(&impl->client_addr,&client_addr,addrlen);
+       impl->has_client_addr = 1;
+    }
+
     return 1;
 }
 

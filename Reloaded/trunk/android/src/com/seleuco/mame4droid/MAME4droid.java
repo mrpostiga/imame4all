@@ -324,6 +324,7 @@ public class MAME4droid extends Activity {
         
     public void runMAME4droid(){  	
 	    getMainHelper().copyFiles();
+	    getMainHelper().removeFiles();
     	Emulator.emulate(mainHelper.getLibDir(),prefsHelper.getROMsDIR());	
     }
      

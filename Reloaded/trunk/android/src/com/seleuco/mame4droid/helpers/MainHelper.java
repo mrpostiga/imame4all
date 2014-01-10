@@ -47,6 +47,7 @@ package com.seleuco.mame4droid.helpers;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,12 +56,7 @@ import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import android.annotation.TargetApi;
-import android.app.AlarmManager;
-import android.app.AlertDialog;
-import android.app.PendingIntent;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -70,12 +66,11 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.preference.PreferenceManager;
-import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.View;
 import android.view.View.MeasureSpec;
-import android.widget.Toast;
 import android.widget.FrameLayout.LayoutParams;
+import android.widget.Toast;
 
 import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.HelpActivity;
@@ -83,7 +78,6 @@ import com.seleuco.mame4droid.MAME4droid;
 import com.seleuco.mame4droid.R;
 import com.seleuco.mame4droid.input.ControlCustomizer;
 import com.seleuco.mame4droid.input.InputHandler;
-import com.seleuco.mame4droid.input.InputHandlerExt;
 import com.seleuco.mame4droid.prefs.GameFilterPrefs;
 import com.seleuco.mame4droid.prefs.UserPreferences;
 import com.seleuco.mame4droid.views.FilterView;
@@ -101,6 +95,8 @@ public class MainHelper {
 	final public static int DEVICE_GENEREIC = 1;
 	final public static int DEVICE_OUYA = 2;
 	final public static int DEVICE_SHIELD = 3;
+	final public static int DEVICE_JXDS7800 = 4;
+	final public static int DEVICE_AGAMEPAD2 = 5;
 	
 	protected int deviceDetected = DEVICE_GENEREIC;
 	
@@ -185,6 +181,40 @@ public class MainHelper {
 		}
 						
 		return true;		
+	}
+	
+    protected boolean deleteRecursive(File path) throws FileNotFoundException{
+        if (!path.exists()) throw new FileNotFoundException(path.getAbsolutePath());
+        boolean ret = true;
+        if (path.isDirectory()){
+            for (File f : path.listFiles()){
+                ret = ret && deleteRecursive(f);
+            }
+        }
+        return ret && path.delete();
+    }
+    
+	
+	public void removeFiles(){
+		try 
+		{			
+			if(mm.getPrefsHelper().isDefaultData())
+			{
+				String roms_dir = mm.getPrefsHelper().getROMsDIR();
+				
+				File f1 = new File(roms_dir + File.separator + "cfg/");
+				File f2 = new File(roms_dir + File.separator + "nvram/");
+				
+				deleteRecursive(f1);
+				deleteRecursive(f2);
+				
+				Toast.makeText(mm, "Deleted MAME cfg and NVRAM files...", Toast.LENGTH_LONG).show();
+			}
+			
+		} catch (Exception e) {
+			Toast.makeText(mm, "Failed deleting:"+e.getMessage(), Toast.LENGTH_LONG).show();
+			e.printStackTrace();
+		}
 	}
 		
 	public void copyFiles(){
@@ -375,6 +405,7 @@ public class MainHelper {
 		
 		Emulator.setValue(Emulator.DOUBLE_BUFFER,mm.getPrefsHelper().isDoubleBuffer() ? 1 : 0);
 		Emulator.setValue(Emulator.PXASP1,mm.getPrefsHelper().isPlayerXasPlayer1() ? 1 : 0);
+		Emulator.setValue(Emulator.SAVELOAD_COMBO,mm.getPrefsHelper().isSaveLoadCombo() ? 1 : 0);
 				
 		Emulator.setValue(Emulator.AUTOFIRE,mm.getPrefsHelper().getAutofireValue());
 		
@@ -815,6 +846,8 @@ public class MainHelper {
 
 		boolean ouya = android.os.Build.MODEL.equals("OUYA Console");
 		boolean shield = android.os.Build.MODEL.equals("SHIELD");
+		boolean S7800 = android.os.Build.MODEL.equals("S7800");
+		boolean GP2 = android.os.Build.MODEL.equals("ARCHOS GAMEPAD2");
 
 		if (ouya) {
 			Context context = mm.getApplicationContext();
@@ -836,7 +869,7 @@ public class MainHelper {
 				edit.commit();
 			}
 			deviceDetected = DEVICE_OUYA;
-		}
+		} else
 
 		if (shield) {
 			Context context = mm.getApplicationContext();
@@ -855,6 +888,36 @@ public class MainHelper {
 				edit.commit();
 			}
 			deviceDetected = DEVICE_SHIELD;
+		} else
+		
+		if (S7800) {
+			Context context = mm.getApplicationContext();
+			SharedPreferences prefs = PreferenceManager
+					.getDefaultSharedPreferences(context);
+			if (!prefs.getBoolean("S7800", false)) {
+				SharedPreferences.Editor edit = prefs.edit();
+				edit.putBoolean("S7800", true);
+				edit.putBoolean(PrefsHelper.PREF_LANDSCAPE_TOUCH_CONTROLLER,
+						false);
+				edit.putString(PrefsHelper.PREF_GLOBAL_NAVBAR_MODE, PrefsHelper.PREF_NAVBAR_VISIBLE+"");
+				edit.commit();
+			}
+			deviceDetected = DEVICE_JXDS7800;
+		}
+		
+		if (GP2) {
+			Context context = mm.getApplicationContext();
+			SharedPreferences prefs = PreferenceManager
+					.getDefaultSharedPreferences(context);
+			if (!prefs.getBoolean("GAMEPAD2", false)) {
+				SharedPreferences.Editor edit = prefs.edit();
+				edit.putBoolean("GAMEPAD2", true);
+				edit.putBoolean(PrefsHelper.PREF_LANDSCAPE_TOUCH_CONTROLLER,
+						false);
+				//edit.putString(PrefsHelper.PREF_AUTOMAP_OPTIONS,PrefsHelper.PREF_AUTOMAP_L1R1_AS_EXITMENU_L2R2_AS_L1R1+"");	
+				edit.commit();
+			}
+			deviceDetected = DEVICE_AGAMEPAD2;
 		}
 	}
 }

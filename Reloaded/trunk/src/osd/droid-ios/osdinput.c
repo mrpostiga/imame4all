@@ -349,6 +349,7 @@ void droid_ios_poll_input(running_machine *machine)
             handle->state.ext &= ~ NP_SAVE;
             handle->peer_state.ext &= ~ NP_SAVE;
             myosd_savestate = 0;
+            myosd_fs_counter = 60 * 5;
             return;
 		}
 
@@ -376,6 +377,7 @@ void droid_ios_poll_input(running_machine *machine)
             handle->state.ext &= ~ NP_LOAD;
             handle->peer_state.ext &= ~ NP_LOAD;
             myosd_loadstate = 0;
+            myosd_fs_counter = 60 * 5;
             return;
 		}
 
@@ -399,12 +401,12 @@ void droid_ios_poll_input(running_machine *machine)
 					keyboard_state[KEY_PGDN] = 0;
 				}
                 
-                if((_pad_status & MYOSD_START /*& MYOSD_SELECT*/)  &&  (_pad_status /*& MYOSD_A*/ & MYOSD_L1))
+                if((_pad_status & MYOSD_START /*& MYOSD_SELECT*/)  &&  (_pad_status /*& MYOSD_A*/ & MYOSD_L1) && myosd_saveload_combo)
                 {
                     myosd_savestate = 1;
                     break;
                 }
-                if((_pad_status /*& MYOSD_SELECT*/ & MYOSD_START)  &&  (_pad_status /*& MYOSD_A*/ & MYOSD_R1))
+                if((_pad_status /*& MYOSD_SELECT*/ & MYOSD_START)  &&  (_pad_status /*& MYOSD_A*/ & MYOSD_R1) && myosd_saveload_combo)
                 {
                     myosd_loadstate = 1;
                     break;

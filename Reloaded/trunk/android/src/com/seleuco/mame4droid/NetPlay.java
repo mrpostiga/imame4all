@@ -47,8 +47,8 @@ public class NetPlay {
 	}
 	
 	DialogInterface.OnCancelListener dialogCancelListener = new DialogInterface.OnCancelListener() { 
-		public void onCancel(DialogInterface dialog) { 
-		    Emulator.resume();
+		public void onCancel(DialogInterface dialog) { 									
+			Emulator.resume();					
 		} 
 	};	
 	
@@ -314,7 +314,7 @@ public class NetPlay {
 				while (Emulator.getValue(Emulator.NETPLAY_HAS_JOINED) == 0 && !canceled) {
 					try {
 						Thread.sleep(1000);
-						System.out.println("Esperando...");
+						//System.out.println("Esperando...");
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -331,12 +331,7 @@ public class NetPlay {
 				}
 		    	mm.runOnUiThread(new Runnable() {
 		            public void run() {
-		            	if(canceled)
-		            	{
-		            	    if(!netplayDlg.isShowing())
-		            		   netplayDlg.show();
-		            	}
-		            	else
+		            	if(!canceled)
 		            	{
 		            		if(netplayDlg.isShowing())
 		            		  netplayDlg.hide();
@@ -386,7 +381,7 @@ public class NetPlay {
 						if (Emulator.netplayInit(null, 0, 1) == -1)
 							canceled = true;
 						Thread.sleep(1000);
-						System.out.println("Esperando...");
+						//System.out.println("Esperando...");
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -404,12 +399,7 @@ public class NetPlay {
 				
 		    	mm.runOnUiThread(new Runnable() {
 		            public void run() {
-		            	if(canceled)
-		            	{
-		            		if(!netplayDlg.isShowing())
-		            		   netplayDlg.show();
-		            	}
-		            	else
+		            	if(!canceled)
 		            	{
 		            		if(netplayDlg.isShowing())
 			            		  netplayDlg.hide();

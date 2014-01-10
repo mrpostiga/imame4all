@@ -64,6 +64,8 @@ extern int  myosd_num_of_joys;
 extern int  myosd_video_threaded;
 extern int  myosd_service;
 extern int  myosd_num_buttons;
+extern int  myosd_fs_counter;
+extern int  myosd_saveload_combo;
 
 extern unsigned long myosd_pad_status;
     
