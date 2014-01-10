@@ -208,7 +208,7 @@
     </PreferenceScreen>	
     
 		<CheckBoxPreference android:key="PREF_LIGHTGUN"
-			android:title="Touch lightgun" android:summary="Enable to tap on touchscreen as a lightgun. First finger is main fire. Second finger when first finger is pressed is alternate fire"
+			android:title="Touch lightgun" android:summary="Enable to tap on touchscreen as a lightgun. First finger is main fire. Second finger when first finger is pressed is alternate fire. Touch controller must be enabled."
 			android:defaultValue="false" />		
 			
 	    <ListPreference
@@ -283,8 +283,12 @@
 			android:defaultValue="3" />
 	   	    	     
 	    <CheckBoxPreference android:key="PREF_PXASP1"
-			android:title="P4,P3,P2 as P1" android:summary="Send Player 1 input to Player 2,3,4. Could cause problems in some ROMs"
+			android:title="P4,P3,P2 as P1" android:summary="Allow a single input device to control multiple players at once. Could cause problems in some ROMs"
 			android:defaultValue="False" />
+	    
+	    <CheckBoxPreference android:key="PREF_SAVELOAD_COMBO"
+			android:title="Save-Load Combo" android:summary="Enable it to press START+R1 to load a game and START+R2 to save a game"
+			android:defaultValue="true" />
 	   	    		    	            
     </PreferenceScreen>	
         
@@ -365,7 +369,10 @@
 			android:title='Netplay host delay frame'			
 			android:key="PREF_NETPLAY_DELAY"
 			android:entryValues="@array/pref_netplay_delay_values"
-			android:defaultValue="0" />	        
+			android:defaultValue="0" />	
+			
+		<PreferenceScreen android:key="defaultData"
+			android:title="Default MAME data" android:summary="Restore MAME data to default values (cfg and nvram files)" />
                 		   			
 	</PreferenceScreen>				
 	

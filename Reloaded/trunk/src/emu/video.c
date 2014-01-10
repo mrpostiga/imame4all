@@ -969,8 +969,19 @@ static osd_ticks_t throttle_until_ticks(running_machine *machine, osd_ticks_t ta
 
 static void update_frameskip(running_machine *machine)
 {
+        if(myosd_fs_counter > 0)
+        {
+            if(global.frameskip_level > 1 && global.frameskip_level < 8)
+               global.frameskip_level = 6;
+            
+            myosd_fs_counter--;
+
+            //if(myosd_fs_counter==0)
+               myosd_exitPause = 1;          
+        }
+
 	/* if we're throttling and autoframeskip is on, adjust */
-	if (effective_throttle(machine) && effective_autoframeskip(machine) && global.frameskip_counter == 0)
+	if (effective_throttle(machine) && effective_autoframeskip(machine) && global.frameskip_counter == 0 && myosd_fs_counter==0)
 	{
 		double speed = global.speed * 0.01;
 
