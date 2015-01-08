@@ -33,6 +33,7 @@ enum  { MYOSD_UP=0x1,       MYOSD_LEFT=0x4,       MYOSD_DOWN=0x10,  MYOSD_RIGHT=
 #define MAX_FILTER_KEYWORD 30
 #define MAX_GAME_NAME 14
 #define NETPLAY_PORT 55435
+#define MAX_ROM_PATH 247
         
 extern unsigned short *myosd_screen15;
 extern int  myosd_fps;
@@ -94,6 +95,7 @@ extern int myosd_num_ways;
     
 extern int myosd_vsync;
 extern int myosd_dbl_buffer;
+extern int myosd_rgb;
 extern int myosd_autofire;
 extern int myosd_hiscore;
     
@@ -121,6 +123,9 @@ extern const char *myosd_array_main_manufacturers[];
 extern const char *myosd_array_years[];
 extern const char *myosd_array_main_driver_source[];
 extern const char *myosd_array_categories[];
+
+extern char myosd_game[MAX_GAME_NAME];
+extern char myosd_rompath[MAX_ROM_PATH];
     
 #if defined(__cplusplus)
 }

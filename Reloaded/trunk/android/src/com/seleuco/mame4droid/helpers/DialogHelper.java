@@ -134,15 +134,15 @@ public class DialogHelper {
 	        break;       
 	    case DIALOG_ROMs_DIR:
 	    	
-	    	builder.setMessage("Do you want to use default installation (ROMs) path? (recomended)")
+	    	builder.setMessage("Do you want to use default ROMs path? (recomended)")
 	    	       .setCancelable(false)
 	    	       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 	    	           public void onClick(DialogInterface dialog, int id) {
 	    	        	   DialogHelper.savedDialog = DIALOG_NONE;
 	    	        	   mm.removeDialog(DIALOG_ROMs_DIR);
-	    	        	   if(mm.getMainHelper().ensureROMsDir(mm.getMainHelper().getDefaultROMsDIR()))
-	    	        	   {	    	        	   
-	    	        	      mm.getPrefsHelper().setROMsDIR(mm.getMainHelper().getDefaultROMsDIR());
+	    	        	   if(mm.getMainHelper().ensureInstallationDIR(mm.getMainHelper().getInstallationDIR()))
+	    	        	   {	    	
+	    	        		  mm.getPrefsHelper().setROMsDIR("");
 	    	        	      mm.runMAME4droid();
 	    	        	   }	    	        	   
 	    	           }
@@ -307,10 +307,7 @@ public class DialogHelper {
 	    	       .setCancelable(false)
 	    	       .setPositiveButton("Dismiss", new DialogInterface.OnClickListener() {
 	    	           public void onClick(DialogInterface dialog, int id) {
-	    	   			  PendingIntent intent = PendingIntent.getActivity(mm.getBaseContext(), 0, new Intent(mm.getIntent()), mm.getIntent().getFlags());
-	    				  AlarmManager manager = (AlarmManager) mm.getSystemService(Context.ALARM_SERVICE);
-	    				  manager.set(AlarmManager.RTC, System.currentTimeMillis() + 250, intent);
-	    	              android.os.Process.killProcess(android.os.Process.myPid());   
+                          mm.getMainHelper().restartApp(); 
 	    	           }
 	    	       });
 	    	dialog = builder.create();

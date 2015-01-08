@@ -71,7 +71,7 @@ public class NetPlay {
 			disconnectButton.setEnabled(false);		
 		}		
 		
-		String name = Emulator.getValueStr(Emulator.GAME_NAME);
+		String name = Emulator.getValueStr(Emulator.GAME_SELECTED);
 		if(name!=null && name.length()!=0)
 		{
 		   startButton.setText("Start game: "+name);		   
@@ -103,6 +103,9 @@ public class NetPlay {
 		
 		prepareButtons();
 		
+		netplayDlg.show();
+		
+		/*
 		final SharedPreferences sp = mm.getPrefsHelper().getSharedPreferences();
 		 
 		AlertDialog.Builder builder = new AlertDialog.Builder(mm);
@@ -141,6 +144,7 @@ public class NetPlay {
 		} else {
 			netplayDlg.show();
 		}
+		*/
 				
 	}
 

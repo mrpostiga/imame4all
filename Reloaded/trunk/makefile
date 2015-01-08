@@ -26,9 +26,11 @@ ANDROID = 1
 
 #AX86=1
 
+#AARMV6=1
+
 AARMV7=1
 
-#AARMV6=1
+#AARMV8=1
 
 ########## iOS
 
@@ -75,9 +77,15 @@ BASE_DEV=/home/david/Projects/android/my-android-toolchain-r8/sysroot
 endif
 
 ifdef AARMV7
-MYPREFIX=/home/david/Projects/android/my-android-toolchain-r9-18/bin/arm-linux-androideabi-
+MYPREFIX=/home/david/Projects/android/my-android-toolchain-r10c-18/bin/arm-linux-androideabi-
 #MYPREFIX=/home/david/Projects/android/my-android-toolchain-r9-18/bin/
-BASE_DEV=/home/david/Projects/android/my-android-toolchain-r9-18/sysroot
+BASE_DEV=/home/david/Projects/android/my-android-toolchain-r10c-18/sysroot
+endif
+
+ifdef AARMV8
+PTR64 = 1
+MYPREFIX=/home/david/Projects/android/my-android-toolchain-r10c-21-arm64/bin/aarch64-linux-android-
+BASE_DEV=/home/david/Projects/android/my-android-toolchain-r10c-21-arm64/sysroot
 endif
 
 #MYPREFIX=/home/david/Projects/android/my-android-toolchain-14-crystax/bin/arm-linux-androideabi-
@@ -198,31 +206,6 @@ ifndef TARGETOS
 $(error Unable to detect TARGETOS from uname -a: $(UNAME))
 endif
 
-# Autodetect PTR64
-ifndef PTR64
-ifeq ($(firstword $(filter x86_64,$(UNAME))),x86_64)
-PTR64 = 1
-endif
-ifeq ($(firstword $(filter amd64,$(UNAME))),amd64)
-PTR64 = 1
-endif
-ifeq ($(firstword $(filter ppc64,$(UNAME))),ppc64)
-PTR64 = 1
-endif
-endif
-
-# Autodetect BIGENDIAN 
-# MacOSX
-ifndef BIGENDIAN
-ifneq (,$(findstring Power,$(UNAME)))
-BIGENDIAN=1
-endif
-# Linux
-ifneq (,$(findstring ppc,$(UNAME)))
-BIGENDIAN=1
-endif
-endif # BIGENDIAN
-
 endif # OS/2
 endif # CROSS_BUILD	
 endif # Windows_NT
@@ -333,6 +316,9 @@ BUILD_EXPAT = 1
 # OPTIMIZE = 3
 
 
+
+
+
 ###########################################################################
 ##################   END USER-CONFIGURABLE OPTIONS   ######################
 ###########################################################################
@@ -409,8 +395,8 @@ else
 
 AR = @$(MYPREFIX)ar
 ifdef AARMV7
-#CC = @$(MYPREFIX)gcc-4.8
-CC = @$(MYPREFIX)g++
+CC = @$(MYPREFIX)gcc-4.6
+#CC = @$(MYPREFIX)g++
 else
 CC = @$(MYPREFIX)gcc
 endif
@@ -772,11 +758,26 @@ CCOMFLAGS += -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 -DARMV7
 #CCOMFLAGS += -pipe  -mtune=cortex-a9
 CCOMFLAGS += -Wno-unused-but-set-variable -Wno-narrowing
 LDFLAGS += -march=armv7-a -Wl,--fix-cortex-a8
+CCOMFLAGS += -ffast-math
 endif
 
 ifdef AARMV6
 CCOMFLAGS += -mthumb
 LDFLAGS += -Wl,--fix-cortex-a8
+endif
+
+ifdef AARMV8
+CCOMFLAGS += -fPIC -fsigned-char -finline  
+
+CCOMFLAGS += -fno-common -fno-builtin 
+CCOMFLAGS += -fweb -frename-registers -fsingle-precision-constant
+CCOMFLAGS += -fno-common -fno-builtin 
+CCOMFLAGS += -DLSB_FIRST -fno-merge-constants
+
+CCOMFLAGS += -Wno-unused-but-set-variable -Wno-narrowing
+CCOMFLAGS += -march=armv8-a 
+CCOMFLAGS += -mtune=cortex-a53
+LDFLAGS += -march=armv8-a 
 endif
 
 #CLANG
@@ -803,7 +804,7 @@ LDFLAGS += -lc -lm
 
 #CCOMFLAGS += -ffast-math  -fsingle-precision-constant
 
-CCOMFLAGS += -ffast-math
+#CCOMFLAGS += -ffast-math
 
 #CCOMFLAGS += -falign-functions=16
 

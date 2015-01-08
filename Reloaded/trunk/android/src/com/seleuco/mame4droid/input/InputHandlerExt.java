@@ -227,7 +227,7 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 				x = getAxisValue(MotionEvent.AXIS_HAT_X, event, historyPos );
 				y = getAxisValue(MotionEvent.AXIS_HAT_Y, event, historyPos );
 			}
-	    	
+	   	
 			mag =  getMagnitude(x,y);	
 			
 	    	if(mag>=deadZone)
@@ -489,6 +489,13 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		
 		super.unsetInputListeners();
 		                
+		if(mm==null)
+		     return;
+		if(mm.getInputView()==null)
+			 return;
+		if(mm.getEmuView()==null)
+			 return;
+		   
 		mm.getEmuView().setOnGenericMotionListener(null);
 		mm.getInputView().setOnGenericMotionListener(null);
 	}	
@@ -500,7 +507,10 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		
 		if(device==null)
 			return -1;
-			
+		//dav
+		if(device.getId()==-1)
+			return -1;
+	    ///		
 		for(int i=0; i<MAX_DEVICES; i++)
 		{
 			if(deviceIDs[i]==device.getId())
@@ -668,6 +678,22 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 			
 			desc = "NVIDIA Shield";
 		}
+		else if(name.indexOf("ipega Extending")!=-1) {
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = Y_VALUE;
+			
+			mapL1R1(id);mapTHUMBS(id); 
+						
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_START] [id]= R2_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_SELECT] [id]= L2_VALUE;
+						
+			detected = true;
+			
+			desc = "Ipega Extending Game";
+		}			
 		else if (name.indexOf("X-Box 360")!=-1 || name.indexOf("X-Box")!=-1 
 				   || name.indexOf("Xbox 360 Wireless Receiver")!=-1 ){
 			
@@ -1086,9 +1112,24 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 			
 			desc = "Archos Gamepad 2";
 		    detected = true;
+		}else if(name.indexOf("NYKO PLAYPAD")!=-1 || 
+				(name.indexOf("Broadcom Bluetooth HID")!=-1  && mm.getMainHelper().getDeviceDetected() == MainHelper.DEVICE_SHIELD)) {
+			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = Y_VALUE;
+			
+			mapL1R1(id);mapTHUMBS(id); 
+						
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_START] [id]= R2_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BACK] [id]= L2_VALUE;
+						
+			detected = true;
+			
+			desc = "NYKO PLAYPAD";
 		}
-		
-		
+						
 		//JOYPAD_B = X_VALUE
 		//JOYPAD_Y = A_VALUE
 		//JOYPAD_A = B_VALUE
@@ -1102,7 +1143,7 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 			if(id == 1)
 			   mm.getMainHelper().updateMAME4droid();	
 			
-		    CharSequence text = "Detected "+desc +  " GamePad as P"+id;
+		    CharSequence text = "Detected "+desc +  " controller as P"+id;
 		    int duration = Toast.LENGTH_SHORT;
 
 		    Toast toast = Toast.makeText(mm, text, duration);

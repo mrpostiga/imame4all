@@ -44,17 +44,23 @@
 
 package com.seleuco.mame4droid;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.PixelFormat;
 import android.graphics.Paint.Style;
+import android.graphics.PixelFormat;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Shader.TileMode;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
+import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -62,8 +68,6 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.seleuco.mame4droid.helpers.PrefsHelper;
-import com.seleuco.mame4droid.input.InputHandler;
-import com.seleuco.mame4droid.input.TiltSensor;
 import com.seleuco.mame4droid.views.EmulatorViewGL;
 
 public class Emulator 
@@ -125,13 +129,16 @@ public class Emulator
 	final static public int NETPLAY_HAS_JOINED = 54;
 	final static public int NETPLAY_DELAY = 55;
 	final static public int SAVELOAD_COMBO = 56;
+	final static public int RENDER_RGB = 57;	
 	
 	final static public int FILTER_YEARS_ARRAY = 0;
 	final static public int FILTER_MANUFACTURERS_ARRAY = 1;
 	final static public int FILTER_DRIVERS_SRC_ARRAY = 2;
 	final static public int FILTER_CATEGORIES_ARRAY = 3;
 	final static public int FILTER_KEYWORD = 4;
-	final static public int GAME_NAME = 5;
+	final static public int GAME_SELECTED = 5;
+	final static public int ROM_PATH = 6;
+	final static public int ROM_NAME = 7;
 	
     private static MAME4droid mm = null;
     
@@ -158,7 +165,9 @@ public class Emulator
 	}
 
 	private static Paint emuPaint = null;
+	private static Paint filterPaint = null;
 	private static Paint debugPaint = new Paint();
+	private static Bitmap filterBitmap = null;
 	
 	private static Matrix mtx = new Matrix();
 	
@@ -234,7 +243,7 @@ public class Emulator
 	public static boolean isPortraitFull() {
 		return portraitFull;
 	}
-
+	
 	public static void setPortraitFull(boolean portraitFull) {
 		Emulator.portraitFull = portraitFull;
 	}
@@ -331,11 +340,26 @@ public class Emulator
 		return screenBuff;
 	}
 	
+	public static Bitmap getFilterBitmap(){
+		return filterBitmap;
+	}
+	
+	public static void setFilterBitmap(Bitmap value){				
+		filterBitmap = value;
+		if(filterBitmap!=null)
+		{
+		   filterPaint = new Paint();
+	       filterPaint.setXfermode(new PorterDuffXfermode(android.graphics.PorterDuff.Mode.MULTIPLY));
+	       filterPaint.setShader(new BitmapShader(filterBitmap, TileMode.REPEAT, TileMode.REPEAT));
+		}
+		else filterPaint = null;
+	}	
+	
 	
 	public static void setHolder(SurfaceHolder value) {
 		
-		synchronized(lock1)
-		{
+		//synchronized(lock1)
+		//{
 			if(value!=null)
 			{
 				holder = value;
@@ -347,7 +371,7 @@ public class Emulator
 			{
 				holder=null;
 			}
-		}		
+		//}		
 	}
 		
 	public static void setMAME4droid(MAME4droid mm) {
@@ -383,10 +407,10 @@ public class Emulator
 		
 	//synchronized 
 	static void bitblt(ByteBuffer sScreenBuff) {
-
+		
 		//Log.d("Thread Video", "fuera lock");
 		synchronized(lock1){
-		//try {
+		try {
 			//Log.d("Thread Video", "dentro lock");					
 			screenBuff = sScreenBuff;
 			Emulator.inMAME = Emulator.getValue(Emulator.IN_MAME)==1;
@@ -417,11 +441,20 @@ public class Emulator
 					return;
 	
 				Canvas canvas = holder.lockCanvas();		
-				sScreenBuff.rewind();			
+				sScreenBuff.rewind();
+												
 				emuBitmap.copyPixelsFromBuffer(sScreenBuff);												
 				i++;
+				Matrix oldMtx = canvas.getMatrix();
 				canvas.concat(mtx);			
 				canvas.drawBitmap(emuBitmap, 0, 0, emuPaint);
+										       		        
+				if(filterBitmap!=null && Emulator.getValue(Emulator.IN_MAME)==1)
+				{
+					canvas.setMatrix(oldMtx);
+				    canvas.drawRect(0, 0,Emulator.getWindow_width() , Emulator.getWindow_height(), filterPaint);
+				}
+							
 				//canvas.drawBitmap(emuBitmap, null, frameRect, emuPaint);
 				if(isDebug)
 				{	
@@ -429,16 +462,16 @@ public class Emulator
 					if(System.currentTimeMillis() - millis >= 1000) {fps = i; i=0;millis = System.currentTimeMillis();}
 				}
 				//Log.d("Thread Video", "holder UNLOCK!"+holder);
+								
 				holder.unlockCanvasAndPost(canvas);				
 			}
 			//Log.d("Thread Video", "fin lock");	
-		/*    						
-		} catch (Throwable t) {
+		    						
+		} catch (/*Throwable*/NullPointerException t) {
 			Log.getStackTraceString(t);
-		}
-		*/
-		}
-
+			t.printStackTrace();
+		}		
+		}	        
 	}
 	
 	//synchronized 
@@ -617,11 +650,43 @@ public class Emulator
 		if (isEmulating)return;
 				
 		Thread t = new Thread(new Runnable(){
+			
 			public void run() {
+				
+				boolean extROM = false;	
 				isEmulating = true;
 				init(libPath,resPath);
+			    
+				Intent intent = mm.getIntent();
+			    String action = intent.getAction();
+			    
+			    if(action == Intent.ACTION_VIEW)
+			    {
+			    	  //android.os.Debug.waitForDebugger();
+			      	  Uri uri = intent.getData();
+			      	  System.out.println("URI: "+uri.toString());
+			          java.io.File f = new java.io.File(uri.getPath());
+			          String name = f.getName();
+			          String path = f.getAbsolutePath().substring(0,f.getAbsolutePath().lastIndexOf(File.separator));
+			          Emulator.setValueStr(Emulator.ROM_NAME, name);
+			          Emulator.setValueStr(Emulator.ROM_PATH, path);	
+			          extROM = true;			         
+			    }
+			    else
+			    {
+			    	if(mm.getPrefsHelper().getROMsDIR()!=null && mm.getPrefsHelper().getROMsDIR().length()!=0)
+			    	   Emulator.setValueStr(Emulator.ROM_PATH, mm.getPrefsHelper().getROMsDIR());
+			    }		
+			    			    
 				mm.getMainHelper().updateEmuValues();
 				runT();
+				
+				if(extROM)
+					mm.runOnUiThread(new Runnable() {
+		                public void run() {
+		 				   android.os.Process.killProcess(android.os.Process.myPid());
+		                }
+		            }); 				
 			}			
 		},"emulatorNativeMain-Thread");
 		
@@ -663,7 +728,7 @@ public class Emulator
             }
     	});
 	}
-	
+ 
 	//native
 	protected static native void init(String libPath,String resPath);
 	

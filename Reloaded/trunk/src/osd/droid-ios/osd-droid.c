@@ -77,6 +77,7 @@ int myosd_num_ways = 8;
 
 int myosd_vsync = -1;
 int myosd_dbl_buffer=1;
+int myosd_rgb=0;
 int myosd_autofire=0;
 int myosd_hiscore=0;
 
@@ -104,6 +105,9 @@ unsigned short myosd_ext_status = 0;
 
 unsigned short 	*myosd_screen15 = NULL;
 
+char myosd_game[MAX_GAME_NAME] = {'\0'};
+char myosd_rompath[MAX_ROM_PATH] = {'\0'};
+
 //////////////////////// android
 
 static unsigned short *screenbuffer1 = NULL;
@@ -124,7 +128,6 @@ static int sound_engine = 1;
 static int sound_frames = 1024;
 //static int sound_fixed_sr = 44100;
 static int frame_delay = 0;
-
 
 void change_pause(int value);
 
@@ -357,7 +360,8 @@ void setMyValue(int key,int i, int value){
                  }
             case 56:
                  myosd_saveload_combo = value;break;        
-                 
+            case 57:                 
+                 myosd_rgb = value;break;                                     
          }
 }
 
@@ -439,6 +443,18 @@ void setMyValueStr(int key,int i, const char *value){
               strcpy(myosd_filter_keyword,value);
             break;
         }
+        case 6:
+        {
+            if(strlen(value)<MAX_ROM_PATH)
+              strcpy(myosd_rompath,value);
+            break;
+        }
+        case 7:
+        {
+            if(strlen(value)<MAX_GAME_NAME)
+              strcpy(myosd_game,value);
+            break;
+        }
         default:;
      }          
 }
@@ -453,6 +469,8 @@ char *getMyValueStr(int key,int i){
         case 2: return (char *)myosd_array_main_driver_source[i];
         case 3: return (char *)myosd_array_categories[i];
         case 5: return (char *)myosd_selected_game;
+        case 6: return (char *)myosd_rompath;
+        case 7: return (char *)myosd_game;
         default: return NULL;  
      }
      
@@ -481,7 +499,7 @@ static void dump_video(void)
 #endif
 
         if(myosd_dbl_buffer)
-           memcpy(screenbuffer1,screenbuffer2,myosd_video_width * myosd_video_height * 2);
+           memcpy(screenbuffer1,screenbuffer2,myosd_video_width * myosd_video_height * (myosd_rgb==1?4:2));
 
 	if(dumpVideo_callback!=NULL)
 	   dumpVideo_callback();
@@ -599,10 +617,10 @@ void myosd_init(void)
        if(resheight<480)resheight=480;
 	                       
        if(screenbuffer1 == NULL)
-          screenbuffer1 = (unsigned short *)malloc(reswidth * resheight * 2);
+          screenbuffer1 = (unsigned short *)malloc(reswidth * resheight * (myosd_rgb==1?4:2));
       
        if(myosd_dbl_buffer && screenbuffer2==NULL)
-          screenbuffer2 = (unsigned short *)malloc(reswidth * resheight * 2);       
+          screenbuffer2 = (unsigned short *)malloc(reswidth * resheight * (myosd_rgb==1?4:2));       
        
        myosd_screen15 = myosd_dbl_buffer ? screenbuffer2 : screenbuffer1;
                

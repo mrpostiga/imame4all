@@ -46,7 +46,6 @@ package com.seleuco.mame4droid;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.IOException;
 import java.util.ArrayList;
 
 import android.app.AlertDialog;
@@ -138,7 +137,7 @@ public class FileExplorer {
 		}
 
 		adapter = new ArrayAdapter<Item>(mm,
-				android.R.layout.select_dialog_item, android.R.id.text1,
+				/*android.R.layout.select_dialog_item*/android.R.layout.simple_list_item_1, android.R.id.text1,
 				fileList) {
 			@Override
 			public View getView(int position, View convertView, ViewGroup parent) {
@@ -240,28 +239,24 @@ public class FileExplorer {
 		builder.setPositiveButton("Done",
 				new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int id) {
-						// mm.removeDialog(DialogHelper.DIALOG_LOAD_FILE_EXPLORER);
-						String res_dir = null;
-						try {
-							res_dir = path.getCanonicalPath()+"/MAME4droid/";
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-						
-						if(res_dir.startsWith("//"))
-							res_dir = res_dir.substring(1);
-						
+						// mm.removeDialog(DialogHelper.DIALOG_LOAD_FILE_EXPLORER);						
 						DialogHelper.savedDialog = DialogHelper.DIALOG_NONE;
 						mm.removeDialog(DialogHelper.DIALOG_LOAD_FILE_EXPLORER);
-						
-						if (mm.getMainHelper().ensureROMsDir(res_dir)) {
-							mm.getPrefsHelper().setROMsDIR(res_dir);
-							mm.runMAME4droid();
-						} else {
-							//mm.showDialog(DialogHelper.DIALOG_LOAD_FILE_EXPLORER);
-						}
+						mm.getPrefsHelper().setROMsDIR(path.getAbsolutePath());						
+						mm.getMainHelper().ensureInstallationDIR(mm.getMainHelper().getInstallationDIR());
+						mm.runMAME4droid();
 					}
 				});
+		
+		builder.setNegativeButton("Cancel",
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {					
+						DialogHelper.savedDialog = DialogHelper.DIALOG_NONE;
+						mm.removeDialog(DialogHelper.DIALOG_LOAD_FILE_EXPLORER);
+						mm.getMainHelper().ensureInstallationDIR(mm.getMainHelper().getInstallationDIR());
+						mm.runMAME4droid();
+					}
+				});		
 
 		builder.setCancelable(false);
 		dialog = builder.show();

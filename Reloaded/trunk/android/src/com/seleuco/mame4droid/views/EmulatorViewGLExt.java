@@ -49,7 +49,9 @@ public class EmulatorViewGLExt extends EmulatorViewGL implements  android.view.V
         System.out.println("onWindowVisibilityChanged");
         
         // When we become visible, we show our navigation elements briefly
-        // before hiding them.        
+        // before hiding them. 
+        if(mm==null)
+        	return;
         if(mm.getPrefsHelper().getNavBarMode()==PrefsHelper.PREF_NAVBAR_IMMERSIVE)
         {
            setNavVisibility(false);

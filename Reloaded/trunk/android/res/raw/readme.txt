@@ -1,5 +1,5 @@
 =================================================================
-MAME4droid (0.139u1) 1.6.1 (January 10, 2014) 
+MAME4droid (0.139u1) 1.7.0 (January 7, 2015) 
 by David Valdeita (Seleuco)
 =================================================================
 
@@ -17,8 +17,6 @@ This version doesn't have an UML back-end ARM dynamic recompiler, which means dr
 (it has not sense since this games will be slow in any case).
 
 Said that, with a low end device, use at your own risk. I suggest you use MAME4all (0.37b5) instead.
-Remember that games that can be emulated on both MAME4droid versions will run much faster on MAME4all (0.37b5) than on MAME4droid (0.139u1),
-and will drain less battery.
 
 This version emulates over 8000 different romsets. 
 
@@ -34,6 +32,8 @@ MAME4droid (0.139u1) uses only '0.139' romset.
 Official web page for news, source code & additional information:
 
 http://code.google.com/p/imame4all/
+
+TIP: checkout http://ouyaforum.com/showthread.php?9558-MAME4droid-DIY-artwork for great game artworks.
 
 To see MAME license, go to the end of this document.
 
@@ -79,6 +79,8 @@ NOTE: To type OK when MAME requires it, press LEFT and then RIGHT.
 GLOBAL OPTIONS
 ----------------
 
+EMULATION:
+
 -Auto Switch Resolution: Auto switch resolution to original arcade resolution instead emulated resolution. This option improves performance and fits arcade aspect ratios to screen boundaries.  
 
 -Emulated Resolution: Force MAME internal drawing resolution, use hires resolution to improve artwork rendering at the expense of performance or to minimize 4:3 scaling artifacts. 
@@ -97,25 +99,34 @@ GLOBAL OPTIONS
 
 -Show Info/Warnings: Shows Game Info and any warnings when a game is selected.
 
--Show Only Favorites: Show only favorites games in ROM manager.
-
 -Cheats: Enables the reading of the cheat database, if present, and the Cheat menu in the user interface.
 
--Change installation path: Change current ROMs path. You need to restart app. You must move ROMs from older folder to the new one also.
+-Show Only Favorites: Show only favorites games in ROM manager.
 
 -Save battery: Allows MAME to give time back to the system (sleep) when running with -throttle. This allows other programs to have some CPU time, assuming that the game isn't taxing 100% of your CPU resources. This option can potentially cause hiccups in performance if other demanding programs are running.
 
--Aspect: Forced Pixel Aspect, enable it to force pixel aspect ratio bypassing MAME video selection. Forced Pixel Aspect Smart uses 4/3 or pixel aspect to maximize space.
+-Aspect: Forced Pixel Aspect, enable it to force pixel aspect ratio bypassing MAME video selection.
 
 -Forced Refresh Rate: If enabled, forces refresh video emulation for smoother gameplay in some games (use with caution since it could broke other games like cave ones).
 
 -Save Hiscores: If enabled, saves hiscores on some games not saving on NVRAM. It could cause problems with some games or save states.
 
--Game filter: Filter games by year, manufacturer, category, source driver, favorites...
+-Beam 2x: Sets the width of the vectors to 2x.
 
--Warn on exit: Enable it to warn when you press the exit button in the external controller (GamePad) when gaming.
+-Antialias: Enables antialiased line rendering for vector games.
 
--Notification Icon: Enable it to show a notification icon when MAME4droid is suspended.
+-Flicker: Simulates a vector "flicker" effect, similar to a vector monitor that needs adjustment.
+
+-Default MAME data: Restore MAME data to default values (cfg and nvram files). Use to fix problems with no input mappings or netplay problems (use on both peers)
+
+INPUT TOUCH CONTROLLER:
+
+-Mode (Touch Type):
+
+     * Digital (DPAD). The controller is a digital DPAD. Some games need it or are better suited for this kind of controller.
+     * Digital Stick (Old One). This is the old one faked analog stick.
+     * Analog-Digital. (Performance). The controller is a full analog stick, MAME map it to a digital stick if needed. It's painted for performance.
+     * Analog-Digital (Pretty). The controller is a full analog stick. 
 
 -Customize touch layout: Select to customize landscape touch control layout. You should press 'back' when you finish.
 
@@ -129,47 +140,36 @@ GLOBAL OPTIONS
 
 -Hide stick: Enable to hide stick on full screen mode.
 
+-Animated. Animates ON/OFF DPad/Stick. Disable to for better performance.
+
+-Vibrate. Enable/Disable to let device vibrate when buttons or dpad/stick is touched.
+
+-Digital Dead Zone: Enable/Disable a deadzone on DPAD touch center. It could be better for some games. Disable if you don't like it.
+
+-Analog Dead Zone: Select the deadzone amount on stick touch center.
+
+EXTERNAL CONTROLLER:
+
+-Mode
+
+   * Keyboard or IME. Select this value to use an external keyboard or devices based on keyboard IMES like WiiController.
+   * Controller autodetection. Plug and play detection of many USB / Bluetooth controllers. Support of multiple controllers.
+   * Original iCade. Select this value to use iON's iCade controller. You should be bluetooth paired before.
+   * iCP, Gametel or iCade compatible. Select this value to use an iCade compatible layout. Controller should be configured on iCade mode.
+
 -Define Keys. Let you define or map the HW keys to emulator controls. (Xperia Play and any other devices with physical keyboards users should configure their buttons or keys here). If a gamepad is auto detected, you should disable autodetection to redefine buttons.
 
 -Defaults Keys. Restore key mappings to defaults.
 
--External Controller
+-Automap options: Let you define the Thumbs or L1,L2 buttons behaviour when a GamePad is autodetected.
 
-   * Keyboard or IME. Select this value to use an external keyboard or devices based on keyboard IMES like WiiController.
-   * GamePad autodetection. Plug and play detection of many USB / Bluetooth gamepads. Support of multiple gamepads.
-   * Original iCade. Select this value to use iON's iCade controller. You should be bluetooth paired before.
-   * iCP, Gametel or iCade compatible. Select this value to use an iCade compatible layout. Controller should be configured on iCade mode.
+-Warn on exit: Enable it to warn when you press the exit button in the external controller (GamePad) when gaming.
 
--GamePad automap options: Let you define the Thumbs or L1,L2 buttons behaviour when a GamePad is autodetected.
+-Disable right stick: Disable right stick when it is autodetected.
 
--GamePad disable right stick: Disable right stick when it is autodetected.  
+-Analog Dead Zone: Select the deadzone amount on external GamePad analog nubs.
 
--Touch lightgun: Enable to tap on touchscreen as a lightgun. First finger is main fire. Second finger when first finger is pressed is alternate fire.
-
--Animated. Animates ON/OFF DPad/Stick. Disable to for better performance.
-
--Vibrate on keypress. Enable/Disable to let device vibrate when buttons or dpad/stick is touched.
-
--Touch Type:
-
-     * Digital (DPAD). The controller is a digital DPAD. Some games need it or are better suited for this kind of controller.
-     * Digital Stick (Old One). This is the old one faked analog stick.
-     * Analog-Digital. (Performance). The controller is a full analog stick, MAME map it to a digital stick if needed. It's painted for performance.
-     * Analog-Digital (Pretty). The controller is a full analog stick. 
-
--Stick Type: limits the joystick's range of motion: 8-way,4-way,2-way The most common reason to use a gate in an actual arcade setting is the retrofitting of an older machine that is not compatible with  a new 8-way stick. A classic example of this is Pac-Man. The game was originally designed for a 4-way stick, and is programmed  to respond only when a new input occurs. If the user is holding the stick in the down position, then suddenly makes a motion  to move to the right, what often happens is that the stick first moves into the down-right diagonal, which the game  does not recognize as new input since down is still being held. However, right is also now considered held, and when the user  completes the motion to move right, it is also not a new input, and Pac-Man will still be moving down.
-
--Digital Touch Dead Zone: Enable/Disable a deadzone on DPAD touch center. It could be better for some games. Disable if you don't like it.
-
--Button B as Autofire: If enabled, press B to switch autofire on/off.
-
--Analog Touch Dead Zone: Select the deadzone amount on stick touch center.
-
--Analog GamePad Dead Zone: Select the deadzone amount on external GamePad analog nubs.
-
--P4,P3,P2 as P1. Send Player 1 input data to Player2,3,4 so you can use the 2-4 players at the same time. Funny :). It makes some weird problems with some roms like D&D.
-
--Save-Load Combo: Enable it to press START+R1 to load a game and START+R2 to save a game.
+TILT CONTROLLER
 
 -Tilt sensor. Enable to use tilt sensor.
 
@@ -185,6 +185,61 @@ GLOBAL OPTIONS
 
 -Swap Z,Y axes: Enable to swap Z,Y axes. This fix vertical tilt on some devices. 
 
+OTHER INPUT OPTIONS
+
+-Touch lightgun: Enable to tap on touchscreen as a lightgun. First finger is main fire. Second finger when first finger is pressed is alternate fire.
+
+-Stick Type: limits the joystick's range of motion: 8-way,4-way,2-way The most common reason to use a gate in an actual arcade setting is the retrofitting of an older machine that is not compatible with  a new 8-way stick. A classic example of this is Pac-Man. The game was originally designed for a 4-way stick, and is programmed  to respond only when a new input occurs. If the user is holding the stick in the down position, then suddenly makes a motion  to move to the right, what often happens is that the stick first moves into the down-right diagonal, which the game  does not recognize as new input since down is still being held. However, right is also now considered held, and when the user  completes the motion to move right, it is also not a new input, and Pac-Man will still be moving down.
+
+-Button B as Autofire: If enabled, press B to switch autofire on/off.
+
+-P4,P3,P2 as P1. Send Player 1 input data to Player2,3,4 so you can use the 2-4 players at the same time. Funny :). It makes some weird problems with some roms like D&D.
+
+-Save-Load Combo: Enable it to press START+R1 to load a game and START+L1 to save a game.
+
+GENERAL
+
+-Change ROMs path: Change current ROMs path. You need to restart app. You must move ROMs from older folder to the new one also.
+
+-Notification Icon: Enable it to show a notification icon when MAME4droid is suspended.
+
+-Navigation bar mode : Hide or dimm navigation bar on android >=  4.2. You can select immersive mode on android >= 4.4 also. Disable  if you have problems on full screen modes.
+
+-Scale beyond boundaries. Enable it to scale beyond screen boundaries if a fixed scale mode is selected.
+
+-TV overscan. Enable it to apply a 10 pct safe area to correct overscan issues on some TV sets.
+
+-Netplay port: Let you change port used on netplay.
+
+-Netplay host delay frame: denotes the maximum number of frames MAME4droid will need to emulate at once to maintain synchonization due to actual network latency.
+
+ADVANCED:
+
+-Video Engine: 
+
+    * SW: SW render, more accurate. Higher device compatibility.
+    * GL. Open GL ES 1.1 or upper. This should be your choice if it works fine for you. Faster rendering even with image filtering.
+
+-Sound Engine. Set the audio Engine. AudioTrack for safety. OpenSL for performance and low latency on capable devices.
+
+-Threaded Video render. Enable it to use a dedicate thread to do the video rendering (performance gain on double core devices). Disable if you have stuttering.
+
+-Video thread priority. Set to default value unless you have problems. You need to restart.
+
+-Double buffer. Avoids flickering at the expenses of performance.
+
+-True RGB. Render in true color. Use to improve artwork rendering.
+
+-Main thread priority. Set to default value unless you have problems. You need to restart.
+
+-Alternate OpenGL Path. Enable it to use the newer OpenGL  render path. Select it if you have performance problems with old render path. Could not work in older devices (like overlay rendering)  
+
+-Debug Mode. Enable debug mode. Only for developers.
+
+OTHER:
+
+-Game filter: Filter games by year, manufacturer, category, source driver, favorites...
+
 -Scaling Mode:  
 
      * Keep Aspect: keeps the aspect ratio
@@ -197,53 +252,17 @@ GLOBAL OPTIONS
           
 -Effect overlay. Applies an image filter (scanlines, CRT) at the expense of performance.     
 
--Navigation bar mode : Hide or dimm navigation bar on android >=  4.2. You can select immersive mode on android >= 4.4 also. Disable  if you have problems on full screen modes.
-
--Scale beyond boundaries. Enable it to scale beyond screen boundaries if a fixed scale mode is selected. 
-
--Netplay port: Let you change port used on netplay.
-
--Netplay host delay frame: denotes the maximum number of frames MAME4droid will need to emulate at once to maintain synchonization due to actual network latency.
-
--Default MAME data: Restore MAME data to default values (cfg and nvram files). Use to fix problems with no input mappings or netplay problems (use on both peers) 
-
--TV overscan. Enable it to apply a 10 pct safe area to correct overscan issues on some TV sets.
-
 -Touch controller visible: Hide/Show the touch controller. Disable if you want to use an external controller like a keyboard or Wiimote.
 
 -Smooth scaling: Turn on bitmap filtering at the expense of performance.
 
 -Fullscreen: Enable full screen on portrait.
 
--Beam 2x: Sets the width of the vectors to 2x.
-
--Antialias: Enables antialiased line rendering for vector games.
-
--Flicker: Simulates a vector "flicker" effect, similar to a vector monitor that needs adjustment.
-
--Video render Mode: 
-
-    * SW: SW render, more accurate. Higher device compatibility.
-    * GL. Open GL ES 1.0 or upper. This should be your choice if it works fine for you. Faster rendering even with image filtering.
-
--Sound Engine. Set the audio Engine. AudioTrack for safety. OpenSL for performance and low latency on capable devices.
-
--Threaded Video render. Enable it to use a dedicate thread to do the video rendering (performance gain on double core devices). Disable if you have stuttering.
-
--Double buffer. Avoids flickering at the expenses of performance.
-
--Main thread priority. Set to default value unless you have problems. You need to restart.
-
--Sound Latency. Set the audio buffer. Set to high if you have sound glitches. Lower is better.
-
--Force OpenGL ES 1.0. Enable it to use the old OpenGL 1.0 render path. Select it if you have performance problems with 2.0 render path. 
-
--Debug Mode. Enable debug mode. Only for developers.
 
 FAVORITES
 ---------------
    
-You can mark (or unmark) your ROMs in the MAME4iOS game selection window as favorites by pressing the X button (you can also delete the GAME physical files). A favorite ROM appears in green in the game list. The favorites are saved to the file: Favorites.ini.
+You can mark (or unmark) your ROMs in the MAME4droid game selection window as favorites by pressing the X button (you can also delete the GAME physical files). A favorite ROM appears in green in the game list. The favorites are saved to the file: Favorites.ini.
 
 This file is compatible with the standard MAME Favorites.ini file format so you can copy this over from your PC version of MAME to the iOS version.
 
@@ -301,6 +320,8 @@ ARTWORK
 
 http://mameworld.info/mrdo/mame_artwork.php
 
+http://ouyaforum.com/showthread.php?9558-MAME4droid-DIY-artwork
+
 ORIGINAL CREDITS
 -------------------
 
@@ -311,8 +332,9 @@ PORT CREDITS
 - Port to Android by David Valdeita (Seleuco)
 
 DEVELOPMENT
-- 2014-12-10 version 1.6.1 JXD S7800b, Archos Gamepad 2 support. Improved immersive mode. Added option to delete nvram and cfg files. Added selectable save-load combo. Some bug fixes.
-- 2013-12-10 version 1.6.0 Added Peer to peer netplay multiplayer. Added kit kat immersive mode.
+- 2015-01-07 version 1.7   Added material desing for lollypop devices. Improved sdcard support for >= kitkat devices. Added intent to open ROM files directly. Improved overlay (scanlines) rendering. Added selectable true color rendering. Improved support for NVidia shield tablet and controller. Some bug fixes. 
+- 2014-01-10 version 1.6.1 JXD S7800b, Archos Gamepad 2 support. Improved immersive mode. Added option to delete nvram and cfg files. Added selectable save-load combo. Some bug fixes.
+- 2013-12-10 version 1.6.0 Added Peer to peer netplay multiplayer. Added kitkat immersive mode.
 - 2013-11-10 version 1.5.3 Up to 30% speed improvement on some 3d games like tekken on capable devices. Fixed some games like brapboys. Added overscan option. Fixed artwork bug on games like Popeye. 
 - 2013-11-03 version 1.5.1 NVidia Shield and Ouya improvements and bug fixes. Added new hires modes (now rom manager can be rendered at hires resolution). Fixed controller goes to sleep bug. 
 - 2013-10-06 version 1.5 Added Ouya support. Added option to fix vertical tilt on NVidia Shield. Added more scaling options, now scales beyond screen boundaries. Changed select button to 'X' button to be coherent with Android default buttons. Some bug fixes. 
@@ -376,7 +398,7 @@ MAME LICENSE
 
 http://mamedev.org
 
-Copyright © 1997-2014, Nicola Salmoria and the MAME team. All rights reserved. 
+Copyright © 1997-2015, Nicola Salmoria and the MAME team. All rights reserved. 
 
 Redistribution and use of this code or any derivative works are permitted provided
 that the following conditions are met: 

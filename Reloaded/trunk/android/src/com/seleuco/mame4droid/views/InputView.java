@@ -320,6 +320,8 @@ public class InputView extends ImageView {
 		
 		if(mm==null)return;
 		
+
+		
         ArrayList<InputValue> data = mm.getInputHandler().getAllInputData();
         
         if(data==null)return;
@@ -421,6 +423,6 @@ public class InputView extends ImageView {
             p2.setTextSize(30);
             if(mm.getInputHandler().getTiltSensor().isEnabled() && TiltSensor.str != null)
 			   canvas.drawText(TiltSensor.str, 100, 150, p2);
-        }	
+        }	        
 	}	
 }

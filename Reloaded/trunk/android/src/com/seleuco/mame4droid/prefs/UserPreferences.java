@@ -104,7 +104,7 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
     protected ListPreference mPrefFilterYGTE;
     protected ListPreference mPrefFilterYLTE;  
     protected EditTextPreference mPrefFilterkeyword;
-    protected ListPreference mPrefOverlayInt; 
+    //protected ListPreference mPrefOverlayInt; 
     protected ListPreference mPrefForcPX;
     protected ListPreference mPrefNetplayDelay;
     protected EditTextPreference mPrefNetplayPort;
@@ -166,7 +166,7 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 		
 		mPrefFilterkeyword = (EditTextPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_FILTER_KEYWORD);
 		
-		mPrefOverlayInt = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_OVERLAY_INTENSITY);
+		//mPrefOverlayInt = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_OVERLAY_INTENSITY);
 		mPrefForcPX = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GLOBAL_FORCE_PXASPECT);
 		
 		mPrefNetplayDelay = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_NETPLAY_DELAY);
@@ -188,8 +188,8 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 		while(i<n)
 		{			
 			i++;
-			cs[i] =Emulator.getValueStr(key2,i);
-			csv[i] = i+"";		
+			cs[i] =Emulator.getValueStr(key2,i-1);
+			csv[i] = (i-1)+"";		
 		}
 		lp.setEntries(cs);
 		lp.setEntryValues(csv);	
@@ -201,7 +201,8 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 		CharSequence[] csv = null;
 
 		String romDir = getPreferenceScreen().getSharedPreferences().getString(
-				PrefsHelper.PREF_ROMsDIR, "");
+				PrefsHelper.PREF_INSTALLATION_DIR, "");
+		
 		romDir += File.separator + "overlays";
 
 		File path = new File(romDir);
@@ -250,7 +251,8 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	        //mCheckBoxPreference.setSummary(sharedPreferences.getBoolean(key, false) ? "Disable this setting" : "Enable this setting");
 	        mPrefGlobalVideoRenderMode.setSummary("Current value is '" + mPrefGlobalVideoRenderMode.getEntry()+"'");
 			enable = Integer.valueOf(mPrefGlobalVideoRenderMode.getValue()).intValue() ==PrefsHelper.PREF_RENDER_GL;
-			getPreferenceScreen().findPreference(PrefsHelper.PREF_FORCE_GLES10).setEnabled(enable);        
+			getPreferenceScreen().findPreference(PrefsHelper.PREF_FORCE_ALTGLPATH).setEnabled(enable);
+			getPreferenceScreen().findPreference(PrefsHelper.PREF_RENDER_RGB).setEnabled(enable);
 	        
 	        mPrefResolution.setSummary("Current value is '" + mPrefResolution.getEntry()+"'");
 	        mPrefSpeed.setSummary("Current value is '" + mPrefSpeed.getEntry()+"'");
@@ -287,7 +289,7 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	        mPrefFilterYGTE.setSummary("Current value is '" + mPrefFilterYGTE.getEntry()+"'");
 	        mPrefFilterYLTE.setSummary("Current value is '" + mPrefFilterYLTE.getEntry()+"'");   
 	        mPrefFilterkeyword.setSummary("Current value is '" + mPrefFilterkeyword.getText()+"'"); 
-	        mPrefOverlayInt.setSummary("Current value is '" + mPrefOverlayInt.getEntry()+"'"); 
+	        //mPrefOverlayInt.setSummary("Current value is '" + mPrefOverlayInt.getEntry()+"'"); 
 	        mPrefForcPX.setSummary("Current value is '" + mPrefForcPX.getEntry()+"'");
 	        mPrefNetplayDelay.setSummary("Current value is '" + mPrefNetplayDelay.getEntry()+"'");
 	        mPrefNetplayPort.setSummary("Current value is '" + mPrefNetplayPort.getText()+"'"); 
@@ -336,7 +338,8 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	        {		        	
 				mPrefGlobalVideoRenderMode.setSummary("Current value is '" + mPrefGlobalVideoRenderMode.getEntry()+"'"); 
 				boolean enable = Integer.valueOf(mPrefGlobalVideoRenderMode.getValue()).intValue() ==PrefsHelper.PREF_RENDER_GL;
-				getPreferenceScreen().findPreference(PrefsHelper.PREF_FORCE_GLES10).setEnabled(enable);
+				getPreferenceScreen().findPreference(PrefsHelper.PREF_FORCE_ALTGLPATH).setEnabled(enable);
+				getPreferenceScreen().findPreference(PrefsHelper.PREF_RENDER_RGB).setEnabled(enable);
 	        }
 	        else if(key.equals(PrefsHelper.PREF_GLOBAL_RESOLUTION))
 	        {	
@@ -443,11 +446,13 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 		    {
 		    	mPrefFilterkeyword.setSummary("Current value is '" + mPrefFilterkeyword.getText()+"'");
 		    } 	
+	        /*
 		    else if(key.equals(PrefsHelper.PREF_OVERLAY_INTENSITY))
 		    {
 		    	mPrefOverlayInt.setSummary("Current value is '" + mPrefOverlayInt.getEntry()+"'");
 		    	Emulator.setOverlayFilterValue(PrefsHelper.PREF_OVERLAY_NONE);//forces reload
-		    } 	  
+		    } 
+		    */	  
 		    else if(key.equals(PrefsHelper.PREF_GLOBAL_FORCE_PXASPECT))
 		    {
 		    	mPrefForcPX.setSummary("Current value is '" + mPrefForcPX.getEntry()+"'");

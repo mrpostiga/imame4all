@@ -81,7 +81,7 @@
 	
 	<string-array name="pref_input_external_options">
 		<item>Keyboard or IME</item>
-		<item>GamePad Autodetection</item>
+		<item>Controller Autodetection</item>
 		<item>Original iCade</item>
 		<item>iCP, Gametel or iCade compatible</item>
 	</string-array>
@@ -251,10 +251,10 @@
 	</string-array>
 	
 	<string-array name="pref_sound_engine_options">
-	    <item>AudioTrack</item>
+	    <item>AudioTrack (good)</item>
 		<item>AudioTrack high latency (safe)</item>
 	    <item>OpenSL</item>
-        <item>OpenSL low latency (best)</item>	    					
+        <item>OpenSL low latency</item>	    					
 	</string-array>
 	<string-array name="pref_sound_engine_values">
 		<item>1</item>
@@ -386,7 +386,9 @@
     <string-array name="pref_px_options">
 	    <item>MAME (original arcade)</item>
 		<item>Forced pixel aspect(and resolution)</item>
-		<item>Forced pixel aspect (smart, fixed resolution)</item>																		
+		<!-- 
+		<item>Forced pixel aspect (smart, fixed resolution)</item>
+		-->																		
 	</string-array>
 	
 	<string-array name="pref_px_values">
@@ -428,8 +430,8 @@
 	
     <string-array name="pref_navbar_options">
 	    <item>Visible</item>
-		<item>Dimm or Hide</item>
-		<item>Immersive mode (Kitkat)</item>																
+		<item>Dimm or Hide (lower than kitkat)</item>
+		<item>Immersive mode </item>																
 	</string-array>
 	
 	<string-array name="pref_navbar_values">

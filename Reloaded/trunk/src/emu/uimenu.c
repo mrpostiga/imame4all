@@ -3803,7 +3803,18 @@ static void menu_select_game_populate(running_machine *machine, ui_menu *menu, s
 								  , NULL, MENU_FLAG_MULTILINE | MENU_FLAG_REDTEXT, NULL);
 #else
         char buf[512];
-        sprintf(buf, "No games found. After installing, place your MAME-titled (lower case) zipped roms in MAME4droid '%s' folder.",globalpath);
+        char rom_path[512] = {'\0'};
+        if(myosd_rompath[0]!='\0')
+        {
+             strcpy(rom_path,myosd_rompath);
+        }
+        else
+        {
+             strcpy(rom_path,globalpath);
+             strcat(rom_path,"/roms");
+        }
+
+        sprintf(buf, "No games found. After installing, place your MAME-titled (lower case) zipped roms in MAME4droid '%s' folder.",rom_path);
          
         ui_menu_item_append(menu, buf , NULL, MENU_FLAG_MULTILINE | MENU_FLAG_REDTEXT, NULL);
 #endif
@@ -4111,7 +4122,7 @@ static void menu_select_game_custom_render(running_machine *machine, ui_menu *me
 	#ifdef IOS
 			sprintf(&tempbuf[0][0], "MAME4iOS (0.139u1) 1.6 by David Valdeita (Seleuco). Game: %d/%d",MIN(myosd_last_game_selected+1,nroms), nroms);
 	#else
-			sprintf(&tempbuf[0][0], "MAME4droid (0.139u1) 1.6 by David Valdeita (Seleuco). Game: %d/%d",MIN(myosd_last_game_selected+1,nroms), nroms);
+			sprintf(&tempbuf[0][0], "MAME4droid (0.139u1) 1.7 by David Valdeita (Seleuco). Game: %d/%d",MIN(myosd_last_game_selected+1,nroms), nroms);
 	#endif
     }
     
