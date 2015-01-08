@@ -41,6 +41,7 @@ static pthread_mutex_t cond_mutex     = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t  condition_var   = PTHREAD_COND_INITIALIZER;
 #ifdef ANDROID
 static void draw_rgb565_draw_primitives(const render_primitive *primlist, void *dstdata, UINT32 width, UINT32 height, UINT32 pitch);
+static void draw_bgr888_draw_primitives(const render_primitive *primlist, void *dstdata, UINT32 width, UINT32 height, UINT32 pitch);
 #else
 static void draw_rgb555_draw_primitives(const render_primitive *primlist, void *dstdata, UINT32 width, UINT32 height, UINT32 pitch);
 #endif
@@ -114,12 +115,15 @@ void droid_ios_video_draw()
 
 	surfptr = (UINT8 *) myosd_screen15;
 
-	pitch = screen_width * 2;
+        pitch = screen_width * (myosd_rgb==1?4:2);
 
 	surfptr += ((vofs * pitch) + (hofs * bpp));
 
 #ifdef ANDROID
-	draw_rgb565_draw_primitives(currlist->head, surfptr, screen_width, screen_height, pitch / 2);
+        if(!myosd_rgb)
+	  draw_rgb565_draw_primitives(currlist->head, surfptr, screen_width, screen_height, pitch / 2);
+        else
+          draw_bgr888_draw_primitives(currlist->head, surfptr, screen_width, screen_height, pitch / 4);
 #else
 	draw_rgb555_draw_primitives(currlist->head, surfptr, screen_width, screen_height, pitch / 2);
 #endif
@@ -293,5 +297,16 @@ void droid_ios_video_render(render_target *our_target)
 #define DSTSHIFT_R			10
 #define DSTSHIFT_G			5
 #define DSTSHIFT_B			0
+
+#include "rendersw.c"
+
+#define FUNC_PREFIX(x)		draw_bgr888_##x
+#define PIXEL_TYPE			UINT32
+#define SRCSHIFT_R			0
+#define SRCSHIFT_G			0
+#define SRCSHIFT_B			0
+#define DSTSHIFT_R			0
+#define DSTSHIFT_G			8
+#define DSTSHIFT_B			16
 
 #include "rendersw.c"

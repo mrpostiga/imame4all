@@ -44,20 +44,16 @@
 
 package com.seleuco.mame4droid;
 
-import java.io.File;
-
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Shader;
-import android.graphics.drawable.BitmapDrawable;
-import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -73,18 +69,14 @@ import com.seleuco.mame4droid.input.ControlCustomizer;
 import com.seleuco.mame4droid.input.InputHandler;
 import com.seleuco.mame4droid.input.InputHandlerExt;
 import com.seleuco.mame4droid.input.InputHandlerFactory;
-import com.seleuco.mame4droid.views.FilterView;
+import com.seleuco.mame4droid.views.EmulatorViewSW;
 import com.seleuco.mame4droid.views.IEmuView;
 import com.seleuco.mame4droid.views.InputView;
-import com.seleuco.mame4droid.R;
-
-import android.app.*;
-import android.content.*;
 
 final class NotificationHelper
 {
         private static NotificationManager notificationManager = null;
-
+ 
 		public static void addNotification(Context ctx, String onShow, String title, String message)
         {
                 if(notificationManager == null)
@@ -114,9 +106,7 @@ public class MAME4droid extends Activity {
 	protected View emuView = null;
 
 	protected InputView inputView = null;
-	
-	protected FilterView filterView = null;
-	
+		
 	protected MainHelper mainHelper = null;
 	protected MenuHelper menuHelper = null;
 	protected PrefsHelper prefsHelper = null;
@@ -127,7 +117,7 @@ public class MAME4droid extends Activity {
 	protected FileExplorer fileExplore = null;
 	
 	protected NetPlay netPlay = null;
-	
+		
 	public NetPlay getNetPlay() {
 		return netPlay;
 	}
@@ -159,10 +149,6 @@ public class MAME4droid extends Activity {
 	public InputView getInputView() {
 		return inputView;
 	}
-
-	public FilterView getFilterView() {
-		return filterView;
-	}
 	
     public InputHandler getInputHandler() {
 		return inputHandler;
@@ -174,6 +160,7 @@ public class MAME4droid extends Activity {
         super.onCreate(savedInstanceState);
         
 		Log.d("EMULATOR", "onCreate "+this);
+		System.out.println("onCreate intent:"+getIntent().getAction());
 		
 		overridePendingTransition(0, 0);
 		getWindow().setWindowAnimations(0);
@@ -194,7 +181,34 @@ public class MAME4droid extends Activity {
         
         mainHelper.detectDevice();
         
+        inflateViews();
+        
+        Emulator.setMAME4droid(this);  
+        
+        mainHelper.updateMAME4droid();
+        
+        //mainHelper.checkNewViewIntent(this.getIntent());
+               
+        if(!Emulator.isEmulating())
+        {
+			if(prefsHelper.getROMsDIR()==null)
+			{	            
+				if(DialogHelper.savedDialog==DialogHelper.DIALOG_NONE)
+				   showDialog(DialogHelper.DIALOG_ROMs_DIR);                      
+			}
+			else
+			{
+				getMainHelper().ensureInstallationDIR(mainHelper.getInstallationDIR());
+				runMAME4droid();	
+			}
+        }
+    }
+    
+    public void inflateViews(){
+    	inputHandler.unsetInputListeners();
+    	
         Emulator.setPortraitFull(getPrefsHelper().isPortraitFullscreen());
+        
         boolean full = false;
 		if(prefsHelper.isPortraitFullscreen() && mainHelper.getscrOrientation() == Configuration.ORIENTATION_PORTRAIT)
 		{
@@ -207,18 +221,18 @@ public class MAME4droid extends Activity {
 		}        
                 
         FrameLayout fl = (FrameLayout)this.findViewById(R.id.EmulatorFrame);
-        
-        
-        //Coment to avoid BUG on 2.3.4 (reload instead)
+                
         Emulator.setVideoRenderMode(getPrefsHelper().getVideoRenderMode());
-        
-        this.getLayoutInflater().inflate(R.layout.netplayview, fl);
-        View v = this.findViewById(R.id.netplay_view);
-        if(v!=null)
-        	v.setVisibility(View.GONE);
         
         if(prefsHelper.getVideoRenderMode()==PrefsHelper.PREF_RENDER_SW)
         {
+        	/*
+        	if(emuView != null && (emuView instanceof EmulatorViewSW))
+        	{
+        		EmulatorViewSW s = (EmulatorViewSW)emuView;
+        		s.getHolder().removeCallback(s);
+        	}*/
+        		
         	this.getLayoutInflater().inflate(R.layout.emuview_sw, fl);
         	emuView = this.findViewById(R.id.EmulatorViewSW);        
         }
@@ -229,8 +243,7 @@ public class MAME4droid extends Activity {
         	else
         		this.getLayoutInflater().inflate(R.layout.emuview_gl, fl);
     		
-        	emuView = this.findViewById(R.id.EmulatorViewGL);
-        	
+        	emuView = this.findViewById(R.id.EmulatorViewGL);        	
         }
         
         if(full && prefsHelper.isPortraitTouchController())
@@ -244,97 +257,32 @@ public class MAME4droid extends Activity {
         ((IEmuView)emuView).setMAME4droid(this);
 
         inputView.setMAME4droid(this);
-        
-        Emulator.setMAME4droid(this);        
-            
+                          
         View frame = this.findViewById(R.id.EmulatorFrame);
 	    frame.setOnTouchListener(inputHandler);        	
-        	    
-        if((prefsHelper.getPortraitOverlayFilterValue()!=PrefsHelper.PREF_OVERLAY_NONE && mainHelper.getscrOrientation() == Configuration.ORIENTATION_PORTRAIT)
-        		||
-           (prefsHelper.getLandscapeOverlayFilterValue()!=PrefsHelper.PREF_OVERLAY_NONE && mainHelper.getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE))
-        {	
-        	String value;
-            
-            if(mainHelper.getscrOrientation() == Configuration.ORIENTATION_PORTRAIT)
-            	value = prefsHelper.getPortraitOverlayFilterValue();
-            else
-            	value = prefsHelper.getLandscapeOverlayFilterValue();
-           
-            if(!value.equals(PrefsHelper.PREF_OVERLAY_NONE))
-            {
-	        	getLayoutInflater().inflate(R.layout.filterview, fl);
-	            filterView = (FilterView)this.findViewById(R.id.FilterView);
-	            
-	            String fileName = getPrefsHelper().getROMsDIR()+File.separator+"overlays"+File.separator+value;
-	            
-	            Bitmap bmp = BitmapFactory.decodeFile(fileName);
-	            BitmapDrawable bitmapDrawable = new BitmapDrawable(bmp);
-	            bitmapDrawable.setTileModeXY(Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
-	            
-	            int alpha = 0;	            
-		   		switch(getPrefsHelper().getEffectOverlayIntensity())
-			    {
-			       case 1: alpha = 25;break;
-			       case 2: alpha = 50;break;
-			       case 3: alpha = 55;break;
-			       case 4: alpha = 60;break;
-			       case 5: alpha = 65;break;
-			       case 6: alpha = 70;break;
-			       case 7: alpha = 75;break;
-			       case 8: alpha = 80;break;
-			       case 9: alpha = 100;break;
-			       case 10: alpha = 125;break;			       
-                }
-            
-	            bitmapDrawable.setAlpha(alpha);
-	            filterView.setBackgroundDrawable(bitmapDrawable);
-	            
-	            //this.getEmuView().setAlpha(250);
-		            
-	            if(full && prefsHelper.isPortraitTouchController())
-	            {
-	            	FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams )filterView.getLayoutParams();
-	            	lp.gravity =  Gravity.TOP | Gravity.CENTER;
-	            }
-	            
-	            filterView.setMAME4droid(this);
-            }
-      
-        }
                 
-        inputHandler.setInputListeners();
-        
-        mainHelper.updateMAME4droid();
-               
-        if(!Emulator.isEmulating())
-        {
-			if(prefsHelper.getROMsDIR()==null)
-			{	            
-				if(DialogHelper.savedDialog==DialogHelper.DIALOG_NONE)
-				   showDialog(DialogHelper.DIALOG_ROMs_DIR);                      
-			}
-			else
-			{
-				getMainHelper().ensureROMsDir(prefsHelper.getROMsDIR());
-				runMAME4droid();	
-			}
-        }
+        inputHandler.setInputListeners();   	
     }
         
     public void runMAME4droid(){  	
+    	    	
 	    getMainHelper().copyFiles();
 	    getMainHelper().removeFiles();
-    	Emulator.emulate(mainHelper.getLibDir(),prefsHelper.getROMsDIR());	
+	    	    
+    	Emulator.emulate(mainHelper.getLibDir(),mainHelper.getInstallationDIR());    	
     }
      
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
-		overridePendingTransition(0 , 0);
-		this.getMainHelper().updateMAME4droid();
-		//this.getMainHelper().reload();
-		overridePendingTransition(0 , 0);
+				
+		overridePendingTransition(0, 0);
+		
+		inflateViews();
+
+		getMainHelper().updateMAME4droid();
+		
+		overridePendingTransition(0, 0);
 	}
 
 	//MENU STUFF
@@ -379,8 +327,9 @@ public class MAME4droid extends Activity {
 	//LIVE CYCLE
 	@Override
 	protected void onResume() {
-		Log.d("EMULATOR", "onResume");				
+		Log.d("EMULATOR", "onResume "+this);				
 		super.onResume();
+				
 		if(prefsHelper!=null)
 		   prefsHelper.resume();
 				
@@ -396,12 +345,12 @@ public class MAME4droid extends Activity {
 		}
 		
 		NotificationHelper.removeNotification();
-		//System.out.println("OnResume");
+		//System.out.println("OnResume");		 
 	}
 	
 	@Override
 	protected void onPause() {
-		Log.d("EMULATOR", "onPause");
+		Log.d("EMULATOR", "onPause "+this);
 		super.onPause();
 		if(prefsHelper!=null)
 		   prefsHelper.pause();
@@ -426,7 +375,7 @@ public class MAME4droid extends Activity {
 	
 	@Override
 	protected void onStart() {
-		Log.d("EMULATOR", "onStart");		
+		Log.d("EMULATOR", "onStart "+this);		
 		super.onStart();
 		try{InputHandlerExt.resetAutodetected();}catch(Error e){};		
 		//System.out.println("OnStart");
@@ -434,7 +383,7 @@ public class MAME4droid extends Activity {
 
 	@Override
 	protected void onStop() {
-		Log.d("EMULATOR", "onStop");
+		Log.d("EMULATOR", "onStop "+this);
 		super.onStop();
 		//System.out.println("OnStop");
 	}
@@ -442,7 +391,9 @@ public class MAME4droid extends Activity {
 	@Override
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
-		Log.d("EMULATOR", "onNewIntent");
+		Log.d("EMULATOR", "onNewIntent "+this);
+		System.out.println("onNewIntent action:"+intent.getAction() );
+		mainHelper.checkNewViewIntent(intent);
 	}
 
 	@Override

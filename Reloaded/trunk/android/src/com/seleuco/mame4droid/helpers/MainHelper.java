@@ -49,17 +49,20 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.media.AudioManager;
 import android.net.Uri;
@@ -80,7 +83,6 @@ import com.seleuco.mame4droid.input.ControlCustomizer;
 import com.seleuco.mame4droid.input.InputHandler;
 import com.seleuco.mame4droid.prefs.GameFilterPrefs;
 import com.seleuco.mame4droid.prefs.UserPreferences;
-import com.seleuco.mame4droid.views.FilterView;
 import com.seleuco.mame4droid.views.IEmuView;
 import com.seleuco.mame4droid.views.InputView;
 
@@ -115,8 +117,9 @@ public class MainHelper {
 	public String getLibDir(){	
 		String cache_dir, lib_dir;
 		try {
-			cache_dir = mm.getCacheDir().getCanonicalPath();				
-			lib_dir = cache_dir.replace("cache", "lib");
+			//cache_dir = mm.getCacheDir().getCanonicalPath();				
+			//lib_dir = cache_dir.replace("cache", "lib");
+			lib_dir = mm.getApplicationInfo().nativeLibraryDir;
 		} catch (Exception e) {
 			e.printStackTrace();
 			lib_dir = "/data/data/com.seleuco.mame4droid/lib";
@@ -125,25 +128,34 @@ public class MainHelper {
 	}
 	
 
-	public String getDefaultROMsDIR()
+	public String getInstallationDIR()
 	{
 		String res_dir = null;
+		
+		if(mm.getPrefsHelper().getInstallationDIR()!=null)
+			return mm.getPrefsHelper().getInstallationDIR();
 				
-		try {
-			res_dir = Environment.getExternalStorageDirectory().getCanonicalPath()+"/ROMs/MAME4droid/";
-		} catch (IOException e) {
-			
-			e.printStackTrace();
-			res_dir = "/sdcard/ROMs/MAME4droid/";
-		}
-	
+		//android.os.Debug.waitForDebugger();
+	    String state = Environment.getExternalStorageState();
+	    if (Environment.MEDIA_MOUNTED.equals(state)) {
+	    	res_dir = Environment.getExternalStorageDirectory().getAbsolutePath()+"/ROMs/MAME4droid/";  	    	
+	    }
+	    else
+	    	res_dir = mm.getFilesDir().getAbsolutePath()+"/MAME4droid/";
+	    	    
+	    //res_dir = mm.getExternalFilesDir(null).getAbsolutePath()+"/MAME4droid/";
+		//File[] f = mm.getExternalFilesDirs(null);
+		//res_dir =  f[f.length-1].getAbsolutePath();
+	    
+	    mm.getPrefsHelper().setInstallationDIR(res_dir);
+			    		 			
 		return res_dir;
 	}
 
 	
-	public boolean ensureROMsDir(String roms_dir){
+	public boolean ensureInstallationDIR(String dir){
 				
-		File res_dir = new File(roms_dir);
+		File res_dir = new File(dir);
 		
 		boolean created = false;
 		
@@ -151,7 +163,7 @@ public class MainHelper {
 		{
 			if(!res_dir.mkdirs())
 			{
-				mm.getDialogHelper().setErrorMsg("Can't find/create:\n '"+roms_dir+"'\nIs it writeable?");
+				mm.getDialogHelper().setErrorMsg("Can't find/create:\n '"+dir+"'\nIs it writeable?");
 				mm.showDialog(DialogHelper.DIALOG_ERROR_WRITING);
 				return false;				
 			}
@@ -161,7 +173,7 @@ public class MainHelper {
 			}
 		}
 		
-		String str_sav_dir = roms_dir+"saves/";
+		String str_sav_dir = dir+"saves/";
 		File sav_dir = new File(str_sav_dir);
 		if(sav_dir.exists() == false)
 		{
@@ -175,8 +187,9 @@ public class MainHelper {
 		}
 		
 		if(created )
-		{			
-			mm.getDialogHelper().setInfoMsg("Created: \n'"+roms_dir+"'\nCopy or move your zipped ROMs under './MAME4droid/roms' directory!.\n\nMAME4droid Reloaded uses only 0.139 MAME romset.\n\nYou may have to completely turn off your device to see new folders. You might need to unplug.");
+		{		
+            String rompath = mm.getPrefsHelper().getROMsDIR() != null ? mm.getPrefsHelper().getROMsDIR() : mm.getMainHelper().getInstallationDIR()+"roms"; 
+			mm.getDialogHelper().setInfoMsg("Created: '"+dir+" to store save states, cfg files and MAME assets.'\n\nBeware, copy or move your zipped ROMs under '"+ rompath +"' directory!.\n\nMAME4droid 0.139 uses only 0.139 MAME romset.\n\nYou may have to completely turn off your device to see new folders. You might need to unplug also.");
 			mm.showDialog(DialogHelper.DIALOG_INFO);
 		}
 						
@@ -200,10 +213,10 @@ public class MainHelper {
 		{			
 			if(mm.getPrefsHelper().isDefaultData())
 			{
-				String roms_dir = mm.getPrefsHelper().getROMsDIR();
+				String dir = mm.getMainHelper().getInstallationDIR();
 				
-				File f1 = new File(roms_dir + File.separator + "cfg/");
-				File f2 = new File(roms_dir + File.separator + "nvram/");
+				File f1 = new File(dir + File.separator + "cfg/");
+				File f2 = new File(dir + File.separator + "nvram/");
 				
 				deleteRecursive(f1);
 				deleteRecursive(f2);
@@ -221,12 +234,13 @@ public class MainHelper {
 		
 		try {
 			
-			String roms_dir = mm.getPrefsHelper().getROMsDIR();
+			String roms_dir = mm.getMainHelper().getInstallationDIR();
 			
 			File fm = new File(roms_dir + File.separator + "saves/" + MAGIC_FILE);
 			if(fm.exists())
 				return;
 			
+			fm.mkdirs();			
 			fm.createNewFile();
 			
 			// Create a ZipInputStream to read the zip file
@@ -301,10 +315,13 @@ public class MainHelper {
 	}
 	
 	public void reload() {
-
-	    System.out.println("RELOAD!!!!!");	    
+		
+		if(true)
+		 return;
+	    System.out.println("RELOAD!!!!!");	   
 		
 		Intent intent = mm.getIntent();
+		System.out.println("RELOAD intent:"+intent.getAction());
 
 	    mm.overridePendingTransition(0 , 0);
 	    intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
@@ -315,7 +332,7 @@ public class MainHelper {
 	    mm.overridePendingTransition(0, 0);
 	}
 	
-	public boolean updateOverlayFilter(){
+	public void updateOverlayFilter(){
 		
         String value = PrefsHelper.PREF_OVERLAY_NONE;        
         
@@ -327,28 +344,30 @@ public class MainHelper {
 		if(Emulator.getOverlayFilterValue() != value)
 		{
 			Emulator.setOverlayFilterValue(value);
-			reload();				
-			return true; 
+			Emulator.setFilterBitmap(null);
+            if(!value.equals(PrefsHelper.PREF_OVERLAY_NONE))
+            {	            
+	            String fileName = mm.getMainHelper().getInstallationDIR()+File.separator+"overlays"+File.separator+value;
+	            
+	            Bitmap bmp = BitmapFactory.decodeFile(fileName);
+	            Emulator.setFilterBitmap(bmp);	           
+            }
 		}
 		else
 		{
 			Emulator.setOverlayFilterValue(value);
-		    return false;
 		}    					
 	}
 
-	public boolean updateVideoRender (){
+	public void updateVideoRender (){
 		
 		if(Emulator.getVideoRenderMode() != mm.getPrefsHelper().getVideoRenderMode())
 		{						
-			Emulator.setVideoRenderMode(mm.getPrefsHelper().getVideoRenderMode());
-			reload();				
-			return true;		
+			Emulator.setVideoRenderMode(mm.getPrefsHelper().getVideoRenderMode());		
 		}
 		else
 		{
 		    Emulator.setVideoRenderMode(mm.getPrefsHelper().getVideoRenderMode());
-		    return false;
 		}    					
     }
 	
@@ -363,24 +382,17 @@ public class MainHelper {
 			&& mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_PORTRAIT)
 			{
 		        LayoutParams lp  = (LayoutParams) mm.getEmuView().getLayoutParams();
-				View v =  mm.findViewById(R.id.EmulatorFrame);
-				LayoutParams lp2 = null;
-				if(mm.getFilterView()!=null)
-                   lp2 = (LayoutParams)mm.getFilterView().getLayoutParams();
-			    if(mm.getPrefsHelper().isPortraitTouchController())
+				View v =  mm.findViewById(R.id.EmulatorFrame);			    
+				if(mm.getPrefsHelper().isPortraitTouchController())
 			    {					
 			       v.setBackgroundDrawable(mm.getResources().getDrawable(R.drawable.border_view));
 			       lp.setMargins(15, 15, 15, 15);
-			       if(lp2!=null)
-			    	 lp2.setMargins(15, 15, 15, 15);
 			    }   
 			    else
 			    {
 			    	v.setBackgroundDrawable(null);
 			    	v.setBackgroundColor(mm.getResources().getColor(R.color.emu_back_color));
 			    	lp.setMargins(0, 0, 0, 0);
-				    if(lp2!=null)
-					  lp2.setMargins(0, 0, 0, 0);
 			    }			    
 			}		   	
 	}
@@ -416,6 +428,9 @@ public class MainHelper {
 		Emulator.setValue(Emulator.VFLICKER,mm.getPrefsHelper().isVectorFlicker() ? 1 : 0);
 		
 		Emulator.setValue(Emulator.NETPLAY_DELAY,mm.getPrefsHelper().getNetplayDelay());
+		
+		Emulator.setValue(Emulator.RENDER_RGB,
+				mm.getPrefsHelper().isRenderRGB() && mm.getPrefsHelper().getVideoRenderMode()!= PrefsHelper.PREF_RENDER_SW ? 1 : 0);
 		
 		GameFilterPrefs gfp = mm.getPrefsHelper().getGameFilterPrefs();
 		boolean dirty = gfp.readValues();
@@ -460,18 +475,15 @@ public class MainHelper {
 			return;
 		}
 		
-		if(updateVideoRender())return;
-		if(updateOverlayFilter())return;
+		//updateVideoRender();
+		Emulator.setVideoRenderMode(mm.getPrefsHelper().getVideoRenderMode());	
+
+		updateOverlayFilter();
 		
-		if(Emulator.isPortraitFull() != mm.getPrefsHelper().isPortraitFullscreen())
-		{						
-			Emulator.setPortraitFull(true);
-			reload();				
-			return;		
-		}
+		if(Emulator.isPortraitFull() != mm.getPrefsHelper().isPortraitFullscreen())								
+            mm.inflateViews();
 		
 		View emuView =  mm.getEmuView();
-		FilterView filterView = mm.getFilterView();
 
 		InputView inputView =  mm.getInputView();
 		InputHandler inputHandler = mm.getInputHandler();
@@ -503,18 +515,16 @@ public class MainHelper {
 		{
 				        
 			((IEmuView)emuView).setScaleType(prefsHelper.getPortraitScaleMode());
-			if(filterView!=null)
-			   filterView.setScaleType(mm.getPrefsHelper().getPortraitScaleMode());
 
 			Emulator.setFrameFiltering(prefsHelper.isPortraitBitmapFiltering());
 			
 			if(state == InputHandler.STATE_SHOWING_CONTROLLER && !prefsHelper.isPortraitTouchController())
-				{reload();return;}
-			    //inputHandler.changeState();
+			   //{reload();return;}
+			   inputHandler.changeState();
 				
 			if(state == InputHandler.STATE_SHOWING_NONE && prefsHelper.isPortraitTouchController())
-			    {reload();return;}
-			    //inputHandler.changeState();	
+			   //{reload();return;}
+			   inputHandler.changeState();	
 			
 			state = mm.getInputHandler().getInputHandlerState();
 			
@@ -551,16 +561,16 @@ public class MainHelper {
 		else
 		{
 			((IEmuView)emuView).setScaleType(mm.getPrefsHelper().getLandscapeScaleMode());
-			if(filterView!=null)
-			   filterView.setScaleType(mm.getPrefsHelper().getLandscapeScaleMode());
 			
 			Emulator.setFrameFiltering(mm.getPrefsHelper().isLandscapeBitmapFiltering());
 			
 			if(state == InputHandler.STATE_SHOWING_CONTROLLER && !prefsHelper.isLandscapeTouchController())
-			    {reload();return;}//;inputHandler.changeState();
+			   //{reload();return;}
+			   inputHandler.changeState();
 			
 			if(state == InputHandler.STATE_SHOWING_NONE && prefsHelper.isLandscapeTouchController())
-			    {reload();return;}//;inputHandler.changeState();	
+			   //{reload();return;}
+			   inputHandler.changeState();	
 			
 			state = mm.getInputHandler().getInputHandlerState();
 			
@@ -649,16 +659,9 @@ public class MainHelper {
 		inputView.requestLayout();
 				
 		emuView.requestLayout();
-		if(filterView!=null)
-		   filterView.requestLayout();
 		
 		inputView.invalidate();
 		emuView.invalidate();
-		if(filterView!=null)
-		   filterView.invalidate();
-		
-		if(filterView!=null)
-			filterView.setVisibility(Emulator.getValue(Emulator.IN_MAME)==1 ? View.VISIBLE : View.INVISIBLE);
 	}
 	
 	public void showWeb(){		
@@ -920,4 +923,37 @@ public class MainHelper {
 			deviceDetected = DEVICE_AGAMEPAD2;
 		}
 	}
+	
+	public void restartApp(){
+		Intent oldintent = mm.getIntent();
+		//System.out.println("OLD INTENT:"+oldintent.getAction());
+	    PendingIntent intent = PendingIntent.getActivity(mm.getBaseContext(), 0, new Intent(oldintent), oldintent.getFlags());
+		AlarmManager manager = (AlarmManager) mm.getSystemService(Context.ALARM_SERVICE);
+		manager.set(AlarmManager.RTC, System.currentTimeMillis() + 250, intent);
+        android.os.Process.killProcess(android.os.Process.myPid());  	
+	}
+	
+	public void checkNewViewIntent(Intent intent){
+	    if(intent.getAction() == Intent.ACTION_VIEW && Emulator.isEmulating()) 
+	    {
+	       Uri uri = intent.getData();
+	       java.io.File f = new java.io.File(uri.getPath());
+	       String name = f.getName();
+	       String romName = Emulator.getValueStr(Emulator.ROM_NAME);
+	       //System.out.print("Intent view: "+name + " "+ romName);
+	       if(romName!=null && name.equals(romName))
+	    	   return;	       
+	       mm.setIntent(intent);
+			new Thread(new Runnable() {
+                public void run() {
+         	       try {
+         				Thread.sleep(500);
+         			   } catch (InterruptedException e) {			
+         				e.printStackTrace();
+         			   }
+         		       restartApp();
+                }
+            }).start(); 
+	    }	
+	}	
 }

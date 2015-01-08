@@ -61,7 +61,6 @@ import com.seleuco.mame4droid.helpers.PrefsHelper;
 
 public class EmulatorViewSW extends SurfaceView implements Callback, IEmuView{
 	
-
 	protected int scaleType = PrefsHelper.PREF_ORIGINAL;
 	
 	protected MAME4droid mm = null;
@@ -95,7 +94,7 @@ public class EmulatorViewSW extends SurfaceView implements Callback, IEmuView{
 	}
 	
 	protected void init(){
-		this.getHolder().addCallback(this);		
+		this.getHolder().addCallback(this);			
 		this.setFocusable(true);
 		this.setFocusableInTouchMode(true);
 		this.requestFocus();
@@ -127,13 +126,13 @@ public class EmulatorViewSW extends SurfaceView implements Callback, IEmuView{
 	//@Override
 	public void surfaceCreated(SurfaceHolder holder) {
 		//Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
-		//Log.d("Thread Video", "Surface created "+holder);	
+		Log.d("Thread Video", "Surface created ****"+holder+ "**** "+this);	
 		Emulator.setHolder(holder);		
 	}
 
 	//@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
-		//Log.d("Thread Video", "Surface destroyed "+holder);
+		Log.d("Thread Video", "Surface destroyed *****"+holder+"*** "+this);
 		Emulator.setHolder(null);		
 	}
 	

@@ -213,7 +213,7 @@ file_error osd_open(const char *path, UINT32 openflags, osd_file **file, UINT64 
 
 	*filesize = (UINT64)st.st_size;
 #ifdef ANDROID
-	__android_log_print(ANDROID_LOG_INFO, "mame4", "Leido %s %uld",path,(unsigned int)filesize);
+	//__android_log_print(ANDROID_LOG_INFO, "mame4", "Leido %s %uld",path,(unsigned int)filesize);
 #endif
 error:
 	// cleanup

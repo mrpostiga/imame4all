@@ -58,7 +58,8 @@ import com.seleuco.mame4droid.prefs.GameFilterPrefs;
 
 public class PrefsHelper implements OnSharedPreferenceChangeListener
 {
-	final static public String PREF_ROMsDIR = "PREF_ROMsDIR";
+	final static public String PREF_ROMsDIR = "PREF_ROMsDIR_2";
+	final static public String PREF_INSTALLATION_DIR = "PREF_INSTALLATION_DIR";
 	
 	final static public String PREF_GLOBAL_VIDEO_RENDER_MODE = "PREF_GLOBAL_VIDEO_RENDER_MODE_2";
 	final static public String PREF_GLOBAL_AUTORES = "PREF_GLOBAL_AUTORES";
@@ -75,7 +76,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String PREF_GLOBAL_AUTOSAVE = "PREF_GLOBAL_AUTOSAVE";
 	final static public String PREF_GLOBAL_DEBUG = "PREF_GLOBAL_DEBUG";
 	final static public String PREF_GLOBAL_IDLE_WAIT = "PREF_GLOBAL_IDLE_WAIT"; 
-	final static public String PREF_GLOBAL_FORCE_PXASPECT = "PREF_GLOBAL_FORCE_PXASPECT_2";
+	final static public String PREF_GLOBAL_FORCE_PXASPECT = "PREF_GLOBAL_FORCE_PXASPECT_3";
 	final static public String PREF_GLOBAL_HISCORE = "PREF_GLOBAL_HISCORE";
 	final static public String PREF_GLOBAL_WARN_ON_EXIT = "PREF_GLOBAL_WARN_ON_EXIT";
 	final static public String PREF_GLOBAL_SUSPEND_NOTIFICATION = "PREF_GLOBAL_SUSPEND_NOTIFICATION";
@@ -107,7 +108,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String  PREF_STICK_TYPE = "PREF_STICK_TYPE_2";
 	final static public String  PREF_NUMBUTTONS = "PREF_NUMBUTTONS_2";
 	final static public String  PREF_INPUT_EXTERNAL = "PREF_INPUT_EXTERNAL_2";
-	final static public String  PREF_AUTOMAP_OPTIONS = "PREF_AUTOMAP_OPTIONS_3";
+	final static public String  PREF_AUTOMAP_OPTIONS = "PREF_AUTOMAP_OPTIONS_4";
 	final static public String  PREF_ANALOG_DZ = "PREF_ANALOG_DZ";
 	final static public String  PREF_GAMEPAD_DZ = "PREF_GAMEPAD_DZ";
 	final static public String  PREF_VIBRATE = "PREF_VIBRATE";
@@ -131,9 +132,10 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String PREF_THREADED_VIDEO ="PREF_THREADED_VIDEO";
 	final static public String PREF_DOUBLE_BUFFER ="PREF_DOUBLE_BUFFER";
 
-	final static public String  PREF_FORCE_GLES10 = "PREF_FORCE_GLES10";
+	final static public String  PREF_FORCE_ALTGLPATH = "PREF_FORCE_ALTGLPATH";
 	final static public String  PREF_PXASP1 = "PREF_PXASP1";
 	final static public String  PREF_SAVELOAD_COMBO = "PREF_SAVELOAD_COMBO";
+	final static public String  PREF_RENDER_RGB = "PREF_RENDER_RGB";
 	
 	final static public String  PREF_BEAM2X = "PREF_BEAM2X";
 	final static public String  PREF_ANTIALIAS = "PREF_ANTIALIAS";
@@ -149,7 +151,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String  PREF_FILTER_CATEGORY = "PREF_FILTER_CATEGORY";
 	final static public String  PREF_FILTER_KEYWORD = "PREF_FILTER_KEYWORD";	
 	
-	final static public String  PREF_OVERLAY_INTENSITY = "PREF_OVERLAY_INTENSITY";
+	//final static public String  PREF_OVERLAY_INTENSITY = "PREF_OVERLAY_INTENSITY";
 	
 	final static public String  PREF_GLOBAL_NAVBAR_MODE = "PREF_GLOBAL_NAVBAR_MODE";
 	final static public String  PREF_GLOBAL_SCALE_BEYOND = "PREF_GLOBAL_SCALE_BEYOND";
@@ -268,7 +270,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	}
 		
 	public boolean isPortraitBitmapFiltering(){
-		return getSharedPreferences().getBoolean(PREF_PORTRAIT_BITMAP_FILTERING,false);
+		return getSharedPreferences().getBoolean(PREF_PORTRAIT_BITMAP_FILTERING,true);
 	}
 	
 	public boolean isPortraitFullscreen(){
@@ -280,7 +282,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	}
 		
 	public boolean isLandscapeBitmapFiltering(){
-		return getSharedPreferences().getBoolean(PREF_LANDSCAPE_BITMAP_FILTERING,false);
+		return getSharedPreferences().getBoolean(PREF_LANDSCAPE_BITMAP_FILTERING,true);
 	}
 	
 	public String getDefinedKeys(){
@@ -338,7 +340,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	}
 	
 	public boolean isNotifyWhenSuspend(){
-		return getSharedPreferences().getBoolean(PREF_GLOBAL_SUSPEND_NOTIFICATION,true);
+		return getSharedPreferences().getBoolean(PREF_GLOBAL_SUSPEND_NOTIFICATION,false);
 	}
 
 	public int getFrameSkipValue(){
@@ -439,7 +441,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	}
 	
 	public int getAutomapOptions(){
-		return Integer.valueOf(getSharedPreferences().getString(PREF_AUTOMAP_OPTIONS,"2")).intValue();	
+		return Integer.valueOf(getSharedPreferences().getString(PREF_AUTOMAP_OPTIONS,"3")).intValue();	
 	}
 	
 	public int getAnalogDZ(){
@@ -468,6 +470,17 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 		editor.putString(PREF_ROMsDIR, value);
 		editor.commit();
 	}
+	
+	public String getInstallationDIR(){
+		return getSharedPreferences().getString(PREF_INSTALLATION_DIR,null);
+	}
+	
+	public void setInstallationDIR(String value){
+		//PreferenceManager.getDefaultSharedPreferences(this);
+		SharedPreferences.Editor editor =  getSharedPreferences().edit();
+		editor.putString(PREF_INSTALLATION_DIR, value);
+		editor.commit();
+	}	
 	
 	public String getDefinedControlLayoutLand(){
 		return getSharedPreferences().getString(PREF_DEFINED_CONTROL_LAYOUT,null);
@@ -545,8 +558,12 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 		return getSharedPreferences().getBoolean(PREF_DOUBLE_BUFFER,true);
 	}
 	
-	public boolean isForcedGLES10(){
-		return getSharedPreferences().getBoolean(PREF_FORCE_GLES10,false);
+	public boolean isAltGLPath(){
+		return getSharedPreferences().getBoolean(PREF_FORCE_ALTGLPATH,false);
+	}
+	
+	public boolean isRenderRGB(){
+		return getSharedPreferences().getBoolean(PREF_RENDER_RGB,false);
 	}
 	
 	public boolean isPlayerXasPlayer1(){
@@ -569,9 +586,9 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 		return getSharedPreferences().getBoolean(PREF_FLICKER,false);
 	}	
 	
-	public int getEffectOverlayIntensity(){
+	/*public int getEffectOverlayIntensity(){
 		return Integer.valueOf(getSharedPreferences().getString(PREF_OVERLAY_INTENSITY,"3")).intValue();
-	}	
+	}*/	
 
 	public int getNavBarMode(){		
 		

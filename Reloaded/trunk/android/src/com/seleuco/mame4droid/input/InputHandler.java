@@ -1360,13 +1360,18 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	}
 	
 	public void unsetInputListeners(){ 
+	   if(mm==null)
+		   return;
+	   if(mm.getInputView()==null)
+		   return;
+	   if(mm.getEmuView()==null)
+		   return;
+		
 	   mm.getEmuView().setOnKeyListener(null);
 	   mm.getEmuView().setOnTouchListener(null);
 		                     
 	   mm.getInputView().setOnTouchListener(null);
-	   mm.getInputView().setOnKeyListener(null);
-		   
-	   //mm.findViewById(R.id.EmulatorFrame).setOnTouchListener(this);;
+	   mm.getInputView().setOnKeyListener(null);		   
 	}	
 	
 	public boolean isControllerDevice(){

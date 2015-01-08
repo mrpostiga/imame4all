@@ -169,12 +169,12 @@ int main(int argc, char **argv)
     
 	myosd_init();
     
-	while(1)
+	while( 1 )
 	{
 		droid_ios_setup_video();
         
-        // cli_execute does the heavy lifting; if we have osd-specific options, we
-        // would pass them as the third parameter here
+                // cli_execute does the heavy lifting; if we have osd-specific options, we
+                // would pass them as the third parameter here
 		n=0;
 		args[n]= (char *)"mame4x";n++;
 
@@ -196,56 +196,78 @@ int main(int argc, char **argv)
 		args[n]= (char *)"-nocoinlock"; n++;
 
                 //args[n]= (char *)"-reload"; n++;
-        
-        if(isGridlee){
-            args[n]= (char *)"gridlee"; n++;
-        }
-        
-        netplay_t *handle = netplay_get_handle();
-        if(handle->has_connection)
-        {
-            if(!handle->has_begun_game)
-            {
-                args[n]= (char *)handle->game_name; n++;
-            }
-            else
-            {
-                char buf[256];
-                sprintf(buf,"%s not found!",handle->game_name);
-                handle->netplay_warn(buf);
-                handle->has_begun_game = 0;
-                handle->has_connection = 0;
-            }
-        }
+
+                if(myosd_rompath[0]!='\0')
+                {
+                   args[n]= (char *)"-rompath"; n++;args[n]=myosd_rompath; n++;
+                }
+
+		if(isGridlee){
+		    args[n]= (char *)"gridlee"; n++;
+		}
+		
+		netplay_t *handle = NULL;
+                handle = netplay_get_handle();
+		
+                if(handle->has_connection)
+		{
+		    if(!handle->has_begun_game)
+		    {
+		        args[n]= (char *)handle->game_name; n++;
+		    }
+		    else
+		    {
+		        char buf[256];
+		        sprintf(buf,"%s not found!",handle->game_name);
+		        handle->netplay_warn(buf);
+		        handle->has_begun_game = 0;
+		        handle->has_connection = 0;
+		    }
+		}
+                else
+                {
+                    if(myosd_game[0]!='\0')
+                    {
+                       args[n]=myosd_game; n++;
+                       strcpy(myosd_selected_game,myosd_game);
+                    }
+                }
+		        
+		if(myosd_reset_filter==0)
+		{
+		    f=fopen("mame4x.cfg","r");
+		    if (f) {
+		        fscanf(f,"%d",&myosd_last_game_selected);
+		        fclose(f);
+		    }
+		}
+		else
+		{
+		    myosd_last_game_selected = 0;
+		    f=fopen("mame4x.cfg","w");
+		    if (f) {
+		        fprintf(f,"%d",myosd_last_game_selected);
+		        fclose(f);
+		        sync();
+		    }
+		    myosd_reset_filter = 0;
+		}
+		
+		ret = cli_execute(n, args, droid_mame_options);
                 
-        if(myosd_reset_filter==0)
-        {
-            f=fopen("mame4x.cfg","r");
-            if (f) {
-                fscanf(f,"%d",&myosd_last_game_selected);
-                fclose(f);
-            }
-        }
-        else
-        {
-            myosd_last_game_selected = 0;
-            f=fopen("mame4x.cfg","w");
-            if (f) {
-                fprintf(f,"%d",myosd_last_game_selected);
-                fclose(f);
-                sync();
-            }
-            myosd_reset_filter = 0;
-        }
-        
-        ret = cli_execute(n, args, droid_mame_options);
-        
-        f=fopen("mame4x.cfg","w");
-        if (f) {
-            fprintf(f,"%d",myosd_last_game_selected);
-            fclose(f);
-            sync();
-        }
+                handle = netplay_get_handle();
+		if(myosd_game[0]!='\0' && !handle->has_connection)
+		{ 
+                    myosd_inGame = 0;
+		    break;
+		}
+
+		f=fopen("mame4x.cfg","w");
+		if (f) {
+		    fprintf(f,"%d",myosd_last_game_selected);
+		    fclose(f);
+		    sync();
+		}
 	}
     
 	myosd_deinit();

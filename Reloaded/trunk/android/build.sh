@@ -1,1 +1,1 @@
-../android-ndk-r9/ndk-build
+../android-ndk-r10c/ndk-build
