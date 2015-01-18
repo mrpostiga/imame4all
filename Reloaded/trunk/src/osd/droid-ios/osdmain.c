@@ -197,6 +197,11 @@ int main(int argc, char **argv)
 
                 //args[n]= (char *)"-reload"; n++;
 
+                if(myosd_bios[0]!='\0')
+                {
+                   args[n]= (char *)"-bios"; n++;args[n]=myosd_bios; n++;
+                }
+
                 if(myosd_rompath[0]!='\0')
                 {
                    args[n]= (char *)"-rompath"; n++;args[n]=myosd_rompath; n++;
@@ -281,6 +286,9 @@ int main(int argc, char **argv)
 
 void osd_init(running_machine *machine)
 {
+#ifdef ANDROID
+	__android_log_print(ANDROID_LOG_INFO, "mame4", "osd_init");
+#endif
 	//add_exit_callback(machine, osd_exit);
 	machine->add_notifier(MACHINE_NOTIFY_EXIT, osd_exit);
 
@@ -317,9 +325,15 @@ void osd_init(running_machine *machine)
 //void osd_exit(running_machine *machine)
 static void osd_exit(running_machine &machine)
 {
+#ifdef ANDROID
+	__android_log_print(ANDROID_LOG_INFO, "mame4", "osd_exit");
+#endif
 	if (our_target != NULL)
 		render_target_free(our_target);
 	our_target = NULL;
+        
+        myosd_inGame = 0;
+        printf("osd_exit...\n");
 }
 
 void osd_update(running_machine *machine, int skip_redraw)

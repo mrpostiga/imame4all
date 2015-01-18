@@ -1,7 +1,7 @@
 /*
  * This file is part of MAME4droid.
  *
- * Copyright (C) 2013 David Valdeita (Seleuco)
+ * Copyright (C) 2015 David Valdeita (Seleuco)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,6 +48,7 @@ import java.io.File;
 import java.nio.ByteBuffer;
 
 import android.content.Intent;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
@@ -69,7 +70,7 @@ import android.widget.Toast;
 
 import com.seleuco.mame4droid.helpers.PrefsHelper;
 import com.seleuco.mame4droid.views.EmulatorViewGL;
-
+ 
 public class Emulator 
 {
 	final static public int FPS_SHOWED_KEY = 1; 
@@ -129,7 +130,9 @@ public class Emulator
 	final static public int NETPLAY_HAS_JOINED = 54;
 	final static public int NETPLAY_DELAY = 55;
 	final static public int SAVELOAD_COMBO = 56;
-	final static public int RENDER_RGB = 57;	
+	final static public int RENDER_RGB = 57;
+	final static public int IMAGE_EFFECT = 58;
+	final static public int LIGHTGUN = 59;		
 	
 	final static public int FILTER_YEARS_ARRAY = 0;
 	final static public int FILTER_MANUFACTURERS_ARRAY = 1;
@@ -139,7 +142,9 @@ public class Emulator
 	final static public int GAME_SELECTED = 5;
 	final static public int ROM_PATH = 6;
 	final static public int ROM_NAME = 7;
-	
+	final static public int VERSION = 8;	
+	final static public int BIOS = 9;
+	 
     private static MAME4droid mm = null;
     
     private static boolean isEmulating = false;
@@ -197,7 +202,8 @@ public class Emulator
 	private static boolean oldInMenu = false;
 
 	public static boolean isInMAME() {
-		return inMAME;
+		return Emulator.getValue(Emulator.IN_MAME)==1;
+		//return inMAME;
 	}
 	public static boolean isInMenu() {
 		return inMenu;
@@ -475,9 +481,8 @@ public class Emulator
 	}
 	
 	//synchronized 
-	static public void changeVideo(int newWidth, int newHeight, int newVisWidth, int newVisHeight){	
-			
-				
+	static public void changeVideo(final int newWidth, final int newHeight, final int newVisWidth, final int newVisHeight){	
+						
 		//Log.d("Thread Video", "changeVideo");
 		synchronized(lock1){
 				
@@ -508,6 +513,8 @@ public class Emulator
 			
 			mm.runOnUiThread(new Runnable() {
                 public void run() {
+                	
+                	//Toast.makeText(mm, "changeVideo newWidth:"+newWidth+" newHeight:"+newHeight+" newVisWidth:"+newVisWidth+" newVisHeight:"+newVisHeight,Toast.LENGTH_SHORT).show();                	
             		mm.overridePendingTransition(0, 0);
                 	if(warnResChanged && videoRenderMode == PrefsHelper.PREF_RENDER_GL && Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR1)
                 	    mm.getEmuView().setVisibility(View.INVISIBLE);
@@ -656,7 +663,15 @@ public class Emulator
 				boolean extROM = false;	
 				isEmulating = true;
 				init(libPath,resPath);
-			    
+				String version = null;
+				try
+			    {
+				   version = mm.getPackageManager().getPackageInfo(mm.getPackageName(), 0).versionName;	
+			    } catch (NameNotFoundException e) {
+				   e.printStackTrace();
+			    } 
+				final String versionName = version == null ? "???" : version;
+				Emulator.setValueStr(Emulator.VERSION, versionName);
 				Intent intent = mm.getIntent();
 			    String action = intent.getAction();
 			    
@@ -666,11 +681,16 @@ public class Emulator
 			      	  Uri uri = intent.getData();
 			      	  System.out.println("URI: "+uri.toString());
 			          java.io.File f = new java.io.File(uri.getPath());
-			          String name = f.getName();
+			          final String name = f.getName();
 			          String path = f.getAbsolutePath().substring(0,f.getAbsolutePath().lastIndexOf(File.separator));
 			          Emulator.setValueStr(Emulator.ROM_NAME, name);
 			          Emulator.setValueStr(Emulator.ROM_PATH, path);	
-			          extROM = true;			         
+			          extROM = true;
+					  mm.runOnUiThread(new Runnable() {																							
+						    public void run() {
+						    	Toast.makeText(mm, "MAME4droid (0.139) "+ versionName +" by David Valdeita (Seleuco). Launching: "+name, Toast.LENGTH_LONG).show();
+						    }
+					  });		        			          
 			    }
 			    else
 			    {

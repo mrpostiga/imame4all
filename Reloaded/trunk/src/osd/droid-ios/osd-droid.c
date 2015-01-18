@@ -22,6 +22,8 @@
 #endif
 #include <pthread.h>
 
+#include "../../lib/hqx/hqx.h"
+
 //#include "ui.h"
 //#include "driver.h"
 
@@ -54,6 +56,7 @@ int  myosd_waysStick;
 int  myosd_pxasp1 = 0;
 int  myosd_service = 0;
 int  myosd_num_buttons = 0;
+int  myosd_light_gun = 0;
 int  myosd_fs_counter = 0;
 int  myosd_saveload_combo = 1;
 
@@ -78,6 +81,7 @@ int myosd_num_ways = 8;
 int myosd_vsync = -1;
 int myosd_dbl_buffer=1;
 int myosd_rgb=0;
+int myosd_hqx=0;
 int myosd_autofire=0;
 int myosd_hiscore=0;
 
@@ -107,6 +111,10 @@ unsigned short 	*myosd_screen15 = NULL;
 
 char myosd_game[MAX_GAME_NAME] = {'\0'};
 char myosd_rompath[MAX_ROM_PATH] = {'\0'};
+char myosd_version[16] = {'\0'};
+char myosd_bios[16] = {'\0'};
+
+char *myosd_category = NULL;
 
 //////////////////////// android
 
@@ -132,7 +140,7 @@ static int frame_delay = 0;
 void change_pause(int value);
 
 void (*dumpVideo_callback)(void) = NULL;
-void (*initVideo_callback)(void *buffer,int width, int height) = NULL;
+void (*initVideo_callback)(void *buffer,int width, int height, int pitch) = NULL;
 void (*changeVideo_callback)(int newWidth,int newHeight,int newVisWidth,int newVisHeight) = NULL;
 
 void (*openSound_callback)(int rate,int stereo) = NULL;
@@ -141,10 +149,12 @@ void (*closeSound_callback)(void) = NULL;
 
 void (*netplayWarn_callback)(char *) = NULL;
 
+#define PIXEL_PITCH ((myosd_rgb ? 4 : 2))
+
 
 static void netplay_warn_callback(char *msg)
 {
-    if(netplay_warn_callback!=NULL)
+    if(netplayWarn_callback!=NULL)
        netplayWarn_callback(msg);
 }
 
@@ -182,7 +192,7 @@ int netplayInit(const char *srv_addr, int port, int join){
    return 0;
 }
 
-extern "C" void setVideoCallbacks(void (*init_video_java)(void *, int, int),void (*dump_video_java)(void), void (*change_video_java)(int,int,int,int))
+extern "C" void setVideoCallbacks(void (*init_video_java)(void *, int, int, int),void (*dump_video_java)(void), void (*change_video_java)(int,int,int,int))
 {
 #ifdef ANDROID
 	__android_log_print(ANDROID_LOG_DEBUG, "libMAME4droid.so", "setVideoCallbacks");
@@ -362,6 +372,13 @@ void setMyValue(int key,int i, int value){
                  myosd_saveload_combo = value;break;        
             case 57:                 
                  myosd_rgb = value;break;                                     
+            case 58:                 
+                 {
+                    myosd_hqx = 0;
+                    if(value)
+                      myosd_hqx = value+1;
+                 }
+                 break;
          }
 }
 
@@ -425,6 +442,15 @@ int getMyValue(int key,int i){
                  netplay_t *handle = netplay_get_handle();
                  return handle->has_joined;            
             }
+	    case 59:
+            {
+                  int b = 0;
+                  if(myosd_category!=NULL)
+                    b = strcmp(myosd_category, "Shooter / Gun")==0;
+                  if(!b)
+                    b = myosd_light_gun;
+        	  return b;
+            }
 	    default :
 	         return -1;
 	}
@@ -453,6 +479,18 @@ void setMyValueStr(int key,int i, const char *value){
         {
             if(strlen(value)<MAX_GAME_NAME)
               strcpy(myosd_game,value);
+            break;
+        }
+        case 8:
+        {
+            if(strlen(value)<16)
+              strcpy(myosd_version,value);
+            break;
+        }
+        case 9:
+        {
+            if(strlen(value)<16)
+              strcpy(myosd_bios,value);
             break;
         }
         default:;
@@ -497,9 +535,33 @@ static void dump_video(void)
 #ifdef ANDROID
      //__android_log_print(ANDROID_LOG_DEBUG, "MAME4droid.so", "dump_video");
 #endif
+        if(!myosd_hqx)
+        {
+            if(myosd_dbl_buffer)
+               memcpy(screenbuffer1,screenbuffer2,myosd_video_width * myosd_video_height * PIXEL_PITCH);
+        }
+        else
+        {
+            if(myosd_rgb)
+            {
+		    if(myosd_hqx==2)
+		      hq2x_32((uint32_t*)screenbuffer2,(uint32_t*)screenbuffer1,myosd_video_width/myosd_hqx,myosd_video_height/myosd_hqx);
+		    else if(myosd_hqx==3)
+		      hq3x_32((uint32_t*)screenbuffer2,(uint32_t*)screenbuffer1,myosd_video_width/myosd_hqx,myosd_video_height/myosd_hqx);
+		    else if(myosd_hqx==4)
+		      hq4x_32((uint32_t*)screenbuffer2,(uint32_t*)screenbuffer1,myosd_video_width/myosd_hqx,myosd_video_height/myosd_hqx);
 
-        if(myosd_dbl_buffer)
-           memcpy(screenbuffer1,screenbuffer2,myosd_video_width * myosd_video_height * (myosd_rgb==1?4:2));
+            }
+            else
+            {
+		    if(myosd_hqx==2)
+		      hq2x_16((uint16_t*)screenbuffer2,(uint16_t*)screenbuffer1,myosd_video_width/myosd_hqx,myosd_video_height/myosd_hqx);
+		    else if(myosd_hqx==3)
+		      hq3x_16((uint16_t*)screenbuffer2,(uint16_t*)screenbuffer1,myosd_video_width/myosd_hqx,myosd_video_height/myosd_hqx);
+		    else if(myosd_hqx==4)
+		      hq4x_16((uint16_t*)screenbuffer2,(uint16_t*)screenbuffer1,myosd_video_width/myosd_hqx,myosd_video_height/myosd_hqx);
+            }
+        }
 
 	if(dumpVideo_callback!=NULL)
 	   dumpVideo_callback();
@@ -567,15 +629,30 @@ void myosd_set_video_mode(int width,int height,int vis_width, int vis_height)
 #ifdef ANDROID
      __android_log_print(ANDROID_LOG_DEBUG, "MAME4droid.so", "set_video_mode: %d %d ",width,height);
 #endif
+    if(width==0)width=1;
+    if(height==0)height=1;
+    if(vis_width==0)vis_width=1;
+    if(vis_height==0)vis_height=1;
 
-    myosd_vis_video_width = vis_width;
-    myosd_vis_video_height = vis_height;
-
-    myosd_video_width = width;
-    myosd_video_height = height;
+    if(!myosd_hqx)
+    {
+       myosd_vis_video_width = vis_width;
+       myosd_vis_video_height = vis_height;
+              
+       myosd_video_width = width;
+       myosd_video_height = height;
+    }
+    else
+    {
+       myosd_vis_video_width = vis_width * myosd_hqx;
+       myosd_vis_video_height = vis_height * myosd_hqx;
+              
+       myosd_video_width = width * myosd_hqx;
+       myosd_video_height = height * myosd_hqx;
+    }
 
     if(changeVideo_callback!=NULL)
-       changeVideo_callback(width, height,vis_width,vis_height);
+       changeVideo_callback(myosd_video_width,myosd_video_height,myosd_vis_video_width ,myosd_vis_video_height);
 
     myosd_video_flip();
 }
@@ -588,7 +665,10 @@ void myosd_init(void)
 #ifdef ANDROID
 	   __android_log_print(ANDROID_LOG_DEBUG, "MAME4droid.so", "init");
 #endif
-      int reswidth = 640,resheight=480; 	   
+      int reswidth = 640,resheight=480; 	
+
+      if(myosd_hqx )
+         hqxInit();   
 
       switch (myosd_res)
       {
@@ -610,24 +690,51 @@ void myosd_init(void)
 	    case 16:{reswidth = 1920;resheight = 1080;break;}//1920x1080 (16/9) 
        } 
        
-       myosd_res_width = reswidth;
-       myosd_res_height = resheight;
+       if(!myosd_hqx)
+       {
+          myosd_res_width = reswidth;
+          myosd_res_height = resheight;
 
-       if(reswidth<640)reswidth=640;
-       if(resheight<480)resheight=480;
-	                       
-       if(screenbuffer1 == NULL)
-          screenbuffer1 = (unsigned short *)malloc(reswidth * resheight * (myosd_rgb==1?4:2));
+          if(reswidth<640)reswidth=640;
+          if(resheight<480)resheight=480;
+
+          if(screenbuffer1 == NULL)
+             screenbuffer1 = (unsigned short *)malloc(reswidth * resheight * PIXEL_PITCH);
       
-       if(myosd_dbl_buffer && screenbuffer2==NULL)
-          screenbuffer2 = (unsigned short *)malloc(reswidth * resheight * (myosd_rgb==1?4:2));       
-       
-       myosd_screen15 = myosd_dbl_buffer ? screenbuffer2 : screenbuffer1;
-               
-       if(initVideo_callback!=NULL)    
-          initVideo_callback((void *)screenbuffer1,reswidth,resheight);
+          if(myosd_dbl_buffer && screenbuffer2==NULL)
+             screenbuffer2 = (unsigned short *)malloc(reswidth * resheight * PIXEL_PITCH);
 
-       myosd_set_video_mode(myosd_res_width,myosd_res_height,myosd_res_width,myosd_res_height);
+          myosd_screen15 = myosd_dbl_buffer ? screenbuffer2 : screenbuffer1;
+
+          if(initVideo_callback!=NULL)    
+             initVideo_callback((void *)screenbuffer1,reswidth,resheight,PIXEL_PITCH);
+
+          myosd_set_video_mode(myosd_res_width,myosd_res_height,myosd_res_width,myosd_res_height);
+       }
+       else
+       {
+          myosd_res_width = reswidth;
+          myosd_res_height = resheight;
+
+          if(reswidth<640)reswidth=640;
+          if(resheight<480)resheight=480;
+
+          if(screenbuffer1 == NULL)
+             screenbuffer1 = (unsigned short *)malloc(reswidth * resheight * PIXEL_PITCH  * (myosd_hqx * myosd_hqx));
+      
+          if(screenbuffer2==NULL)
+             screenbuffer2 = (unsigned short *)malloc(reswidth * resheight * PIXEL_PITCH);       
+          
+          myosd_screen15 = screenbuffer2;
+
+          if(initVideo_callback!=NULL)    
+             initVideo_callback((void *)screenbuffer1,reswidth * myosd_hqx,resheight * myosd_hqx,PIXEL_PITCH);
+
+          myosd_set_video_mode(myosd_res_width,myosd_res_height,myosd_res_width,myosd_res_height);
+       }
+
+               
+
 
        lib_inited = 1;
     }

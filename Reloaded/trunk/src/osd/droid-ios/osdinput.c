@@ -151,6 +151,7 @@ void my_poll_ports(running_machine *machine)
         int way8 = 0;
         int counter = 0;
         myosd_num_buttons = 0;
+        myosd_light_gun = 0;
         for (port = machine->m_portlist.first(); port != NULL; port = port->next())
         {
             for (field = port->fieldlist; field != NULL; field = field->next)
@@ -180,6 +181,8 @@ void my_poll_ports(running_machine *machine)
                 if(field->type == IPT_DIAL || field->type == IPT_PADDLE || field->type == IPT_POSITIONAL ||
                    field->type == IPT_DIAL_V || field->type == IPT_PADDLE_V || field->type == IPT_POSITIONAL_V)
                     counter++;
+                if(field->type == IPT_LIGHTGUN_X)
+                   myosd_light_gun = 1;
             }
         }
         poll_ports=0;

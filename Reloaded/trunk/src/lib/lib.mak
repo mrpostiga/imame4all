@@ -17,6 +17,7 @@ OBJDIRS += \
 	$(LIBOBJ)/util \
 	$(LIBOBJ)/expat \
 	$(LIBOBJ)/zlib \
+	$(LIBOBJ)/hqx \
 	$(LIBOBJ)/softfloat \
 
 
@@ -111,4 +112,26 @@ SOFTFLOATOBJS = \
 $(OBJ)/libsoftfloat.a: $(SOFTFLOATOBJS)
 
 $(LIBOBJ)/softfloat/softfloat.o: $(LIBSRC)/softfloat/softfloat.c $(LIBSRC)/softfloat/softfloat.h $(LIBSRC)/softfloat/softfloat-macros $(LIBSRC)/softfloat/softfloat-specialize
+
+
+#-------------------------------------------------
+# HQ2X library objects
+#-------------------------------------------------
+
+HQXOBJS = \
+	$(LIBOBJ)/hqx/hq2x_32.o \
+	$(LIBOBJ)/hqx/hq2x_16.o \
+	$(LIBOBJ)/hqx/hq3x_32.o \
+	$(LIBOBJ)/hqx/hq3x_16.o \
+	$(LIBOBJ)/hqx/hq4x_32.o \
+	$(LIBOBJ)/hqx/hq4x_16.o \
+	$(LIBOBJ)/hqx/init.o
+
+$(OBJ)/libhqx.a: $(HQXOBJS)
+
+$(LIBOBJ)/hqx/%.o: $(LIBSRC)/hqx/%.c | $(OSPREBUILD)
+	@echo Compiling $<...
+	$(CC) $(CDEFS) $(CCOMFLAGS) $(CONLYFLAGS) -c $< -o $@
+
+
 

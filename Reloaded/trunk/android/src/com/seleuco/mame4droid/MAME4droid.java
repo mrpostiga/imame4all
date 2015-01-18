@@ -1,7 +1,7 @@
 /*
  * This file is part of MAME4droid.
  *
- * Copyright (C) 2013 David Valdeita (Seleuco)
+ * Copyright (C) 2015 David Valdeita (Seleuco)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -69,9 +69,9 @@ import com.seleuco.mame4droid.input.ControlCustomizer;
 import com.seleuco.mame4droid.input.InputHandler;
 import com.seleuco.mame4droid.input.InputHandlerExt;
 import com.seleuco.mame4droid.input.InputHandlerFactory;
-import com.seleuco.mame4droid.views.EmulatorViewSW;
 import com.seleuco.mame4droid.views.IEmuView;
 import com.seleuco.mame4droid.views.InputView;
+import com.seleuco.mame4droid.R;
 
 final class NotificationHelper
 {
@@ -198,8 +198,15 @@ public class MAME4droid extends Activity {
 			}
 			else
 			{
-				getMainHelper().ensureInstallationDIR(mainHelper.getInstallationDIR());
-				runMAME4droid();	
+				boolean res = getMainHelper().ensureInstallationDIR(mainHelper.getInstallationDIR());
+				if(res==false)
+				{
+					this.getPrefsHelper().setInstallationDIR(this.getPrefsHelper().getOldInstallationDIR());
+				}
+				else
+				{
+				    runMAME4droid();
+				}
 			}
         }
     }

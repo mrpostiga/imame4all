@@ -1,7 +1,7 @@
 /*
  * This file is part of MAME4droid.
  *
- * Copyright (C) 2013 David Valdeita (Seleuco)
+ * Copyright (C) 2015 David Valdeita (Seleuco)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,7 +65,6 @@ import android.view.View.OnTouchListener;
 
 import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.MAME4droid;
-import com.seleuco.mame4droid.R;
 import com.seleuco.mame4droid.helpers.DialogHelper;
 import com.seleuco.mame4droid.helpers.PrefsHelper;
 
@@ -602,10 +601,17 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 				//System.out.println("nx2:"+x+" ny2:"+y+" l0:"+location[0]+" l1:"+location[1]+" xf:"+xf+" yf:"+yf);
 				
 				if(lightgun_pid==-1)
-					lightgun_pid = pointerId;		
+					lightgun_pid = pointerId;	
+				
 						
 				if(lightgun_pid == pointerId)
 				{					
+					 if(mm.getPrefsHelper().isBottomReload())
+					 {
+					    if(yf>0.90)
+						   yf = 1.1f;
+					 }
+					
 			    	 if(!tiltSensor.isEnabled())
 					    Emulator.setAnalogData(4, xf, -yf);
 					 

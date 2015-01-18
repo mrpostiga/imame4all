@@ -1,7 +1,7 @@
 /*
  * This file is part of MAME4droid.
  *
- * Copyright (C) 2013 David Valdeita (Seleuco)
+ * Copyright (C) 2015 David Valdeita (Seleuco)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -121,8 +121,12 @@ public class GLRenderer implements Renderer {
 			return 512;
 		else if(size<=1024)
 			return 1024;
-		else
+		else if(size<=2048)
 			return 2048;
+		else if(size<=4096)
+			return 4096;
+		else 
+			return 8192;
 	}
 	
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -385,7 +389,7 @@ public class GLRenderer implements Renderer {
 	    	
 		    gl.glBlendFunc(GL10.GL_DST_COLOR, GL10.GL_ZERO);
 		    gl.glBindTexture(GL10.GL_TEXTURE_2D, blendTextureId);
-		    if(Emulator.getValue(Emulator.IN_MAME)==1)
+		    if(Emulator.isInMAME())
 		    {
 		    	if(!isAltPath)
 		    	{

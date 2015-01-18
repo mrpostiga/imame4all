@@ -1,7 +1,7 @@
 /*
  * This file is part of MAME4droid.
  *
- * Copyright (C) 2013 David Valdeita (Seleuco)
+ * Copyright (C) 2015 David Valdeita (Seleuco)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,9 +57,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.R;
-import com.seleuco.mame4droid.helpers.DialogHelper;
 import com.seleuco.mame4droid.input.InputHandlerExt;
 
 public class DefineKeys extends ListActivity {

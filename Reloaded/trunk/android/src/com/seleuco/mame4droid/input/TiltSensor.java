@@ -1,7 +1,7 @@
 /*
  * This file is part of MAME4droid.
  *
- * Copyright (C) 2013 David Valdeita (Seleuco)
+ * Copyright (C) 2015 David Valdeita (Seleuco)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,7 +58,6 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.view.Surface;
-import android.widget.Toast;
 
 import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.MAME4droid;
@@ -164,7 +163,7 @@ public class TiltSensor {
         	float value_x = - e.values[0];
         	float value_z;
         	        	
-        	if(pH.isSwappedYZ())
+        	if(pH.isTiltSwappedYZ())
         	    value_z = e.values[1];
         	else
         	    value_z = e.values[2];
@@ -194,6 +193,9 @@ public class TiltSensor {
         	   tilt_x = value_x;
         	   tilt_z = value_z;
         	}
+        	
+        	if(pH.isTiltInvertedX())
+          	   tilt_x *= -1;
         	
         	float deadZone = getDZ();
         	

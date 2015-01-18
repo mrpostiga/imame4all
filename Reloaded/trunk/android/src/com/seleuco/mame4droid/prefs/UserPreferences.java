@@ -1,7 +1,7 @@
 /*
  * This file is part of MAME4droid.
  *
- * Copyright (C) 2013 David Valdeita (Seleuco)
+ * Copyright (C) 2015 David Valdeita (Seleuco)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,7 +52,6 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
@@ -109,6 +108,10 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
     protected ListPreference mPrefNetplayDelay;
     protected EditTextPreference mPrefNetplayPort;
     protected ListPreference mPrefNavbar;
+    protected ListPreference mPrefImageEffect;
+    protected EditTextPreference mPrefInstPath;
+    protected ListPreference mPrefLightgun;
+    protected ListPreference mPrefBios;    
     
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -172,6 +175,10 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 		mPrefNetplayDelay = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_NETPLAY_DELAY);
 		mPrefNetplayPort = (EditTextPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_NETPLAY_PORT);
 		mPrefNavbar = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GLOBAL_NAVBAR_MODE);
+		mPrefImageEffect = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GLOBAL_IMAGE_EFFECT);
+		mPrefInstPath = (EditTextPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_INSTALLATION_DIR);
+		mPrefLightgun = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_LIGHTGUN);
+		mPrefBios = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_BIOS);		
 	}
 	
 	protected void populateFilterList(int key1, int key2, ListPreference lp){
@@ -294,6 +301,11 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 	        mPrefNetplayDelay.setSummary("Current value is '" + mPrefNetplayDelay.getEntry()+"'");
 	        mPrefNetplayPort.setSummary("Current value is '" + mPrefNetplayPort.getText()+"'"); 
 	        mPrefNavbar.setSummary("Current value is '" + mPrefNavbar.getEntry()+"'");
+	        mPrefImageEffect.setSummary("Current value is '" + mPrefImageEffect.getEntry()+"'");
+			mPrefInstPath.setSummary("Current value is '" + mPrefInstPath.getText()+"'");
+			mPrefLightgun.setSummary("Current value is '" + mPrefLightgun.getEntry()+"'");
+			mPrefBios.setSummary("Current value is '" + mPrefBios.getEntry()+"'");
+			
 	        // Set up a listener whenever a key changes            
 	        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
 	        
@@ -459,7 +471,7 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 		    }
 		    else if(key.equals(PrefsHelper.PREF_NETPLAY_PORT))
 		    {
-		    	mPrefFilterkeyword.setSummary("Current value is '" + mPrefNetplayPort.getText()+"'");
+		    	mPrefNetplayPort.setSummary("Current value is '" + mPrefNetplayPort.getText()+"'");
 		    } 	        
 		    else if(key.equals(PrefsHelper.PREF_NETPLAY_DELAY))
 		    {
@@ -468,6 +480,22 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 		    else if(key.equals(PrefsHelper.PREF_GLOBAL_NAVBAR_MODE))
 		    {
 		    	mPrefNavbar.setSummary("Current value is '" + mPrefNavbar.getEntry()+"'");
+		    } 	        
+		    else if(key.equals(PrefsHelper.PREF_GLOBAL_IMAGE_EFFECT))
+		    {
+		    	mPrefImageEffect.setSummary("Current value is '" + mPrefImageEffect.getEntry()+"'");
+		    } 
+		    else if(key.equals(PrefsHelper.PREF_INSTALLATION_DIR))
+		    {
+		    	mPrefInstPath.setSummary("Current value is '" + mPrefInstPath.getText()+"'");
+		    }
+		    else if(key.equals(PrefsHelper.PREF_LIGHTGUN))
+		    {
+		    	mPrefLightgun.setSummary("Current value is '" + mPrefLightgun.getEntry()+"'");
+		    }
+		    else if(key.equals(PrefsHelper.PREF_BIOS))
+		    {
+		    	mPrefBios.setSummary("Current value is '" + mPrefBios.getEntry()+"'");
 		    } 	        
 	    }
 

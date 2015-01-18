@@ -1,7 +1,7 @@
 /*
  * This file is part of MAME4droid.
  *
- * Copyright (C) 2013 David Valdeita (Seleuco)
+ * Copyright (C) 2015 David Valdeita (Seleuco)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,6 +52,7 @@ import android.preference.PreferenceManager;
 import android.view.Display;
 import android.view.WindowManager;
 
+import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.MAME4droid;
 import com.seleuco.mame4droid.input.InputHandler;
 import com.seleuco.mame4droid.prefs.GameFilterPrefs;
@@ -60,6 +61,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 {
 	final static public String PREF_ROMsDIR = "PREF_ROMsDIR_2";
 	final static public String PREF_INSTALLATION_DIR = "PREF_INSTALLATION_DIR";
+	final static public String PREF_OLD_INSTALLATION_DIR = "PREF_OLD_INSTALLATION_DIR";
 	
 	final static public String PREF_GLOBAL_VIDEO_RENDER_MODE = "PREF_GLOBAL_VIDEO_RENDER_MODE_2";
 	final static public String PREF_GLOBAL_AUTORES = "PREF_GLOBAL_AUTORES";
@@ -80,14 +82,15 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String PREF_GLOBAL_HISCORE = "PREF_GLOBAL_HISCORE";
 	final static public String PREF_GLOBAL_WARN_ON_EXIT = "PREF_GLOBAL_WARN_ON_EXIT";
 	final static public String PREF_GLOBAL_SUSPEND_NOTIFICATION = "PREF_GLOBAL_SUSPEND_NOTIFICATION";
+	final static public String PREF_GLOBAL_IMAGE_EFFECT = "PREF_GLOBAL_IMAGE_EFFECT";
 	
-	final static public String PREF_PORTRAIT_SCALING_MODE = "PREF_PORTRAIT_SCALING_MODE_3";
+	final static public String PREF_PORTRAIT_SCALING_MODE = "PREF_PORTRAIT_SCALING_MODE_4";
 	final static public String PREF_PORTRAIT_OVERLAY = "PREF_PORTRAIT_OVERLAY";
 	final static public String PREF_PORTRAIT_TOUCH_CONTROLLER = "PREF_PORTRAIT_TOUCH_CONTROLLER";
 	final static public String PREF_PORTRAIT_BITMAP_FILTERING = "PREF_PORTRAIT_BITMAP_FILTERING";
 	final static public String PREF_PORTRAIT_FULLSCREEN = "PREF_PORTRAIT_FULLSCREEN";
 	
-	final static public String PREF_LANDSCAPE_SCALING_MODE = "PREF_LANDSCAPE_SCALING_MODE_3";
+	final static public String PREF_LANDSCAPE_SCALING_MODE = "PREF_LANDSCAPE_SCALING_MODE_4";
 	final static public String PREF_LANDSCAPE_OVERLAY = "PREF_LANDSCAPE_OVERLAY";
 	final static public String PREF_LANDSCAPE_TOUCH_CONTROLLER = "PREF_LANDSCAPE_TOUCH_CONTROLLER";
 	final static public String PREF_LANDSCAPE_BITMAP_FILTERING = "PREF_LANDSCAPE_BITMAP_FILTERING";
@@ -102,7 +105,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String  PREF_TRACKBALL_NOMOVE = "PREF_TRACKBALL_NOMOVE";
 	final static public String  PREF_DISABLE_RIGHT_STICK = "PREF_DISABLE_RIGHT_STICK";
 	final static public String  PREF_ANIMATED_INPUT = "PREF_ANIMATED_INPUT";
-	final static public String  PREF_LIGHTGUN = "PREF_LIGHTGUN";
+	final static public String  PREF_LIGHTGUN = "PREF_LIGHTGUN_2";
 	final static public String  PREF_TOUCH_DZ = "PREF_TOUCH_DZ";
 	final static public String  PREF_CONTROLLER_TYPE = "PREF_CONTROLLER_TYPE_2";
 	final static public String  PREF_STICK_TYPE = "PREF_STICK_TYPE_2";
@@ -121,6 +124,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String  PREF_TILT_ANALOG = "PREF_TILT_ANALOG";	
 	final static public String  PREF_TILT_TOUCH = "PREF_TILT_TOUCH";
 	final static public String  PREF_TILT_SWAP_YZ = "PREF_TILT_SWAP_YZ";
+	final static public String  PREF_TILT_INVERT_X = "PREF_TILT_INVERT_X";
 	
 	final static public String  PREF_HIDE_STICK = "PREF_HIDE_STICK";
 	final static public String  PREF_BUTTONS_SIZE = "PREF_BUTTONS_SIZE";
@@ -162,6 +166,8 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String  PREF_NETPLAY_PEERADDR = "PREF_NETPLAY_PEERADR";	
 	
 	final static public String  PREF_MAME_DEFAULTS = "PREF_MAME_DEFAULTS";
+	final static public String  PREF_BOTTOM_RELOAD = "PREF_BOTTOM_RELOAD";
+	final static public String  PREF_BIOS = "PREF_BIOS";	
 	
 	final static public int  LOW = 1;
 	final static public int  NORMAL = 2;
@@ -193,7 +199,9 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final public static int PREF_6X = 13;	
 	final public static int PREF_SCALE = 1;
 	final public static int PREF_STRETCH = 2;
-
+	final public static int PREF_SCALE_INTEGER = 14;
+	final public static int PREF_SCALE_INTEGER_BEYOND = 15;
+	
 	final public static String PREF_OVERLAY_NONE = "none";
 	
 	final public static int PREF_AUTOMAP_THUMBS_DISABLED_L2R2_AS_L1R2 = 1;
@@ -416,8 +424,16 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 		if(getSharedPreferences().getBoolean(PREF_TILT_TOUCH,false) && this.isTiltSensor())
 			return true;
 		
-		if(getSharedPreferences().getBoolean(PREF_LIGHTGUN,false) && !this.isTiltSensor())
-			return true;		
+		int value = Integer.valueOf(getSharedPreferences().getString(PREF_LIGHTGUN,"2")).intValue();
+		 
+		if(value==0)
+			return false;
+		
+		if(value==1 && !this.isTiltSensor())
+			return true;	
+		
+		if(value==2 && Emulator.getValue(Emulator.LIGHTGUN)==1  && !this.isTiltSensor())
+			return true;
 		
 		return false;
 	}
@@ -476,9 +492,18 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	}
 	
 	public void setInstallationDIR(String value){
-		//PreferenceManager.getDefaultSharedPreferences(this);
 		SharedPreferences.Editor editor =  getSharedPreferences().edit();
 		editor.putString(PREF_INSTALLATION_DIR, value);
+		editor.commit();
+	}	
+
+	public String getOldInstallationDIR(){
+		return getSharedPreferences().getString(PREF_OLD_INSTALLATION_DIR,null);
+	}
+	
+	public void setOldInstallationDIR(String value){
+		SharedPreferences.Editor editor =  getSharedPreferences().edit();
+		editor.putString(PREF_OLD_INSTALLATION_DIR, value);
 		editor.commit();
 	}	
 	
@@ -526,8 +551,12 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 		return getSharedPreferences().getBoolean(PREF_TILT_TOUCH,false);
 	}
 	
-	public boolean isSwappedYZ(){
+	public boolean isTiltSwappedYZ(){
 		return getSharedPreferences().getBoolean(PREF_TILT_SWAP_YZ,false);
+	}
+	
+	public boolean isTiltInvertedX(){
+		return getSharedPreferences().getBoolean(PREF_TILT_INVERT_X,false);
 	}
 	
 	public int getButtonsSize(){
@@ -635,4 +664,16 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	public String getNetplayPort(){
 	    return getSharedPreferences().getString(PrefsHelper.PREF_NETPLAY_PORT,"55435");
 	}
+	
+	public int getImageEffectValue(){
+		return Integer.valueOf(getSharedPreferences().getString(PREF_GLOBAL_IMAGE_EFFECT,"0")).intValue();	
+	}
+	
+	public boolean isBottomReload(){
+		return getSharedPreferences().getBoolean("PREF_BOTTOM_RELOAD",true);
+	}
+	
+	public String getCustomBIOS(){
+		return getSharedPreferences().getString(PREF_BIOS,"");
+	}	
 }

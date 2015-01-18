@@ -183,6 +183,9 @@ void droid_ios_video_render(render_target *our_target)
                 else if(myosd_force_pxaspect==2)
 		{
 		   render_target_get_minimum_size(our_target, &minwidth, &minheight);
+                   
+                   width = minwidth;
+                   height = minheight;
 
 		   viswidth = minwidth;
 		   visheight = minheight;
