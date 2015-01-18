@@ -45,7 +45,7 @@
 			   android:defaultValue="-1" />
 
 	        <ListPreference			   
-			   android:title='Driver Source'			
+			   android:title='Driver source'			
 			   android:key="PREF_FILTER_DRVSRC"			
 			   android:defaultValue="-1" />	        
 	        	        
@@ -72,7 +72,7 @@
 	   							
 		<com.seleuco.mame4droid.prefs.ListPrefWithWarn
 			android:entries="@array/pref_resolution_options"
-			android:title='Emulated Resolution'			
+			android:title='Emulated resolution'			
 			android:key="PREF_GLOBAL_RESOLUTION_3"
 			android:entryValues="@array/pref_resolution_values"
 			android:defaultValue="3" />		
@@ -128,7 +128,7 @@
 	    <ListPreference
 			android:entries="@array/pref_px_options"
 			android:title='Aspect'			
-			android:key="PREF_GLOBAL_FORCE_PXASPECT_2"
+			android:key="PREF_GLOBAL_FORCE_PXASPECT_3"
 			android:entryValues="@array/pref_px_values"
 			android:defaultValue="0" />	    
 	    
@@ -142,6 +142,13 @@
 	    <com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_GLOBAL_HISCORE"
 			android:title="Save hiscores" android:summary="If enabled, saves hiscores on some games not saving on NVRAM. It could cause problems with some games or save states"
 			android:defaultValue="false" />	
+			
+	    <com.seleuco.mame4droid.prefs.ListPrefWithWarn
+			android:entries="@array/pref_bios_options"
+			android:title='Custom BIOS'			
+			android:key="PREF_BIOS"
+			android:entryValues="@array/pref_bios_values"
+			android:defaultValue="" />	    
 			
 	    <PreferenceScreen android:key="vector" android:title="Vector" 
 	        android:summary="Select it to open vector games options" android:persistent="false">			
@@ -162,7 +169,7 @@
 	    
 	    <PreferenceScreen android:key="defaultData"
 			android:title="Default MAME data" android:summary="Restore MAME data to default values (cfg and nvram files)" />
-	    		    									
+	    	   	    		    									
 	</PreferenceScreen>
 	
 	<PreferenceScreen android:key="inputSettings" android:title="Input" 
@@ -179,10 +186,10 @@
 			android:defaultValue="3" />        
 	    
         <PreferenceScreen android:key="customControlLayout"
-			android:title="Customize touch layout" android:summary="Select to customize fullscreen control layout" />
+			android:title="Customize layout" android:summary="Select to customize fullscreen touch control layout" />
 
 		<PreferenceScreen android:key="defaultControlLayout"
-			android:title="Default touch layout" android:summary="Restore fullscreen control layout to default values" />
+			android:title="Default layout" android:summary="Restore fullscreen touch control layout to default values" />
 		
 						
 		<ListPreference
@@ -271,7 +278,7 @@
 		
     </PreferenceScreen>		
 
-	<PreferenceScreen android:key="tiltController" android:title="Tilt Controller" 
+	<PreferenceScreen android:key="tiltController" android:title="Tilt controller" 
 	    android:summary="Select it to open tilt controller options" android:persistent="false">
 	
 		<CheckBoxPreference android:key="PREF_TILT_SENSOR"
@@ -306,17 +313,33 @@
 		<CheckBoxPreference android:key="PREF_TILT_TOUCH"
 			android:title="Touch anywhere" android:summary="Enable to tap anywhere on screen to fire. First finger is main fire. Second finger when first finger is pressed is alternate fire"
 			android:defaultValue="false"  android:dependency="PREF_TILT_SENSOR"/>	
-			
+
+		<CheckBoxPreference android:key="PREF_TILT_INVERT_X"
+			android:title="Invert X axe" android:summary="Enable to invert X axe."
+			android:defaultValue="false"  android:dependency="PREF_TILT_SENSOR"/>			
+					
 		<CheckBoxPreference android:key="PREF_TILT_SWAP_YZ"
-			android:title="Swap Z,Y axes" android:summary="Enable to swap Z,Y axes. This fixes vertical tilt on some devices."
+			android:title="Swap Z,Y axes" android:summary="Enable to swap Z,Y axes. This fixes vertical tilt on some devices"
 			android:defaultValue="false"  android:dependency="PREF_TILT_SENSOR"/>							
 		
     </PreferenceScreen>	
     
-		<CheckBoxPreference android:key="PREF_LIGHTGUN"
-			android:title="Touch lightgun" android:summary="Enable to tap on touchscreen as a lightgun. First finger is main fire. Second finger when first finger is pressed is alternate fire. Touch controller must be visible (enabled)"
-			android:defaultValue="false" />		
-			
+    <PreferenceScreen android:key="lightgunController" android:title="Touch lightgun" 
+	    android:summary="Select it to open touch lightgun options.\n(First finger will be main fire. Second finger when first finger is pressed will be alternate fire)" android:persistent="false">
+		
+	    <ListPreference
+			android:entries="@array/pref_touch_lightgun_options"
+			android:title='Mode'			
+			android:key="PREF_LIGHTGUN_2"
+			android:entryValues="@array/pref_touch_lightgun_values"
+			android:defaultValue="2" />
+	    
+	    <CheckBoxPreference android:key="PREF_BOTTOM_RELOAD"
+			android:title="Bottom as reload" android:summary="Touch at the bottom of the screen to get off-screen reload"
+			android:defaultValue="True" />	    
+		
+	</PreferenceScreen>
+							
 	    <ListPreference
 			android:entries="@array/pref_autofire_options"
 			android:title='Button B as autofire'			
@@ -343,10 +366,20 @@
         
     <PreferenceScreen android:key="general" android:title="General" 
         android:summary="Select it to open general options" android:persistent="false">    
-
 		
 		<PreferenceScreen android:key="changeRomPath"
-			android:title="Change ROMs path" android:summary="Change roms location. You have to move ROMs files manually" />		
+			android:title="Change ROMs path" android:summary="Change roms location. You have to move ROMs files manually" />
+		
+	    <com.seleuco.mame4droid.prefs.ListPrefWithWarn
+			android:entries="@array/pref_image_effect_options"
+			android:title='Image enhancer'			
+			android:key="PREF_GLOBAL_IMAGE_EFFECT"
+			android:entryValues="@array/pref_image_effect_values"
+			android:defaultValue="0" />
+	    
+        <com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_RENDER_RGB"
+			android:title="True RGB" android:summary="Render in true color at the expense of performance"
+			android:defaultValue="False" /> 	    					
 	    			    	    
 	    <CheckBoxPreference android:key="PREF_GLOBAL_SUSPEND_NOTIFICATION"
 			android:title="Notification icon" android:summary="Enable it to show a notification icon when MAME4droid is suspended"
@@ -415,16 +448,18 @@
         <com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_DOUBLE_BUFFER"
 			android:title="Double buffer" android:summary="Avoids flickering at the expense of performance"
 			android:defaultValue="True" />
-        
-        <com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_RENDER_RGB"
-			android:title="True RGB" android:summary="Render in true color at the expense of performance"
-			android:defaultValue="False" />        		
-		
+               		
 		<com.seleuco.mame4droid.prefs.ListPrefWithWarn android:entries="@array/pref_low_norm_or_hight_options"
 			android:title='Main thread priority' android:key="PREF_MAIN_THREAD_PRIORITY"
 			android:entryValues="@array/pref_low_norm_or_hight_values"
 			android:defaultValue="2" />
-		
+		 
+        <com.seleuco.mame4droid.prefs.EditTextPrefWithWarn
+                android:dialogTitle="Change installation path:"
+                android:key="PREF_INSTALLATION_DIR"
+                android:title="Installation path"
+                android:defaultValue=""/>		
+		 
         <com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_FORCE_ALTGLPATH"
 			android:title="Alternate OpenGL path" android:summary="Enable alternate OpenGL render path. Could be faster than default path but not work on some devices (like overlay rendering)"
 			android:defaultValue="False" />				
@@ -440,12 +475,12 @@
 	<PreferenceCategory android:title="Portrait Display Settings">
 
 		<ListPreference android:entries="@array/pref_scaleMode_options"
-			android:title='Scaling mode' android:key="PREF_PORTRAIT_SCALING_MODE_3"
+			android:title='Scaling mode' android:key="PREF_PORTRAIT_SCALING_MODE_4"
 			android:entryValues="@array/pref_scaleMode_values"
 			android:defaultValue="1" />
 			
 		<ListPreference 
-			android:title='Effect overlay' android:key="PREF_PORTRAIT_OVERLAY"
+			android:title='Overlay effect' android:key="PREF_PORTRAIT_OVERLAY"
 			android:defaultValue="none" />	
 
 		<CheckBoxPreference android:key="PREF_PORTRAIT_TOUCH_CONTROLLER"
@@ -465,12 +500,12 @@
 	<PreferenceCategory android:title="Lansdscape Display Settings">
 			
 		<ListPreference android:entries="@array/pref_scaleMode_options"
-			android:title='Scaling mode' android:key="PREF_LANDSCAPE_SCALING_MODE_3"
+			android:title='Scaling mode' android:key="PREF_LANDSCAPE_SCALING_MODE_4"
 			android:entryValues="@array/pref_scaleMode_values"
 			android:defaultValue="1" />
 		
 		<ListPreference 
-			android:title='Effect overlay' android:key="PREF_LANDSCAPE_OVERLAY"
+			android:title='Overlay effect ' android:key="PREF_LANDSCAPE_OVERLAY"
 			android:defaultValue="none" />
 			
 		<CheckBoxPreference android:key="PREF_LANDSCAPE_TOUCH_CONTROLLER"

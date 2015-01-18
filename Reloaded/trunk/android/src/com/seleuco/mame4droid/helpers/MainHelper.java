@@ -1,7 +1,7 @@
 /*
  * This file is part of MAME4droid.
  *
- * Copyright (C) 2013 David Valdeita (Seleuco)
+ * Copyright (C) 2015 David Valdeita (Seleuco)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -76,9 +76,9 @@ import android.widget.FrameLayout.LayoutParams;
 import android.widget.Toast;
 
 import com.seleuco.mame4droid.Emulator;
-import com.seleuco.mame4droid.HelpActivity;
 import com.seleuco.mame4droid.MAME4droid;
 import com.seleuco.mame4droid.R;
+import com.seleuco.mame4droid.WebHelpActivity;
 import com.seleuco.mame4droid.input.ControlCustomizer;
 import com.seleuco.mame4droid.input.InputHandler;
 import com.seleuco.mame4droid.prefs.GameFilterPrefs;
@@ -92,7 +92,7 @@ public class MainHelper {
 	final static public  int SUBACTIVITY_HELP = 2;
 	final static public  int BUFFER_SIZE = 1024*48;
 	
-	final static public  String MAGIC_FILE = "dont-delete-00004.bin";
+	final static public  String MAGIC_FILE = "dont-delete-00005.bin";
 	
 	final public static int DEVICE_GENEREIC = 1;
 	final public static int DEVICE_OUYA = 2;
@@ -138,7 +138,7 @@ public class MainHelper {
 		//android.os.Debug.waitForDebugger();
 	    String state = Environment.getExternalStorageState();
 	    if (Environment.MEDIA_MOUNTED.equals(state)) {
-	    	res_dir = Environment.getExternalStorageDirectory().getAbsolutePath()+"/ROMs/MAME4droid/";  	    	
+	    	res_dir = Environment.getExternalStorageDirectory().getAbsolutePath()+"/MAME4droid/";  	    	
 	    }
 	    else
 	    	res_dir = mm.getFilesDir().getAbsolutePath()+"/MAME4droid/";
@@ -155,6 +155,9 @@ public class MainHelper {
 	
 	public boolean ensureInstallationDIR(String dir){
 				
+		if(!dir.endsWith("/"))
+			dir+="/";
+		
 		File res_dir = new File(dir);
 		
 		boolean created = false;
@@ -163,7 +166,7 @@ public class MainHelper {
 		{
 			if(!res_dir.mkdirs())
 			{
-				mm.getDialogHelper().setErrorMsg("Can't find/create:\n '"+dir+"'\nIs it writeable?");
+				mm.getDialogHelper().setErrorMsg("Can't find/create: '"+dir+"' Is it writeable?.\nReverting...");
 				mm.showDialog(DialogHelper.DIALOG_ERROR_WRITING);
 				return false;				
 			}
@@ -176,11 +179,10 @@ public class MainHelper {
 		String str_sav_dir = dir+"saves/";
 		File sav_dir = new File(str_sav_dir);
 		if(sav_dir.exists() == false)
-		{
-			
+		{			
 			if(!sav_dir.mkdirs())
 			{
-				mm.getDialogHelper().setErrorMsg("Can't find/create:\n'"+str_sav_dir+"'\nIs it writeable");
+				mm.getDialogHelper().setErrorMsg("Can't find/create: '"+str_sav_dir+"' Is it writeable?.\nReverting...");
 				mm.showDialog(DialogHelper.DIALOG_ERROR_WRITING);
 				return false;				
 			}
@@ -188,10 +190,12 @@ public class MainHelper {
 		
 		if(created )
 		{		
-            String rompath = mm.getPrefsHelper().getROMsDIR() != null ? mm.getPrefsHelper().getROMsDIR() : mm.getMainHelper().getInstallationDIR()+"roms"; 
-			mm.getDialogHelper().setInfoMsg("Created: '"+dir+" to store save states, cfg files and MAME assets.'\n\nBeware, copy or move your zipped ROMs under '"+ rompath +"' directory!.\n\nMAME4droid 0.139 uses only 0.139 MAME romset.\n\nYou may have to completely turn off your device to see new folders. You might need to unplug also.");
+            String rompath = mm.getPrefsHelper().getROMsDIR() != null ? mm.getPrefsHelper().getROMsDIR() : dir +"roms"; 
+			mm.getDialogHelper().setInfoMsg("Created: '"+dir+"' to store save states, cfg files and MAME assets.\n\nBeware, copy or move your zipped ROMs under '"+ rompath +"' directory!\n\nMAME4droid 0.139 uses only 0.139 MAME romset.\n\nYou may have to completely turn off your device to see new folders. You might need to unplug also.");
 			mm.showDialog(DialogHelper.DIALOG_INFO);
 		}
+		
+		mm.getPrefsHelper().setOldInstallationDIR(dir);
 						
 		return true;		
 	}
@@ -239,7 +243,7 @@ public class MainHelper {
 			File fm = new File(roms_dir + File.separator + "saves/" + MAGIC_FILE);
 			if(fm.exists())
 				return;
-			
+						
 			fm.mkdirs();			
 			fm.createNewFile();
 			
@@ -432,6 +436,8 @@ public class MainHelper {
 		Emulator.setValue(Emulator.RENDER_RGB,
 				mm.getPrefsHelper().isRenderRGB() && mm.getPrefsHelper().getVideoRenderMode()!= PrefsHelper.PREF_RENDER_SW ? 1 : 0);
 		
+		Emulator.setValue(Emulator.IMAGE_EFFECT , mm.getPrefsHelper().getImageEffectValue());		
+		
 		GameFilterPrefs gfp = mm.getPrefsHelper().getGameFilterPrefs();
 		boolean dirty = gfp.readValues();
 		gfp.sendValues();
@@ -463,7 +469,9 @@ public class MainHelper {
 			sr = Integer.valueOf(am.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE)).intValue();
 			System.out.println("PROPERTY_OUTPUT_SAMPLE_RATE:"+sr);
 		}catch(Error e){}		
-		Emulator.setValue(Emulator.SOUND_DEVICE_SR,sr);				
+		Emulator.setValue(Emulator.SOUND_DEVICE_SR,sr);
+		
+		Emulator.setValueStr(Emulator.BIOS, mm.getPrefsHelper().getCustomBIOS());	
 	}
 	
 
@@ -678,8 +686,11 @@ public class MainHelper {
 	}
 	
 	public void showHelp(){
-		Intent i2 = new Intent(mm, HelpActivity.class);
-		mm.startActivityForResult(i2, MainHelper.SUBACTIVITY_HELP);		
+		//Intent i2 = new Intent(mm, HelpActivity.class);
+		//mm.startActivityForResult(i2, MainHelper.SUBACTIVITY_HELP);			
+		Intent i = new Intent(mm, WebHelpActivity.class);
+		i.putExtra("INSTALLATION_PATH", mm.getMainHelper().getInstallationDIR());
+		mm.startActivityForResult(i, MainHelper.SUBACTIVITY_HELP);
 	}
 	
 	public void activityResult(int requestCode, int resultCode, Intent data) {
@@ -694,6 +705,9 @@ public class MainHelper {
 		   
 		int widthSize = 1;
 		int heightSize = 1;
+		
+		if(!Emulator.isInMAME() && !(scaleType==PrefsHelper.PREF_STRETCH))
+			scaleType = PrefsHelper.PREF_SCALE;
 						
 		if (scaleType == PrefsHelper.PREF_STRETCH)// FILL ALL
 		{
@@ -702,21 +716,52 @@ public class MainHelper {
 		} 
 		else 
 		{
-			
-			//int emu_w = Emulator.getEmulatedWidth();
-		    //int emu_h = Emulator.getEmulatedHeight();
 			int emu_w = Emulator.getEmulatedVisWidth();
 		    int emu_h = Emulator.getEmulatedVisHeight();		    
 		    
-		    if(scaleType == PrefsHelper.PREF_15X)
-		    {
-		    	emu_w = (int)(emu_w * 1.5f);
-		    	emu_h = (int)(emu_h * 1.5f);
+		    if(scaleType == PrefsHelper.PREF_SCALE_INTEGER)
+		    {		    	
+		    	int e = mm.getPrefsHelper().getImageEffectValue()+1;
+		    	emu_w = emu_w/e;
+		    	emu_h = emu_h/e;
 		    	
-		    	//emu_h =  MeasureSpec.getSize(widthMeasureSpec) *  (emu_w / emu_h); 
-		    	//emu_w = MeasureSpec.getSize(widthMeasureSpec);		    			    	
+		    	int ax = (MeasureSpec.getSize(widthMeasureSpec) / emu_w);
+		    	int ay = (MeasureSpec.getSize(heightMeasureSpec) / emu_h);
+
+		    	int xx = Math.min(ax,ay);
+		    	
+		    	if(xx==0)
+		    		xx=1;
+		    	
+		    	emu_w = emu_w * xx;
+		    	emu_h = emu_h * xx;		    	
 		    } else
-		    
+			
+		    if(scaleType == PrefsHelper.PREF_SCALE_INTEGER_BEYOND)
+			{	
+		    	int e = mm.getPrefsHelper().getImageEffectValue()+1;
+		    	emu_w = emu_w/e;
+		    	emu_h = emu_h/e;
+		    	
+			  	int ax = (MeasureSpec.getSize(widthMeasureSpec) / emu_w);
+			   	int ay = (MeasureSpec.getSize(heightMeasureSpec) / emu_h);
+
+			   	ax++;ay++;		    	
+			   	int xx = Math.min(ax,ay);
+			    	
+			   	if(xx==0)
+     		       xx=1;
+			    	
+			   	emu_w = emu_w * xx;
+			   	emu_h = emu_h * xx;		    	
+			} else
+				
+		    if(scaleType == PrefsHelper.PREF_15X)
+			{
+		    	emu_w = (int)(emu_w * 1.5f);
+		    	emu_h = (int)(emu_h * 1.5f);		    	
+			} else
+			    	
 		    if(scaleType == PrefsHelper.PREF_20X)
 		    {
 		    	emu_w = emu_w * 2;
@@ -770,8 +815,7 @@ public class MainHelper {
 		    	emu_w = (int)(emu_w * 6.0f);
 		    	emu_h = (int)(emu_h * 6.0f);
 		    }
-		    
-		    
+		    		    
 			int w = emu_w;
 			int h = emu_h;
 
@@ -782,19 +826,17 @@ public class MainHelper {
 			    
 			    if(mm.getPrefsHelper().isOverscan())
 			    {
-			       widthSize *= 0.92;
-			       heightSize *= 0.92;
+			       widthSize *= 0.93;
+			       heightSize *= 0.93;
 			    }
+			    		    
 			}
 			else
 			{
 				widthSize = emu_w;
 				heightSize = emu_h;
 			}
-			
-			//widthSize *= 1.1;
-			//heightSize *= 1.1;
-						
+									
 			if(heightSize==0)heightSize=1;
 			if(widthSize==0)widthSize=1;
 

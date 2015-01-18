@@ -65,6 +65,7 @@ extern int  myosd_num_of_joys;
 extern int  myosd_video_threaded;
 extern int  myosd_service;
 extern int  myosd_num_buttons;
+extern int  myosd_light_gun;
 extern int  myosd_fs_counter;
 extern int  myosd_saveload_combo;
 
@@ -126,6 +127,10 @@ extern const char *myosd_array_categories[];
 
 extern char myosd_game[MAX_GAME_NAME];
 extern char myosd_rompath[MAX_ROM_PATH];
+extern char myosd_version[16];
+extern char myosd_bios[16];
+
+extern char *myosd_category;
     
 #if defined(__cplusplus)
 }

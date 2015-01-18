@@ -3811,7 +3811,9 @@ static void menu_select_game_populate(running_machine *machine, ui_menu *menu, s
         else
         {
              strcpy(rom_path,globalpath);
-             strcat(rom_path,"/roms");
+             if(rom_path[strlen(rom_path)-1]!='/')
+                strcat(rom_path,"/");
+             strcat(rom_path,"roms");
         }
 
         sprintf(buf, "No games found. After installing, place your MAME-titled (lower case) zipped roms in MAME4droid '%s' folder.",rom_path);
@@ -3908,20 +3910,21 @@ static void menu_select_game_build_driver_list(ui_menu *menu, select_game_state 
     categories_read();
     
     favorites_read();
-    
+         
     //fixup filters
+    int filter_manufacturer_other = 0;
+    int filter_driver_source_other = 0;
     if(myosd_filter_manufacturer>=0)
     {
         if(strcmp(myosd_array_main_manufacturers[myosd_filter_manufacturer],"Other")==0)
-            myosd_filter_manufacturer = -2;
+            filter_manufacturer_other = 1;
     }
-    
+   
     if(myosd_filter_driver_source>=0)
     {
         if(strcmp(myosd_array_main_driver_source[myosd_filter_driver_source],"Other")==0)
-            myosd_filter_driver_source = -2;
-    }
-    
+            filter_driver_source_other = 1;
+    }   
 ////DAV HACK
     
 	/* create a sorted copy of the main driver list */
@@ -3960,7 +3963,7 @@ static void menu_select_game_build_driver_list(ui_menu *menu, select_game_state 
             
             int skip = found_driver == NULL;
  
-//DAV HACK            
+//DAV HACK
             if(!skip && myosd_filter_clones)
             {
                 const game_driver *cloneof = driver_get_clone(*found_driver);
@@ -3970,7 +3973,7 @@ static void menu_select_game_build_driver_list(ui_menu *menu, select_game_state 
             if(!skip) skip = myosd_filter_favorites && !isFavorite(drivername) ;
             if(!skip && myosd_filter_manufacturer !=  -1)
             {
-                if(myosd_filter_manufacturer==-2)
+                if(filter_manufacturer_other)
                 {
                     int i=0;
                     while(!skip && myosd_array_main_manufacturers[i][0]!='\0')
@@ -3982,7 +3985,7 @@ static void menu_select_game_build_driver_list(ui_menu *menu, select_game_state 
                 else
                     skip =  strstr((*found_driver)->manufacturer,myosd_array_main_manufacturers[myosd_filter_manufacturer])==NULL;
             }
-            
+           
             if(!skip && myosd_filter_gte_year!=-1)
             {
                 const char *year = (*found_driver)->year;
@@ -3993,14 +3996,14 @@ static void menu_select_game_build_driver_list(ui_menu *menu, select_game_state 
                 const char *year = (*found_driver)->year;
                 skip = strcmp(year,"19??")==0 || strcmp(year,"197?")==0 || strcmp(year,"198?")==0 || strcmp(year,"200?")==0 || strcmp(year,myosd_array_years[myosd_filter_lte_year]) > 0;
             }
-            
+           
             if(!skip && myosd_filter_driver_source !=  -1)
             {
                 astring source_name;
                 core_filename_extract_base(&source_name,(*found_driver)->source_file,true);
                 const char *sname= source_name.cstr();
-                
-                if(myosd_filter_driver_source==-2)
+
+                if(filter_driver_source_other)
                 {
                     int i=0;
                     while(!skip && myosd_array_main_driver_source[i][0]!='\0')
@@ -4095,19 +4098,27 @@ static void menu_select_game_custom_render(running_machine *machine, ui_menu *me
         }
         
         if (myosd_filter_manufacturer>=0) {
-            strcat(tempstr, myosd_array_main_manufacturers[myosd_filter_manufacturer]);
-            strcat(tempstr, "/");
+       
+           if(strcmp(myosd_array_main_manufacturers[myosd_filter_manufacturer],"Other")==0)
+                strcat(tempstr, "Other Manufact/");
+           else
+           {
+                strcat(tempstr, myosd_array_main_manufacturers[myosd_filter_manufacturer]);
+                strcat(tempstr, "/");
+           }
         }
-        if (myosd_filter_manufacturer==-2)
-            strcat(tempstr, "Other Manufact/");
-        
+
         if (myosd_filter_driver_source>=0) {
-            strcat(tempstr, myosd_array_main_driver_source[myosd_filter_driver_source]);
-            strcat(tempstr, "/");
-        }
-        if (myosd_filter_driver_source==-2)
-            strcat(tempstr, "Other DrvSrc/");
         
+            if(strcmp(myosd_array_main_driver_source[myosd_filter_driver_source],"Other")==0)
+               strcat(tempstr, "Other DrvSrc/");
+            else
+            {
+               strcat(tempstr, myosd_array_main_driver_source[myosd_filter_driver_source]);
+               strcat(tempstr, "/");
+            }
+        }
+
         if (myosd_filter_category>=0) {
             strcat(tempstr, myosd_array_categories[myosd_filter_category]);
             strcat(tempstr, "/");
@@ -4122,7 +4133,7 @@ static void menu_select_game_custom_render(running_machine *machine, ui_menu *me
 	#ifdef IOS
 			sprintf(&tempbuf[0][0], "MAME4iOS (0.139u1) 1.6 by David Valdeita (Seleuco). Game: %d/%d",MIN(myosd_last_game_selected+1,nroms), nroms);
 	#else
-			sprintf(&tempbuf[0][0], "MAME4droid (0.139u1) 1.7 by David Valdeita (Seleuco). Game: %d/%d",MIN(myosd_last_game_selected+1,nroms), nroms);
+			sprintf(&tempbuf[0][0], "MAME4droid (0.139u1) %s by David Valdeita (Seleuco). Game: %d/%d",myosd_version,MIN(myosd_last_game_selected+1,nroms), nroms);
 	#endif
     }
     
@@ -4163,7 +4174,8 @@ static void menu_select_game_custom_render(running_machine *machine, ui_menu *me
 		sprintf(&tempbuf[0][0], "%-.100s", driver->description);
         
         char *category = find_category(driver->name);
-        
+        myosd_category = category ;
+
         astring source_name;
         core_filename_extract_base(&source_name,driver->source_file,true);
         

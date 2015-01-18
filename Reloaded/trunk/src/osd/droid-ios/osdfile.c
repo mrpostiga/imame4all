@@ -95,7 +95,7 @@ file_error osd_open(const char *path, UINT32 openflags, osd_file **file, UINT64 
 	file_error filerr = FILERR_NONE;
 
 #ifdef ANDROID
-	__android_log_print(ANDROID_LOG_INFO, "mame4", "Leo %s",path);
+	//__android_log_print(ANDROID_LOG_INFO, "mame4", "Leo %s",path);
 #endif
 
 	tmpstr = NULL;

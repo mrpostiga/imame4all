@@ -1,7 +1,7 @@
 /*
  * This file is part of MAME4droid.
  *
- * Copyright (C) 2013 David Valdeita (Seleuco)
+ * Copyright (C) 2015 David Valdeita (Seleuco)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,7 +46,6 @@ package com.seleuco.mame4droid.input;
 
 import android.annotation.TargetApi;
 import android.os.Build;
-import android.provider.Settings;
 import android.util.SparseIntArray;
 import android.view.InputDevice;
 import android.view.KeyEvent;

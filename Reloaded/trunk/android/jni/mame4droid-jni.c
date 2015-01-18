@@ -143,7 +143,7 @@ static void load_lib(const char *str)
      __android_log_print(ANDROID_LOG_DEBUG, "mame4droid-jni","setNetplayCallbacks %d\n", setNetplayCallbacks!=NULL);
 }
 
-void myJNI_initVideo(void *buffer, int width, int height)
+void myJNI_initVideo(void *buffer, int width, int height, int pitch)
 {
     JNIEnv *env;
     jobject tmp;
@@ -151,7 +151,7 @@ void myJNI_initVideo(void *buffer, int width, int height)
 #ifdef DEBUG
     __android_log_print(ANDROID_LOG_DEBUG, "mame4droid-jni", "initVideo");
 #endif
-    tmp = (*env)->NewDirectByteBuffer(env, buffer, width * height * 2);
+    tmp = (*env)->NewDirectByteBuffer(env, buffer, width * height * pitch);
 
     videoBuffer = (jobject)(*env)->NewGlobalRef(env, tmp);
 
@@ -457,7 +457,7 @@ JNIEXPORT void JNICALL Java_com_seleuco_mame4droid_Emulator_setValue
   (JNIEnv *env, jclass c, jint key, jint i, jint value)
 {
 #ifdef DEBUG
-    __android_log_print(ANDROID_LOG_DEBUG, "mame4droid-jni", "setValue %d,%d=%d",key,i,value);
+    //__android_log_print(ANDROID_LOG_DEBUG, "mame4droid-jni", "setValue %d,%d=%d",key,i,value);
 #endif
     if(setMyValue!=NULL)
       setMyValue(key,i,value);
