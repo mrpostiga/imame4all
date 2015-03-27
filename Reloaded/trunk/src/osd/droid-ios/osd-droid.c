@@ -79,6 +79,7 @@ int myosd_reset_filter = 0;
 int myosd_num_ways = 8;
 
 int myosd_vsync = -1;
+int myosd_refresh = -1;
 int myosd_dbl_buffer=1;
 int myosd_rgb=0;
 int myosd_hqx=0;
@@ -98,6 +99,11 @@ float joy_analog_y[4];
 
 float lightgun_x[4];
 float lightgun_y[4];
+
+float mouse_x[4];
+float mouse_y[4];
+
+int myosd_mouse = 0;
 
 static int lib_inited = 0;
 static int soundInit = 0;
@@ -379,6 +385,10 @@ void setMyValue(int key,int i, int value){
                       myosd_hqx = value+1;
                  }
                  break;
+            case 60:                 
+                 myosd_mouse = value;break; 
+            case 61:                 
+                 myosd_refresh = value;break; 
          }
 }
 
@@ -517,7 +527,13 @@ char *getMyValueStr(int key,int i){
 
 extern "C"
 void setMyAnalogData(int i, float v1, float v2){
-        if(i>=4)
+        
+        if(i >= 8)
+        {
+           mouse_x[i-8]=v1;
+           mouse_y[i-8]=v2;        
+        }
+        else if(i>=4 && i<=7)
         {
            lightgun_x[i-4]=v1;
            lightgun_y[i-4]=v2;

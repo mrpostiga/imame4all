@@ -61,6 +61,8 @@ static int joy_hats[4][4];
 
 static int lightgun_axis[4][2];
 
+static int mouse_axis[4][2];
+
 static int poll_ports = 0;
 static int fire[4] = {0,0,0,0};
 
@@ -79,8 +81,11 @@ void droid_ios_init_input(running_machine *machine)
 	memset(joy_hats,0,sizeof(joy_hats));
     
 
+
 	input_device_class_enable(machine, DEVICE_CLASS_LIGHTGUN, TRUE);
 	input_device_class_enable(machine, DEVICE_CLASS_JOYSTICK, TRUE);
+        if(myosd_mouse)
+           input_device_class_enable(machine, DEVICE_CLASS_MOUSE, TRUE);
 
 	for (int i = 0; i < 4; i++)
 	{
@@ -89,12 +94,12 @@ void droid_ios_init_input(running_machine *machine)
 
 		snprintf(name, 10, "Joy %d", i + 1);
 		devinfo = input_device_add(machine, DEVICE_CLASS_JOYSTICK, name, NULL);
-		input_device_item_add(devinfo, "Bt_B", &joy_buttons[i][0], ITEM_ID_BUTTON1, my_get_state);
-		input_device_item_add(devinfo, "Bt_X", &joy_buttons[i][1], ITEM_ID_BUTTON2, my_get_state);
-		input_device_item_add(devinfo, "Bt_A", &joy_buttons[i][2], ITEM_ID_BUTTON3, my_get_state);
-		input_device_item_add(devinfo, "Bt_Y", &joy_buttons[i][3], ITEM_ID_BUTTON4, my_get_state);
-		input_device_item_add(devinfo, "Bt_L", &joy_buttons[i][4], ITEM_ID_BUTTON5, my_get_state);
-		input_device_item_add(devinfo, "Bt_R", &joy_buttons[i][5], ITEM_ID_BUTTON6, my_get_state);
+		input_device_item_add(devinfo, "Bt_A", &joy_buttons[i][0], ITEM_ID_BUTTON1, my_get_state);
+		input_device_item_add(devinfo, "Bt_B", &joy_buttons[i][1], ITEM_ID_BUTTON2, my_get_state);
+		input_device_item_add(devinfo, "Bt_C", &joy_buttons[i][2], ITEM_ID_BUTTON3, my_get_state);
+		input_device_item_add(devinfo, "Bt_D", &joy_buttons[i][3], ITEM_ID_BUTTON4, my_get_state);
+		input_device_item_add(devinfo, "Bt_E", &joy_buttons[i][4], ITEM_ID_BUTTON5, my_get_state);
+		input_device_item_add(devinfo, "Bt_F", &joy_buttons[i][5], ITEM_ID_BUTTON6, my_get_state);
 
 		input_device_item_add(devinfo, "Coin", &joy_buttons[i][6], ITEM_ID_BUTTON7, my_get_state);
 		input_device_item_add(devinfo, "Start", &joy_buttons[i][7], ITEM_ID_BUTTON8, my_get_state);
@@ -137,6 +142,19 @@ void droid_ios_init_input(running_machine *machine)
 
 	   input_device_item_add(lightgun_device, "X Axis", &lightgun_axis[i][0], ITEM_ID_XAXIS, my_axis_get_state);
   	   input_device_item_add(lightgun_device, "Y Axis", &lightgun_axis[i][1], ITEM_ID_YAXIS, my_axis_get_state);
+        }
+
+	for (int i = 0; i < 4; i++ && myosd_mouse)
+	{
+	    char name[10];
+            snprintf(name, 10, "Mouse %d", i + 1);
+
+	    input_device *mouse_device = input_device_add(machine, DEVICE_CLASS_MOUSE, name, NULL);
+	    if (mouse_device == NULL)
+		fatalerror("Error creating mouse device");
+
+	   input_device_item_add(mouse_device, "X Axis", &mouse_axis[i][0], ITEM_ID_XAXIS, my_axis_get_state);
+  	   input_device_item_add(mouse_device, "Y Axis", &mouse_axis[i][1], ITEM_ID_YAXIS, my_axis_get_state);
         }
     
         poll_ports = 1;
@@ -259,27 +277,27 @@ float joystick_read_analog(int n, char axis)
 }
 
 void droid_ios_poll_input(running_machine *machine)
-{    
+{
     my_poll_ports(machine);
-    
+
     long _pad_status = joystick_read(0);
-    
+
     netplay_t *handle = netplay_get_handle();
     int netplay = handle->has_connection && handle->has_begun_game;
-    
-	if(mystate == STATE_NORMAL)
-	{
 
-		keyboard_state[KEY_1] = 0;
-		keyboard_state[KEY_2] = 0;
+    if (mystate == STATE_NORMAL)
+    {
 
-		if(myosd_exitGame || handle->state.ext & NP_EXIT || handle->peer_state.ext & NP_EXIT)
-		{
-            if(netplay)
+        keyboard_state[KEY_1] = 0;
+        keyboard_state[KEY_2] = 0;
+
+        if (myosd_exitGame || handle->state.ext & NP_EXIT || handle->peer_state.ext & NP_EXIT)
+        {
+            if (netplay)
             {
-                if(myosd_in_menu)
+                if (myosd_in_menu)
                 {
-                    if(handle->state.ext & NP_EXIT || handle->peer_state.ext & NP_EXIT)
+                    if (handle->state.ext & NP_EXIT || handle->peer_state.ext & NP_EXIT)
                     {
                         keyboard_state[KEY_ESCAPE] = 0x80;
                         myosd_ext_status &= ~ NP_EXIT;
@@ -298,41 +316,41 @@ void droid_ios_poll_input(running_machine *machine)
             }
             else
             {
-                handle->has_begun_game = 0;//ensure for auto disconnect 
+                handle->has_begun_game = 0;//ensure for auto disconnect
                 keyboard_state[KEY_ESCAPE] = 0x80;
-			}
-            
+            }
+
             myosd_exitGame = 0;
             handle->state.ext &= ~ NP_EXIT;
             handle->peer_state.ext &= ~ NP_EXIT;
-		}
-	    else
-	    {
-			keyboard_state[KEY_ESCAPE] = 0;
-            
-            if(myosd_reset_filter==1){
+        }
+        else
+        {
+            keyboard_state[KEY_ESCAPE] = 0;
+
+            if (myosd_reset_filter==1) {
                 myosd_exitGame= 1;
             }
         }
-        
-		if(myosd_service && !myosd_in_menu && !netplay)
-		{
-			keyboard_state[KEY_SERVICE] = 0x80;
-			myosd_service = 0;
-		}
-	    else
-	    {
-			keyboard_state[KEY_SERVICE] = 0;
+
+        if (myosd_service && !myosd_in_menu && !netplay)
+        {
+            keyboard_state[KEY_SERVICE] = 0x80;
+            myosd_service = 0;
+        }
+        else
+        {
+            keyboard_state[KEY_SERVICE] = 0;
         }
 
-		keyboard_state[KEY_LOAD] =  0;
-		keyboard_state[KEY_SAVE] =  0;
+        keyboard_state[KEY_LOAD] =  0;
+        keyboard_state[KEY_SAVE] =  0;
 
-		if(myosd_savestate || handle->state.ext & NP_SAVE || handle->peer_state.ext & NP_SAVE)
-		{
-            if(netplay)
+        if (myosd_savestate || handle->state.ext & NP_SAVE || handle->peer_state.ext & NP_SAVE)
+        {
+            if (netplay)
             {
-                if(handle->state.ext & NP_SAVE || handle->peer_state.ext & NP_SAVE)
+                if (handle->state.ext & NP_SAVE || handle->peer_state.ext & NP_SAVE)
                 {
                     keyboard_state[KEY_SAVE] =  0x80;
                     mystate = STATE_LOADSAVE;
@@ -354,13 +372,13 @@ void droid_ios_poll_input(running_machine *machine)
             myosd_savestate = 0;
             myosd_fs_counter = 60 * 5;
             return;
-		}
+        }
 
-		if(myosd_loadstate || handle->state.ext & NP_LOAD || handle->peer_state.ext & NP_LOAD)
-		{
-            if(netplay)
+        if (myosd_loadstate || handle->state.ext & NP_LOAD || handle->peer_state.ext & NP_LOAD)
+        {
+            if (netplay)
             {
-                if(handle->state.ext & NP_LOAD || handle->peer_state.ext & NP_LOAD)
+                if (handle->state.ext & NP_LOAD || handle->peer_state.ext & NP_LOAD)
                 {
                     keyboard_state[KEY_LOAD] =  0x80;
                     mystate = STATE_LOADSAVE;
@@ -373,144 +391,156 @@ void droid_ios_poll_input(running_machine *machine)
             }
             else
             {
-               keyboard_state[KEY_LOAD] =  0x80;
-			   mystate = STATE_LOADSAVE;
+                keyboard_state[KEY_LOAD] =  0x80;
+                mystate = STATE_LOADSAVE;
             }
-            
+
             handle->state.ext &= ~ NP_LOAD;
             handle->peer_state.ext &= ~ NP_LOAD;
             myosd_loadstate = 0;
             myosd_fs_counter = 60 * 5;
             return;
-		}
+        }
 
-		for(int i=0; i<4; i++)
-		{
-			if(i!=0  && myosd_in_menu==1 && myosd_num_of_joys <=1)//to avoid mapping issues when pxasp1 is active
-				break;
+        for (int i=0; i<4; i++)
+        {
+            if (i!=0  && myosd_in_menu==1 && myosd_num_of_joys <=1)//to avoid mapping issues when pxasp1 is active
+                break;
 
-			_pad_status = joystick_read(i);
+            _pad_status = joystick_read(i);
 
-			if(i==0)
-			{
-				if(!myosd_inGame && !myosd_in_menu)
-				{
-					keyboard_state[KEY_PGUP] = ((_pad_status & MYOSD_LEFT) != 0) ? 0x80 : 0;
-					keyboard_state[KEY_PGDN] = ((_pad_status & MYOSD_RIGHT) != 0) ? 0x80 : 0;
-				}
-				else
-				{
-					keyboard_state[KEY_PGUP] = 0;
-					keyboard_state[KEY_PGDN] = 0;
-				}
-                
-                if((_pad_status & MYOSD_START /*& MYOSD_SELECT*/)  &&  (_pad_status /*& MYOSD_A*/ & MYOSD_L1) && myosd_saveload_combo)
+            if (i==0)
+            {
+                if (!myosd_inGame && !myosd_in_menu)
+                {
+                    keyboard_state[KEY_PGUP] = ((_pad_status & MYOSD_LEFT) != 0) ? 0x80 : 0;
+                    keyboard_state[KEY_PGDN] = ((_pad_status & MYOSD_RIGHT) != 0) ? 0x80 : 0;
+                }
+                else
+                {
+                    keyboard_state[KEY_PGUP] = 0;
+                    keyboard_state[KEY_PGDN] = 0;
+                }
+
+                if ((_pad_status & MYOSD_START /*& MYOSD_SELECT*/)  &&  (_pad_status /*& MYOSD_A*/ & MYOSD_L1) && myosd_saveload_combo)
                 {
                     myosd_savestate = 1;
                     break;
                 }
-                if((_pad_status /*& MYOSD_SELECT*/ & MYOSD_START)  &&  (_pad_status /*& MYOSD_A*/ & MYOSD_R1) && myosd_saveload_combo)
+                if ((_pad_status /*& MYOSD_SELECT*/ & MYOSD_START)  &&  (_pad_status /*& MYOSD_A*/ & MYOSD_R1) && myosd_saveload_combo)
                 {
                     myosd_loadstate = 1;
                     break;
                 }
-			}
+            }
 
             // lo cambio de 0 a i...
-			if(joystick_read_analog(i, 'x') == 0 && joystick_read_analog(i, 'y')==0)
-			{
-			   joy_hats[i][0] = ((_pad_status & MYOSD_UP) != 0) ? 0x80 : 0;
-			   joy_hats[i][1] = ((_pad_status & MYOSD_DOWN) != 0) ? 0x80 : 0;
-			   joy_hats[i][2] = ((_pad_status & MYOSD_LEFT) != 0) ? 0x80 : 0;
-			   joy_hats[i][3] = ((_pad_status & MYOSD_RIGHT) != 0) ? 0x80 : 0;
-			   joy_axis[i][0] = 0;
-			   joy_axis[i][1] = 0;
-   
-                           lightgun_axis[i][0] = (int)(lightgun_x[myosd_pxasp1 ? 0 : i] *  32767 *  2 );
-  			   lightgun_axis[i][1] = (int)(lightgun_y[myosd_pxasp1 ? 0 : i] *  32767 * -2 );
-                           
-			}
-			else
-			{
-			   
-                           joy_axis[i][0] = (int)(joystick_read_analog(i, 'x') *  32767 *  2 );
-			   joy_axis[i][1] = (int)(joystick_read_analog(i, 'y') *  32767 * -2 );
-			   joy_hats[i][0] = 0;
-			   joy_hats[i][1] = 0;
-			   joy_hats[i][2] = 0;
-			   joy_hats[i][3] = 0;
+            if (joystick_read_analog(i, 'x') == 0 && joystick_read_analog(i, 'y')==0)
+            {
+                joy_hats[i][0] = ((_pad_status & MYOSD_UP) != 0) ? 0x80 : 0;
+                joy_hats[i][1] = ((_pad_status & MYOSD_DOWN) != 0) ? 0x80 : 0;
+                joy_hats[i][2] = ((_pad_status & MYOSD_LEFT) != 0) ? 0x80 : 0;
+                joy_hats[i][3] = ((_pad_status & MYOSD_RIGHT) != 0) ? 0x80 : 0;
+                joy_axis[i][0] = 0;
+                joy_axis[i][1] = 0;
 
-                           lightgun_x[i] = 0;                              
-                           lightgun_y[i] = 0;                              
-                           lightgun_axis[i][0] = 0;
-                           lightgun_axis[i][1] = 0;
+                lightgun_axis[i][0] = (int)(lightgun_x[myosd_pxasp1 ? 0 : i] *  32767 *  2 );
+                lightgun_axis[i][1] = (int)(lightgun_y[myosd_pxasp1 ? 0 : i] *  32767 * -2 );
 
-			}
-            
-            if(myosd_inGame && !myosd_in_menu && myosd_autofire && !netplay)
+                mouse_axis[i][0] = (int)(mouse_x[myosd_pxasp1 ? 0 : i] * INPUT_RELATIVE_PER_PIXEL);
+                mouse_axis[i][1] = (int)(mouse_y[myosd_pxasp1 ? 0 : i] * INPUT_RELATIVE_PER_PIXEL);
+            }
+            else
+            {
+
+                joy_axis[i][0] = (int)(joystick_read_analog(i, 'x') *  32767 *  2 );
+                joy_axis[i][1] = (int)(joystick_read_analog(i, 'y') *  32767 * -2 );
+                joy_hats[i][0] = 0;
+                joy_hats[i][1] = 0;
+                joy_hats[i][2] = 0;
+                joy_hats[i][3] = 0;
+
+                lightgun_x[i] = 0;
+                lightgun_y[i] = 0;
+                lightgun_axis[i][0] = 0;
+                lightgun_axis[i][1] = 0;
+
+                mouse_x[i] = 0;
+                mouse_y[i] = 0;
+                mouse_axis[i][0] = 0;
+                mouse_axis[i][1] = 0;
+            }
+
+            if (myosd_inGame && !myosd_in_menu && myosd_autofire && !netplay)
             {
                 old_B_pressed[i] = B_pressed[i];
                 B_pressed[i] = _pad_status & MYOSD_B;
-                
-                if(!old_B_pressed[i] && B_pressed[i])
+
+                if (!old_B_pressed[i] && B_pressed[i])
                 {
-                   enabled_autofire[i] = !enabled_autofire[i];
+                    enabled_autofire[i] = !enabled_autofire[i];
                 }
             }
             else
                 enabled_autofire[i] = false;
 
-			if(enabled_autofire[i])//AUTOFIRE
+            if (enabled_autofire[i])//AUTOFIRE
             {
                 int value  = 0;
                 switch (myosd_autofire) {
-                    case 1: value = 1;break;
-                    case 2: value = 2;break;
-                    case 3: value = 4; break;
-                    case 4: value = 6; break;
-                    case 5: value = 8; break;
-                    case 6: value = 10; break;
-                    case 7: value = 13; break;
-                    case 8: value = 16; break;
-                    case 9: value = 20; break;
-                    default:
-                        value = 6; break;
-                        break;
+                case 1:                    value = 1;                    break;
+                case 2:                    value = 2;                    break;
+                case 3:                    value = 4;                    break;
+                case 4:                    value = 6;                    break;
+                case 5:                    value = 8;                    break;
+                case 6:                    value = 10;                    break;
+                case 7:                    value = 13;                    break;
+                case 8:                    value = 16;                    break;
+                case 9:                    value = 20;                    break;
+                default:
+                    value = 6;                    break;
+                    break;
                 }
-                                
+
                 joy_buttons[i][0] = fire[i]++ >=value ? 0x80 : 0;
-                if(fire[ i] >= value*2)
+                if (fire[ i] >= value*2)
                     fire[ i] = 0;
-                
+
             }
             else
-               joy_buttons[i][0]  = ((_pad_status & MYOSD_B) != 0) ? 0x80 : 0;
-            
-			joy_buttons[i][1]  = ((_pad_status & MYOSD_X) != 0) ? 0x80 : 0;
-			joy_buttons[i][2]  = ((_pad_status & MYOSD_A) != 0) ? 0x80 : 0;
-			joy_buttons[i][3]  = ((_pad_status & MYOSD_Y) != 0) ? 0x80 : 0;
-			joy_buttons[i][4]  = ((_pad_status & MYOSD_L1) != 0) ? 0x80 : 0;
-			joy_buttons[i][5]  = ((_pad_status & MYOSD_R1) != 0) ? 0x80 : 0;
+                joy_buttons[i][0]  = ((_pad_status & MYOSD_B) != 0) ? 0x80 : 0;
 
-			if(i!=0  && (myosd_num_of_joys==1 || myosd_num_of_joys==0) && !netplay)
-				continue;
+            joy_buttons[i][1]  = ((_pad_status & MYOSD_X) != 0) ? 0x80 : 0;
+            joy_buttons[i][2]  = ((_pad_status & MYOSD_A) != 0) ? 0x80 : 0;
+            joy_buttons[i][3]  = ((_pad_status & MYOSD_Y) != 0) ? 0x80 : 0;
+            joy_buttons[i][4]  = ((_pad_status & MYOSD_L1) != 0) ? 0x80 : 0;
+            joy_buttons[i][5]  = ((_pad_status & MYOSD_R1) != 0) ? 0x80 : 0;
 
-			joy_buttons[i][6]  = ((_pad_status & MYOSD_SELECT ) != 0) ? 0x80 : 0;
-			joy_buttons[i][7]  = ((_pad_status & MYOSD_START  ) != 0) ? 0x80 : 0;
-		}
-	}
-	else if(mystate == STATE_LOADSAVE)
-	{
-		
+            if (i!=0  && (myosd_num_of_joys==1 || myosd_num_of_joys==0) && !netplay)
+                continue;
+
+            joy_buttons[i][6]  = ((_pad_status & MYOSD_SELECT ) != 0) ? 0x80 : 0;
+            joy_buttons[i][7]  = ((_pad_status & MYOSD_START  ) != 0) ? 0x80 : 0;
+        }
+
+        for (int i=0; i<4; i++)
+        {
+            mouse_x[i] = 0;
+            mouse_y[i] = 0;
+        }
+    }
+    else if (mystate == STATE_LOADSAVE)
+    {
+
         keyboard_state[KEY_ESCAPE] = 0;
-		keyboard_state[KEY_1] = 0;
-		keyboard_state[KEY_2] = 0;
+        keyboard_state[KEY_1] = 0;
+        keyboard_state[KEY_2] = 0;
 
-		if(myosd_exitGame || handle->state.ext & NP_EXIT || handle->peer_state.ext & NP_EXIT)
-		{
-            if(netplay)
+        if (myosd_exitGame || handle->state.ext & NP_EXIT || handle->peer_state.ext & NP_EXIT)
+        {
+            if (netplay)
             {
-                if(handle->state.ext & NP_EXIT || handle->peer_state.ext & NP_EXIT)
+                if (handle->state.ext & NP_EXIT || handle->peer_state.ext & NP_EXIT)
                 {
                     keyboard_state[KEY_ESCAPE] = 0x80;
                     mystate = STATE_NORMAL;
@@ -525,29 +555,30 @@ void droid_ios_poll_input(running_machine *machine)
             {
                 keyboard_state[KEY_ESCAPE] = 0x80;
                 mystate = STATE_NORMAL;
-			}
-			
+            }
+
             myosd_exitGame = 0;
             handle->state.ext &= ~ NP_EXIT;
             handle->peer_state.ext &= ~ NP_EXIT;
-		}
+        }
 
-		if ((_pad_status & MYOSD_B) != 0)
-		{
-			keyboard_state[KEY_1] = 0x80;
-			mystate = STATE_NORMAL;
-            do{}while(myosd_joystick_read(0) & MYOSD_B);
-		}
+        if ((_pad_status & MYOSD_B) != 0)
+        {
+            keyboard_state[KEY_1] = 0x80;
+            mystate = STATE_NORMAL;
+            do {}while (myosd_joystick_read(0) & MYOSD_B);
+        }
 
-		if ((_pad_status & MYOSD_X) != 0)
-		{
-			keyboard_state[KEY_2] = 0x80;
-			mystate = STATE_NORMAL;
-            do{}while(myosd_joystick_read(0) & MYOSD_X);
-		}
+        if ((_pad_status & MYOSD_X) != 0)
+        {
+            keyboard_state[KEY_2] = 0x80;
+            mystate = STATE_NORMAL;
+            do {}while (myosd_joystick_read(0) & MYOSD_X);
+        }
 
-	}
-	else {/*???*/}
+    }
+    else {/*???*/}
+
 }
 
 //============================================================
@@ -723,7 +754,8 @@ void osd_customize_input_type_list(input_type_desc *typelist)
 				if(typedesc->group == IPG_PLAYER1)
 				{				   
                                    //if(typedesc->type==IPT_LIGHTGUN_X)                                   
-                                      input_seq_set_3(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(GUNCODE_X,0),SEQCODE_OR,INPUT_CODE_SET_DEVINDEX(JOYCODE_X,0));
+                                      //input_seq_set_3(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(GUNCODE_X,0),SEQCODE_OR,INPUT_CODE_SET_DEVINDEX(JOYCODE_X,0));
+input_seq_set_5(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(GUNCODE_X,0),SEQCODE_OR,INPUT_CODE_SET_DEVINDEX(JOYCODE_X,0),SEQCODE_OR,INPUT_CODE_SET_DEVINDEX(MOUSECODE_X,0));
                                    //else
                                       //input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(JOYCODE_X,0));
                                    input_seq_set_1(&typedesc->seq[SEQ_TYPE_DECREMENT],INPUT_CODE_SET_DEVINDEX(STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT1LEFT),0));
@@ -760,7 +792,8 @@ void osd_customize_input_type_list(input_type_desc *typelist)
 				if(typedesc->group == IPG_PLAYER1)
 				{
                                    //if(typedesc->type==IPT_LIGHTGUN_Y)                                   
-                                      input_seq_set_3(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(GUNCODE_Y,0),SEQCODE_OR,INPUT_CODE_SET_DEVINDEX(JOYCODE_Y,0));
+                                      //input_seq_set_3(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(GUNCODE_Y,0),SEQCODE_OR,INPUT_CODE_SET_DEVINDEX(JOYCODE_Y,0));
+input_seq_set_5(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(GUNCODE_Y,0),SEQCODE_OR,INPUT_CODE_SET_DEVINDEX(JOYCODE_Y,0),SEQCODE_OR,INPUT_CODE_SET_DEVINDEX(MOUSECODE_Y,0));
                                    //else
                                       //input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(JOYCODE_Y,0));
                                    input_seq_set_1(&typedesc->seq[SEQ_TYPE_DECREMENT],INPUT_CODE_SET_DEVINDEX(STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT1UP),0));

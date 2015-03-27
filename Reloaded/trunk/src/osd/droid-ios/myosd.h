@@ -77,6 +77,11 @@ extern float joy_analog_y[4];
 extern float lightgun_x[4];
 extern float lightgun_y[4];
 
+extern float mouse_x[4];
+extern float mouse_y[4];
+
+extern int myosd_mouse;
+
 extern unsigned short myosd_ext_status;
     
 extern int myosd_last_game_selected;
@@ -95,6 +100,7 @@ extern int myosd_reset_filter;
 extern int myosd_num_ways;
     
 extern int myosd_vsync;
+extern int myosd_refresh;
 extern int myosd_dbl_buffer;
 extern int myosd_rgb;
 extern int myosd_autofire;

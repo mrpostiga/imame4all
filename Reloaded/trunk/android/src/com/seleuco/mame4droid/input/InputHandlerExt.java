@@ -44,7 +44,10 @@
 
 package com.seleuco.mame4droid.input;
 
+//import static com.seleuco.mame4droid.input.InputHandlerExt.resetAutodetected;
 import android.annotation.TargetApi;
+import android.content.Context;
+import android.hardware.input.InputManager;
 import android.os.Build;
 import android.util.SparseIntArray;
 import android.view.InputDevice;
@@ -59,6 +62,7 @@ import com.seleuco.mame4droid.MAME4droid;
 import com.seleuco.mame4droid.helpers.DialogHelper;
 import com.seleuco.mame4droid.helpers.MainHelper;
 import com.seleuco.mame4droid.helpers.PrefsHelper;
+
 
 @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1) 
 public class InputHandlerExt extends InputHandler implements OnGenericMotionListener  {
@@ -75,7 +79,9 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 	protected int [][]deviceMappings = new int[MAX_KEYS][MAX_DEVICES];
 	
 	protected static SparseIntArray banDev = new SparseIntArray(50);
-		
+	
+	protected boolean gf_NVMouseExtensions;
+					
 	public static void resetAutodetected(){
 		//id = 0;
 		for(int i=0;i< deviceIDs.length;i++)
@@ -95,17 +101,20 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 			System.out.println("name: "+id.getName());
 			System.out.println(id.toString());
 		}
+				
+		resetAutodetected();
 		
-		/*
-		for(int i=0; i < MAX_DEVICES; i++)
+		gf_NVMouseExtensions = false;
+		if(mm.getPrefsHelper().isMouseEnabled())
 		{
-			for(int j=0; j < MAX_KEYS; j++)
+			try
 			{
-				deviceMappings[j][i] = -1;
+				Wrap_NVMouseExtensions.checkAvailable();
+				gf_NVMouseExtensions = true;
 			}
-		}*/
+			catch (Throwable t) {}
+		}
 		
-		InputHandlerExt.resetAutodetected();
 	}
 	
 	final public float rad2degree(float r){
@@ -129,14 +138,101 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		
 		return nomralizedvalue;
 	}
-		
+	
 	@Override
-	public boolean onGenericMotion(View view, MotionEvent event) {
-	    
+	public boolean onTouch(View view, MotionEvent event) {
+		//System.out.println("touch: "+event.getRawX()+" "+event.getX()+" "+event.getRawY()+" "+event.getY());
+		if(mm==null)return false;
+		
+		if(gf_NVMouseExtensions)
+		{
+		   boolean isMouse= event.getToolType(0) == MotionEvent.TOOL_TYPE_MOUSE; 	
+		   if(isMouse)
+		   {
+			  if(isMouseEnabled)
+			  {
+				  if (event.getActionMasked() == MotionEvent.ACTION_MOVE)
+				  {	    		
+					  float flRelativeX = event.getAxisValue(Wrap_NVMouseExtensions.getAxisRelativeX(), 0);
+					  float flRelativeY = event.getAxisValue(Wrap_NVMouseExtensions.getAxisRelativeY(), 0);
+									  								 				
+					  Emulator.setAnalogData(8, flRelativeX , flRelativeY);
+				  }	
+ 
+			      int pressedButtons = event.getButtonState();
+						   				   				   
+			      if ((pressedButtons & MotionEvent.BUTTON_PRIMARY) != 0) {
+					   pad_data[0] |= A_VALUE;         
+			      }
+			      else
+				  {
+					   pad_data[0] &= ~A_VALUE;   
+				  }
+				  if ((pressedButtons & MotionEvent.BUTTON_SECONDARY) != 0) {
+					   pad_data[0] |= B_VALUE;
+				  }
+				  else
+				  {
+					   pad_data[0] &= ~B_VALUE;   
+				  }
+				  if ((pressedButtons & MotionEvent.BUTTON_TERTIARY) != 0) {
+					   pad_data[0] |= C_VALUE;
+				  }
+				  else
+				  {
+					   pad_data[0] &= ~C_VALUE;   
+				  }				  
+				  Emulator.setPadData(0,pad_data[0]);
+				  
+			  }	     	                                    
+		     return true;
+		   }
+		}
+		return super.onTouch(view,event);				
+	}
+	
+	
+	public boolean genericMotion(MotionEvent event){
+		
+		if(gf_NVMouseExtensions)
+		{
+			if(Emulator.isInMAME())
+			{				
+				if((event.getSource() & InputDevice.SOURCE_MOUSE) != 0)
+				{  
+					if(!isMouseEnabled)
+					{
+					    isMouseEnabled = true;
+	    			    CharSequence text = "Mouse is enabled!";
+	    			    int duration = Toast.LENGTH_SHORT;
+	    			    Toast toast = Toast.makeText(mm, text, duration);
+	    			    toast.show();
+	    			    	    			    
+					    mm.getMainHelper().updateMAME4droid();
+					    resetInput();
+					}
+					
+					//String strOutput = "";					
+					if (event.getActionMasked() == MotionEvent.ACTION_HOVER_MOVE)
+					{
+						//strOutput += "Mouse Move: (" + event.getRawX() + ", " + event.getRawY() + ")\n";			    		
+						float flRelativeX = event.getAxisValue(Wrap_NVMouseExtensions.getAxisRelativeX(), 0);
+						float flRelativeY = event.getAxisValue(Wrap_NVMouseExtensions.getAxisRelativeY(), 0);
+						
+						//strOutput += "Relative: (" + flRelativeX + ",  " + flRelativeY + ")\n";				
+						//System.out.println(strOutput);						
+						Emulator.setAnalogData(8, flRelativeX , flRelativeY);
+					}
+						
+					return true;
+				}
+			}
+		}
+		
 		if (mm.getPrefsHelper().getInputExternal() != PrefsHelper.PREF_INPUT_USB_AUTO) {
 			return false;
 		}
-
+		
 		if (((event.getSource() & (InputDevice.SOURCE_CLASS_JOYSTICK | InputDevice.SOURCE_GAMEPAD)) == 0)
 				|| (event.getAction() != MotionEvent.ACTION_MOVE)) {
 			return false;
@@ -146,10 +242,14 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 			processJoystickInput(event, i);
 		}
 
-		processJoystickInput(event, -1);
-		return true;
+		return processJoystickInput(event, -1);			
 	}
 	
+    @Override
+    public boolean onGenericMotion(View view, MotionEvent event) {
+            return false;
+    }	
+			
 	final public float getAxisValue(int axis, MotionEvent event, int historyPos ){
 		float value = 0.0f;
 		InputDevice device = event.getDevice();
@@ -183,7 +283,7 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		return (float) Math.sqrt((x * x) + (y * y));
 	}
 		
-	protected void processJoystickInput(MotionEvent event, int historyPos){
+	protected boolean processJoystickInput(MotionEvent event, int historyPos){
 	 		
 		int ways = mm.getPrefsHelper().getStickWays();
 		if(ways==-1)ways = Emulator.getValue(Emulator.NUMWAYS);
@@ -316,40 +416,48 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 			}
 	    }
 	    
-	    if(!mm.getPrefsHelper().isDisabledRightStick())
+	    if(!mm.getPrefsHelper().isDisabledRightStick() && Emulator.isInMAME())
 	    {
+	    	
 		    x = getAxisValue(MotionEvent.AXIS_Z, event, historyPos );
 		    y = getAxisValue(MotionEvent.AXIS_RZ, event, historyPos ) * -1;
+		    
+	    	if((x!=0 || y!=0) && mm.getPrefsHelper().isShieldControllerAsMouse())
+	    	{
+	    	    	if(event.getDevice().getName().indexOf("NVIDIA Controller")!=-1)
+	    	    		return false;
+	    	}
 		    
 			mag =  getMagnitude(x,y);	
 			
 			if(mag>=deadZone)
 			{
+				
 		 		float v =  getAngle(x,y);
 		 		
 				if( v >= 330 || v < 30){
-		        	newinput[joy] |= Y_VALUE;
+		        	newinput[joy] |= D_VALUE;
 		        }
 		        else if ( v >= 30 && v <60  )  {
-		        	newinput[joy] |= Y_VALUE;newinput[joy] |= B_VALUE;
+		        	newinput[joy] |= D_VALUE;newinput[joy] |= A_VALUE;
 		        }
 		        else if ( v >= 60 && v < 120  ){
-		        	newinput[joy] |= B_VALUE;
-		        }
-		        else if ( v >= 120 && v < 150  ){
-		        	newinput[joy] |= B_VALUE;newinput[joy] |= X_VALUE;
-		        }
-		        else if ( v >= 150 && v < 210  ){
-		        	newinput[joy] |= X_VALUE;
-		        }
-		        else if ( v >= 210 && v < 240  ){
-		        	newinput[joy] |= X_VALUE;newinput[joy] |= A_VALUE;
-		        }
-		        else if ( v >= 240 && v < 300  ){
 		        	newinput[joy] |= A_VALUE;
 		        }
+		        else if ( v >= 120 && v < 150  ){
+		        	newinput[joy] |= A_VALUE;newinput[joy] |= B_VALUE;
+		        }
+		        else if ( v >= 150 && v < 210  ){
+		        	newinput[joy] |= B_VALUE;
+		        }
+		        else if ( v >= 210 && v < 240  ){
+		        	newinput[joy] |= B_VALUE;newinput[joy] |= C_VALUE;
+		        }
+		        else if ( v >= 240 && v < 300  ){
+		        	newinput[joy] |= C_VALUE;
+		        }
 		        else if ( v >= 300 && v < 330  ){
-		        	newinput[joy] |= A_VALUE;newinput[joy] |= Y_VALUE;
+		        	newinput[joy] |= C_VALUE;newinput[joy] |= D_VALUE;
 		        }
 			}
 	    }
@@ -359,9 +467,9 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 	    if(x>=0.35f)
 	    {
 	    	if(mm.getPrefsHelper().getAutomapOptions() == PrefsHelper.PREF_AUTOMAP_THUMBS_DISABLED_L2R2_AS_COINSTART)
-	    	   newinput[joy] |= SELECT_VALUE;
+	    	   newinput[joy] |= COIN_VALUE;
 	    	else if(mm.getPrefsHelper().getAutomapOptions() != PrefsHelper.PREF_AUTOMAP_THUMBS_AS_COINSTART_L2R2_DISABLED)	    		
-	    	   newinput[joy] |= L1_VALUE;
+	    	   newinput[joy] |= E_VALUE;
 	    }
 	    y = getAxisValue(MotionEvent.AXIS_RTRIGGER, event, historyPos );
 	    //System.out.println("y:"+y);
@@ -370,7 +478,7 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 	    	if(mm.getPrefsHelper().getAutomapOptions() == PrefsHelper.PREF_AUTOMAP_THUMBS_DISABLED_L2R2_AS_COINSTART)
 		       newinput[joy] |= START_VALUE;
 		    else if(mm.getPrefsHelper().getAutomapOptions() != PrefsHelper.PREF_AUTOMAP_THUMBS_AS_COINSTART_L2R2_DISABLED)
-	    	   newinput[joy] |= R1_VALUE;
+	    	   newinput[joy] |= F_VALUE;
 	    }    
 	    
 		pad_data[joy] &= ~ (oldinput[joy] & ~newinput[joy]);
@@ -381,6 +489,8 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		Emulator.setPadData(joy,pad_data[joy]);
 		
 		oldinput[joy] = newinput[joy];
+		
+		return true;
 	}
 	
 	public boolean onKey(View vw, int keyCode, KeyEvent event) {
@@ -419,7 +529,7 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		
 		if(v != -1)
 		{
-		    if(v==L2_VALUE)
+		    if(v==EXIT_VALUE)
 		    { 
 			    if(event.getAction()==KeyEvent.ACTION_UP)
 			    {
@@ -446,7 +556,7 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 			        }
 			    }
 			}
-			else if(v==R2_VALUE)
+			else if(v==OPTION_VALUE)
 			{
 				if( event.getAction()==KeyEvent.ACTION_UP) 
 				{
@@ -480,8 +590,8 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		
 		super.setInputListeners();
 		                
-		mm.getEmuView().setOnGenericMotionListener(this);
-		mm.getInputView().setOnGenericMotionListener(this);
+		//mm.getEmuView().setOnGenericMotionListener(this);
+		//mm.getInputView().setOnGenericMotionListener(this);
 	}
 	
 	public void unsetInputListeners(){ 
@@ -495,8 +605,8 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		if(mm.getEmuView()==null)
 			 return;
 		   
-		mm.getEmuView().setOnGenericMotionListener(null);
-		mm.getInputView().setOnGenericMotionListener(null);
+		//mm.getEmuView().setOnGenericMotionListener(null);
+		//mm.getInputView().setOnGenericMotionListener(null);
 	}	
 	
 	protected int getDevice(InputDevice device, boolean detect){
@@ -549,18 +659,18 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		
         if(mm.getPrefsHelper().getAutomapOptions() == PrefsHelper.PREF_AUTOMAP_L1R1_AS_EXITMENU_L2R2_AS_L1R1)
         {
-                deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = R2_VALUE;
-                deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = L2_VALUE;                 
+                deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = OPTION_VALUE;
+                deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = EXIT_VALUE;                 
         }
         else if(mm.getPrefsHelper().getAutomapOptions() == PrefsHelper.PREF_AUTOMAP_L1R1_AS_COINSTART_L2R2_AS_L1R1)
         {
-                deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = SELECT_VALUE;
+                deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = COIN_VALUE;
                 deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = START_VALUE;                      
         }
         else
         {
-           deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = L1_VALUE;
-           deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = R1_VALUE;
+           deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = E_VALUE;
+           deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = F_VALUE;
         }		
 	}
 	
@@ -568,13 +678,13 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		
 		if(mm.getPrefsHelper().getAutomapOptions() == PrefsHelper.PREF_AUTOMAP_THUMBS_DISABLED_L2R2_AS_COINSTART)
 		{
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = SELECT_VALUE;		
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = COIN_VALUE;		
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = START_VALUE;			
 		}
 		else if(mm.getPrefsHelper().getAutomapOptions() != PrefsHelper.PREF_AUTOMAP_THUMBS_AS_COINSTART_L2R2_DISABLED)
 		{
-		   deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = L1_VALUE;		
-		   deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = R1_VALUE;
+		   deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = E_VALUE;		
+		   deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = F_VALUE;
 		}
 	}
 	
@@ -584,14 +694,14 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		if(mm.getPrefsHelper().getAutomapOptions() == PrefsHelper.PREF_AUTOMAP_THUMBS_AS_COINSTART_L2R2_AS_L1R2 ||
 		   mm.getPrefsHelper().getAutomapOptions() == PrefsHelper.PREF_AUTOMAP_THUMBS_AS_COINSTART_L2R2_DISABLED
 				){
-		   deviceMappings[KeyEvent.KEYCODE_BUTTON_THUMBL][id] = SELECT_VALUE;
+		   deviceMappings[KeyEvent.KEYCODE_BUTTON_THUMBL][id] = COIN_VALUE;
 		   deviceMappings[KeyEvent.KEYCODE_BUTTON_THUMBR] [id]= START_VALUE;			
 		}		
 	}
 	
 	protected void mapSelectStart(int id){
-		deviceMappings[KeyEvent.KEYCODE_BUTTON_SELECT][id] = L2_VALUE;
-		deviceMappings[KeyEvent.KEYCODE_BUTTON_START][id] = R2_VALUE;	
+		deviceMappings[KeyEvent.KEYCODE_BUTTON_SELECT][id] = EXIT_VALUE;
+		deviceMappings[KeyEvent.KEYCODE_BUTTON_START][id] = OPTION_VALUE;	
 	}
 	
 	
@@ -628,16 +738,16 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 			//deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = A_VALUE;
 			//deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = B_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = B_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = A_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = B_VALUE;			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = C_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = D_VALUE;
 			
 			mapDPAD(id);
 			mapL1R1(id);mapTHUMBS(id);mapSelectStart(id);
 			
 			//deviceMappings[KeyEvent.KEYCODE_BACK][id] = SELECT_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BACK][id] = L2_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BACK][id] = EXIT_VALUE;
 			
 			desc = "Sixaxis";
 			
@@ -646,10 +756,10 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		else if(name.indexOf("Gamepad 0")!=-1 || name.indexOf("Gamepad 1")!=-1 //Sixaxis Controller
 				|| name.indexOf("Gamepad 1")!=-1 || name.indexOf("Gamepad 2")!=-1){
 								
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = B_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = A_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = C_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = D_VALUE;
 						
 			mapDPAD(id);mapL1R1(id);mapTHUMBS(id);mapSelectStart(id);
 			
@@ -659,10 +769,10 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		}
 		else if(name.indexOf("nvidia_joypad")!=-1 || name.indexOf("NVIDIA Controller")!=-1) {
 								
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = B_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = A_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = C_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = D_VALUE;
 			
 			mapL1R1(id);mapTHUMBS(id); 
 			
@@ -670,8 +780,8 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 			//deviceMappings[KeyEvent.KEYCODE_BUTTON_START] [id]= START_VALUE;
 			 
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_START] [id]= R2_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BACK] [id]= L2_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_START] [id]= OPTION_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BACK] [id]= EXIT_VALUE;
 						
 			detected = true;
 			
@@ -679,15 +789,15 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		}
 		else if(name.indexOf("ipega Extending")!=-1) {
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = B_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = A_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = C_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = D_VALUE;
 			
 			mapL1R1(id);mapTHUMBS(id); 
 						
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_START] [id]= R2_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_SELECT] [id]= L2_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_START] [id]= OPTION_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_SELECT] [id]= EXIT_VALUE;
 						
 			detected = true;
 			
@@ -697,15 +807,15 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 				   || name.indexOf("Xbox 360 Wireless Receiver")!=-1 ){
 			
 
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = B_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = A_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = C_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = D_VALUE;
 
 			//mapDPAD();
 			mapL1R1(id);mapTHUMBS(id);mapSelectStart(id);
 			
-			deviceMappings[KeyEvent.KEYCODE_BACK][id] = L2_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BACK][id] = EXIT_VALUE;
 			
 			desc = "XBox";
 			
@@ -713,10 +823,10 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		}
 		else if (name.indexOf("Logitech")!=-1 && name.indexOf("Dual Action")!=-1){
 		
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = A_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = Y_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = C_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = D_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = A_VALUE;
 			
 			mapL1R1(id);mapTHUMBS(id);mapSelectStart(id);
 	        
@@ -726,19 +836,19 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		}
 		else if (name.indexOf("Logitech")!=-1 && name.indexOf("RumblePad 2")!=-1){
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_2][id] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_1][id] = A_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_3][id] = B_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_4][id] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_2][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_1][id] = C_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_3][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_4][id] = D_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_9][id] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_9][id] = COIN_VALUE;
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_10][id] = START_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_5][id] = L1_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_6][id] = R1_VALUE;   
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_5][id] = E_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_6][id] = F_VALUE;   
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_11][id] = R2_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_12][id] = L2_VALUE; 
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_11][id] = OPTION_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_12][id] = EXIT_VALUE; 
 			
 			desc = "Rumblepad 2";
 	            
@@ -747,18 +857,18 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		}		
 		else if (name.indexOf("Logitech")!=-1 && name.indexOf("Precision")!=-1){
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_2][id] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_1][id] = A_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_3][id] = B_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_4][id] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_2][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_1][id] = C_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_3][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_4][id] = D_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_5][id] = L1_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_6][id] = R1_VALUE;   
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_5][id] = E_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_6][id] = F_VALUE;   
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_7][id] = R2_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_8][id] = L2_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_7][id] = OPTION_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_8][id] = EXIT_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_9][id] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_9][id] = COIN_VALUE;
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_10][id] = START_VALUE;
 			
 			desc = "Logitech Precision";
@@ -767,14 +877,14 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		}
 		else if (name.indexOf("TTT THT Arcade console 2P USB Play")!=-1){
 		
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_1][id] = A_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_2][id] = Y_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_5][id] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_6][id] = B_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_3][id] = L1_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_7][id] = R1_VALUE;  			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_4][id] = R2_VALUE;		
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_8][id] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_1][id] = C_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_2][id] = D_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_5][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_6][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_3][id] = E_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_7][id] = F_VALUE;  			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_4][id] = OPTION_VALUE;		
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_8][id] = COIN_VALUE;
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_9][id] = START_VALUE;
 			
 			desc = "TTT THT Arcade";
@@ -785,12 +895,12 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 			
 			mapDPAD(id);
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = B_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = A_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_C][id] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = C_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_C][id] = D_VALUE;
 					
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_R2][id] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R2][id] = COIN_VALUE;
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_L2][id] = START_VALUE;
 			
 			desc = "TOMMO Neogeo X Arcade";
@@ -801,15 +911,15 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 			
 			mapDPAD(id);
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = Y_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = A_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = D_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = C_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = A_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = L1_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = R1_VALUE;  			
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = E_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = F_VALUE;  			
 	
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = COIN_VALUE;
 			deviceMappings[KeyEvent.KEYCODE_BACK][id] = START_VALUE;
 			
 			desc = "Onlive Wireless";
@@ -818,18 +928,18 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		}
 		else if (name.indexOf("MadCatz")!=-1 && name.indexOf("PC USB Wired Stick")!=-1){
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = A_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_C][id] = B_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = C_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_C][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = D_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = L1_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_Z][id] = L1_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = E_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Z][id] = E_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = L1_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = R1_VALUE;   
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = E_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = F_VALUE;   
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_L2][id] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L2][id] = COIN_VALUE;
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_R2][id] = START_VALUE;
 			
 			desc = "Madcatz PC USB Stick";
@@ -838,18 +948,18 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		}
 		else if (name.indexOf("Logicool")!=-1 && name.indexOf("RumblePad 2")!=-1){
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_C][id] = B_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = Y_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_C][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = D_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = C_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = L1_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_Z][id] = R1_VALUE;   
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = E_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Z][id] = F_VALUE;   
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = R2_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = L2_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = OPTION_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = EXIT_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_L2][id] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L2][id] = COIN_VALUE;
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_R2][id] = START_VALUE;
 			
 			desc = "Logicool Rumblepad 2";
@@ -858,16 +968,16 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		}	
 		else if (name.indexOf("Zeemote")!=-1 && name.indexOf("Steelseries free")!=-1){
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = B_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = Y_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = D_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = C_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_MODE][id] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_MODE][id] = COIN_VALUE;
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_START][id] = START_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = L1_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = R1_VALUE;   
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = E_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = F_VALUE;   
 	        
 			desc = "Zeemote Steelseries";
 			
@@ -875,15 +985,15 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		}			
 		else if (name.indexOf("HuiJia  USB GamePad")!=-1){
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_3][id] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_4][id] = A_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_2][id] = B_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_1][id] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_3][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_4][id] = C_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_2][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_1][id] = D_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_7][id] = L1_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_8][id] = R1_VALUE;   
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_7][id] = E_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_8][id] = F_VALUE;   
 		
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_9][id] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_9][id] = COIN_VALUE;
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_10][id] = START_VALUE;
 			
 			desc = "Huijia USB SNES";
@@ -892,15 +1002,15 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		}	
 		else if (name.indexOf("Smartjoy Family Super Smartjoy 2")!=-1){
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_3][id] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_4][id] = A_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_2][id] = B_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_1][id] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_3][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_4][id] = C_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_2][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_1][id] = D_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_7][id] = L1_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_8][id] = R1_VALUE;   
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_7][id] = E_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_8][id] = F_VALUE;   
 		
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_5][id] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_5][id] = COIN_VALUE;
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_6][id] = START_VALUE;
 			
 			desc = "Super Smartjoy";
@@ -909,18 +1019,18 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		}	
 		else if (name.indexOf("Jess Tech Dual Analog Rumble Pad")!=-1){
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_3][id] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_1][id] = A_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_4][id] = B_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_2][id] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_3][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_1][id] = C_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_4][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_2][id] = D_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_5][id] = L1_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_7][id] = R1_VALUE;   
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_5][id] = E_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_7][id] = F_VALUE;   
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_6][id] = R2_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_8][id] = L2_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_6][id] = OPTION_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_8][id] = EXIT_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_11][id] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_11][id] = COIN_VALUE;
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_12][id] = START_VALUE;
 			
 			//desc = "Super Smartjoy";
@@ -929,17 +1039,17 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		}	
 		else if (name.indexOf("Microsoft")!=-1 && name.indexOf("Dual Strike")!=-1){
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_4][id] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_2][id] = A_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_3][id] = B_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_1][id] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_4][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_2][id] = C_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_3][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_1][id] = D_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_7][id] = L1_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_8][id] = R1_VALUE;   
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_7][id] = E_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_8][id] = F_VALUE;   
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_9][id] = R2_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_9][id] = OPTION_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_6][id] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_6][id] = COIN_VALUE;
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_5][id] = START_VALUE;
 		    	
 			desc = "MS Dual Strike";
@@ -948,18 +1058,18 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		}
 		else if (name.indexOf("Microsoft")!=-1 && name.indexOf("SideWinder")!=-1){
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = A_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = B_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = C_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = D_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = L1_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = R1_VALUE;   
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = E_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = F_VALUE;   
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_Z][id] = R2_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_C][id] = L2_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Z][id] = OPTION_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_C][id] = EXIT_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_11][id] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_11][id] = COIN_VALUE;
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_12][id] = START_VALUE;
 
 			desc = "MS Sidewinder";
@@ -977,18 +1087,18 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_16][id] = LEFT_VALUE;
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_14][id] = RIGHT_VALUE;		
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_4][id] = A_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_1][id] = Y_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_3][id] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_2][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_4][id] = C_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_1][id] = D_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_3][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_2][id] = A_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_7][id] = L1_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_8][id] = R1_VALUE;   
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_7][id] = E_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_8][id] = F_VALUE;   
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_5][id] = R2_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_6][id] = L2_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_5][id] = OPTION_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_6][id] = EXIT_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_10][id] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_10][id] = COIN_VALUE;
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_9][id] = START_VALUE;
 			
 			desc = "PlayStation2";
@@ -999,15 +1109,15 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 			
 			mapDPAD(id);
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = A_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = B_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = C_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = D_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = L1_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = R1_VALUE;   
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L1][id] = E_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = F_VALUE;   
 						
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_SELECT][id] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_SELECT][id] = COIN_VALUE;
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_START][id] = START_VALUE;
 			
 			desc = "MOGA";
@@ -1018,12 +1128,12 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 			
 			mapDPAD(id);
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = Y_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = A_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = B_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = X_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = D_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = C_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = B_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_MENU][id] = R2_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_MENU][id] = OPTION_VALUE;
 												
 			mapL1R1(id);
 			//mapL2R2(id);
@@ -1037,15 +1147,15 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 			
 			mapDPAD(id);
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_2][id] = B_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_3][id] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_4][id] = A_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_1][id] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_2][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_3][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_4][id] = C_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_1][id] = D_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_5][id] = L1_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_6][id] = R1_VALUE;   
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_5][id] = E_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_6][id] = F_VALUE;   
 						
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_7][id] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_7][id] = COIN_VALUE;
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_8][id] = START_VALUE;
 				
 			desc = "DragonRise";
@@ -1056,18 +1166,18 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 			
 			mapDPAD(id);
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = A_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = Y_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_C][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = C_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = D_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_C][id] = A_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = L1_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_Z][id] = R1_VALUE;   
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = E_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Z][id] = F_VALUE;   
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_L2][id] = R2_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = L2_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L2][id] = OPTION_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R1][id] = EXIT_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_R2][id] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R2][id] = COIN_VALUE;
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_L2][id] = START_VALUE;
 			
 			desc = "Thrustmaster T Mini";
@@ -1076,18 +1186,18 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		}	
 		else if (name.indexOf("ADC joystick")!=-1){
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = B_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = A_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = C_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = D_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_L2][id] = L1_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_R2][id] = R1_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L2][id] = E_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R2][id] = F_VALUE;
 
 			mapDPAD(id);
 			mapL1R1(id);
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_SELECT][id] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_SELECT][id] = COIN_VALUE;
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_START][id] = START_VALUE;	
 			
 			desc = "JXD S7800";			
@@ -1095,18 +1205,18 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		}		
 		else if (name.indexOf("joy_key")!=-1 && mm.getMainHelper().getDeviceDetected() == MainHelper.DEVICE_AGAMEPAD2){
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = B_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = A_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = C_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = D_VALUE;
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_L2][id] = L1_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_R2][id] = R1_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_L2][id] = E_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_R2][id] = F_VALUE;
 			
 			mapDPAD(id);
 			mapL1R1(id);
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_SELECT][id] = SELECT_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_SELECT][id] = COIN_VALUE;
 			deviceMappings[KeyEvent.KEYCODE_BUTTON_START][id] = START_VALUE;	
 			
 			desc = "Archos Gamepad 2";
@@ -1114,15 +1224,15 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 		}else if(name.indexOf("NYKO PLAYPAD")!=-1 || 
 				(name.indexOf("Broadcom Bluetooth HID")!=-1  && mm.getMainHelper().getDeviceDetected() == MainHelper.DEVICE_SHIELD)) {
 			
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = X_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = B_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = A_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = Y_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_A][id] = B_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_B][id] = A_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_X][id] = C_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_Y][id] = D_VALUE;
 			
 			mapL1R1(id);mapTHUMBS(id); 
 						
-			deviceMappings[KeyEvent.KEYCODE_BUTTON_START] [id]= R2_VALUE;
-			deviceMappings[KeyEvent.KEYCODE_BACK] [id]= L2_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BUTTON_START] [id]= OPTION_VALUE;
+			deviceMappings[KeyEvent.KEYCODE_BACK] [id]= EXIT_VALUE;
 						
 			detected = true;
 			
@@ -1159,12 +1269,28 @@ public class InputHandlerExt extends InputHandler implements OnGenericMotionList
 	}
 
 	public boolean isControllerDevice(){
-		   int numDevs = 0;
+		    if(isMouseEnabled && !Emulator.isInMAME())
+		    	isMouseEnabled = false;
+		    int numDevs = 0;
 			for(int i=0; i<MAX_DEVICES; i++)
 			{
 				if(deviceIDs[i]!=-1)
 					numDevs++;
 			}
-		   return numDevs!=0 || iCade;
+		   return numDevs!=0 || iCade || (isMouseEnabled && !Emulator.isInMenu());
+	}
+	
+	protected void setMouseVisibility(boolean fVisibility) {
+		if (! gf_NVMouseExtensions) return;
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) return;
+				
+		InputManager inputManager = (InputManager) mm.getSystemService(Context.INPUT_SERVICE);
+		
+		Wrap_NVMouseExtensions.setCursorVisibility(inputManager, fVisibility);
+    }	
+	
+	public void resume(){
+		super.resume();
+		setMouseVisibility(false);
 	}
 }

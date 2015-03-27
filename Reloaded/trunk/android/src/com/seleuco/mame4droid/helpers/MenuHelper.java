@@ -98,22 +98,22 @@ public class MenuHelper {
 			 mm.showDialog(DialogHelper.DIALOG_OPTIONS);
 			return true;		
 		case R.id.vkey_A:
-			mm.getInputHandler().handleVirtualKey(InputHandler.A_VALUE);
+			mm.getInputHandler().handleVirtualKey(InputHandler.C_VALUE);
 			return true;
 		case R.id.vkey_B:
-			mm.getInputHandler().handleVirtualKey(InputHandler.B_VALUE);
+			mm.getInputHandler().handleVirtualKey(InputHandler.A_VALUE);
 			return true;
 		case R.id.vkey_X:
-			mm.getInputHandler().handleVirtualKey(InputHandler.X_VALUE);
+			mm.getInputHandler().handleVirtualKey(InputHandler.B_VALUE);
 			return true;
 		case R.id.vkey_Y:
-			mm.getInputHandler().handleVirtualKey(InputHandler.Y_VALUE);
+			mm.getInputHandler().handleVirtualKey(InputHandler.D_VALUE);
 			return true;
 		case R.id.vkey_MENU:
 			mm.getInputHandler().handleVirtualKey(InputHandler.START_VALUE);
 			return true;
 		case R.id.vkey_SELECT:
-			mm.getInputHandler().handleVirtualKey(InputHandler.SELECT_VALUE);
+			mm.getInputHandler().handleVirtualKey(InputHandler.COIN_VALUE);
 			return true;
 		}
 

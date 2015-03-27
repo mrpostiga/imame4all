@@ -77,6 +77,19 @@ void droid_ios_init_video(running_machine *machine)
 	machine->add_notifier(MACHINE_NOTIFY_EXIT, droid_ios_video_cleanup);
 }
 
+
+static osd_ticks_t target = -1;
+
+static void my_sync()
+{
+   while(target!=-1)
+   {
+       if(osd_ticks() >= target)
+          target = -1;
+   }
+   target = osd_ticks() + ( osd_ticks_per_second() / (double)60);
+}
+
 void droid_ios_video_draw()
 {
 	UINT8 *surfptr;
@@ -129,7 +142,10 @@ void droid_ios_video_draw()
 #endif
 
 	if(myosd_video_threaded)
+        {
 	  osd_lock_release(currlist->lock);
+          //my_sync();
+        }
 
 	myosd_video_flip();
 

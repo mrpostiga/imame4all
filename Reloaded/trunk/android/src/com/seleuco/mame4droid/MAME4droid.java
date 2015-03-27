@@ -58,6 +58,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -266,7 +267,8 @@ public class MAME4droid extends Activity {
         inputView.setMAME4droid(this);
                           
         View frame = this.findViewById(R.id.EmulatorFrame);
-	    frame.setOnTouchListener(inputHandler);        	
+	    frame.setOnTouchListener(inputHandler);    
+	   
                 
         inputHandler.setInputListeners();   	
     }
@@ -349,6 +351,7 @@ public class MAME4droid extends Activity {
 		{
 			if(inputHandler.getTiltSensor()!=null)
 			   inputHandler.getTiltSensor().enable();
+			inputHandler.resume();
 		}
 		
 		NotificationHelper.removeNotification();
@@ -466,6 +469,14 @@ public class MAME4droid extends Activity {
 	protected void onPrepareDialog(int id, Dialog dialog) {
 		if(dialogHelper!=null)
 		   dialogHelper.prepareDialog(id, dialog);
+	} 
+	
+	@Override
+	public boolean dispatchGenericMotionEvent(MotionEvent event)
+	{
+		if(inputHandler!=null)
+		   return inputHandler.genericMotion(event);
+		return false;
 	}
-        
+	        
 }

@@ -46,6 +46,7 @@ void osd_free(void *ptr)
 
 osd_ticks_t osd_ticks(void)
 {
+#if(1)
 		struct timeval    tp;
 		static osd_ticks_t start_sec = 0;
 		
@@ -53,11 +54,20 @@ osd_ticks_t osd_ticks(void)
 		if (start_sec==0)
 			start_sec = tp.tv_sec;
 		return (tp.tv_sec - start_sec) * (osd_ticks_t) 1000000 + tp.tv_usec;
+#else
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    return (osd_ticks_t) now.tv_sec*1000000000LL + now.tv_nsec;
+#endif
 }
 
 osd_ticks_t osd_ticks_per_second(void)
 {
+#if(1)
 	return (osd_ticks_t) 1000000;
+#else
+        return (osd_ticks_t) 1000000000LL;
+#endif
 }
 
 //============================================================

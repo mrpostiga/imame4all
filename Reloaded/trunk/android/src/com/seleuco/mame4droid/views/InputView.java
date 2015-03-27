@@ -104,55 +104,56 @@ public class InputView extends ImageView {
 		if(btns_images==null)
 		{
 			btns_images = new BitmapDrawable[InputHandler.NUM_BUTTONS][2];
+			
 			btns_images[InputHandler.BTN_A][InputHandler.BTN_NO_PRESS_STATE] 
-			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_a);
-			btns_images[InputHandler.BTN_A][InputHandler.BTN_PRESS_STATE] 
-			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_a_press);
-			
+                    = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_a);
+            btns_images[InputHandler.BTN_A][InputHandler.BTN_PRESS_STATE] 
+                    = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_a_press);
+
 			btns_images[InputHandler.BTN_B][InputHandler.BTN_NO_PRESS_STATE] 
-			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_b);
+                    = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_b);
 			btns_images[InputHandler.BTN_B][InputHandler.BTN_PRESS_STATE] 
-			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_b_press);
+                    = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_b_press);
+					
+			btns_images[InputHandler.BTN_C][InputHandler.BTN_NO_PRESS_STATE] 
+			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_c);
+			btns_images[InputHandler.BTN_C][InputHandler.BTN_PRESS_STATE] 
+			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_c_press);
 			
-			btns_images[InputHandler.BTN_X][InputHandler.BTN_NO_PRESS_STATE] 
-			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_x);
-			btns_images[InputHandler.BTN_X][InputHandler.BTN_PRESS_STATE] 
-			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_x_press);
+			btns_images[InputHandler.BTN_D][InputHandler.BTN_NO_PRESS_STATE] 
+			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_d);
+			btns_images[InputHandler.BTN_D][InputHandler.BTN_PRESS_STATE] 
+			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_d_press);
 			
-			btns_images[InputHandler.BTN_Y][InputHandler.BTN_NO_PRESS_STATE] 
-			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_y);
-			btns_images[InputHandler.BTN_Y][InputHandler.BTN_PRESS_STATE] 
-			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_y_press);
-			
-			btns_images[InputHandler.BTN_L1][InputHandler.BTN_NO_PRESS_STATE] 
-			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_l1);
-			btns_images[InputHandler.BTN_L1][InputHandler.BTN_PRESS_STATE] 
-			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_l1_press);
+			btns_images[InputHandler.BTN_E][InputHandler.BTN_NO_PRESS_STATE] 
+			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_e);
+			btns_images[InputHandler.BTN_E][InputHandler.BTN_PRESS_STATE] 
+			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_e_press);
 	
-			btns_images[InputHandler.BTN_R1][InputHandler.BTN_NO_PRESS_STATE] 
-			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_r1);
-			btns_images[InputHandler.BTN_R1][InputHandler.BTN_PRESS_STATE] 
-			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_r1_press);
+			btns_images[InputHandler.BTN_F][InputHandler.BTN_NO_PRESS_STATE] 
+			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_f);
+			btns_images[InputHandler.BTN_F][InputHandler.BTN_PRESS_STATE] 
+			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_f_press);
 			
-			btns_images[InputHandler.BTN_L2][InputHandler.BTN_NO_PRESS_STATE] 
-			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_l2);
-			btns_images[InputHandler.BTN_L2][InputHandler.BTN_PRESS_STATE] 
-			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_l2_press);
+			btns_images[InputHandler.BTN_EXIT][InputHandler.BTN_NO_PRESS_STATE] 
+			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_exit);
+			btns_images[InputHandler.BTN_EXIT][InputHandler.BTN_PRESS_STATE] 
+			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_exit_press);
 	
-			btns_images[InputHandler.BTN_R2][InputHandler.BTN_NO_PRESS_STATE] 
-			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_r2);
-			btns_images[InputHandler.BTN_R2][InputHandler.BTN_PRESS_STATE] 
-			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_r2_press);
+			btns_images[InputHandler.BTN_OPTION][InputHandler.BTN_NO_PRESS_STATE] 
+			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_option);
+			btns_images[InputHandler.BTN_OPTION][InputHandler.BTN_PRESS_STATE] 
+			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_option_press);
 			
 			btns_images[InputHandler.BTN_START][InputHandler.BTN_NO_PRESS_STATE] 
 			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_start);
 			btns_images[InputHandler.BTN_START][InputHandler.BTN_PRESS_STATE] 
 			                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_start_press);
 			
-			btns_images[InputHandler.BTN_SELECT][InputHandler.BTN_NO_PRESS_STATE] 
-				                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_select);
-			btns_images[InputHandler.BTN_SELECT][InputHandler.BTN_PRESS_STATE] 
-				                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_select_press);
+			btns_images[InputHandler.BTN_COIN][InputHandler.BTN_NO_PRESS_STATE] 
+				                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_coin);
+			btns_images[InputHandler.BTN_COIN][InputHandler.BTN_PRESS_STATE] 
+				                                 = (BitmapDrawable)mm.getResources().getDrawable(R.drawable.button_coin_press);
 		}
 	}
 
@@ -374,13 +375,13 @@ public class InputView extends ImageView {
         		      int b = v.getValue();
             	      if(!ControlCustomizer.isEnabled())
             	      { 	  
-	        		      if(b==InputHandler.BTN_Y && n < 4)continue;
-	        	          if(b==InputHandler.BTN_A && n < 3)continue;
-	        	          if(b==InputHandler.BTN_X && n < 2)continue;
-	        	          if(b==InputHandler.BTN_B && n < 1)continue;  
+	        		      if(b==InputHandler.BTN_D && n < 4)continue;
+	        	          if(b==InputHandler.BTN_C && n < 3)continue;
+	        	          if(b==InputHandler.BTN_B && n < 2)continue;
+	        	          if(b==InputHandler.BTN_A && n < 1)continue;  
 	        	                            
-	        	          if(b==InputHandler.BTN_L1 && n < 5)continue;
-	        	          if(b==InputHandler.BTN_R1 && n < 5)continue;
+	        	          if(b==InputHandler.BTN_E && n < 5)continue;
+	        	          if(b==InputHandler.BTN_F && n < 5)continue;
             	      }
         	   }
         	   d = btns_images[v.getValue()][mm.getInputHandler().getBtnStates()[v.getValue()]];

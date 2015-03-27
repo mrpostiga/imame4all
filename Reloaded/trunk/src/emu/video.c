@@ -37,6 +37,10 @@
 
 ***************************************************************************/
 
+#ifdef ANDROID
+#include <android/log.h>
+#endif
+
 #include "emu.h"
 #include "emuopts.h"
 #include "profiler.h"
@@ -53,8 +57,14 @@
 #include "myosd.h"
 #include "netplay.h"
 
-static int old_speed;
-
+//DAV
+static int old_speed = -1;
+static int old_vsync = -1;
+static int refresh_speed = -1;
+//static double fps = 30.00f;
+static int refresh_hack = 0;
+/////
+//END DAV
 
 /***************************************************************************
     DEBUGGING
@@ -274,17 +284,26 @@ INLINE int effective_throttle(running_machine *machine)
 
 INLINE int original_speed_setting(void)
 {
-    int res = 100;
+    int res = options_get_float(mame_options(), OPTION_SPEED) * 100.0 + 0.5;
+
+    if(netplay_get_handle()->has_connection) return res;
     
-    if(myosd_speed != -1 && !netplay_get_handle()->has_connection)
+    if(myosd_speed != -1)
+    {
         res = myosd_speed;
-    else
-        res = options_get_float(mame_options(), OPTION_SPEED) * 100.0 + 0.5;
-    
+    }
+    else if(refresh_speed > 0 && myosd_vsync!=-1)
+    {     
+        res = refresh_speed;
+    }
+
     old_speed = myosd_speed;
-    
-    printf("Emulated speed %d\n",res);
-    return res;
+    old_vsync = myosd_vsync;
+
+#ifdef ANDROID
+	__android_log_print(ANDROID_LOG_DEBUG, "VIDEO","Emulated speed  %d %d %d",res,myosd_speed,refresh_speed);
+#endif    
+    return res/*-1*/;
 }
 
 
@@ -315,11 +334,12 @@ void video_init(running_machine *machine)
 
 	/* extract initial execution state from global configuration settings */
 	global.speed = original_speed_setting();
-	update_refresh_speed(machine);
+	//update_refresh_speed(machine);
 	global.throttle = options_get_bool(machine->options(), OPTION_THROTTLE);
 	global.auto_frameskip = options_get_bool(machine->options(), OPTION_AUTOFRAMESKIP);
 	global.frameskip_level = options_get_int(machine->options(), OPTION_FRAMESKIP);
 	global.seconds_to_run = options_get_int(machine->options(), OPTION_SECONDS_TO_RUN);
+
 
 	/* create spriteram buffers if necessary */
 	if (machine->config->m_video_attributes & VIDEO_BUFFERS_SPRITERAM)
@@ -455,6 +475,46 @@ static TIMER_CALLBACK( screenless_update_callback )
     operations
 -------------------------------------------------*/
 
+static osd_ticks_t target = -1;
+
+static void my_sync(running_machine *machine, int skip)
+{
+   attoseconds_t min_frame_period = ATTOSECONDS_PER_SECOND;
+   for (screen_device *screen = screen_first(*machine); screen != NULL; screen = screen_next(screen))
+   {
+	attoseconds_t period = screen->frame_period().attoseconds;
+	if (period != 0)
+  	    min_frame_period = MIN(min_frame_period, period);
+   }
+
+   if(target!=-1 && !skip)
+   while(1)
+   {
+       osd_ticks_t curr = osd_ticks();
+       if(curr >= target)
+          break;
+       if(myosd_sleep)
+         osd_sleep(target -curr);
+   }
+/*
+   if(target!=-1)
+      throttle_until_ticks(machine, target); 
+*/
+   double speed = global.speed * 0.01;
+
+   double fps = ATTOSECONDS_TO_HZ(min_frame_period)+0.45f;
+   //fps = 60.0f;
+
+   osd_ticks_t remain = 0;
+
+   if(skip)
+     remain = target - osd_ticks();
+
+   osd_ticks_t  nexttime  = osd_ticks_per_second() / (fps * speed);
+
+   target = osd_ticks() + remain + nexttime;
+}
+
 void video_frame_update(running_machine *machine, int debug)
 {
 	attotime current_time = timer_get_time(machine);
@@ -485,9 +545,20 @@ void video_frame_update(running_machine *machine, int debug)
 	/* update the internal render debugger */
 	debugint_update_during_game(machine);
 
+//dav hack
+        if(myosd_vsync != -1 && myosd_vsync != old_vsync)
+            update_refresh_speed(machine);
+	
+        if(myosd_speed!=old_speed || myosd_vsync != old_vsync)
+	    global.speed = original_speed_setting();
+//end dav hack
+
 	/* if we're throttling, synchronize before rendering */
 	if (!debug && !skipped_it && effective_throttle(machine))
-		update_throttle(machine, current_time);
+	    update_throttle(machine, current_time);
+        
+        //if (!debug &&  effective_throttle(machine))
+            //my_sync(machine, skipped_it);
 
 	/* ask the OSD to update */
 	profiler_mark_start(PROFILER_BLIT);
@@ -742,6 +813,19 @@ void video_set_fastforward(int _fastforward)
     natural speed
 -------------------------------------------------*/
 
+static osd_ticks_t my_throttle_until_ticks(running_machine *machine, osd_ticks_t target_ticks)
+{
+   while(1)
+   {
+       osd_ticks_t curr = osd_ticks();
+       if(curr >= target_ticks)
+          return curr;
+       if(myosd_sleep)
+          osd_sleep(target_ticks -curr);
+   }
+   return 0;
+}
+
 static void update_throttle(running_machine *machine, attotime emutime)
 {
 /*
@@ -796,10 +880,8 @@ static void update_throttle(running_machine *machine, attotime emutime)
 	osd_ticks_t target_ticks;
 	osd_ticks_t diff_ticks;
     
-    //dav hack
-    if(myosd_speed!=old_speed)
-       global.speed = original_speed_setting();
-    //end dav hack
+//global.speed = 99;
+//emutime = attotime_div(attotime_mul(emutime, 1000), 999);
 
 	/* apply speed factor to emu time */
 	if (global.speed != 0 && global.speed != 100)
@@ -827,6 +909,8 @@ static void update_throttle(running_machine *machine, attotime emutime)
        reported value from our current value; this should be a small value somewhere
        between 0 and 1/10th of a second ... anything outside of this range is obviously
        wrong and requires a resync */
+
+
 	emu_delta_attoseconds = attotime_to_attoseconds(attotime_sub(emutime, global.throttle_emutime));
 	if (emu_delta_attoseconds < 0 || emu_delta_attoseconds > ATTOSECONDS_PER_SECOND / 10)
 	{
@@ -868,6 +952,7 @@ static void update_throttle(running_machine *machine, attotime emutime)
 
 	/* if we're more than 1/10th of a second out, or if we are behind at all and emulation
        is taking longer than the real frame, we just need to resync */
+
 	if (real_is_ahead_attoseconds < -ATTOSECONDS_PER_SECOND / 10 ||
 		(real_is_ahead_attoseconds < 0 && popcount[global.throttle_history & 0xff] < 6))
 	{
@@ -875,6 +960,10 @@ static void update_throttle(running_machine *machine, attotime emutime)
 			logerror("Resync due to being behind: %s (history=%08X)\n", attotime_string(attotime_make(0, -real_is_ahead_attoseconds), 18), global.throttle_history);
 		goto resync;
 	}
+
+//DAV
+//real_is_ahead_attoseconds += ATTOSECONDS_PER_SECOND / 100 ;
+//
 
 	/* if we're behind, it's time to just get out */
 	if (real_is_ahead_attoseconds < 0)
@@ -885,15 +974,19 @@ static void update_throttle(running_machine *machine, attotime emutime)
 
 	/* throttle until we read the target, and update real time to match the final time */
 	diff_ticks = throttle_until_ticks(machine, target_ticks) - global.throttle_last_ticks;
+        //diff_ticks = my_throttle_until_ticks(machine, target_ticks) - global.throttle_last_ticks;
+
 	global.throttle_last_ticks += diff_ticks;
 	global.throttle_realtime = attotime_add_attoseconds(global.throttle_realtime, diff_ticks * attoseconds_per_tick);
 	return;
 
 resync:
 	/* reset realtime and emutime to the same value */
+#ifdef ANDROID
+//	__android_log_print(ANDROID_LOG_DEBUG, "VIDEO","RESYNC");
+#endif
 	global.throttle_realtime = global.throttle_emutime = emutime;
 }
-
 
 /*-------------------------------------------------
     throttle_until_ticks - spin until the
@@ -986,7 +1079,7 @@ static void update_frameskip(running_machine *machine)
 		double speed = global.speed * 0.01;
 
 		/* if we're too fast, attempt to increase the frameskip */
-		if (global.speed_percent >= 0.995 * speed)
+		if (global.speed_percent >= 0.995 * speed /**0.999*/)
 		{
 			/* but only after 3 consecutive frames where we are too fast */
 			if (++global.frameskip_adjust >= 3)
@@ -1031,14 +1124,18 @@ static void update_frameskip(running_machine *machine)
 
 static void update_refresh_speed(running_machine *machine)
 {
+
 	/* only do this if the refreshspeed option is used */
-	if (0 || options_get_bool(machine->options(), OPTION_REFRESHSPEED))
+
+        //int vsync = (myosd_vsync != -1) && !(netplay_get_handle()->has_connection);
+
+	if (1 || options_get_bool(machine->options(), OPTION_REFRESHSPEED))
 	{
-		float minrefresh = 60.00f;//render_get_max_update_rate();
+		float minrefresh = myosd_vsync / 100.00f;//render_get_max_update_rate();
 		if (minrefresh != 0)
 		{
 			attoseconds_t min_frame_period = ATTOSECONDS_PER_SECOND;
-			UINT32 original_speed = original_speed_setting();
+			//UINT32 original_speed = original_speed_setting();
 			UINT32 target_speed;
 
 			/* find the screen with the shortest frame period (max refresh rate) */
@@ -1049,29 +1146,37 @@ static void update_refresh_speed(running_machine *machine)
 				if (period != 0)
 					min_frame_period = MIN(min_frame_period, period);
 			}
+#ifdef ANDROID
+	__android_log_print(ANDROID_LOG_DEBUG, "VIDEO","min_frame_period=%.2fHz)", ATTOSECONDS_TO_HZ(min_frame_period));
+#endif
+                        if(ATTOSECONDS_TO_HZ(min_frame_period) <= 50.00f)
+                        {
+                           refresh_speed = 0;
+                           global.speed = original_speed_setting();
+                           return;
+                        }
 
 			/* compute a target speed as an integral percentage */
 			/* note that we lop 0.25Hz off of the minrefresh when doing the computation to allow for
                the fact that most refresh rates are not accurate to 10 digits... */
 			target_speed = floor((minrefresh - 0.25f) * 100.0 / ATTOSECONDS_TO_HZ(min_frame_period));
-			//target_speed = MIN(target_speed, original_speed);
-            
-            //target_speed = ((minrefresh + 0.25) * 100.0) / ATTOSECONDS_TO_HZ(min_frame_period);
-            target_speed = MAX(target_speed, original_speed);
-            
-            
+			//target_speed = MIN(target_speed, original_speed);//Esto evita ajustar para menores de 60hz
+                                 
+                        refresh_speed = target_speed;
+
+#ifdef ANDROID
+	__android_log_print(ANDROID_LOG_DEBUG, "VIDEO","Adjusting target speed to %d%% (hw=%.2fHz, game=%.2fHz, adjusted=%.2fHz)",target_speed, minrefresh, ATTOSECONDS_TO_HZ(min_frame_period), ATTOSECONDS_TO_HZ(min_frame_period * 100 / target_speed));
+#endif
+
 			/* if we changed, log that verbosely */
-			if (target_speed != global.speed)
+/*			if (target_speed != global.speed)
 			{
-				printf("Adjusting target speed to %d%% (hw=%.2fHz, game=%.2fHz, adjusted=%.2fHz)\n", target_speed, minrefresh, ATTOSECONDS_TO_HZ(min_frame_period), ATTOSECONDS_TO_HZ(min_frame_period * 100 / target_speed));
-                mame_printf_verbose("Adjusting target speed to %d%% (hw=%.2fHz, game=%.2fHz, adjusted=%.2fHz)\n", target_speed, minrefresh, ATTOSECONDS_TO_HZ(min_frame_period), ATTOSECONDS_TO_HZ(min_frame_period * 100 / target_speed));
+
+                                mame_printf_verbose("Adjusting target speed to %d%% (hw=%.2fHz, game=%.2fHz, adjusted=%.2fHz)\n", target_speed, minrefresh, ATTOSECONDS_TO_HZ(min_frame_period), ATTOSECONDS_TO_HZ(min_frame_period * 100 / target_speed));
+
 				global.speed = target_speed;
-                
-                for (screen_device *screen = screen_first(*machine); screen != NULL; screen = screen_next(screen))
-                {
-                    screen->configure(screen->width(), screen->height(), screen->visible_area(), HZ_TO_ATTOSECONDS(60.00f));
-                }
 			}
+*/
 		}
 	}
 }
@@ -1880,9 +1985,7 @@ bool screen_device_config::device_validity_check(const game_driver &driver) cons
 //  LIVE VIDEO SCREEN DEVICE
 //**************************************************************************
 
-//DAV HACK
-static int vsync_hack = 0;
-/////
+
 
 //-------------------------------------------------
 //  screen_device - constructor
@@ -1894,6 +1997,7 @@ screen_device::screen_device(running_machine &_machine, const screen_device_conf
 	  m_width(m_config.m_width),
 	  m_height(m_config.m_height),
 	  m_visarea(m_config.m_visarea),
+
 	  m_burnin(NULL),
 	  m_curbitmap(0),
 	  m_curtexture(0),
@@ -1965,8 +2069,8 @@ void screen_device::device_start()
 		m_scanline_timer = timer_alloc(machine, static_scanline_update_callback, (void *)this);
 
         //DAV HACK
-        vsync_hack = (myosd_vsync != -1) && (ATTOSECONDS_TO_HZ(m_config.m_refresh) >= 50.00f) && !(netplay_get_handle()->has_connection);
-   
+        refresh_hack = (myosd_refresh != -1) && (ATTOSECONDS_TO_HZ(m_config.m_refresh) >= 50.00f) && !(netplay_get_handle()->has_connection);
+        //fps = ATTOSECONDS_TO_HZ(m_config.m_refresh);
     
 	// configure the screen with the default parameters
 	configure(m_config.m_width, m_config.m_height, m_config.m_visarea, m_config.m_refresh);
@@ -2039,9 +2143,10 @@ void screen_device::configure(int width, int height, const rectangle &visarea, a
 	assert(frame_period > 0);
     
         //DAV HACK
-        if(vsync_hack)
-          frame_period = HZ_TO_ATTOSECONDS(myosd_vsync / 100.00f);
-    
+        if(refresh_hack)
+          frame_period = HZ_TO_ATTOSECONDS(myosd_refresh / 100.00f);
+        old_vsync=-1;
+ 
 	// fill in the new parameters
 	m_width = width;
 	m_height = height;
@@ -2073,7 +2178,7 @@ void screen_device::configure(int width, int height, const rectangle &visarea, a
 	timer_adjust_oneshot(m_vblank_begin_timer, time_until_vblank_start(), 0);
 
 	// adjust speed if necessary
-	update_refresh_speed(machine);
+	//update_refresh_speed(machine);
 }
 
 
@@ -2636,6 +2741,7 @@ void screen_device::finalize_burnin()
 
 		// add two text entries describing the image
 		sprintf(text, APPNAME " %s", build_version);
+
 		png_add_text(&pnginfo, "Software", text);
 		sprintf(text, "%s %s", machine->gamedrv->manufacturer, machine->gamedrv->description);
 		png_add_text(&pnginfo, "System", text);

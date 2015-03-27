@@ -175,7 +175,7 @@
 	    <item>0 buttons</item>
 	    <item>1 buttons</item>
 		<item>2 buttons</item>
-		<item>3 buttons (A=B+X)</item>
+		<item>3 buttons (C=A+B)</item>
 		<item>3 buttons</item>
 		<item>4 buttons</item>
 		<item>All buttons</item>		
@@ -268,7 +268,6 @@
 	</string-array>	
 		
 	<string-array name="pref_speed_options">
-	    <item>Default</item>
 		<item>50 pct.</item>
 		<item>60 pct.</item>		
 	    <item>70 pct.</item>
@@ -276,7 +275,9 @@
 		<item>85 pct.</item>			
 		<item>90 pct.</item>
 		<item>95 pct.</item>
-		<item>100 pct.</item>
+		<item>99 pct.</item>		
+	    <item>Default (100pct)</item>
+		<item>101 pct.</item>		
 		<item>105 pct.</item>
 		<item>110 pct.</item>
 		<item>115 pct.</item>
@@ -286,7 +287,6 @@
 		<item>150 pct.</item>													
 	</string-array>
 	<string-array name="pref_speed_values">
-		<item>-1</item>
 		<item>50</item>
 		<item>60</item>
 		<item>70</item>
@@ -294,7 +294,9 @@
 		<item>85</item>
 		<item>90</item>
 		<item>95</item>
-		<item>100</item>
+		<item>99</item>		
+		<item>-1</item>
+		<item>101</item>		
 		<item>105</item>
 		<item>110</item>
 		<item>115</item>
@@ -330,17 +332,27 @@
 	</string-array>	
 	
 	<string-array name="pref_vsync_options">
-	    <item>Safe (game reported)</item>
-		<item>50Hz</item>
+	    <item>Game-reported</item>
+	    <item>OS-reported</item>	            		
 		<item>60HZ</item>		
-	    <item>OS-reported</item>													
+		<item>59Hz</item>
+		<item>58Hz</item>
+		<item>57Hz</item>
+		<item>56Hz</item>
+		<item>55Hz</item>
+		<item>50Hz</item>													
 	</string-array>
 	
 	<string-array name="pref_vsync_values">
 		<item>-1</item>
-		<item>5000</item>
+		<item>3</item>					
 		<item>6000 </item>
-		<item>3</item>																												
+		<item>5900</item>
+		<item>5800</item>
+		<item>5700</item>
+		<item>5600</item>
+		<item>5500</item>
+        <item>5000</item>																											
 	</string-array>	
 	
    <string-array name="pref_automap_options">

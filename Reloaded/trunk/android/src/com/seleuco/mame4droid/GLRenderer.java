@@ -58,6 +58,7 @@ import android.graphics.Bitmap;
 import android.opengl.GLSurfaceView.Renderer;
 import android.opengl.GLUtils;
 import android.util.Log;
+import android.widget.Toast;
 
 public class GLRenderer implements Renderer {
     
@@ -83,6 +84,8 @@ public class GLRenderer implements Renderer {
     protected Bitmap blendBmp = null; 
     
 	protected MAME4droid mm = null;
+	
+	protected boolean warn = false;
     
 	public void setMAME4droid(MAME4droid mm) 
 	{
@@ -336,12 +339,20 @@ public class GLRenderer implements Renderer {
         }
     }
 	    
-    public void onDrawFrame(GL10 gl) 
-    {
+    //long target = -1;
+    
+    synchronized public void onDrawFrame(GL10 gl) 
+    {        
         // Log.v("mm","onDrawFrame called "+shortBuffer); 
         gl.glClearColor(255, 255, 255, 1.0f);
         gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
-    	
+    	        
+        /*while(target != -1){
+        	if(System.nanoTime() > target)
+        		target = -1;
+        }                       
+        target = System.nanoTime() + 1000000000/60;*/
+        
     	if(byteBuffer==null){
     		ByteBuffer buf = Emulator.getScreenBuffer();
     		if(buf==null)return;
@@ -350,8 +361,22 @@ public class GLRenderer implements Renderer {
     	             	
         byteBuffer.rewind();
         byteBuffer.order(ByteOrder.nativeOrder());
-
-        createEmuTexture(gl);
+                
+        try
+        {     	
+            createEmuTexture(gl);
+        }
+        catch(java.lang.OutOfMemoryError e)
+        {     
+        	  if(!warn)
+			  mm.runOnUiThread(new Runnable() {																							
+				    public void run() {
+				    	Toast.makeText(mm, "Not enought memory to create texture. Try lowering resolution or disable HQx...", Toast.LENGTH_LONG).show();
+				    }
+			  });
+        	  warn = true;
+			  return;
+        }
         
         gl.glBindTexture(GL10.GL_TEXTURE_2D, emuTextureId);
                       

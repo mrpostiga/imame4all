@@ -132,7 +132,9 @@ public class Emulator
 	final static public int SAVELOAD_COMBO = 56;
 	final static public int RENDER_RGB = 57;
 	final static public int IMAGE_EFFECT = 58;
-	final static public int LIGHTGUN = 59;		
+	final static public int LIGHTGUN = 59;
+	final static public int MOUSE = 60;		
+	final static public int REFRESH = 61;
 	
 	final static public int FILTER_YEARS_ARRAY = 0;
 	final static public int FILTER_MANUFACTURERS_ARRAY = 1;
@@ -663,18 +665,11 @@ public class Emulator
 				boolean extROM = false;	
 				isEmulating = true;
 				init(libPath,resPath);
-				String version = null;
-				try
-			    {
-				   version = mm.getPackageManager().getPackageInfo(mm.getPackageName(), 0).versionName;	
-			    } catch (NameNotFoundException e) {
-				   e.printStackTrace();
-			    } 
-				final String versionName = version == null ? "???" : version;
+				final String versionName = mm.getMainHelper().getVersion();
 				Emulator.setValueStr(Emulator.VERSION, versionName);
 				Intent intent = mm.getIntent();
 			    String action = intent.getAction();
-			    
+			     
 			    if(action == Intent.ACTION_VIEW)
 			    {
 			    	  //android.os.Debug.waitForDebugger();
