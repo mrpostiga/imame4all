@@ -214,7 +214,7 @@ public class TiltSensor {
         		    toast.show();*/
         		}
         		
-        		boolean skip = (mm.getInputHandler().pad_data[0]  & IController.SELECT_VALUE) != 0 ||
+        		boolean skip = (mm.getInputHandler().pad_data[0]  & IController.COIN_VALUE) != 0 ||
         				       (mm.getInputHandler().pad_data[0]  &  IController.START_VALUE) != 0;//avoid player 2,3,4 start or coin 
         		
         		if(Math.abs(tilt_x) < deadZone || skip)

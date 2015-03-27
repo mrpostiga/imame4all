@@ -70,7 +70,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String PREF_GLOBAL_SOUND_SYNC = "PREF_GLOBAL_SOUND_SYNC";
 	final static public String PREF_GLOBAL_FRAMESKIP = "PREF_GLOBAL_FRAMESKIP";
 	final static public String PREF_GLOBAL_THROTTLE = "PREF_GLOBAL_THROTTLE";
-	final static public String PREF_GLOBAL_VSYNC = "PREF_GLOBAL_VSYNC";
+	final static public String PREF_GLOBAL_VSYNC = "PREF_GLOBAL_VSYNC_2";
 	final static public String PREF_GLOBAL_SOUND = "PREF_GLOBAL_SOUND";
 	final static public String PREF_GLOBAL_SHOW_FPS = "PREF_GLOBAL_SHOW_FPS";
 	final static public String PREF_GLOBAL_SHOW_INFOWARNINGS = "PREF_GLOBAL_SHOW_INFOWARNINGS";	
@@ -79,6 +79,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String PREF_GLOBAL_DEBUG = "PREF_GLOBAL_DEBUG";
 	final static public String PREF_GLOBAL_IDLE_WAIT = "PREF_GLOBAL_IDLE_WAIT"; 
 	final static public String PREF_GLOBAL_FORCE_PXASPECT = "PREF_GLOBAL_FORCE_PXASPECT_3";
+	final static public String PREF_GLOBAL_REFRESH = "PREF_GLOBAL_REFRESH";
 	final static public String PREF_GLOBAL_HISCORE = "PREF_GLOBAL_HISCORE";
 	final static public String PREF_GLOBAL_WARN_ON_EXIT = "PREF_GLOBAL_WARN_ON_EXIT";
 	final static public String PREF_GLOBAL_SUSPEND_NOTIFICATION = "PREF_GLOBAL_SUSPEND_NOTIFICATION";
@@ -115,7 +116,9 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 	final static public String  PREF_ANALOG_DZ = "PREF_ANALOG_DZ";
 	final static public String  PREF_GAMEPAD_DZ = "PREF_GAMEPAD_DZ";
 	final static public String  PREF_VIBRATE = "PREF_VIBRATE";
-	final static public String  PREF_AUTOFIRE = "PREF_AUTOFIRE";	
+	final static public String  PREF_AUTOFIRE = "PREF_AUTOFIRE";
+	final static public String  PREF_MOUSE = "PREF_MOUSE";
+	final static public String  PREF_SHIELDCONTROLLER_AS_MOUSE = "PREF_SHIELDCONTROLLER_AS_MOUSE";
 	
 	final static public String  PREF_TILT_SENSOR = "PREF_TILT_SENSOR";
 	final static public String  PREF_TILT_DZ = "PREF_TILT_DZ";
@@ -339,6 +342,17 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 		return Integer.valueOf(getSharedPreferences().getString(PREF_GLOBAL_FORCE_PXASPECT,"0")).intValue();	
 	}
 	
+	public int getRefresh(){
+		int refresh = -1;
+	    String strRefresh = getSharedPreferences().getString(PrefsHelper.PREF_GLOBAL_REFRESH,"");				
+		float frefresh = 0;
+		try{frefresh = Float.parseFloat(strRefresh);}catch(Exception e){}
+		if(frefresh >= 50 && frefresh <99)
+			refresh = (int)(frefresh * 100);	
+		//System.out.println("*****REFRESH= "+refresh);
+		return refresh;
+	}
+	
 	public boolean isHiscore(){
 		return getSharedPreferences().getBoolean(PREF_GLOBAL_HISCORE,false);
 	}	
@@ -432,11 +446,19 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener
 		if(value==1 && !this.isTiltSensor())
 			return true;	
 		
-		if(value==2 && Emulator.getValue(Emulator.LIGHTGUN)==1  && !this.isTiltSensor())
+		if(value==2 && Emulator.getValue(Emulator.LIGHTGUN)==1  && !this.isTiltSensor() && !mm.getInputHandler().isMouseEnabled())
 			return true;
 		
 		return false;
+	} 
+	 
+	public boolean isMouseEnabled(){
+		return getSharedPreferences().getBoolean(PREF_MOUSE,false);
 	}
+	
+	public boolean isShieldControllerAsMouse(){
+		return getSharedPreferences().getBoolean(PREF_SHIELDCONTROLLER_AS_MOUSE,false);
+	}	
 	
 	public int getStickWays(){
 		return Integer.valueOf(getSharedPreferences().getString(PREF_STICK_TYPE,"-1")).intValue();	

@@ -60,6 +60,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -92,7 +93,7 @@ public class MainHelper {
 	final static public  int SUBACTIVITY_HELP = 2;
 	final static public  int BUFFER_SIZE = 1024*48;
 	
-	final static public  String MAGIC_FILE = "dont-delete-00005.bin";
+	//final static public  String MAGIC_FILE = "dont-delete-00005.bin";
 	
 	final public static int DEVICE_GENEREIC = 1;
 	final public static int DEVICE_OUYA = 2;
@@ -239,8 +240,8 @@ public class MainHelper {
 		try {
 			
 			String roms_dir = mm.getMainHelper().getInstallationDIR();
-			
-			File fm = new File(roms_dir + File.separator + "saves/" + MAGIC_FILE);
+			 
+			File fm = new File(roms_dir + File.separator + "saves/" + "dont-delete-"+getVersion()+".bin");
 			if(fm.exists())
 				return;
 						
@@ -436,7 +437,10 @@ public class MainHelper {
 		Emulator.setValue(Emulator.RENDER_RGB,
 				mm.getPrefsHelper().isRenderRGB() && mm.getPrefsHelper().getVideoRenderMode()!= PrefsHelper.PREF_RENDER_SW ? 1 : 0);
 		
-		Emulator.setValue(Emulator.IMAGE_EFFECT , mm.getPrefsHelper().getImageEffectValue());		
+		Emulator.setValue(Emulator.IMAGE_EFFECT , mm.getPrefsHelper().getImageEffectValue());
+		Emulator.setValue(Emulator.MOUSE , mm.getPrefsHelper().isMouseEnabled() ? 1 : 0);	
+			
+		Emulator.setValue(Emulator.REFRESH , mm.getPrefsHelper().getRefresh());	
 		
 		GameFilterPrefs gfp = mm.getPrefsHelper().getGameFilterPrefs();
 		boolean dirty = gfp.readValues();
@@ -625,7 +629,7 @@ public class MainHelper {
 				
 				//System.out.println("--->>> "+w+" "+h+ " "+w/h+ " "+ (float)(16.0/9.0));
 				
-			   	if(w/h != (float)(16.0/9.0))
+			   	if(w/h != (float)(16.0/9.0) /*&& false*/)
 			   	{					   
 				   inputHandler.readControllerValues(R.raw.controller_landscape);
 			   	}
@@ -997,5 +1001,17 @@ public class MainHelper {
                 }
             }).start(); 
 	    }	
-	}	
+	}
+	
+	public String getVersion(){
+		String version = "???";
+		try
+	    {
+		   version = mm.getPackageManager().getPackageInfo(mm.getPackageName(), 0).versionName;	
+	    } catch (NameNotFoundException e) {
+		   e.printStackTrace();
+	    } 
+		return version;
+	}
+	
 }

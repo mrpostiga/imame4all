@@ -47,9 +47,10 @@ package com.seleuco.mame4droid;
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.MotionEvent;
+import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import com.seleuco.mame4droid.R;
 
 public class WebHelpActivity extends Activity {
 	
@@ -73,7 +74,9 @@ public class WebHelpActivity extends Activity {
         lWebView.setBackgroundColor(Color.DKGRAY);
         if(!path.endsWith("/"))
         	path+="/";
+        
         lWebView.loadUrl("file:///" +  path +"help/index.htm");		
+        lWebView.requestFocus();        
 	}
 	
     public void onBackPressed() {
@@ -82,7 +85,8 @@ public class WebHelpActivity extends Activity {
             this.lWebView.goBack();
         else
             super.onBackPressed();
- 
+        
+        lWebView.requestFocus(); 
     }
-	
+    	
 }

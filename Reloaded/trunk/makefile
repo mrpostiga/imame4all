@@ -28,9 +28,9 @@ ANDROID = 1
 
 #AARMV6=1
 
-#AARMV7=1
+AARMV7=1
 
-AARMV8=1
+#AARMV8=1
 
 ########## iOS
 
@@ -314,6 +314,9 @@ BUILD_EXPAT = 1
 # specify optimization level or leave commented to use the default
 # (default is OPTIMIZE = 3 normally, or OPTIMIZE = 0 with symbols)
 # OPTIMIZE = 3
+
+
+
 
 
 
@@ -696,6 +699,7 @@ OBJDIRS = $(OBJ)
 #-------------------------------------------------
 # define standard libarires for CPU and sounds
 #-------------------------------------------------
+
 
 #LIBEMU = $(OBJ)/libemu.a
 #LIBCPU = $(OBJ)/libcpu.a

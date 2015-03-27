@@ -57,6 +57,7 @@ import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.util.Log;
+import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -65,6 +66,7 @@ import android.view.View.OnTouchListener;
 
 import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.MAME4droid;
+import com.seleuco.mame4droid.R;
 import com.seleuco.mame4droid.helpers.DialogHelper;
 import com.seleuco.mame4droid.helpers.PrefsHelper;
 
@@ -87,16 +89,16 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		DOWN_VALUE,
 		LEFT_VALUE,
 		RIGHT_VALUE, 
-		B_VALUE, 
-		X_VALUE, 
 		A_VALUE, 
-		Y_VALUE, 
-		L1_VALUE, 
-		R1_VALUE, 
-		SELECT_VALUE, 
+		B_VALUE, 
+		C_VALUE, 
+		D_VALUE, 
+		E_VALUE, 
+		F_VALUE, 
+		COIN_VALUE, 
 		START_VALUE,
-		L2_VALUE,
-		R2_VALUE
+		EXIT_VALUE,
+		OPTION_VALUE
 		///
 	};
 				
@@ -193,6 +195,8 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	protected  boolean trackballEnabled = true;
 	
 	protected int lightgun_pid = -1;
+	
+	protected boolean isMouseEnabled = false;
 		
 	/////////////////
 	
@@ -210,7 +214,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	final public static int TYPE_OPACITY = 7;
 	final public static int TYPE_ANALOG_RECT = 8;
 	
-	
+
 	protected int stick_state;
 	public int getStick_state() {
 		return stick_state;
@@ -281,7 +285,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	}
 	
 	public void resetInput(){
-    	for(int i=0;i<8;i++)
+    	for(int i=0;i<4*3;i++)
     	{		    	
 	    	try
 	    	{
@@ -302,6 +306,10 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	
 	public int getInputHandlerState(){
 		return state;
+	}
+	
+	public boolean isMouseEnabled(){
+		return isMouseEnabled;
 	}
 	
 	public void changeState()		
@@ -346,7 +354,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		
 		int v = emulatorInputValues[value%emulatorInputValues.length];
 		
-	    if(v==L2_VALUE)
+	    if(v==EXIT_VALUE)
 	    { 
 	    	if( event.getAction()==KeyEvent.ACTION_UP) {
 		    	if(Emulator.isInMenu())
@@ -372,7 +380,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		        }
 	    	}
 		}
-		else if(v==R2_VALUE)
+		else if(v==OPTION_VALUE)
 		{
 			if( event.getAction()==KeyEvent.ACTION_UP)  
 			   mm.showDialog(DialogHelper.DIALOG_OPTIONS);
@@ -536,7 +544,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	}
 
 	protected void fixTiltCoin(){
-		if(tiltSensor.isEnabled() && ((pad_data[0]  & IController.SELECT_VALUE) != 0 || (pad_data[0]  &  IController.START_VALUE) != 0))
+		if(tiltSensor.isEnabled() && ((pad_data[0]  & IController.COIN_VALUE) != 0 || (pad_data[0]  &  IController.START_VALUE) != 0))
 		{
 			pad_data[0] &= ~InputHandler.LEFT_VALUE;
 			pad_data[0] &= ~InputHandler.RIGHT_VALUE;
@@ -569,12 +577,12 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 			{
 			    lightgun_pid = -1;
 		        //Emulator.setAnalogData(4, 0, 0);
+		        pad_data[0] &= ~A_VALUE;
 		        pad_data[0] &= ~B_VALUE;
-		        pad_data[0] &= ~X_VALUE;
 			}
 			else
 			{
-				pad_data[0] &= ~X_VALUE;				
+				pad_data[0] &= ~B_VALUE;				
 			}
 			Emulator.setPadData(0,pad_data[0]);
 		}	
@@ -615,13 +623,13 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 			    	 if(!tiltSensor.isEnabled())
 					    Emulator.setAnalogData(4, xf, -yf);
 					 
-			    	 if((pad_data[0] & X_VALUE) == 0)
-			    	    pad_data[0] |= B_VALUE;					 
+			    	 if((pad_data[0] & B_VALUE) == 0)
+			    	    pad_data[0] |= A_VALUE;					 
 				}
 				else
 				{
-					pad_data[0] &= ~B_VALUE;
-					pad_data[0] |= X_VALUE;
+					pad_data[0] &= ~A_VALUE;
+					pad_data[0] |= B_VALUE;
 				}							
 			}
 			Emulator.setPadData(0,pad_data[0]);	
@@ -694,12 +702,12 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 							     !mm.getPrefsHelper().isLightgun() 
 							     || (mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_PORTRAIT && !mm.getPrefsHelper().isPortraitFullscreen()) 
 							     || Emulator.isInMenu() || !Emulator.isInMAME() ||
-					    		 iv.getValue()==BTN_L2 || iv.getValue()==BTN_R2 || iv.getValue()==BTN_SELECT || iv.getValue()==BTN_START; 
+					    		 iv.getValue()==BTN_EXIT || iv.getValue()==BTN_OPTION || iv.getValue()==BTN_COIN || iv.getValue()==BTN_START; 
 							     
 								if(iv.getType() == TYPE_BUTTON_RECT && b)
 								{									    		 
 									 newtouches[id] |= getButtonValue(iv.getValue(),true);
-									 if(iv.getValue()==BTN_L2 && actionEvent!=MotionEvent.ACTION_MOVE)
+									 if(iv.getValue()==BTN_EXIT && actionEvent!=MotionEvent.ACTION_MOVE)
 									 { 
 									    if(Emulator.isInMenu())
 									    {
@@ -712,7 +720,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 									    else
 									        mm.showDialog(DialogHelper.DIALOG_EXIT_GAME);
 									 } 
-									 else if(iv.getValue()==BTN_R2)
+									 else if(iv.getValue()==BTN_OPTION)
 									 {
 										 mm.showDialog(DialogHelper.DIALOG_OPTIONS);
 									 }
@@ -730,22 +738,10 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 								pad_data[0] |= newtouches[id];
 							}
 							
-							if(mm.getPrefsHelper().isBplusX() && (iv.getValue()==BTN_B || iv.getValue()==BTN_X))
+							if(mm.getPrefsHelper().isBplusX() && (iv.getValue()==BTN_A || iv.getValue()==BTN_B))
 							   break;
 							
-						}/* else if (iv.getType() == TYPE_SWITCH) {
-							if (event.getAction() == MotionEvent.ACTION_DOWN) {
-																
-								for (int ii = 0; ii < 10; ii++) 
-								{
-								    touchstates[ii] = false;
-								    oldtouches[ii] = 0;
-								}
-								changeState();
-								mm.getMainHelper().updateMAME4droid();
-								return true;
-							}
-						}*/
+						}
 					}
 				}	                	            
 			} 
@@ -779,6 +775,8 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		return true;
 	}	
 	
+	
+	@Override
 	public boolean onTouch(View v, MotionEvent event) {
 		
 		//Log.d("touch",event.getRawX()+" "+event.getX()+" "+event.getRawY()+" "+event.getY());
@@ -879,10 +877,10 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 			}
 
 		} else if (action == MotionEvent.ACTION_DOWN) {
-			pad_data[0] |= B_VALUE;
+			pad_data[0] |= A_VALUE;
 
 		} else if (action == MotionEvent.ACTION_UP) {
-			pad_data[0] &= ~B_VALUE;
+			pad_data[0] &= ~A_VALUE;
 		}
         
 		fixTiltCoin();
@@ -937,7 +935,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	    	if(iv.getType() == InputHandler.TYPE_BUTTON_IMG 
 	    		|| iv.getType() == InputHandler.TYPE_BUTTON_RECT)
 	    	{
-	    	    if(iv.getValue()!=BTN_L2 && iv.getValue()!=BTN_R2 && iv.getValue()!=BTN_START && iv.getValue()!=BTN_SELECT)
+	    	    if(iv.getValue()!=BTN_EXIT && iv.getValue()!=BTN_OPTION && iv.getValue()!=BTN_START && iv.getValue()!=BTN_COIN)
 	    		    iv.setSize(0, 0, sz, sz);
 	    	}
 	    	else if(iv.getType() == InputHandler.TYPE_STICK_IMG)
@@ -1097,38 +1095,38 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	
 	int getButtonValue(int i, boolean b){
 		switch(i){
-		   case 0: return  Y_VALUE;		   
+		   case 0: return  D_VALUE;		   
 		   case 1:
 			    if(mm.getPrefsHelper().isBplusX() && b)
 			    {			    	
-	                return X_VALUE | B_VALUE | A_VALUE; //El A lo pongo para que salte la animación
+	                return B_VALUE | A_VALUE | C_VALUE; //El A lo pongo para que salte la animación
                 }
                 else
                 {
-                	return  A_VALUE;
+                	return  C_VALUE;
 				}
-		   case 2: return  B_VALUE;
-		   case 3: return  X_VALUE;
+		   case 2: return  A_VALUE;
+		   case 3: return  B_VALUE;
 		   
-		   case 4: return  L1_VALUE;
-		   case 5: return  R1_VALUE;   
-		   case 6: return  L2_VALUE;
-		   case 7: return  R2_VALUE;
+		   case 4: return  E_VALUE;
+		   case 5: return  F_VALUE;   
+		   case 6: return  EXIT_VALUE;
+		   case 7: return  OPTION_VALUE;
 		   
-		   case 8: return  SELECT_VALUE;		   
+		   case 8: return  COIN_VALUE;		   
 		   case 9: return  START_VALUE;
 		   
-		   case 10: return  X_VALUE | A_VALUE;
+		   case 10: return  B_VALUE | C_VALUE;
 		   case 11://TODO
 			    if(mm.getPrefsHelper().isBplusX() && mm.getPrefsHelper().getNumButtons() >=3 )
 			    {
-			    	return X_VALUE | B_VALUE;
+			    	return B_VALUE | A_VALUE;
                 }	
 			    else
 			    	return 0;
 			    			    
-		   case 12: return Y_VALUE | A_VALUE;
-		   case 13: return Y_VALUE | B_VALUE;		   
+		   case 12: return D_VALUE | C_VALUE;
+		   case 13: return D_VALUE | A_VALUE;		   
 		}
 		return 0;
 	}
@@ -1157,6 +1155,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 		         sb.append(";" );
 		   }
 		   sb.append("]" );
+		   //if(action != MotionEvent.ACTION_MOVE)			   
 		   Log.d("touch", sb.toString());
 		}
 		
@@ -1263,48 +1262,48 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	            
 	        // Y / UP
 	        case KeyEvent.KEYCODE_I:
-	            pad_data[0] |= Y_VALUE;
+	            pad_data[0] |= D_VALUE;
 	            break;
 	        case KeyEvent.KEYCODE_M:
-	            pad_data[0] &= ~Y_VALUE;
+	            pad_data[0] &= ~D_VALUE;
 	            break;
 	            
 	        // X / DOWN
 	        case KeyEvent.KEYCODE_L:
-	            pad_data[0] |= X_VALUE;
+	            pad_data[0] |= B_VALUE;
 	            break;
 	        case KeyEvent.KEYCODE_V:
-	            pad_data[0] &= ~X_VALUE;
+	            pad_data[0] &= ~B_VALUE;
 	            break;
 	            
 	        // A / LEFT
 	        case KeyEvent.KEYCODE_K:
-	            pad_data[0] |= A_VALUE;
+	            pad_data[0] |= C_VALUE;
 	            break;
 	        case KeyEvent.KEYCODE_P:
-	            pad_data[0] &= ~A_VALUE;
+	            pad_data[0] &= ~C_VALUE;
 	            break;
 	            
 	        // B / RIGHT
 	        case KeyEvent.KEYCODE_O:
-	            pad_data[0] |= B_VALUE;
+	            pad_data[0] |= A_VALUE;
 	            break;
 	        case KeyEvent.KEYCODE_G:
-	            pad_data[0] &= ~B_VALUE;
+	            pad_data[0] &= ~A_VALUE;
 	            break;
 	            
 	        // SELECT / COIN
 	        case KeyEvent.KEYCODE_Y:
-	            pad_data[0] |= SELECT_VALUE;
+	            pad_data[0] |= COIN_VALUE;
 	            break;
 	        case KeyEvent.KEYCODE_T:
-	            pad_data[0] &= ~SELECT_VALUE;
+	            pad_data[0] &= ~COIN_VALUE;
 	            break;
 	            
 	        // START
 	        case KeyEvent.KEYCODE_U:
 	            if(bCadeLayout) { 
-	                pad_data[0] |= L1_VALUE;
+	                pad_data[0] |= E_VALUE;
 	            }
 	            else {
 	                pad_data[0] |= START_VALUE;
@@ -1312,7 +1311,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	            break;
 	        case KeyEvent.KEYCODE_F:
 	            if(bCadeLayout) { 
-	                pad_data[0] &= ~L1_VALUE;
+	                pad_data[0] &= ~E_VALUE;
 	            }
 	            else {
 	                pad_data[0] &= ~START_VALUE;
@@ -1325,7 +1324,7 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	                pad_data[0] |= START_VALUE;
 	            }
 	            else {
-	                pad_data[0] |= L1_VALUE;
+	                pad_data[0] |= E_VALUE;
 	            }
 	            break;
 	        case KeyEvent.KEYCODE_R:
@@ -1333,16 +1332,16 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	                pad_data[0] &= ~START_VALUE;
 	            }
 	            else {
-	                pad_data[0] &= ~L1_VALUE;
+	                pad_data[0] &= ~E_VALUE;
 	            }
 	            break;
 	            
 	        // 
 	        case KeyEvent.KEYCODE_J:
-	            pad_data[0] |= R1_VALUE;
+	            pad_data[0] |= F_VALUE;
 	            break;
 	        case KeyEvent.KEYCODE_N:
-	            pad_data[0] &= ~R1_VALUE;
+	            pad_data[0] &= ~F_VALUE;
 	            break;
 	    }
 	    if(!iCade && old_pad_data==0 && pad_data[0]!=0)
@@ -1356,13 +1355,15 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	}
 	
 	public void setInputListeners(){ 
+		
 	   mm.getEmuView().setOnKeyListener(this);
 	   mm.getEmuView().setOnTouchListener(this);
 	                     
 	   mm.getInputView().setOnTouchListener(this);
 	   mm.getInputView().setOnKeyListener(this);
 	   
-	   //mm.findViewById(R.id.EmulatorFrame).setOnTouchListener(this);;
+	   //mm.findViewById(R.id.EmulatorFrame).setOnTouchListener(this);
+	   //mm.findViewById(R.id.EmulatorFrame).setOnKeyListener(this);
 	}
 	
 	public void unsetInputListeners(){ 
@@ -1384,4 +1385,11 @@ public class InputHandler implements OnTouchListener, OnKeyListener, IController
 	   return iCade;
 	}
 	
+	public void resume(){
+	}	
+	
+	public boolean genericMotion(MotionEvent event){
+		return false;
+	}
+
 }

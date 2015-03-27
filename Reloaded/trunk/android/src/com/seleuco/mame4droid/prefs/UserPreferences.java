@@ -112,6 +112,7 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
     protected EditTextPreference mPrefInstPath;
     protected ListPreference mPrefLightgun;
     protected ListPreference mPrefBios;    
+    protected EditTextPreference mPrefRefresh;
     
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -178,7 +179,8 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 		mPrefImageEffect = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GLOBAL_IMAGE_EFFECT);
 		mPrefInstPath = (EditTextPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_INSTALLATION_DIR);
 		mPrefLightgun = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_LIGHTGUN);
-		mPrefBios = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_BIOS);		
+		mPrefBios = (ListPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_BIOS);
+		mPrefRefresh = (EditTextPreference)getPreferenceScreen().findPreference(PrefsHelper.PREF_GLOBAL_REFRESH);
 	}
 	
 	protected void populateFilterList(int key1, int key2, ListPreference lp){
@@ -305,7 +307,8 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 			mPrefInstPath.setSummary("Current value is '" + mPrefInstPath.getText()+"'");
 			mPrefLightgun.setSummary("Current value is '" + mPrefLightgun.getEntry()+"'");
 			mPrefBios.setSummary("Current value is '" + mPrefBios.getEntry()+"'");
-			
+			mPrefRefresh.setSummary("Current value is '" + mPrefRefresh.getText()+"'"); 
+			 
 	        // Set up a listener whenever a key changes            
 	        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
 	        
@@ -496,6 +499,10 @@ public class UserPreferences extends PreferenceActivity implements OnSharedPrefe
 		    else if(key.equals(PrefsHelper.PREF_BIOS))
 		    {
 		    	mPrefBios.setSummary("Current value is '" + mPrefBios.getEntry()+"'");
+		    }
+		    else if(key.equals(PrefsHelper.PREF_GLOBAL_REFRESH))
+		    {
+		    	mPrefRefresh.setSummary("Current value is '" + mPrefRefresh.getText()+"'");
 		    } 	        
 	    }
 
